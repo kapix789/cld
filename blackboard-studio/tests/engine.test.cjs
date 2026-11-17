@@ -51,12 +51,20 @@ test('histogram median matches a sorted-window median exactly',()=>{
   assert.deepEqual(E.medianFilter(g,w,h,r),sortedMedian(g,w,h,r),`${w}x${h} radius ${r}`);
  }
 });
-// Canny: edge linking must reproduce 9.3.2 output and stay linear-time on long weak-edge chains.
+// Canny: edges must stay continuous in every direction, and linking must stay linear-time.
 const cannyStress=(w,h)=>{const g=new Uint8ClampedArray(w*h);for(let y=0;y<h;y++)for(let x=0;x<w;x++){let v=128+100*Math.sin(x/w*7)*Math.cos(y/h*5);if(((x-w/2)**2+(y-h/2)**2)<(w/4)**2)v=40;g[y*w+x]=v+((x*7919+y*104729)%37)-18;}return g;};
-const fingerprint=m=>{let h=2166136261;for(let i=0;i<m.length;i++)h=Math.imul(h^m[i],16777619);return h>>>0;};
-test('Canny output is identical to 9.3.2',()=>{
- const g=cannyStress(240,180);
- for(const [lab,expected] of [[undefined,3131910075],[[10,40,8],1045875418],[[60,30,20],1839547104]])assert.equal(fingerprint(E.process(g,240,180,E.settings({preset:'canny',...(lab?{labVals:{canny:lab}}:{})}))),expected,JSON.stringify(lab));
+test('Canny traces a closed outline around a circle, diagonals included',()=>{
+ const n=96,g=new Uint8ClampedArray(n*n).fill(230);for(let y=0;y<n;y++)for(let x=0;x<n;x++)if((x-48)**2+(y-48)**2<30**2)g[y*n+x]=40;
+ const m=E.process(g,n,n,E.settings({preset:'canny'})),missed=[];
+ for(let k=0;k<72;k++){const a=k*Math.PI/36;let found=false;for(let r=27;r<=33;r++)if(m[Math.round(48+r*Math.sin(a))*n+Math.round(48+r*Math.cos(a))])found=true;if(!found)missed.push(k*5);}
+ assert.deepEqual(missed,[],`no edge at ${missed.join(', ')} degrees`);
+});
+test('Canny keeps 45° and 135° edges unbroken',()=>{
+ const n=64;
+ for(const slope of [1,-1]){const g=new Uint8ClampedArray(n*n);for(let y=0;y<n;y++)for(let x=0;x<n;x++)g[y*n+x]=(slope>0?x-y:x+y-n)>0?220:30;
+  const m=E.process(g,n,n,E.settings({preset:'canny'}));let gaps=0;
+  for(let y=8;y<n-8;y++){let row=0;for(let x=0;x<n;x++)row+=m[y*n+x];if(!row)gaps++;}
+  assert.equal(gaps,0,`${slope>0?45:135}° edge has ${gaps} empty rows`);}
 });
 test('Canny edge linking stays fast on long weak-edge chains',()=>{
  const g=cannyStress(1200,1200),start=performance.now();E.process(g,1200,1200,E.settings({preset:'canny'}));const ms=performance.now()-start;

@@ -604,11 +604,13 @@ function renderPreset(gray, w, h, thresh, extra, lw, S) {
                 const idx = y*w+x;
                 const angle = Math.atan2(gy[idx], gx[idx]) * 180 / Math.PI;
                 const a = ((angle % 180) + 180) % 180;
+                // Compare along the gradient. y grows downwards, so 45° points down-right
+                // and 135° points down-left.
                 let n1=0, n2=0;
                 if (a < 22.5 || a >= 157.5) { n1=mag[y*w+x-1]; n2=mag[y*w+x+1]; }
-                else if (a < 67.5) { n1=mag[(y-1)*w+x+1]; n2=mag[(y+1)*w+x-1]; }
+                else if (a < 67.5) { n1=mag[(y-1)*w+x-1]; n2=mag[(y+1)*w+x+1]; }
                 else if (a < 112.5) { n1=mag[(y-1)*w+x]; n2=mag[(y+1)*w+x]; }
-                else { n1=mag[(y-1)*w+x-1]; n2=mag[(y+1)*w+x+1]; }
+                else { n1=mag[(y-1)*w+x+1]; n2=mag[(y+1)*w+x-1]; }
                 nms[idx] = (mag[idx] >= n1 && mag[idx] >= n2) ? mag[idx] : 0;
             }
             // Double threshold + hysteresis
