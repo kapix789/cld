@@ -316,9 +316,36 @@ function unsharpMask(gray, w, h, amount) {
 }
 
 // Local contrast enhancement (CLAHE-inspired)
+// Gaussian blur approximated by three box blurs (clamp-to-edge). Cost does not depend on
+// sigma, which matters for very wide blurs where the exact kernel has hundreds of taps.
+function boxBlur3(src, w, h, sigma) {
+    const n = 3, ideal = Math.sqrt(12 * sigma * sigma / n + 1);
+    let lower = Math.floor(ideal); if (lower % 2 === 0) lower--;
+    const lowerCount = Math.round((12 * sigma * sigma - n * lower * lower - 4 * n * lower - 3 * n) / (-4 * lower - 4));
+    let a = Float32Array.from(src), b = new Float32Array(w * h);
+    const pass = (from, to, length, count, step, stride, r) => {
+        const scale = 1 / (2 * r + 1), at = k => k < 0 ? 0 : k >= length ? length - 1 : k;
+        for (let line = 0; line < count; line++) {
+            const base = line * stride;
+            let sum = 0;
+            for (let k = -r; k <= r; k++) sum += from[base + at(k) * step];
+            for (let i = 0; i < length; i++) {
+                to[base + i * step] = sum * scale;
+                sum += from[base + at(i + r + 1) * step] - from[base + at(i - r) * step];
+            }
+        }
+    };
+    for (let k = 0; k < n; k++) {
+        const r = ((k < lowerCount ? lower : lower + 2) - 1) / 2;
+        pass(a, b, w, h, 1, w, r);   // horizontal
+        pass(b, a, h, w, w, 1, r);   // vertical
+    }
+    return a;
+}
+
 function localContrast(gray, w, h, strength) {
     if (strength <= 0) return new Uint8ClampedArray(gray);
-    const blurred = gaussBlur(gray, w, h, Math.max(3, Math.floor(w / 20)));
+    const blurred = boxBlur3(gray, w, h, Math.max(3, Math.floor(w / 20)));
     const out = new Float32Array(w * h);
     const s = strength / 100;
     for (let i = 0; i < w * h; i++) {
@@ -1101,17 +1128,53 @@ if(typeof module!=='undefined'&&module.exports)module.exports=DraftStore;
 'use strict';
 const copy=value=>JSON.parse(JSON.stringify(value));
 function reference(gray,s){return Float32Array.from(gray,v=>(s.invert!==s.flipOutput)?255-v:v);}
+// Clean outlines are judged against structural edges found on a coarse analysis grid
+// (about 160 cells across). The reference is then the same at every render size, and
+// texture or noise that only exists at full resolution does not count as structure.
+const ANALYSIS_SIZE=160;
+function analysisGrid(w,h){const c=Math.max(1,Math.max(w,h)/ANALYSIS_SIZE);return {c,aw:Math.max(1,Math.ceil(w/c)),ah:Math.max(1,Math.ceil(h/c))};}
+function cellIndex(grid,w,h){const {c,aw,ah}=grid,cols=new Int32Array(w),index=new Int32Array(w*h);for(let x=0;x<w;x++)cols[x]=Math.min(aw-1,Math.floor(x/c));for(let y=0;y<h;y++){const row=Math.min(ah-1,Math.floor(y/c))*aw;for(let x=0;x<w;x++)index[y*w+x]=row+cols[x];}return index;}
 function outlineTarget(gray,w,h){
- const E=root.BlackboardEngine,cfg=E.settings({preset:'canny'});
- return E.renderPreset(gray,w,h,128,3,0,cfg);
+ const E=root.BlackboardEngine,grid=analysisGrid(w,h),{aw,ah}=grid,cells=cellIndex(grid,w,h),sum=new Float64Array(aw*ah),count=new Float64Array(aw*ah);
+ for(let i=0;i<w*h;i++){sum[cells[i]]+=gray[i];count[cells[i]]++;}
+ const avg=Float64Array.from(sum,(v,i)=>v/count[i]),sorted=Float64Array.from(avg).sort();
+ // Stretch contrast so fixed edge thresholds suit dim and bright images alike.
+ const lo=sorted[Math.floor((sorted.length-1)*.02)],hi=sorted[Math.floor((sorted.length-1)*.98)],range=Math.max(1,hi-lo);
+ const image=Uint8ClampedArray.from(avg,v=>(v-lo)/range*255);
+ const edges=E.renderPreset(image,aw,ah,128,3,0,E.settings({preset:'canny',labVals:{canny:[30,80,15]}}));
+ const near=new Uint8Array(aw*ah);
+ for(let y=0;y<ah;y++)for(let x=0;x<aw;x++)if(edges[y*aw+x])for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const nx=x+dx,ny=y+dy;if(nx>=0&&nx<aw&&ny>=0&&ny<ah)near[ny*aw+nx]=1;}
+ return {...grid,w,h,cells,edges,near};
+}
+// Share of ink that belongs to strokes at least `minimum` pixels in size (8-connected).
+function strokeShare(mask,w,h,minimum){
+ const seen=new Uint8Array(w*h),stack=new Int32Array(w*h);let ink=0,kept=0;
+ for(let start=0;start<w*h;start++){
+  if(!mask[start]||seen[start])continue;
+  let top=0,size=0;stack[top++]=start;seen[start]=1;
+  while(top){const i=stack[--top],x=i%w;size++;
+   for(let dy=-w;dy<=w;dy+=w)for(let dx=-1;dx<=1;dx++){const j=i+dy+dx;if((!dx&&!dy)||j<0||j>=w*h||(dx===-1&&x===0)||(dx===1&&x===w-1))continue;if(mask[j]&&!seen[j]){seen[j]=1;stack[top++]=j;}}}
+  ink+=size;if(size>=minimum)kept+=size;
+ }
+ return ink?kept/ink:1;
 }
 function outlineScore(mask,target,w,h){
- let predicted=0,actual=0,matchedPredicted=0,matchedActual=0;
- function near(array,x,y){for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const nx=x+dx,ny=y+dy;if(nx>=0&&nx<w&&ny>=0&&ny<h&&array[ny*w+nx])return true;}return false;}
- for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;if(mask[i]){predicted++;if(near(target,x,y))matchedPredicted++;}if(target[i]){actual++;if(near(mask,x,y))matchedActual++;}}
- if(!actual)return predicted?0:1;
- const precision=predicted?matchedPredicted/predicted:0,recall=matchedActual/actual;
- return precision+recall?2*precision*recall/(precision+recall):0;
+ if(target.w!==w||target.h!==h)throw Error('Outline reference does not match the image size.');
+ const {c,aw,ah,cells,edges,near}=target,ink=new Float64Array(aw*ah);let total=0,edgeCount=0,found=0,onEdges=0,boundary=0;
+ for(let i=0;i<w*h;i++)if(mask[i]){ink[cells[i]]++;total++;}
+ for(let i=0;i<aw*ah;i++)if(near[i])onEdges+=ink[i];
+ // An edge counts as drawn when its neighbourhood holds at least a line's worth of ink.
+ for(let y=0;y<ah;y++)for(let x=0;x<aw;x++){if(!edges[y*aw+x])continue;edgeCount++;let local=0;
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const nx=x+dx,ny=y+dy;if(nx>=0&&nx<aw&&ny>=0&&ny<ah)local+=ink[ny*aw+nx];}
+  if(local>=c)found++;}
+ if(!edgeCount)return total?0:1;
+ if(!total)return 0;
+ const precision=onEdges/total,recall=found/edgeCount,f1=precision+recall?2*precision*recall/(precision+recall):0;
+ // Outlines are strokes, not filled areas. Mean stroke width is ink per half boundary pixel;
+ // lines up to 0.8 analysis cells wide are fine, and hairlines under 0.4 cells read faintly.
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;if(mask[i]&&(x===0||!mask[i-1]||x===w-1||!mask[i+1]||y===0||!mask[i-w]||y===h-1||!mask[i+w]))boundary++;}
+ const width=total/Math.max(1,boundary/2),widthFit=Math.min(1,Math.max(3,.8*c)/width)*Math.sqrt(Math.min(1,width/Math.max(2,.4*c)));
+ return f1*widthFit*strokeShare(mask,w,h,Math.max(4,Math.round(3*c)));
 }
 function effort(mask,w,h){
  let drawPixels=0,activeBoards=0;
@@ -1234,7 +1297,11 @@ function search(data,emit){
  const fine=data.fine||{gray,w,h},fineTarget=reference(fine.gray,s),fineOutline=goal==='outline'?outlineTarget(fineTarget,fine.w,fine.h):null,shortlist=[],sigs=new Set();
  const fullResolution=!!data.options?.fullResolution||maxDrawPixels>0,shortlistLimit=fullResolution?4:13;
  if(fullResolution&&(fine.w!==s.boardsWide*16||fine.h!==s.boardsHigh*16))throw Error('Full-size check requires the actual wall dimensions.');
- for(const entry of [ {settings:s}, ...top.filter(e=>!currentStyle||(e.settings.preset===s.preset&&!e.settings.mixOn)) ]){const key=signature(entry.settings);if(sigs.has(key))continue;sigs.add(key);shortlist.push(entry);if(shortlist.length===shortlistLimit)break;}
+ let ordered=top.filter(e=>!currentStyle||(e.settings.preset===s.preset&&!e.settings.mixOn));
+ // Small renders favour different settings than the real wall does, so for outlines the
+ // full-size check compares the best of several styles rather than variants of one.
+ if(goal==='outline'){const styleKey=e=>e.settings.preset+(e.settings.mixOn?'+'+e.settings.mixPreset:''),firsts=[],seenStyles=new Set();for(const e of ordered)if(!seenStyles.has(styleKey(e))){seenStyles.add(styleKey(e));firsts.push(e);}ordered=[...firsts,...ordered.filter(e=>!firsts.includes(e))];}
+ for(const entry of [ {settings:s}, ...ordered ]){const key=signature(entry.settings);if(sigs.has(key))continue;sigs.add(key);shortlist.push(entry);if(shortlist.length===shortlistLimit)break;}
  const finalists=[];let baseline;
  for(let index=0;index<shortlist.length;index++){
   const cfg=shortlist[index].settings,mask=E.process(fine.gray,fine.w,fine.h,cfg),score=metric(mask,fineTarget,fine.w,fine.h,goal,fineOutline);
@@ -1243,6 +1310,20 @@ function search(data,emit){
   emit({type:'searchProgress',stage,evaluated,budget,progress:.86+.14*(index+1)/shortlist.length,best:score,elapsed:performance.now()-start});
  }
  finalists.sort((a,b)=>b.score-a.score);
+ const leader=finalists.find(e=>!maxDrawPixels||e.effort.drawPixels<=maxDrawPixels);
+ if(goal==='outline'&&leader){
+  stage='Finishing at full size';emit({type:'searchProgress',stage,evaluated,budget,progress:.98,best:leader.score,elapsed:performance.now()-start});
+  let best=leader;const tried=new Set(finalists.map(e=>signature(e.settings)));
+  for(const [key,values] of [['lineWeight',[0,1,2]],['minComponent',[0,8,16,32]],['gapRadius',[0,1]]]){
+   for(const value of values){
+    const cfg=E.settings({...best.settings,[key]:value}),sig=signature(cfg);if(tried.has(sig))continue;tried.add(sig);
+    const mask=E.process(fine.gray,fine.w,fine.h,cfg),entry={settings:cfg,score:metric(mask,fineTarget,fine.w,fine.h,goal,fineOutline),mask,effort:effort(mask,fine.w,fine.h),fingerprint:fingerprint(mask)};
+    if(maxDrawPixels&&entry.effort.drawPixels>maxDrawPixels)continue;
+    finalists.push(entry);if(entry.score>best.score)best=entry;
+   }
+  }
+  finalists.sort((a,b)=>b.score-a.score);
+ }
  const unique=[],hashes=new Set([baseline.fingerprint]);
  for(const entry of finalists){if(hashes.has(entry.fingerprint)||(maxDrawPixels&&entry.effort.drawPixels>maxDrawPixels))continue;hashes.add(entry.fingerprint);unique.push(entry);if(unique.length===8)break;}
  return {type:'searchComplete',baseline,candidates:unique,w:fine.w,h:fine.h,evaluated,mixCount,rechecked:shortlist.length,budget,limited,elapsed:performance.now()-start,goal,fullResolution,maxDrawPixels,stylesScanned:presets.length,tunedStyle,slidersTuned:[...slidersTuned],preprocessRuns,cacheHits};

@@ -10,3 +10,22 @@ test('gallery renders every style as a whole-image preview without changing sett
 test('optimizer reports bounded parameters and a reproducible score',async()=>{const base=E.settings(),messages=await job('optimize',base),best=messages.at(-1).best;assert.ok(Object.hasOwn(E.PRESETS,best.preset));best.lab.forEach((v,i)=>{const cfg=E.PRESETS[best.preset].lab[i];assert.ok(v>=cfg.min&&v<=cfg.max);});const mask=E.process(gray,64,48,best.settings);assert.equal(best.score,S.metric(mask,S.reference(gray,base),64,48,'balanced'));assert.ok(messages.some(m=>m.type==='progress'));});
 test('style search returns a baseline and distinct, valid candidates',async()=>{const messages=await job('search',E.settings(),{options:{budget:160}}),done=messages.at(-1);assert.equal(done.type,'searchComplete');assert.equal(done.baseline.mask.length,64*48);assert.ok(done.candidates.length>0);const prints=new Set([done.baseline.fingerprint]);for(const c of done.candidates){assert.equal(c.mask.length,64*48);assert.ok(c.score>=0&&c.score<=1);assert.deepEqual(c.mask,E.process(gray,64,48,c.settings));assert.ok(!prints.has(c.fingerprint));prints.add(c.fingerprint);}});
 test('malformed render reports an error instead of silently succeeding',async()=>{const worker=new Worker(code,{eval:true});try{const message=await new Promise((resolve,reject)=>{worker.on('message',resolve);worker.on('error',reject);worker.postMessage({id:7,type:'render',w:0,h:4,gray:new Uint8Array(),settings:E.settings()});});assert.equal(message.type,'error');assert.equal(message.id,7);}finally{await worker.terminate();}});
+// Clean outlines scoring: judged against structure, not against any one style's output.
+test('outline score prefers a clean contour over fills, specks and blank',()=>{
+ const n=160,g=new Uint8ClampedArray(n*n).fill(225);for(let y=0;y<n;y++)for(let x=0;x<n;x++)if((x-80)**2+(y-80)**2<50**2)g[y*n+x]=35;
+ const target=S.outlineTarget(g,n,n),score=m=>S.outlineScore(m,target,n,n);
+ const ring=Uint8Array.from({length:n*n},(_,i)=>{const d=Math.hypot(i%n-80,Math.floor(i/n)-80);return Math.abs(d-50)<1.5?1:0;});
+ const disc=Uint8Array.from(g,v=>v<128?1:0);
+ let seed=3;const specks=Uint8Array.from({length:n*n},()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296<.06?1:0;});
+ const blank=new Uint8Array(n*n);
+ const results={ring:score(ring),disc:score(disc),specks:score(specks),blank:score(blank)};
+ assert.ok(results.ring>.6,JSON.stringify(results));
+ for(const k of ['disc','specks','blank'])assert.ok(results.ring>results[k]*2,JSON.stringify(results));
+});
+test('outline reference is the same structure at preview and full size',()=>{
+ const make=n=>{const g=new Uint8ClampedArray(n*n).fill(220);for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(Math.abs(x-n/2)<n/4&&Math.abs(y-n/2)<n/5)g[y*n+x]=40;return g;};
+ const small=S.outlineTarget(make(160),160,160),large=S.outlineTarget(make(1200),1200,1200);
+ assert.equal(small.aw,large.aw);assert.equal(small.ah,large.ah);
+ let same=0,total=0;for(let i=0;i<small.edges.length;i++)if(small.edges[i]||large.edges[i]){total++;if(small.edges[i]&&large.edges[i])same++;}
+ assert.ok(same/total>.8,`only ${same}/${total} reference cells agree`);
+});
