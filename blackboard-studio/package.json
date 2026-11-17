@@ -1,0 +1,15 @@
+{
+  "name": "blackboard-studio",
+  "version": "9.3.2",
+  "private": true,
+  "description": "Offline image-to-blackboard converter",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "test:engine": "node --test tests/engine.test.cjs tests/worker.test.cjs",
+    "build": "python3 build.py"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "0.1.100",
+    "jsdom": "30.1.2"
+  }
+}

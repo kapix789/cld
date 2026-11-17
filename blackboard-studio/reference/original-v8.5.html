@@ -1,0 +1,2277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blackboard Converter v8.5</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Bebas+Neue&display=swap');
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{--bg:#0a0a0a;--surface:#111;--border:#222;--accent:#e8ff47;--text:#e0e0e0;--muted:#555}
+        body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 12px 48px}
+        header{width:100%;max-width:1400px;margin-bottom:20px;border-bottom:2px solid var(--accent);padding-bottom:12px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+        header h1{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;color:var(--accent);letter-spacing:2px;line-height:1}
+        header span{font-size:.7rem;color:var(--muted);letter-spacing:1px}
+        .main{width:100%;max-width:1400px;display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}
+        .panel{background:var(--surface);border:1px solid var(--border);padding:16px;display:flex;flex-direction:column;gap:12px;max-height:90vh;overflow-y:auto}
+        .panel::-webkit-scrollbar{width:4px}
+        .panel::-webkit-scrollbar-thumb{background:var(--border)}
+        .preview-panel{background:var(--surface);border:1px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:10px;position:sticky;top:16px;height:calc(100vh - 40px);max-height:calc(100vh - 40px);overflow:hidden;min-height:400px}
+        .panel-title{font-size:.6rem;letter-spacing:3px;color:var(--accent);text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:6px}
+        label{font-size:.6rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:3px}
+        .drop-zone{border:2px dashed var(--border);padding:18px 10px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;font-size:.7rem;color:var(--muted);position:relative;border-radius:4px}
+        .drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);background:rgba(232,255,71,.04);color:var(--accent)}
+        .drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+        .drop-zone .icon{font-size:1.4rem;display:block;margin-bottom:4px}
+        .row{display:flex;gap:6px;align-items:flex-end}
+        .row .field{flex:1}
+        input[type=number],select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.78rem;padding:5px 8px;outline:none;transition:border-color .2s;border-radius:3px}
+        input[type=number]:focus,select:focus{border-color:var(--accent)}
+        .sw{display:flex;align-items:center;gap:8px}
+        .sw input[type=range]{flex:1}
+        .sv{min-width:28px;text-align:right;font-size:.75rem;color:var(--accent)}
+
+        /* ── FIXED SLIDER STYLING ── */
+        input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;outline:none;cursor:pointer;background:var(--border);transition:background .05s}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--surface);box-shadow:0 0 8px rgba(232,255,71,.25);transition:box-shadow .2s,transform .15s}
+        input[type=range]::-webkit-slider-thumb:hover{box-shadow:0 0 14px rgba(232,255,71,.45);transform:scale(1.15)}
+        input[type=range]::-webkit-slider-thumb:active{transform:scale(1.05)}
+        input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--surface);box-shadow:0 0 8px rgba(232,255,71,.25)}
+        input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--border)}
+        input[type=range]:focus-visible{outline:none}
+        input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px rgba(232,255,71,.2),0 0 14px rgba(232,255,71,.4)}
+
+        .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:5px 10px;background:var(--bg);border:1px solid var(--border);cursor:pointer;user-select:none;font-size:.68rem;transition:border-color .2s;gap:8px;border-radius:3px}
+        .toggle-row:hover{border-color:var(--accent)}
+        .tog{width:28px;height:14px;background:var(--border);border-radius:7px;position:relative;transition:background .2s;flex-shrink:0}
+        .tog::after{content:'';position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--muted);transition:left .2s,background .2s}
+        .tog.on{background:rgba(232,255,71,.18)}
+        .tog.on::after{left:16px;background:var(--accent)}
+        .info-box{background:var(--bg);border:1px solid var(--border);padding:8px 10px;font-size:.63rem;color:var(--muted);line-height:1.8;border-radius:3px}
+        .info-box b{color:var(--accent);font-weight:400}
+        .reach-box{border-left:3px solid var(--accent);transition:border-color .2s,background .2s}
+        .reach-box.reach-ok{background:rgba(232,255,71,.045)}
+        .reach-box.reach-warning{border-left-color:#ff775c;background:rgba(255,119,92,.07);color:#c98a7d}
+        .reach-box.reach-warning b{color:#ff9a84}
+        .field-note{color:var(--muted);font-size:.54rem;line-height:1.55;margin-top:4px}
+        .btn{width:100%;padding:10px;font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:2px;cursor:pointer;border:none;transition:opacity .2s,transform .1s;border-radius:3px}
+        .btn:active{transform:scale(.98)}
+        .btn:disabled{opacity:.25;cursor:not-allowed}
+        .btn-primary{background:var(--accent);color:#000}
+        .btn-secondary{background:#1a1a1a;color:var(--text);border:1px solid var(--border)}
+        .btn-auto{background:linear-gradient(135deg,#1a1a2e,#16213e);color:var(--accent);border:1px solid var(--accent);position:relative;overflow:hidden}
+        .btn-auto::before{content:'';position:absolute;inset:0;background:rgba(232,255,71,.05)}
+        .btn-auto:hover:not(:disabled){background:rgba(232,255,71,.1)}
+        .btn-auto:disabled{opacity:.25;cursor:not-allowed;border-color:var(--border);color:var(--muted)}
+        .btn-primary:hover:not(:disabled){opacity:.88}
+        .btn-secondary:hover:not(:disabled){border-color:var(--accent)}
+        .auto-btn{background:var(--bg);border:1px solid var(--border);color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:4px 10px;cursor:pointer;letter-spacing:1px;transition:border-color .2s;white-space:nowrap;border-radius:3px;height:30px;display:flex;align-items:center}
+        .auto-btn:hover:not(:disabled){border-color:var(--accent);background:rgba(232,255,71,.05)}
+        .auto-btn:disabled{opacity:.3;cursor:not-allowed}
+        .board-size-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;gap:6px;align-items:end}
+        .board-wall-btn{width:auto;min-width:92px;justify-content:center;text-align:center;padding:4px 7px;font-size:.52rem;line-height:1.15}
+        .ratio-lock{background:var(--bg);border:1px solid var(--border);color:var(--muted);font-size:.75rem;padding:0 8px;cursor:pointer;transition:border-color .2s,color .2s;height:30px;display:flex;align-items:center;user-select:none;flex-shrink:0;border-radius:3px}
+        .ratio-lock.on{border-color:var(--accent);color:var(--accent)}
+        .divider{border:none;border-top:1px solid var(--border);margin:0}
+        .presets{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+        .preset-btn{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:6px 4px;cursor:pointer;text-align:center;transition:border-color .2s,background .2s;line-height:1.3;border-radius:3px}
+        .preset-btn:hover{border-color:var(--accent)}
+        .preset-btn.active{border-color:var(--accent);background:rgba(232,255,71,.07);color:var(--accent)}
+        .preset-btn .pname{display:block;font-weight:700;letter-spacing:.5px;text-transform:uppercase;font-size:.55rem}
+        .preset-btn .pdesc{display:block;font-size:.5rem;color:var(--muted);margin-top:1px}
+        .preset-btn.active .pdesc{color:rgba(232,255,71,.6)}
+        .preview-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .preview-toolbar .panel-title{margin:0;border:none;padding:0}
+        .zoom-btns{display:flex;gap:3px;flex-wrap:wrap}
+        .zoom-btn{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.65rem;padding:2px 8px;cursor:pointer;transition:border-color .15s,color .15s,background .15s;border-radius:3px}
+        .zoom-btn:hover,.zoom-btn.active{border-color:var(--accent);color:var(--accent)}
+        .zoom-btn.fit-btn{color:var(--muted);font-size:.6rem}
+        .zoom-btn.fit-btn.active{color:var(--accent);border-color:var(--accent)}
+        .preview-wrap{background:#1a1a1a;border:1px solid var(--border);overflow:auto;display:flex;align-items:flex-start;justify-content:flex-start;flex:1 1 0;min-height:0;position:relative;border-radius:4px}
+        .preview-wrap canvas{image-rendering:pixelated;display:block;max-width:none;max-height:none;width:auto;height:auto;margin:auto}
+        .preview-wrap .placeholder{color:var(--muted);font-size:.7rem;text-align:center;padding:32px;width:100%}
+        .preview-wrap .placeholder .big{font-size:2.2rem;display:block;margin-bottom:8px;opacity:.2}
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100;align-items:center;justify-content:center}
+        .modal-overlay.open{display:flex}
+        .modal{background:var(--surface);border:1px solid var(--accent);padding:18px;display:flex;flex-direction:column;gap:10px;max-width:92vw;border-radius:6px}
+        .modal canvas{image-rendering:pixelated;border:1px solid var(--border);max-width:100%}
+        .modal-info{font-size:.7rem;color:var(--muted)}
+        .modal-info b{color:var(--accent)}
+        .modal-close{background:var(--border);border:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.7rem;padding:5px 14px;cursor:pointer;align-self:flex-end;border-radius:3px}
+        .modal-close:hover{background:#333}
+        ::-webkit-scrollbar{width:5px;height:5px}
+        ::-webkit-scrollbar-track{background:var(--bg)}
+        ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+        .gallery-item{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:border-color .1s}
+        .gallery-item:hover{border-color:var(--accent)}
+        .gallery-item.current{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+        .gallery-item canvas{image-rendering:pixelated;width:100%;aspect-ratio:1;border:1px solid var(--border)}
+        .gallery-item span{font-size:.55rem;color:var(--text);text-align:center}
+        #deepProgress{display:none;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+        #deepBar{height:100%;width:0%;background:var(--accent);transition:width .15s}
+        #mixPanel{display:none;flex-direction:column;gap:8px}
+        #mixPanel label{font-size:.55rem}
+        .quality-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:3px}
+        .quality-grid .preset-btn{font-size:.55rem;padding:5px 3px}
+        .quality-grid .preset-btn .pname{font-size:.5rem}
+        .quality-grid .preset-btn .pdesc{font-size:.45rem}
+        .lab-box{background:#0d0f0e;border:1px solid #2a302b;border-radius:4px;padding:9px;display:flex;flex-direction:column;gap:8px}
+        .lab-head{display:flex;align-items:center;gap:8px}
+        .lab-name{color:var(--accent);font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+        .lab-desc{color:#777;font-size:.56rem;line-height:1.55}
+        .lab-reset,.mini-btn{margin-left:auto;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:3px;font:.55rem 'JetBrains Mono',monospace;padding:4px 7px;cursor:pointer}
+        .lab-reset:hover,.mini-btn:hover{color:var(--accent);border-color:var(--accent)}
+        .lab-control{display:grid;grid-template-columns:1fr 42px;gap:6px;align-items:center}
+        .lab-control label{grid-column:1/span 2;margin:0}
+        .lab-control input{min-width:0}
+        .lab-num{color:var(--accent);font-size:.63rem;text-align:right;font-weight:700;transition:transform .12s}
+        .lab-num.bump{transform:scale(1.25)}
+        .recipe-row{display:flex;gap:5px}
+        .recipe-row input,.recipe-row select{min-width:0;flex:1}
+        .toolbar-chip{background:var(--bg);border:1px solid var(--border);color:var(--muted);font:.58rem 'JetBrains Mono',monospace;padding:4px 7px;border-radius:3px;cursor:pointer;white-space:nowrap}
+        .toolbar-chip:hover,.toolbar-chip.active{border-color:var(--accent);color:var(--accent)}
+        .compare-control{display:none;align-items:center;gap:8px;font-size:.55rem;color:var(--muted)}
+        .compare-control.open{display:flex}
+        .compare-control input{flex:1}
+        .coord-readout{font-size:.52rem;color:var(--muted);margin-left:auto}
+        .warning-box{display:none;border-color:#8b6b18;color:#caa84c}
+        .warning-box.show{display:block}
+        .history-row{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+        .history-row .mini-btn{margin:0;padding:5px 3px}
+        .optimizer-goal-row{display:grid;grid-template-columns:minmax(0,1fr);gap:5px}
+        .optimizer-goal-row select{border-color:rgba(232,255,71,.35)}
+        .goal-hint{min-height:46px;border-left:2px solid var(--accent)}
+        .goal-chip{display:inline-block;margin-right:5px;padding:1px 5px;border:1px solid var(--accent);border-radius:9px;color:var(--accent);font-size:.48rem;letter-spacing:.6px;text-transform:uppercase}
+        .export-summary-strong{color:var(--accent);font-size:.72rem;line-height:1.8}
+        @media(max-width:820px){
+            .main{grid-template-columns:1fr}
+            .preview-panel{position:relative;top:0;height:60vh;max-height:60vh}
+            header h1{font-size:1.8rem}
+            .presets,.quality-grid{grid-template-columns:repeat(3,1fr)}
+        }
+        @media(max-width:480px){
+            .board-size-row{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+            .board-wall-btn{grid-column:1/-1;width:100%}
+            .presets,.quality-grid{grid-template-columns:repeat(2,1fr)}
+            .panel{padding:12px}
+            .preview-panel{padding:10px;min-height:280px}
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Blackboard Converter</h1>
+        <span>v8.5 FIXED SLIDERS + IMPROVED QUALITY</span>
+    </header>
+    <div class="main">
+        <div class="panel">
+            <div class="panel-title">Image</div>
+            <div class="drop-zone" id="dropZone">
+                <span class="icon">🖼</span>Drop / click / Ctrl+V
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+            <div class="info-box" id="srcInfo"><b>No image loaded.</b></div>
+            <hr class="divider">
+            <div class="panel-title">Board Size</div>
+            <div class="board-size-row">
+                <div class="field"><label>Boards Wide</label><input type="number" id="boardsWide" value="7" min="1" max="200"></div>
+                <button class="ratio-lock on" id="ratioLock" title="Lock aspect ratio">🔗</button>
+                <div class="field"><label>Boards High</label><input type="number" id="boardsHigh" value="4" min="1" max="200"></div>
+                <button class="auto-btn board-wall-btn" id="btnBlackboardWall" type="button">⬇ BG2 WALL</button>
+            </div>
+            <div class="row" style="align-items:flex-end;gap:6px">
+                <div class="field"><label>Pixels / Board</label><input type="number" id="tileSize" value="16" min="16" max="16" readonly></div>
+                <button class="auto-btn" id="btnAutoSize" disabled>AUTO FIT</button>
+            </div>
+            <div><label>Fit Mode</label>
+                <select id="fitMode">
+                    <option value="contain" selected>Keep whole image</option>
+                    <option value="cover">Crop to fill wall</option>
+                    <option value="stretch">Legacy stretch</option>
+                </select>
+            </div>
+            <div class="info-box reach-box reach-ok" id="reachInfo"><b>REACH OK</b> · 7×4 wall fits inside ±64-block span.</div>
+            <div>
+                <label>Target Size</label>
+                <div class="quality-grid" id="qualityGrid">
+                    <button class="preset-btn quality-btn" data-quality="6"><span class="pname">Tiny</span><span class="pdesc">6</span></button>
+                    <button class="preset-btn quality-btn" data-quality="10"><span class="pname">Quick</span><span class="pdesc">10</span></button>
+                    <button class="preset-btn quality-btn active" data-quality="18"><span class="pname">Normal</span><span class="pdesc">18</span></button>
+                    <button class="preset-btn quality-btn" data-quality="28"><span class="pname">Detail</span><span class="pdesc">28</span></button>
+                    <button class="preset-btn quality-btn" data-quality="40"><span class="pname">HD</span><span class="pdesc">40</span></button>
+                    <button class="preset-btn quality-btn" data-quality="56"><span class="pname">Ultra</span><span class="pdesc">56</span></button>
+                    <button class="preset-btn quality-btn" data-quality="80"><span class="pname">Mega</span><span class="pdesc">80</span></button>
+                    <button class="preset-btn quality-btn" data-quality="112"><span class="pname">Colossal</span><span class="pdesc">112</span></button>
+                </div>
+            </div>
+            <hr class="divider">
+            <div class="panel-title">Style Preset</div>
+            <button class="btn btn-auto" id="btnGallery" disabled style="font-size:.75rem;margin-bottom:2px">🖼 Preview All</button>
+            <div class="presets" id="presets">
+                <button class="preset-btn" data-preset="animeink"><span class="pname">Anime Ink+</span><span class="pdesc">Clean edges</span></button>
+                <button class="preset-btn active" data-preset="manga"><span class="pname">Manga</span><span class="pdesc">Sleek ink</span></button>
+                <button class="preset-btn" data-preset="lineart"><span class="pname">Line Art</span><span class="pdesc">DoG edges</span></button>
+                <button class="preset-btn" data-preset="bold"><span class="pname">Bold</span><span class="pdesc">Thick graphic</span></button>
+                <button class="preset-btn" data-preset="solid"><span class="pname">Solid</span><span class="pdesc">Flat cel</span></button>
+                <button class="preset-btn" data-preset="canny"><span class="pname">Canny+</span><span class="pdesc">Linked outlines</span></button>
+                <button class="preset-btn" data-preset="xdog"><span class="pname">XDoG</span><span class="pdesc">Anime edges</span></button>
+                <button class="preset-btn" data-preset="sauvola"><span class="pname">Sauvola</span><span class="pdesc">Local detail</span></button>
+                <button class="preset-btn" data-preset="wolf"><span class="pname">Wolf</span><span class="pdesc">Uneven light</span></button>
+                <button class="preset-btn" data-preset="hybrid"><span class="pname">Hybrid</span><span class="pdesc">Edges+tones</span></button>
+                <button class="preset-btn" data-preset="darkart"><span class="pname">Dark Art</span><span class="pdesc">Shadow detail</span></button>
+                <button class="preset-btn" data-preset="floyd"><span class="pname">Dither FS</span><span class="pdesc">Floyd-Steinberg</span></button>
+                <button class="preset-btn" data-preset="atkinson"><span class="pname">Atkinson</span><span class="pdesc">High contrast</span></button>
+                <button class="preset-btn" data-preset="jjn"><span class="pname">JJN</span><span class="pdesc">Ultra smooth</span></button>
+                <button class="preset-btn" data-preset="stucki"><span class="pname">Stucki</span><span class="pdesc">Smooth serp.</span></button>
+                <button class="preset-btn" data-preset="sierra"><span class="pname">Sierra</span><span class="pdesc">Crisp serp.</span></button>
+                <button class="preset-btn" data-preset="ordered"><span class="pname">Bayer</span><span class="pdesc">Dot pattern</span></button>
+                <button class="preset-btn" data-preset="bayer8"><span class="pname">Bayer 8×8</span><span class="pdesc">Smooth ord.</span></button>
+                <button class="preset-btn" data-preset="ign"><span class="pname">IGN</span><span class="pdesc">Grainy sand</span></button>
+                <button class="preset-btn" data-preset="bluenoise"><span class="pname">Blue Noise</span><span class="pdesc">Fine grain</span></button>
+                <button class="preset-btn" data-preset="bradley"><span class="pname">Bradley</span><span class="pdesc">Adaptive</span></button>
+                <button class="preset-btn" data-preset="adaptive"><span class="pname">Adaptive</span><span class="pdesc">Region-aware</span></button>
+                <button class="preset-btn" data-preset="crosshatch"><span class="pname">Crosshatch</span><span class="pdesc">Diagonal shade</span></button>
+                <button class="preset-btn" data-preset="pencil"><span class="pname">Pencil</span><span class="pdesc">Multi-angle</span></button>
+                <button class="preset-btn" data-preset="halftone"><span class="pname">Halftone</span><span class="pdesc">Screen dots</span></button>
+                <button class="preset-btn" data-preset="stipple"><span class="pname">Stipple</span><span class="pdesc">Organic dots</span></button>
+                <button class="preset-btn" data-preset="woodcut"><span class="pname">Woodcut</span><span class="pdesc">Flow lines</span></button>
+                <button class="preset-btn" data-preset="threshold"><span class="pname">Threshold</span><span class="pdesc">Plain binarize</span></button>
+            </div>
+            <hr class="divider">
+            <div class="panel-title">Mix Mode</div>
+            <div class="toggle-row" id="mixToggleRow"><span>Mix two presets</span><div class="tog" id="tog-mix"></div></div>
+            <div id="mixPanel">
+                <div><label>Preset B</label><select id="mixB"></select></div>
+                <div class="row" style="align-items:flex-end;gap:6px">
+                    <div class="field"><label>B Threshold</label><input type="number" id="mixThresholdB" min="0" max="255" value="128"></div>
+                    <div class="field"><label>B Extra</label><input type="number" id="mixExtraB" min="1" max="10" value="5"></div>
+                </div>
+                <div><label>A ← Blend → B: <span id="mixRatioVal">50</span>%</label>
+                    <div class="sw"><input type="range" id="mixRatioSlider" min="0" max="100" value="50"><span class="sv" id="mixRatioDsp">50</span></div>
+                </div>
+                <div><label>Method</label>
+                    <select id="mixMethodSel"><option value="spatial">Spatial Blend</option><option value="add">Union (A∪B)</option><option value="intersect">Intersect (A∩B)</option><option value="edgefill">Edge A + Fill B</option></select>
+                </div>
+                <div class="info-box" id="mixHint">Enable mix mode, then adjust blend ratio and method.</div>
+            </div>
+            <hr class="divider">
+            <div class="panel-title">Algorithm Lab</div>
+            <div class="lab-box">
+                <div class="lab-head"><span class="lab-name" id="labPresetName">Manga</span><button class="lab-reset" id="labReset">RESET</button></div>
+                <div class="lab-desc" id="labPresetDesc">Preset-specific tuning parameters.</div>
+                <div class="lab-control"><label id="lab1Label">Parameter 1</label><input type="range" id="lab1" min="0" max="100" value="50" step="1"><span class="lab-num" id="lab1Val">50</span></div>
+                <div class="lab-control"><label id="lab2Label">Parameter 2</label><input type="range" id="lab2" min="0" max="100" value="50" step="1"><span class="lab-num" id="lab2Val">50</span></div>
+                <div class="lab-control"><label id="lab3Label">Parameter 3</label><input type="range" id="lab3" min="0" max="100" value="50" step="1"><span class="lab-num" id="lab3Val">50</span></div>
+            </div>
+            <hr class="divider">
+            <div class="panel-title">Input Processing</div>
+            <div><label>Gamma: <span id="gammaDisplay">1.00</span></label><div class="sw"><input type="range" id="gamma" min="50" max="200" value="100"><span class="sv" id="gammaVal">100</span></div></div>
+            <div><label>Denoise: <span id="denoiseDisplay">0</span></label><div class="sw"><input type="range" id="denoise" min="0" max="4" value="0"><span class="sv" id="denoiseVal">0</span></div></div>
+            <div><label>Local contrast: <span id="localContrastDisplay">0</span>%</label><div class="sw"><input type="range" id="localContrast" min="0" max="100" value="0"><span class="sv" id="localContrastVal">0</span></div></div>
+            <div><label>Bright protection: <span id="whiteProtectDisplay">0</span>%</label><div class="sw"><input type="range" id="whiteProtect" min="0" max="100" value="0"><span class="sv" id="whiteProtectVal">0</span></div></div>
+            <div class="panel-title">Binary Cleanup</div>
+            <div><label>Min black island: <span id="minComponentDisplay">0</span> px</label><div class="sw"><input type="range" id="minComponent" min="0" max="32" value="0"><span class="sv" id="minComponentVal">0</span></div></div>
+            <div><label>Gap repair: <span id="gapRadiusDisplay">0</span> px</label><div class="sw"><input type="range" id="gapRadius" min="0" max="2" value="0"><span class="sv" id="gapRadiusVal">0</span></div></div>
+            <div><label>Fill white holes: <span id="holeFillDisplay">0</span> px</label><div class="sw"><input type="range" id="holeFill" min="0" max="32" value="0"><span class="sv" id="holeFillVal">0</span></div></div>
+            <div class="panel-title">Fine Tune</div>
+            <div class="history-row"><button class="mini-btn" id="btnUndo">UNDO</button><button class="mini-btn" id="btnRedo">REDO</button><button class="mini-btn" id="btnResetPreset">RESET PRESET</button><button class="mini-btn" id="btnResetAll">RESET ALL</button></div>
+            <div><label>Threshold: <span id="threshDisplay">128</span></label><div class="sw"><input type="range" id="threshold" min="0" max="255" value="128"><span class="sv" id="threshVal">128</span></div></div>
+            <div><label>Contrast: <span id="contrastDisplay">0</span>%</label><div class="sw"><input type="range" id="contrast" min="0" max="50" value="0"><span class="sv" id="contrastVal">0</span></div></div>
+            <div><label>Sharpness: <span id="sharpDisplay">0</span></label><div class="sw"><input type="range" id="sharpness" min="0" max="10" value="0"><span class="sv" id="sharpVal">0</span></div></div>
+            <div><label id="extraLabel">Line Sensitivity: <span id="extraDisplay">3</span></label><div class="sw"><input type="range" id="extra" min="1" max="10" value="3"><span class="sv" id="extraVal">3</span></div></div>
+            <div><label>Line Weight: <span id="lineWeightDisplay">0</span></label><div class="sw"><input type="range" id="lineWeight" min="-3" max="3" value="0"><span class="sv" id="lineWeightVal">0</span></div></div>
+            <div><label>Render mode</label><select id="renderMode"><option value="mask">Mask (black on white)</option><option value="chalk">Blackboard chalk</option></select></div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+                <div class="toggle-row" data-key="invert"><span>Invert source</span><div class="tog" id="tog-invert"></div></div>
+                <div class="toggle-row" data-key="smoothing"><span>Smooth resize</span><div class="tog on" id="tog-smoothing"></div></div>
+                <div class="toggle-row" data-key="despeckle"><span>Remove speckles</span><div class="tog" id="tog-despeckle"></div></div>
+                <div class="toggle-row" data-key="gaprepair"><span>Repair 1px gaps</span><div class="tog" id="tog-gaprepair"></div></div>
+                <div class="toggle-row" data-key="detailboost"><span>Detail Boost</span><div class="tog" id="tog-detailboost"></div></div>
+                <div class="toggle-row" data-key="smartCrop"><span>Smart Crop</span><div class="tog" id="tog-smartCrop"></div></div>
+            </div>
+            <div class="info-box" id="infoBox"><b>Load an image to see stats.</b></div>
+            <hr class="divider">
+            <div class="panel-title">Export</div>
+            <div><label>Plan Name</label><input type="text" id="planName" placeholder="blackboard-plan"></div>
+            <div><label>Export Style</label><select id="exportMode"><option value="auto">Match preview</option><option value="mask">Force mask</option><option value="chalk">Force chalk</option></select></div>
+<div><label>Polarity</label><select id="polarityMode"><option value="wysiwyg">WYSIWYG (flip if inverted)</option><option value="raw">Raw mask (as-is)</option></select></div>
+<div class="info-box" id="polarityInfo" style="font-size:.65rem"><b>WYSIWYG:</b> JSON 1=black matches your preview. <b>Raw:</b> exports mask bytes directly.</div>
+            <div class="info-box" id="exportSummary"><b>Export summary after image load.</b></div>
+            <button class="btn btn-primary" id="btnDownloadPlan" disabled>⬇ Save Plan JSON</button>
+            <button class="btn btn-secondary" id="btnCopyPlan" disabled>COPY PLAN JSON</button>
+            <button class="btn btn-secondary" id="btnDownloadPng" disabled>⬇ Save Sheet PNG</button>
+        </div>
+        <div class="preview-panel">
+            <div class="preview-toolbar">
+                <div class="panel-title">Preview</div>
+                <div class="zoom-btns">
+                    <button class="zoom-btn fit-btn" data-z="fit">Fit</button>
+                    <button class="zoom-btn active" data-z="1">1×</button>
+                    <button class="zoom-btn" data-z="2">2×</button>
+                    <button class="zoom-btn" data-z="4">4×</button>
+                    <button class="zoom-btn" data-z="8">8×</button>
+                </div>
+            </div>
+            <div class="preview-toolbar" id="viewToolbar" style="margin-top:-4px">
+                <span class="panel-title" style="font-size:.5rem;border:none;padding:0">View</span>
+                <button class="toolbar-chip active" data-view="result">Result</button>
+                <button class="toolbar-chip" data-view="source">Source</button>
+                <button class="toolbar-chip" data-view="compare">Compare</button>
+                <button class="toolbar-chip" data-view="mask">Mask</button>
+                <button class="toolbar-chip" id="gridToggle">Grid off</button>
+                <span class="coord-readout" id="coordReadout">pixel — · board —</span>
+            </div>
+            <div class="compare-control" id="compareControl"><span>Source</span><input type="range" id="compareSplit" min="0" max="100" value="50"><span>Result</span><span class="sv" id="compareSplitVal">50</span></div>
+            <div class="preview-wrap" id="previewWrap">
+                <div class="placeholder" id="placeholder"><span class="big">🟫</span>Load an image to begin</div>
+                <canvas id="displayCanvas" style="display:none"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="galleryOverlay">
+        <div class="modal" style="max-width:96vw;max-height:92vh;overflow:auto">
+            <span class="panel-title">Pick a Preset</span>
+            <div id="galleryGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;max-width:900px"></div>
+            <button class="modal-close" id="galleryClose">CLOSE</button>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <span class="panel-title" id="modalTitle">Board</span>
+            <canvas id="modalCanvas"></canvas>
+            <div class="modal-info" id="modalInfo"></div>
+            <button class="modal-close" id="modalClose">CLOSE</button>
+        </div>
+    </div>
+    <canvas id="mainCanvas" style="display:none"></canvas>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   BLACKBOARD CONVERTER v8.5 — FIXED LAB SLIDERS + QUALITY UPGRADE
+   ════════════════════════════════════════════════════════════════ */
+
+const BOARD = 16;
+
+/* ── Preset Definitions with Lab Slider Configs ── */
+const PRESETS = {
+    animeink:  { name:'Anime Ink+', desc:'Clean edges + shadow fill', lab:[
+        {label:'Blur Sigma',min:2,max:80,step:1,def:14},{label:'Edge Threshold',min:5,max:120,step:1,def:30},{label:'Shadow Depth',min:0,max:80,step:1,def:25}]},
+    manga:     { name:'Manga', desc:'Sleek ink lines', lab:[
+        {label:'Blur Sigma',min:2,max:80,step:1,def:10},{label:'Edge Threshold',min:5,max:120,step:1,def:22},{label:'Post Threshold',min:10,max:200,step:1,def:128}]},
+    lineart:   { name:'Line Art', desc:'DoG edge detection', lab:[
+        {label:'Sigma Small',min:2,max:40,step:1,def:8},{label:'Sigma Large',min:10,max:100,step:1,def:30},{label:'Threshold',min:0,max:100,step:1,def:18}]},
+    bold:      { name:'Bold', desc:'Thick graphic strokes', lab:[
+        {label:'Blur Sigma',min:5,max:100,step:1,def:25},{label:'Threshold',min:10,max:150,step:1,def:55},{label:'Line Widen',min:0,max:5,step:1,def:2}]},
+    solid:     { name:'Solid', desc:'Flat cel shading', lab:[
+        {label:'Quantize Levels',min:2,max:8,step:1,def:3},{label:'Edge Threshold',min:0,max:80,step:1,def:20},{label:'Smoothing',min:0,max:10,step:1,def:2}]},
+    canny:     { name:'Canny+', desc:'Linked edge outlines', lab:[
+        {label:'Low Threshold',min:5,max:100,step:1,def:20},{label:'High Threshold',min:20,max:200,step:1,def:60},{label:'Blur Sigma',min:2,max:40,step:1,def:8}]},
+    xdog:      { name:'XDoG', desc:'Extended DoG for anime', lab:[
+        {label:'Sigma 1',min:2,max:40,step:1,def:6},{label:'Sigma 2',min:10,max:120,step:1,def:40},{label:'Phi',min:80,max:300,step:1,def:150}]},
+    sauvola:   { name:'Sauvola', desc:'Local adaptive threshold', lab:[
+        {label:'Window Radius',min:3,max:30,step:1,def:10},{label:'Weight k',min:1,max:50,step:1,def:12},{label:'Offset R',min:10,max:200,step:1,def:128}]},
+    wolf:      { name:'Wolf', desc:'Uneven lighting fix', lab:[
+        {label:'Window',min:5,max:40,step:1,def:15},{label:'k Factor',min:1,max:50,step:1,def:18},{label:'Offset',min:0,max:100,step:1,def:0}]},
+    hybrid:    { name:'Hybrid', desc:'Edges + tonal fill', lab:[
+        {label:'Edge Weight',min:0,max:100,step:1,def:60},{label:'Tone Levels',min:2,max:10,step:1,def:4},{label:'Blend',min:0,max:100,step:1,def:50}]},
+    darkart:   { name:'Dark Art', desc:'Shadow detail emphasis', lab:[
+        {label:'Shadow Boost',min:0,max:100,step:1,def:40},{label:'Edge Threshold',min:5,max:80,step:1,def:20},{label:'Merge',min:0,max:100,step:1,def:60}]},
+    floyd:     { name:'Dither FS', desc:'Floyd-Steinberg diffusion', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Spread',min:50,max:150,step:1,def:100},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    atkinson:  { name:'Atkinson', desc:'High-contrast dither', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Passes',min:1,max:4,step:1,def:1},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    jjn:       { name:'JJN', desc:'Jarvis-Judice-Ninke', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Spread',min:50,max:150,step:1,def:100},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    stucki:    { name:'Stucki', desc:'Smooth serpentine', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Spread',min:50,max:150,step:1,def:100},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    sierra:    { name:'Sierra', desc:'Crisp serpentine', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Spread',min:50,max:150,step:1,def:100},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    ordered:   { name:'Bayer', desc:'Ordered 4×4 dither', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Strength',min:10,max:100,step:1,def:60},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    bayer8:    { name:'Bayer 8×8', desc:'Smooth ordered dither', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Strength',min:10,max:100,step:1,def:55},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    ign:       { name:'IGN', desc:'Interleaved gradient noise', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Noise Scale',min:10,max:200,step:1,def:80},{label:'Strength',min:10,max:100,step:1,def:60}]},
+    bluenoise: { name:'Blue Noise', desc:'Natural fine grain', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Grain Size',min:10,max:100,step:1,def:40},{label:'Strength',min:10,max:100,step:1,def:55}]},
+    bradley:   { name:'Bradley', desc:'Adaptive threshold', lab:[
+        {label:'Window',min:3,max:40,step:1,def:12},{label:'Bias',min:-30,max:30,step:1,def:-5},{label:'Post Blur',min:0,max:10,step:1,def:0}]},
+    adaptive:  { name:'Adaptive', desc:'Region-aware threshold', lab:[
+        {label:'Block Size',min:4,max:40,step:1,def:16},{label:'Bias',min:-30,max:30,step:1,def:0},{label:'Smooth',min:0,max:10,step:1,def:1}]},
+    crosshatch:{ name:'Crosshatch', desc:'Diagonal line shading', lab:[
+        {label:'Line Spacing',min:3,max:30,step:1,def:8},{label:'Angle Layers',min:1,max:4,step:1,def:3},{label:'Threshold',min:10,max:200,step:1,def:120}]},
+    pencil:    { name:'Pencil', desc:'Multi-angle hatching', lab:[
+        {label:'Line Spacing',min:3,max:30,step:1,def:6},{label:'Density',min:1,max:20,step:1,def:8},{label:'Cutoff',min:50,max:255,step:1,def:180}]},
+    halftone:  { name:'Halftone', desc:'Screentone dot matrix', lab:[
+        {label:'Dot Spacing',min:4,max:30,step:1,def:8},{label:'Angle',min:0,max:90,step:1,def:45},{label:'Threshold',min:10,max:200,step:1,def:128}]},
+    stipple:   { name:'Stipple', desc:'Organic dot texture', lab:[
+        {label:'Dot Size',min:1,max:8,step:1,def:2},{label:'Density',min:10,max:100,step:1,def:50},{label:'Threshold',min:10,max:200,step:1,def:128}]},
+    woodcut:   { name:'Woodcut', desc:'Flow-line engraving', lab:[
+        {label:'Line Spacing',min:2,max:20,step:1,def:5},{label:'Direction',min:0,max:180,step:1,def:90},{label:'Threshold',min:10,max:200,step:1,def:128}]},
+    threshold: { name:'Threshold', desc:'Plain binarize', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Unused',min:0,max:100,step:1,def:50},{label:'Unused',min:0,max:100,step:1,def:50}]}
+};
+
+/* ── Application State ── */
+const S = {
+    img: null, imgW: 0, imgH: 0,
+    boardsWide: 7, boardsHigh: 4, tileSize: 16,
+    fitMode: 'contain', ratioLocked: true, aspectRatio: 7/4,
+    preset: 'manga', labVals: {},
+    gamma: 100, denoise: 0, localContrast: 0, whiteProtect: 0,
+    minComponent: 0, gapRadius: 0, holeFill: 0,
+    threshold: 128, contrast: 0, sharpness: 0, extra: 3, lineWeight: 0,
+    renderMode: 'mask',
+    toggles: { invert:false, smoothing:true, despeckle:false, gaprepair:false, detailboost:false, smartCrop:false },
+    mixOn: false, mixPreset: 'threshold', mixRatio: 50, mixMethod: 'spatial', mixThresholdB: 128, mixExtraB: 5,
+    zoom: 1, viewMode: 'result', showGrid: false, comparePos: 50,
+    maskData: null, sourceData: null, resultW: 0, resultH: 0,
+    undoStack: [], redoStack: []
+};
+
+/* ── DOM References ── */
+const $ = id => document.getElementById(id);
+const mainCanvas = $('mainCanvas');
+const mainCtx = mainCanvas.getContext('2d', {willReadFrequently: true});
+const displayCanvas = $('displayCanvas');
+const displayCtx = displayCanvas.getContext('2d');
+
+/* ══════════════════════════════════════
+   LAB SLIDER MANAGEMENT — THE FIX
+   ══════════════════════════════════════ */
+function configureLabSliders(presetKey) {
+    const p = PRESETS[presetKey];
+    if (!p) return;
+
+    $('labPresetName').textContent = p.name + ' controls';
+    $('labPresetDesc').textContent = p.desc;
+
+    const sliders = [$('lab1'), $('lab2'), $('lab3')];
+    const labels = [$('lab1Label'), $('lab2Label'), $('lab3Label')];
+    const vals   = [$('lab1Val'), $('lab2Val'), $('lab3Val')];
+
+    // Save current values before switching
+    if (S.preset && S.labVals[S.preset]) {
+        S.labVals[S.preset] = sliders.map(s => parseFloat(s.value));
+    }
+
+    S.preset = presetKey;
+
+    // Initialize stored values for this preset if needed
+    if (!S.labVals[presetKey]) {
+        S.labVals[presetKey] = p.lab.map(l => l.def);
+    }
+
+    const stored = S.labVals[presetKey];
+
+    for (let i = 0; i < 3; i++) {
+        const cfg = p.lab[i];
+        if (!cfg) { sliders[i].disabled = true; labels[i].textContent = 'Unused'; vals[i].textContent = '—'; continue; }
+        sliders[i].disabled = false;
+        labels[i].textContent = cfg.label;
+        sliders[i].min = cfg.min;
+        sliders[i].max = cfg.max;
+        sliders[i].step = cfg.step;
+        sliders[i].value = stored[i] !== undefined ? stored[i] : cfg.def;
+        vals[i].textContent = sliders[i].value;
+        updateSliderFill(sliders[i]);
+    }
+}
+
+function updateSliderFill(slider) {
+    const min = parseFloat(slider.min), max = parseFloat(slider.max), val = parseFloat(slider.value);
+    const pct = ((val - min) / (max - min)) * 100;
+    slider.style.background = `linear-gradient(to right, #e8ff47 0%, #e8ff47 ${pct}%, #222 ${pct}%, #222 100%)`;
+}
+
+// Wire lab sliders with proper event handling
+['lab1','lab2','lab3'].forEach((id, i) => {
+    const slider = $(id);
+    const valEl = $(id + 'Val');
+
+    slider.addEventListener('input', function() {
+        valEl.textContent = this.value;
+        // Bump animation
+        valEl.classList.add('bump');
+        setTimeout(() => valEl.classList.remove('bump'), 120);
+        updateSliderFill(this);
+        // Store value
+        if (!S.labVals[S.preset]) S.labVals[S.preset] = PRESETS[S.preset].lab.map(l => l.def);
+        S.labVals[S.preset][i] = parseFloat(this.value);
+        scheduleRender();
+    });
+});
+
+ $('labReset').addEventListener('click', () => {
+    const p = PRESETS[S.preset];
+    S.labVals[S.preset] = p.lab.map(l => l.def);
+    configureLabSliders(S.preset);
+    scheduleRender();
+});
+
+/* ══════════════════════════════════════
+   IMAGE PROCESSING UTILITIES
+   ══════════════════════════════════════ */
+
+// Separable Gaussian blur — much better quality than box blur
+function gaussBlur(src, w, h, radius) {
+    if (radius < 1) return new Uint8ClampedArray(src);
+    const r = Math.ceil(radius * 2.5);
+    const kernel = new Float32Array(r * 2 + 1);
+    let sum = 0;
+    for (let i = -r; i <= r; i++) {
+        const v = Math.exp(-(i * i) / (2 * radius * radius));
+        kernel[i + r] = v;
+        sum += v;
+    }
+    for (let i = 0; i < kernel.length; i++) kernel[i] /= sum;
+
+    const tmp = new Uint8ClampedArray(w * h);
+    const out = new Uint8ClampedArray(w * h);
+
+    // Horizontal pass
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            let val = 0;
+            for (let k = -r; k <= r; k++) {
+                const sx = Math.min(w - 1, Math.max(0, x + k));
+                val += src[y * w + sx] * kernel[k + r];
+            }
+            tmp[y * w + x] = val;
+        }
+    }
+    // Vertical pass
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            let val = 0;
+            for (let k = -r; k <= r; k++) {
+                const sy = Math.min(h - 1, Math.max(0, y + k));
+                val += tmp[sy * w + x] * kernel[k + r];
+            }
+            out[y * w + x] = val;
+        }
+    }
+    return out;
+}
+
+// Difference of Gaussians for edge detection
+function dogEdges(gray, w, h, sigma1, sigma2) {
+    const g1 = gaussBlur(gray, w, h, sigma1);
+    const g2 = gaussBlur(gray, w, h, sigma2);
+    const out = new Uint8ClampedArray(w * h);
+    for (let i = 0; i < w * h; i++) {
+        const diff = g1[i] - g2[i];
+        out[i] = Math.min(255, Math.max(0, Math.abs(diff) * 2.5));
+    }
+    return out;
+}
+
+// Simple median filter for denoising
+function medianFilter(gray, w, h, radius) {
+    const out = new Uint8ClampedArray(w * h);
+    const size = (2 * radius + 1) * (2 * radius + 1);
+    const buf = new Uint8ClampedArray(size);
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            let idx = 0;
+            for (let dy = -radius; dy <= radius; dy++) {
+                for (let dx = -radius; dx <= radius; dx++) {
+                    const sx = Math.min(w-1, Math.max(0, x+dx));
+                    const sy = Math.min(h-1, Math.max(0, y+dy));
+                    buf[idx++] = gray[sy * w + sx];
+                }
+            }
+            buf.sort();
+            out[y * w + x] = buf[Math.floor(size / 2)];
+        }
+    }
+    return out;
+}
+
+// Unsharp mask for sharpening
+function unsharpMask(gray, w, h, amount) {
+    if (amount <= 0) return new Uint8ClampedArray(gray);
+    const blurred = gaussBlur(gray, w, h, 1.2);
+    const out = new Uint8ClampedArray(w * h);
+    for (let i = 0; i < w * h; i++) {
+        out[i] = Math.min(255, Math.max(0, gray[i] + (gray[i] - blurred[i]) * amount * 0.5));
+    }
+    return out;
+}
+
+// Local contrast enhancement (CLAHE-inspired)
+function localContrast(gray, w, h, strength) {
+    if (strength <= 0) return new Uint8ClampedArray(gray);
+    const blurred = gaussBlur(gray, w, h, Math.max(3, Math.floor(w / 20)));
+    const out = new Uint8ClampedArray(w * h);
+    const s = strength / 100;
+    for (let i = 0; i < w * h; i++) {
+        const diff = gray[i] - blurred[i];
+        out[i] = Math.min(255, Math.max(0, gray[i] + diff * s * 1.5));
+    }
+    return out;
+}
+
+// Simple connected component removal by size
+function removeSmallComponents(mask, w, h, minSize) {
+    if (minSize <= 0) return mask;
+    const visited = new Uint8Array(w * h);
+    const out = new Uint8Array(w * h);
+    const stack = [];
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const idx = y * w + x;
+            if (visited[idx] || !mask[idx]) continue;
+            // Flood fill
+            stack.length = 0;
+            stack.push(idx);
+            visited[idx] = 1;
+            let count = 0;
+            const region = [];
+            while (stack.length) {
+                const ci = stack.pop();
+                region.push(ci);
+                count++;
+                const cx = ci % w, cy = (ci - cx) / w;
+                for (const [dx, dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+                    const nx = cx+dx, ny = cy+dy;
+                    if (nx>=0 && nx<w && ny>=0 && ny<h) {
+                        const ni = ny*w+nx;
+                        if (!visited[ni] && mask[ni]) { visited[ni]=1; stack.push(ni); }
+                    }
+                }
+            }
+            if (count >= minSize) region.forEach(i => out[i] = 1);
+        }
+    }
+    return out;
+}
+
+// Gap repair: dilate then intersect with original
+function repairGaps(mask, w, h, radius) {
+    if (radius <= 0) return mask;
+    const dilated = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            let found = false;
+            for (let dy = -radius; dy <= radius && !found; dy++) {
+                for (let dx = -radius; dx <= radius && !found; dx++) {
+                    const nx = x+dx, ny = y+dy;
+                    if (nx>=0&&nx<w&&ny>=0&&ny<h && mask[ny*w+nx]) found = true;
+                }
+            }
+            dilated[y*w+x] = found ? 1 : 0;
+        }
+    }
+    // Intersect: only keep dilated pixels that are near an original pixel
+    const out = new Uint8Array(w * h);
+    for (let i = 0; i < w*h; i++) out[i] = (dilated[i] && mask[i]) ? 1 : 0;
+    return out;
+}
+
+// Fill small white holes inside black regions
+function fillHoles(mask, w, h, maxSize) {
+    if (maxSize <= 0) return mask;
+    const visited = new Uint8Array(w * h);
+    const out = new Uint8Array(mask);
+    const stack = [];
+
+    // Flood fill white regions from border (these are background)
+    for (let x = 0; x < w; x++) {
+        if (!mask[x] && !visited[x]) { stack.push(x); visited[x]=1; }
+        const bi = (h-1)*w+x;
+        if (!mask[bi] && !visited[bi]) { stack.push(bi); visited[bi]=1; }
+    }
+    for (let y = 0; y < h; y++) {
+        if (!mask[y*w] && !visited[y*w]) { stack.push(y*w); visited[y*w]=1; }
+        const ri = y*w+w-1;
+        if (!mask[ri] && !visited[ri]) { stack.push(ri); visited[ri]=1; }
+    }
+    while (stack.length) {
+        const ci = stack.pop();
+        const cx = ci%w, cy = (ci-cx)/w;
+        for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+            const nx=cx+dx, ny=cy+dy;
+            if (nx>=0&&nx<w&&ny>=0&&ny<h) {
+                const ni = ny*w+nx;
+                if (!visited[ni] && !mask[ni]) { visited[ni]=1; stack.push(ni); }
+            }
+        }
+    }
+    // Any unvisited white pixel is an interior hole — fill if small
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const idx = y*w+x;
+            if (!mask[idx] && !visited[idx]) {
+                // Count hole size
+                stack.length = 0;
+                stack.push(idx);
+                visited[idx] = 1;
+                let count = 0;
+                const hole = [];
+                while (stack.length) {
+                    const ci = stack.pop();
+                    hole.push(ci);
+                    count++;
+                    const cx=ci%w, cy=(ci-cx)/w;
+                    for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+                        const nx=cx+dx, ny=cy+dy;
+                        if (nx>=0&&nx<w&&ny>=0&&ny<h) {
+                            const ni=ny*w+nx;
+                            if (!visited[ni] && !mask[ni]) { visited[ni]=1; stack.push(ni); }
+                        }
+                    }
+                }
+                if (count <= maxSize) hole.forEach(i => out[i] = 1);
+            }
+        }
+    }
+    return out;
+}
+
+// Bayer ordered dither matrices
+const BAYER4 = [
+    [0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]
+];
+const BAYER8 = [];
+for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) BAYER8.push((x*2+(y%2?1:0) + y*4)*8/64*255);
+
+/* ══════════════════════════════════════
+   PRESET RENDER FUNCTIONS — QUALITY UPGRADED
+   ══════════════════════════════════════ */
+
+function getLab() {
+    const v = S.labVals[S.preset] || PRESETS[S.preset].lab.map(l => l.def);
+    return v;
+}
+
+function renderPreset(gray, w, h, thresh, extra, lw) {
+    const lab = getLab();
+    const preset = S.preset;
+    const out = new Uint8Array(w * h);
+
+    // Helper: apply threshold with hysteresis for cleaner edges
+    function applyThreshold(edgeMap, t) {
+        for (let i = 0; i < w*h; i++) out[i] = edgeMap[i] > t ? 1 : 0;
+    }
+
+    // Helper: dilate mask by n pixels (for line weight)
+    function dilate(mask, n) {
+        if (n <= 0) return mask;
+        let src = mask;
+        for (let pass = 0; pass < n; pass++) {
+            const d = new Uint8Array(w*h);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                if (src[y*w+x]) { d[y*w+x]=1; continue; }
+                for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+                    const nx=x+dx,ny=y+dy;
+                    if (nx>=0&&nx<w&&ny>=0&&ny<h&&src[ny*w+nx]) { d[y*w+x]=1; break; }
+                }
+            }
+            src = d;
+        }
+        return src;
+    }
+
+    // Helper: erode mask
+    function erode(mask, n) {
+        if (n <= 0) return mask;
+        let src = mask;
+        for (let pass = 0; pass < n; pass++) {
+            const e = new Uint8Array(w*h);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                if (!src[y*w+x]) continue;
+                let ok = true;
+                for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+                    const nx=x+dx,ny=y+dy;
+                    if (nx<0||nx>=w||ny<0||ny>=h||!src[ny*w+nx]) { ok=false; break; }
+                }
+                if (ok) e[y*w+x] = 1;
+            }
+            src = e;
+        }
+        return src;
+    }
+
+    switch(preset) {
+        case 'animeink': {
+            const sigma = lab[0]/10;
+            const edgeT = lab[1];
+            const shadowBoost = lab[2];
+            const edges = dogEdges(gray, w, h, sigma * 0.5, sigma);
+            // Add shadow regions
+            const shadowThresh = 255 - shadowBoost * 2.5;
+            for (let i = 0; i < w*h; i++) {
+                const edgeVal = Math.min(255, edges[i] * (1 + extra * 0.15));
+                const shadowVal = gray[i] < shadowThresh ? (shadowThresh - gray[i]) * 1.5 : 0;
+                out[i] = (edgeVal + shadowVal) > edgeT ? 1 : 0;
+            }
+            break;
+        }
+        case 'manga': {
+            const sigma = lab[0]/10;
+            const edgeT = lab[1];
+            const postT = lab[2];
+            let edges = dogEdges(gray, w, h, sigma * 0.4, sigma);
+            // Boost edges based on extra sensitivity
+            edges = gaussBlur(edges, w, h, 0.5); // slight smooth for cleaner lines
+            for (let i = 0; i < w*h; i++) {
+                const v = Math.min(255, edges[i] * (1 + extra * 0.2));
+                out[i] = v > edgeT ? 1 : 0;
+            }
+            // Post-threshold cleanup: remove faint residuals
+            if (postT < 250) {
+                const cleaned = gaussBlur(gray, w, h, sigma * 0.3);
+                for (let i = 0; i < w*h; i++) {
+                    if (out[i] && cleaned[i] > postT) out[i] = 0;
+                }
+            }
+            break;
+        }
+        case 'lineart': {
+            const s1 = lab[0]/10, s2 = lab[1]/10, t = lab[2];
+            const edges = dogEdges(gray, w, h, s1, s2);
+            for (let i = 0; i < w*h; i++) {
+                out[i] = edges[i] * (1 + extra*0.15) > t ? 1 : 0;
+            }
+            break;
+        }
+        case 'bold': {
+            const sigma = lab[0]/10, t = lab[1], widen = lab[2];
+            const edges = dogEdges(gray, w, h, sigma*0.3, sigma);
+            for (let i = 0; i < w*h; i++) out[i] = edges[i] > t ? 1 : 0;
+            const dilated = dilate(out, widen + lw);
+            for (let i = 0; i < w*h; i++) out[i] = dilated[i];
+            break;
+        }
+        case 'solid': {
+            const levels = lab[0], edgeT = lab[1], smooth = lab[2]/10;
+            // Quantize then edge-detect the quantized result
+            const step = 256 / levels;
+            const quantized = new Uint8ClampedArray(w*h);
+            for (let i = 0; i < w*h; i++) quantized[i] = Math.floor(gray[i]/step)*step + step/2;
+            if (smooth > 0.5) { const s = gaussBlur(quantized, w, h, smooth); for(let i=0;i<w*h;i++) quantized[i]=s[i]; }
+            const edges = dogEdges(quantized, w, h, 0.8, 1.5);
+            for (let i = 0; i < w*h; i++) {
+                const isEdge = edges[i] > edgeT;
+                const isDark = gray[i] < thresh;
+                out[i] = (isEdge || isDark) ? 1 : 0;
+            }
+            break;
+        }
+        case 'canny': {
+            const lo = lab[0], hi = lab[1], sigma = lab[2]/10;
+            const blurred = gaussBlur(gray, w, h, sigma);
+            // Sobel gradients
+            const gx = new Float32Array(w*h), gy = new Float32Array(w*h);
+            const mag = new Float32Array(w*h);
+            for (let y = 1; y < h-1; y++) for (let x = 1; x < w-1; x++) {
+                const idx = y*w+x;
+                gx[idx] = -blurred[(y-1)*w+x-1] + blurred[(y-1)*w+x+1]
+                           -2*blurred[y*w+x-1] + 2*blurred[y*w+x+1]
+                           -blurred[(y+1)*w+x-1] + blurred[(y+1)*w+x+1];
+                gy[idx] = -blurred[(y-1)*w+x-1] - 2*blurred[(y-1)*w+x] - blurred[(y-1)*w+x+1]
+                           +blurred[(y+1)*w+x-1] + 2*blurred[(y+1)*w+x] + blurred[(y+1)*w+x+1];
+                mag[idx] = Math.sqrt(gx[idx]*gx[idx] + gy[idx]*gy[idx]);
+            }
+            // Non-maximum suppression
+            const nms = new Float32Array(w*h);
+            for (let y = 1; y < h-1; y++) for (let x = 1; x < w-1; x++) {
+                const idx = y*w+x;
+                const angle = Math.atan2(gy[idx], gx[idx]) * 180 / Math.PI;
+                const a = ((angle % 180) + 180) % 180;
+                let n1=0, n2=0;
+                if (a < 22.5 || a >= 157.5) { n1=mag[y*w+x-1]; n2=mag[y*w+x+1]; }
+                else if (a < 67.5) { n1=mag[(y-1)*w+x+1]; n2=mag[(y+1)*w+x-1]; }
+                else if (a < 112.5) { n1=mag[(y-1)*w+x]; n2=mag[(y+1)*w+x]; }
+                else { n1=mag[(y-1)*w+x-1]; n2=mag[(y+1)*w+x+1]; }
+                nms[idx] = (mag[idx] >= n1 && mag[idx] >= n2) ? mag[idx] : 0;
+            }
+            // Double threshold + hysteresis
+            for (let i = 0; i < w*h; i++) out[i] = nms[i] > hi ? 1 : 0;
+            // Connect weak edges
+            let changed = true;
+            while (changed) {
+                changed = false;
+                for (let y = 1; y < h-1; y++) for (let x = 1; x < w-1; x++) {
+                    const idx = y*w+x;
+                    if (out[idx] || nms[idx] < lo) continue;
+                    for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,1],[-1,1],[1,-1]]) {
+                        if (out[(y+dy)*w+x+dx]) { out[idx]=1; changed=true; break; }
+                    }
+                }
+            }
+            break;
+        }
+        case 'xdog': {
+            const s1 = lab[0]/10, s2 = lab[1]/10, phi = lab[2]/100;
+            const g1 = gaussBlur(gray, w, h, s1);
+            const g2 = gaussBlur(gray, w, h, s2);
+            for (let i = 0; i < w*h; i++) {
+                let v = g1[i] - phi * g2[i];
+                v = v > 0 ? 1 : (1 + Math.tanh(10 * v));
+                out[i] = v < (0.95 - extra*0.03) ? 1 : 0;
+            }
+            break;
+        }
+        case 'sauvola': {
+            const radius = lab[0], k = lab[1]/100, R = lab[2];
+            const blurred = gaussBlur(gray, w, h, radius);
+            const sqBlur = gaussBlur(gray.map(v=>v*v), w, h, radius);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const idx = y*w+x;
+                const mean = blurred[idx];
+                const variance = Math.max(0, sqBlur[idx] - mean*mean);
+                const std = Math.sqrt(variance);
+                const t = mean * (1 + k * (std / R - 1));
+                out[idx] = gray[idx] < t ? 1 : 0;
+            }
+            break;
+        }
+        case 'wolf': {
+            const win = lab[0], k = lab[1]/100, offset = lab[2];
+            const blurred = gaussBlur(gray, w, h, win);
+            const minB = gaussBlur(gray.map(v=>255-v), w, h, win).map(v=>255-v);
+            for (let i = 0; i < w*h; i++) {
+                const mean = blurred[i];
+                const minVal = minB[i];
+                const range = Math.max(1, mean - minVal);
+                const t = mean - k * range + offset;
+                out[i] = gray[i] < t ? 1 : 0;
+            }
+            break;
+        }
+        case 'hybrid': {
+            const edgeW = lab[0]/100, levels = lab[1], blend = lab[2]/100;
+            // Get edges
+            const edges = dogEdges(gray, w, h, 1, 3);
+            const edgeMask = new Uint8Array(w*h);
+            for (let i=0;i<w*h;i++) edgeMask[i] = edges[i]*edgeW > 20 ? 1 : 0;
+            // Get tonal
+            const step = 256/levels;
+            const toneMask = new Uint8Array(w*h);
+            for (let i=0;i<w*h;i++) toneMask[i] = gray[i] < thresh ? 1 : 0;
+            // Blend
+            for (let i=0;i<w*h;i++) {
+                if (edgeMask[i]) out[i]=1;
+                else if (toneMask[i] && blend > 0.3) out[i]=1;
+            }
+            break;
+        }
+        case 'darkart': {
+            const boost = lab[0]/100, edgeT = lab[1], merge = lab[2]/100;
+            // Boost shadows
+            const boosted = new Uint8ClampedArray(w*h);
+            for (let i=0;i<w*h;i++) {
+                if (gray[i] < 128) boosted[i] = Math.max(0, gray[i] - boost * (128-gray[i]));
+                else boosted[i] = gray[i];
+            }
+            const edges = dogEdges(boosted, w, h, 0.8, 2.5);
+            for (let i=0;i<w*h;i++) {
+                const edgeVal = edges[i] * (1+extra*0.1);
+                const shadowVal = (128 - boosted[i]) * merge * 0.8;
+                out[i] = (edgeVal + shadowVal) > edgeT ? 1 : 0;
+            }
+            break;
+        }
+        case 'floyd': case 'jjn': case 'stucki': case 'sierra': {
+            const t = lab[0], spread = lab[1]/100, preBlur = lab[0+2] !== undefined ? lab[2] : 0;
+            let src = gray;
+            if (preBlur > 0.5) src = gaussBlur(gray, w, h, preBlur/10);
+            const err = new Float32Array(src);
+            // Diffusion kernels
+            let kernel;
+            if (preset==='floyd') kernel=[[1,0,7/16],[1,1,3/16],[0,1,5/16],[-1,1,1/16]];
+            else if (preset==='jjn') kernel=[[1,0,7/48],[2,0,5/48],[-2,1,3/48],[-1,1,5/48],[0,1,7/48],[1,1,5/48],[2,1,3/48],[-2,2,1/48],[-1,2,3/48],[0,2,5/48],[1,2,3/48],[2,2,1/48]];
+            else if (preset==='stucki') kernel=[[1,0,8/42],[2,0,4/42],[-2,1,2/42],[-1,1,4/42],[0,1,8/42],[1,1,4/42],[2,1,2/42],[-2,2,1/42],[-1,2,2/42],[0,2,4/42],[1,2,2/42],[2,2,1/42]];
+            else kernel=[[1,0,2/4],[2,0,1/4],[-1,1,1/4],[0,1,1/4]]; // sierra lite
+            const serpentine = ['stucki','sierra','floyd'].includes(preset);
+            for (let y = 0; y < h; y++) {
+                const leftToRight = serpentine ? (y%2===0) : true;
+                const xStart = leftToRight ? 0 : w-1;
+                const xEnd = leftToRight ? w : -1;
+                const xStep = leftToRight ? 1 : -1;
+                for (let x = xStart; x !== xEnd; x += xStep) {
+                    const idx = y*w+x;
+                    const old = err[idx];
+                    const nv = old < t ? 0 : 255;
+                    out[idx] = nv < 128 ? 1 : 0;
+                    const diff = (old - nv) * spread;
+                    for (const [dx,dy,wgt] of kernel) {
+                        const nx=x+dx, ny=y+dy;
+                        if (nx>=0&&nx<w&&ny>=0&&ny<h) err[ny*w+nx] += diff * wgt;
+                    }
+                }
+            }
+            break;
+        }
+        case 'atkinson': {
+            const t = lab[0], passes = lab[1], preBlur = lab[2];
+            let src = gray;
+            if (preBlur > 0.5) src = gaussBlur(gray, w, h, preBlur/10);
+            const err = new Float32Array(src);
+            const kernel = [[1,0,1/8],[2,0,1/8],[-1,1,1/8],[0,1,1/8],[1,1,1/8],[0,2,1/8]];
+            for (let p = 0; p < passes; p++) {
+                for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                    const idx = y*w+x;
+                    const old = err[idx];
+                    const nv = old < t ? 0 : 255;
+                    if (p === passes-1) out[idx] = nv < 128 ? 1 : 0;
+                    const diff = (old - nv) * 0.25; // Atkinson only diffuses 6/8
+                    for (const [dx,dy,wgt] of kernel) {
+                        const nx=x+dx, ny=y+dy;
+                        if (nx>=0&&nx<w&&ny>=0&&ny<h) err[ny*w+nx] += diff * wgt;
+                    }
+                }
+            }
+            break;
+        }
+        case 'ordered': {
+            const t = lab[0], strength = lab[1]/100, preBlur = lab[2];
+            let src = gray;
+            if (preBlur > 0.5) src = gaussBlur(gray, w, h, preBlur/10);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bayerVal = (BAYER4[y%4][x%4] / 16) * 255 * strength;
+                out[y*w+x] = (src[y*w+x] + bayerVal) < t + 128 * (1-strength) ? 1 : 0;
+            }
+            break;
+        }
+        case 'bayer8': {
+            const t = lab[0], strength = lab[1]/100, preBlur = lab[2];
+            let src = gray;
+            if (preBlur > 0.5) src = gaussBlur(gray, w, h, preBlur/10);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bayerVal = (BAYER8[(y%8)*8+(x%8)] / 255) * 255 * strength;
+                out[y*w+x] = (src[y*w+x] + bayerVal) < t + 128*(1-strength) ? 1 : 0;
+            }
+            break;
+        }
+        case 'ign': {
+            const t = lab[0], scale = lab[1]/100, strength = lab[2]/100;
+            // Interleaved gradient noise approximation
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const n = ((x * 12.9898 + y * 78.233) % 1) * 255 * strength * scale;
+                out[y*w+x] = (gray[y*w+x] + n) < t + 128*(1-strength) ? 1 : 0;
+            }
+            break;
+        }
+        case 'bluenoise': {
+            const t = lab[0], grain = lab[1]/10, strength = lab[2]/100;
+            // Blue noise approximation using shuffled grid
+            const seed = 42;
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bx = Math.floor(x/grain), by = Math.floor(y/grain);
+                const hash = Math.sin(bx*127.1+by*311.7+seed)*43758.5453 % 1;
+                const n = Math.abs(hash) * 255 * strength;
+                out[y*w+x] = (gray[y*w+x] + n) < t + 128*(1-strength) ? 1 : 0;
+            }
+            break;
+        }
+        case 'bradley': {
+            const win = lab[0], bias = lab[1]/10, postBlur = lab[2];
+            const blurred = gaussBlur(gray, w, h, win);
+            for (let i = 0; i < w*h; i++) {
+                out[i] = gray[i] < blurred[i] - bias ? 1 : 0;
+            }
+            break;
+        }
+        case 'adaptive': {
+            const block = lab[0], bias = lab[1]/10, smooth = lab[2]/10;
+            const blurred = gaussBlur(gray, w, h, block);
+            for (let i = 0; i < w*h; i++) {
+                out[i] = gray[i] < blurred[i] * (1 + bias/100) ? 1 : 0;
+            }
+            break;
+        }
+        case 'crosshatch': {
+            const spacing = Math.max(2, lab[0]);
+            const layers = Math.min(4, Math.max(1, lab[1]));
+            const cutoff = lab[2];
+            const angles = [Math.PI/4, -Math.PI/4, Math.PI/6, -Math.PI/6];
+            const cosA = angles.map(a => Math.cos(a));
+            const sinA = angles.map(a => Math.sin(a));
+            const lineW = Math.min(1.4, Math.max(0.6, spacing * 0.09));
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bright = gray[y*w+x];
+                if (bright >= cutoff) continue;
+                const darkness = (cutoff - bright) / cutoff;
+                const nLayers = Math.max(0, Math.floor(darkness * layers * 1.8));
+                if (nLayers < 1) continue;
+                let hit = false;
+                for (let a = 0; a < Math.min(nLayers, layers); a++) {
+                    const proj = x*cosA[a] + y*sinA[a];
+                    const pos = ((proj % spacing) + spacing) % spacing;
+                    if (pos < lineW) { hit=true; break; }
+                }
+                if (darkness > 0.92) hit = true;
+                if (hit) out[y*w+x] = 1;
+            }
+            break;
+        }
+        case 'pencil': {
+            const spacing = Math.max(2, lab[0]);
+            const density = lab[1];
+            const cutoff = lab[2];
+            const maxLayers = Math.min(4, Math.max(1, Math.ceil(density/5)));
+            const densityScale = 0.8 + (density/20)*1.2;
+            const angles = [Math.PI/6, -Math.PI/6, Math.PI/3, -Math.PI/3];
+            const cosA = angles.map(a => Math.cos(a));
+            const sinA = angles.map(a => Math.sin(a));
+            const lineW = Math.min(1.5, Math.max(0.6, spacing*0.085));
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bright = gray[y*w+x];
+                if (bright >= cutoff) continue;
+                const darkness = Math.min(1, (cutoff - bright) / cutoff);
+                if (darkness > 0.9) { out[y*w+x]=1; continue; }
+                const nLayers = Math.floor(darkness * maxLayers * densityScale);
+                if (nLayers < 1) continue;
+                let hit = false;
+                for (let a = 0; a < Math.min(nLayers, 4); a++) {
+                    const proj = x*cosA[a] + y*sinA[a];
+                    const pos = ((proj % spacing) + spacing) % spacing;
+                    if (pos < lineW) { hit=true; break; }
+                }
+                if (hit) out[y*w+x] = 1;
+            }
+            break;
+        }
+        case 'halftone': {
+            const dotSpace = Math.max(3, lab[0]);
+            const angle = lab[1] * Math.PI / 180;
+            const t = lab[2];
+            const cosA = Math.cos(angle), sinA = Math.sin(angle);
+            const cx = w/2, cy = h/2;
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                // Rotate coordinate
+                const rx = (x-cx)*cosA + (y-cy)*sinA + cx;
+                const ry = -(x-cx)*sinA + (y-cy)*cosA + cy;
+                const bx = ((rx % dotSpace) + dotSpace) % dotSpace;
+                const by = ((ry % dotSpace) + dotSpace) % dotSpace;
+                const dx = bx - dotSpace/2, dy = by - dotSpace/2;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const maxR = dotSpace * 0.45;
+                const bright = gray[y*w+x];
+                const targetR = maxR * (1 - bright/255);
+                if (dist < targetR) out[y*w+x] = 1;
+            }
+            break;
+        }
+        case 'stipple': {
+            const dotR = Math.max(1, lab[0]);
+            const density = lab[1]/100;
+            const t = lab[2];
+            // Use jittered grid for organic feel
+            const seed = 7;
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bright = gray[y*w+x];
+                if (bright > t) continue;
+                const darkness = 1 - bright/t;
+                // Probabilistic dot placement
+                const hash = Math.abs(Math.sin(x*12.9898+y*78.233+seed)*43758.5453 % 1);
+                if (hash < darkness * density) {
+                    // Draw dot
+                    for (let dy = -dotR; dy <= dotR; dy++) for (let dx = -dotR; dx <= dotR; dx++) {
+                        if (dx*dx+dy*dy <= dotR*dotR) {
+                            const nx=x+dx, ny=y+dy;
+                            if (nx>=0&&nx<w&&ny>=0&&ny<h) out[ny*w+nx]=1;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        case 'woodcut': {
+            const spacing = Math.max(2, lab[0]);
+            const dir = lab[1] * Math.PI / 180;
+            const t = lab[2];
+            const cosD = Math.cos(dir), sinD = Math.sin(dir);
+            // Flow lines follow gradient direction perpendicular to specified direction
+            const gx = new Float32Array(w*h), gy = new Float32Array(w*h);
+            for (let y=1;y<h-1;y++) for (let x=1;x<w-1;x++) {
+                const i=y*w+x;
+                gx[i] = gray[i+1]-gray[i-1];
+                gy[i] = gray[i+w]-gray[i-w];
+            }
+            const lineW = Math.max(0.8, spacing * 0.12);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bright = gray[y*w+x];
+                if (bright > t) continue;
+                // Project position along flow direction, perturbed by gradient
+                const i = y*w+x;
+                const perturb = (gx[i]*cosD + gy[i]*sinD) * 0.3 * extra;
+                const proj = x*cosD + y*sinD + perturb;
+                const pos = ((proj % spacing) + spacing) % spacing;
+                if (pos < lineW) out[i] = 1;
+                if ((t - bright)/t > 0.9) out[i] = 1;
+            }
+            break;
+        }
+        case 'threshold':
+        default: {
+            for (let i = 0; i < w*h; i++) out[i] = gray[i] < thresh ? 1 : 0;
+            break;
+        }
+    }
+
+    // Apply line weight
+    if (lw > 0) {
+        const d = dilate(out, lw);
+        for (let i = 0; i < w*h; i++) out[i] = d[i];
+    } else if (lw < 0) {
+        const e = erode(out, -lw);
+        for (let i = 0; i < w*h; i++) out[i] = e[i];
+    }
+
+    return out;
+}
+
+/* ══════════════════════════════════════
+   MAIN RENDER PIPELINE
+   ══════════════════════════════════════ */
+let renderTimer = null;
+function scheduleRender() {
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(doRender, 30);
+}
+
+function doRender() {
+    if (!S.img) return;
+    const w = S.boardsWide * BOARD;
+    const h = S.boardsHigh * BOARD;
+    S.resultW = w; S.resultH = h;
+
+    // Draw source image to offscreen canvas at target size
+    mainCanvas.width = w; mainCanvas.height = h;
+    mainCtx.imageSmoothingEnabled = S.toggles.smoothing;
+    mainCtx.imageSmoothingQuality = 'high';
+
+    // Calculate source rect based on fit mode
+    const imgAspect = S.imgW / S.imgH;
+    const boardAspect = w / h;
+    let sx=0, sy=0, sw=S.imgW, sh=S.imgH;
+    if (S.fitMode === 'contain') {
+        if (imgAspect > boardAspect) { sw = S.imgH * boardAspect; sx = (S.imgW - sw)/2; }
+        else { sh = S.imgW / boardAspect; sy = (S.imgH - sh)/2; }
+    } else if (S.fitMode === 'cover') {
+        if (imgAspect > boardAspect) { sh = S.imgW / boardAspect; sy = (S.imgH - sh)/2; }
+        else { sw = S.imgH * boardAspect; sx = (S.imgW - sw)/2; }
+    }
+
+    mainCtx.fillStyle = '#ffffff';
+    mainCtx.fillRect(0, 0, w, h);
+    mainCtx.drawImage(S.img, sx, sy, sw, sh, 0, 0, w, h);
+
+    let imgData = mainCtx.getImageData(0, 0, w, h);
+    let gray = new Uint8ClampedArray(w * h);
+    for (let i = 0; i < w*h; i++) {
+        const idx = i*4;
+        gray[i] = Math.round(imgData.data[idx]*0.299 + imgData.data[idx+1]*0.587 + imgData.data[idx+2]*0.114);
+    }
+    S.sourceData = new Uint8ClampedArray(gray);
+
+    // Invert
+    if (S.toggles.invert) for (let i=0;i<w*h;i++) gray[i] = 255 - gray[i];
+
+    // Gamma
+    if (S.gamma !== 100) {
+        const g = S.gamma / 100;
+        for (let i=0;i<w*h;i++) gray[i] = Math.min(255, Math.max(0, Math.pow(gray[i]/255, g) * 255));
+    }
+
+    // Denoise
+    if (S.denoise > 0) gray = medianFilter(gray, w, h, S.denoise);
+
+    // Local contrast
+    if (S.localContrast > 0) gray = localContrast(gray, w, h, S.localContrast);
+
+    // White/bright protection
+    if (S.whiteProtect > 0) {
+        const prot = S.whiteProtect / 100;
+        for (let i=0;i<w*h;i++) {
+            if (gray[i] > 200) gray[i] = Math.min(255, gray[i] + (255-gray[i]) * prot * 0.5);
+        }
+    }
+
+    // Detail boost (unsharp mask)
+    if (S.toggles.detailboost) gray = unsharpMask(gray, w, h, 1.5 + extra * 0.3);
+
+    // Contrast
+    if (S.contrast > 0) {
+        const c = 1 + S.contrast / 50;
+        for (let i=0;i<w*h;i++) gray[i] = Math.min(255, Math.max(0, ((gray[i]/255 - 0.5) * c + 0.5) * 255));
+    }
+
+    // Sharpness
+    if (S.sharpness > 0) gray = unsharpMask(gray, w, h, S.sharpness * 0.4);
+
+    // Apply preset
+    let mask = renderPreset(gray, w, h, S.threshold, S.extra, S.lineWeight);
+
+    // Binary cleanup
+    if (S.minComponent > 0) mask = removeSmallComponents(mask, w, h, S.minComponent);
+    if (S.toggles.gaprepair || S.gapRadius > 0) mask = repairGaps(mask, w, h, Math.max(1, S.gapRadius));
+    if (S.holeFill > 0) mask = fillHoles(mask, w, h, S.holeFill);
+    if (S.toggles.despeckle) mask = removeSmallComponents(mask, w, h, 2);
+
+    S.maskData = mask;
+
+    // Render to display
+    renderDisplay();
+    updateInfo(w, h);
+}
+
+function renderDisplay() {
+    if (!S.maskData) return;
+    const w = S.resultW, h = S.resultH;
+    const mask = S.maskData;
+
+    displayCanvas.width = w; displayCanvas.height = h;
+    const isChalk = S.renderMode === 'chalk';
+
+    if (S.viewMode === 'source' || S.viewMode === 'compare') {
+        // Show source
+        const srcData = S.sourceData || new Uint8ClampedArray(w*h);
+        const imgData = displayCtx.createImageData(w, h);
+        for (let i = 0; i < w*h; i++) {
+            const v = srcData[i];
+            imgData.data[i*4] = v; imgData.data[i*4+1] = v; imgData.data[i*4+2] = v; imgData.data[i*4+3] = 255;
+        }
+        displayCtx.putImageData(imgData, 0, 0);
+        if (S.viewMode === 'compare') {
+            // Draw split
+            const splitX = Math.floor(w * S.comparePos / 100);
+            const resultData = displayCtx.getImageData(splitX, 0, w-splitX, h);
+            // Re-render result on right side
+            displayCanvas.width = w; displayCanvas.height = h;
+            // Full source first
+            const srcImg = displayCtx.createImageData(w, h);
+            for (let i=0;i<w*h;i++) { const v=(S.sourceData||new Uint8ClampedArray(w*h))[i]; srcImg.data[i*4]=v;srcImg.data[i*4+1]=v;srcImg.data[i*4+2]=v;srcImg.data[i*4+3]=255; }
+            displayCtx.putImageData(srcImg, 0, 0);
+            // Result on right
+            const resImg = displayCtx.createImageData(w, h);
+            for (let i=0;i<w*h;i++) {
+                const draw = mask[i];
+                if (isChalk) { resImg.data[i*4]=28;resImg.data[i*4+1]=34;resImg.data[i*4+2]=22;resImg.data[i*4+3]=255; if(draw){resImg.data[i*4]=220;resImg.data[i*4+1]=218;resImg.data[i*4+2]=200;} }
+                else { resImg.data[i*4]=255;resImg.data[i*4+1]=255;resImg.data[i*4+2]=255;resImg.data[i*4+3]=255; if(!draw){resImg.data[i*4]=0;resImg.data[i*4+1]=0;resImg.data[i*4+2]=0;} }
+            }
+            displayCtx.putImageData(resImg, 0, 0);
+            // Overlay source on left
+            displayCtx.putImageData(srcImg, 0, 0, 0, 0, splitX, h);
+            // Split line
+            displayCtx.fillStyle = '#e8ff47';
+            displayCtx.fillRect(splitX, 0, 1, h);
+            return;
+        }
+    } else if (S.viewMode === 'mask') {
+        const imgData = displayCtx.createImageData(w, h);
+        for (let i=0;i<w*h;i++) {
+            const v = mask[i] * 255;
+            imgData.data[i*4]=v;imgData.data[i*4+1]=v;imgData.data[i*4+2]=v;imgData.data[i*4+3]=255;
+        }
+        displayCtx.putImageData(imgData, 0, 0);
+    } else {
+        // Result
+        const imgData = displayCtx.createImageData(w, h);
+        for (let i = 0; i < w*h; i++) {
+            const draw = mask[i];
+            if (isChalk) {
+                imgData.data[i*4] = 28; imgData.data[i*4+1] = 34; imgData.data[i*4+2] = 22;
+                if (draw) { imgData.data[i*4]=220; imgData.data[i*4+1]=218; imgData.data[i*4+2]=200; }
+            } else {
+                imgData.data[i*4] = 255; imgData.data[i*4+1] = 255; imgData.data[i*4+2] = 255;
+                if (!draw) { imgData.data[i*4]=0; imgData.data[i*4+1]=0; imgData.data[i*4+2]=0; }
+            }
+            imgData.data[i*4+3] = 255;
+        }
+        displayCtx.putImageData(imgData, 0, 0);
+    }
+
+    // Grid overlay
+    if (S.showGrid) {
+        displayCtx.strokeStyle = 'rgba(232,255,71,0.25)';
+        displayCtx.lineWidth = 0.5;
+        for (let bx = 0; bx <= S.boardsWide; bx++) {
+            const x = bx * BOARD;
+            displayCtx.beginPath(); displayCtx.moveTo(x+0.5,0); displayCtx.lineTo(x+0.5,h); displayCtx.stroke();
+        }
+        for (let by = 0; by <= S.boardsHigh; by++) {
+            const y = by * BOARD;
+            displayCtx.beginPath(); displayCtx.moveTo(0,y+0.5); displayCtx.lineTo(w,y+0.5); displayCtx.stroke();
+        }
+    }
+
+    // Apply zoom
+    applyZoom();
+}
+
+function applyZoom() {
+    const z = S.zoom;
+    displayCanvas.style.width = z === 'fit' ? '100%' : (S.resultW * z) + 'px';
+    displayCanvas.style.height = z === 'fit' ? '100%' : (S.resultH * z) + 'px';
+}
+
+function updateInfo(w, h) {
+    const blackPx = S.maskData ? S.maskData.reduce((a,b)=>a+b, 0) : 0;
+    const total = w * h;
+    const pct = (blackPx / total * 100).toFixed(1);
+    $('infoBox').innerHTML = `<b>${w}×${h}</b> · ${S.boardsWide}×${S.boardsHigh} boards · <b>${blackPx.toLocaleString()}</b> black px (${pct}%)`;
+    $('exportSummary').innerHTML = `<b>${S.boardsWide}×${S.boardsHigh}</b> = ${S.boardsWide*S.boardsHigh} boards · ${w}×${h} px · ${pct}% fill`;
+    $('btnDownloadPlan').disabled = false;
+    $('btnCopyPlan').disabled = false;
+    $('btnDownloadPng').disabled = false;
+}
+
+/* ══════════════════════════════════════
+   IMAGE LOADING
+   ══════════════════════════════════════ */
+function loadImage(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+            S.img = img; S.imgW = img.width; S.imgH = img.height;
+            S.aspectRatio = img.width / img.height;
+            $('srcInfo').innerHTML = `<b>${img.width}×${img.height}</b> · ${(file.size/1024).toFixed(0)} KB`;
+            $('placeholder').style.display = 'none';
+            displayCanvas.style.display = 'block';
+            $('btnAutoSize').disabled = false;
+            $('btnGallery').disabled = false;
+            $('btnAuto').disabled = false;
+            $('btnDeep').disabled = false;
+            // Auto-fit
+            autoFit();
+            doRender();
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function autoFit() {
+    if (!S.img) return;
+    const imgAspect = S.imgW / S.imgH;
+    let bw = Math.round(Math.sqrt(imgAspect * 40));
+    let bh = Math.round(bw / imgAspect);
+    bw = Math.max(1, Math.min(128, bw));
+    bh = Math.max(1, Math.min(128, bh));
+    S.boardsWide = bw; S.boardsHigh = bh;
+    $('boardsWide').value = bw; $('boardsHigh').value = bh;
+    updateReach();
+    updateWallBtn();
+}
+
+/* ══════════════════════════════════════
+   UI WIRING — ALL SLIDERS
+   ══════════════════════════════════════ */
+
+// Generic slider wiring helper
+function wireSlider(id, displayId, stateKey, transform, displayTransform) {
+    const slider = $(id);
+    const display = $(displayId);
+    updateSliderFill(slider);
+    slider.addEventListener('input', function() {
+        const raw = parseFloat(this.value);
+        S[stateKey] = raw;
+        const displayVal = displayTransform ? displayTransform(raw) : raw;
+        if (display) display.textContent = displayVal;
+        if (displayId && $(displayId + 'Val')) $(displayId + 'Val').textContent = displayVal;
+        updateSliderFill(this);
+        scheduleRender();
+    });
+}
+
+wireSlider('gamma', 'gammaDisplay', 'gamma', null, v => (v/100).toFixed(2));
+wireSlider('denoise', 'denoiseDisplay', 'denoise');
+wireSlider('localContrast', 'localContrastDisplay', 'localContrast');
+wireSlider('whiteProtect', 'whiteProtectDisplay', 'whiteProtect');
+wireSlider('minComponent', 'minComponentDisplay', 'minComponent');
+wireSlider('gapRadius', 'gapRadiusDisplay', 'gapRadius');
+wireSlider('holeFill', 'holeFillDisplay', 'holeFill');
+wireSlider('threshold', 'threshDisplay', 'threshold');
+wireSlider('contrast', 'contrastDisplay', 'contrast');
+wireSlider('sharpness', 'sharpDisplay', 'sharpness');
+wireSlider('extra', 'extraDisplay', 'extra');
+wireSlider('lineWeight', 'lineWeightDisplay', 'lineWeight');
+wireSlider('mixRatioSlider', null, 'mixRatio');
+
+// Also sync the .sv spans
+['gamma','denoise','localContrast','whiteProtect','minComponent','gapRadius','holeFill','threshold','contrast','sharpness','extra','lineWeight'].forEach(id => {
+    const slider = $(id);
+    const svEl = $(id + 'Val');
+    if (svEl) {
+        svEl.textContent = slider.value;
+        slider.addEventListener('input', () => svEl.textContent = slider.value);
+    }
+});
+
+// Mix ratio display
+ $('mixRatioSlider').addEventListener('input', function() {
+    $('mixRatioVal').textContent = this.value;
+    $('mixRatioDsp').textContent = this.value;
+});
+
+// Board size inputs
+ $('boardsWide').addEventListener('input', function() {
+    S.boardsWide = Math.max(1, Math.min(200, parseInt(this.value)||1));
+    if (S.ratioLocked) {
+        S.boardsHigh = Math.max(1, Math.round(S.boardsWide / S.aspectRatio));
+        $('boardsHigh').value = S.boardsHigh;
+    }
+    updateReach(); updateWallBtn(); scheduleRender();
+});
+ $('boardsHigh').addEventListener('input', function() {
+    S.boardsHigh = Math.max(1, Math.min(200, parseInt(this.value)||1));
+    if (S.ratioLocked) {
+        S.boardsWide = Math.max(1, Math.round(S.boardsHigh * S.aspectRatio));
+        $('boardsWide').value = S.boardsWide;
+    }
+    updateReach(); updateWallBtn(); scheduleRender();
+});
+
+// Ratio lock
+ $('ratioLock').addEventListener('click', function() {
+    S.ratioLocked = !S.ratioLocked;
+    this.classList.toggle('on', S.ratioLocked);
+    this.textContent = S.ratioLocked ? '🔗' : '🔓';
+    if (S.ratioLocked && S.img) S.aspectRatio = S.imgW / S.imgH;
+});
+
+// Fit mode
+ $('fitMode').addEventListener('change', function() { S.fitMode = this.value; scheduleRender(); });
+
+// Render mode
+ $('renderMode').addEventListener('change', function() { S.renderMode = this.value; renderDisplay(); });
+
+// Auto fit button
+ $('btnAutoSize').addEventListener('click', autoFit);
+
+function updateReach() {
+    const maxDim = Math.max(S.boardsWide, S.boardsHigh);
+    const el = $('reachInfo');
+    if (maxDim <= 128) {
+        el.className = 'info-box reach-box reach-ok';
+        el.innerHTML = `<b>REACH OK</b> · ${S.boardsWide}×${S.boardsHigh} fits inside ±64-block span.`;
+    } else {
+        el.className = 'info-box reach-box reach-warning';
+        el.innerHTML = `<b>REACH WARNING</b> · ${S.boardsWide}×${S.boardsHigh} exceeds ±64 reach (${maxDim} blocks). May need scaffolding.`;
+    }
+}
+
+function updateWallBtn() {
+    $('btnBlackboardWall').textContent = `⬇ BG2 WALL ${S.boardsWide}×${S.boardsHigh}`;
+}
+
+// Preset buttons
+document.querySelectorAll('[data-preset]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('[data-preset]').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        configureLabSliders(this.dataset.preset);
+        scheduleRender();
+    });
+});
+
+// Quality buttons — set board dimensions based on quality target.
+// Shows a toast so the user sees what dimensions were picked.
+document.querySelectorAll('[data-quality]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('[data-quality]').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const q = parseInt(this.dataset.quality);
+        if (!S.img) { showToast('Load an image first'); return; }
+        // If the user is actively editing boardsWide/High, don't override.
+        if (document.activeElement === $('boardsWide') || document.activeElement === $('boardsHigh')) {
+            showToast('Keeping your manual dimensions (' + S.boardsWide + '×' + S.boardsHigh + ')');
+            return;
+        }
+        const aspect = S.imgW / S.imgH;
+        let bw = Math.round(Math.sqrt(aspect * q * q));
+        let bh = Math.round(bw / aspect);
+        bw = Math.max(1, Math.min(200, bw));
+        bh = Math.max(1, Math.min(200, bh));
+        S.boardsWide = bw; S.boardsHigh = bh;
+        $('boardsWide').value = bw; $('boardsHigh').value = bh;
+        updateReach(); updateWallBtn(); scheduleRender();
+        showToast('Quality ' + q + ': ' + bw + '×' + bh + ' boards (' + (bw*16) + '×' + (bh*16) + ' px)');
+    });
+});
+
+// Toast notification helper — shows a brief message at top of screen.
+let toastTimer = null;
+function showToast(text) {
+    let toast = $('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--accent);color:#000;padding:8px 16px;border-radius:4px;font-size:.8rem;font-weight:bold;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.4);transition:opacity .3s';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = text;
+    toast.style.opacity = '1';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+}
+
+// Toggle rows
+document.querySelectorAll('.toggle-row').forEach(row => {
+    row.addEventListener('click', function() {
+        const key = this.dataset.key;
+        if (!key) return;
+        S.toggles[key] = !S.toggles[key];
+        const tog = this.querySelector('.tog');
+        tog.classList.toggle('on', S.toggles[key]);
+        scheduleRender();
+    });
+});
+
+// Mix toggle
+ $('mixToggleRow').addEventListener('click', function() {
+    S.mixOn = !S.mixOn;
+    $('tog-mix').classList.toggle('on', S.mixOn);
+    $('mixPanel').style.display = S.mixOn ? 'flex' : 'none';
+});
+
+// Zoom buttons
+document.querySelectorAll('[data-z]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('[data-z]').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        S.zoom = this.dataset.z === 'fit' ? 'fit' : parseFloat(this.dataset.z);
+        applyZoom();
+    });
+});
+
+// View chips
+document.querySelectorAll('[data-view]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        S.viewMode = this.dataset.view;
+        $('compareControl').classList.toggle('open', S.viewMode === 'compare');
+        renderDisplay();
+    });
+});
+
+// Grid toggle
+ $('gridToggle').addEventListener('click', function() {
+    S.showGrid = !S.showGrid;
+    this.textContent = S.showGrid ? 'Grid on' : 'Grid off';
+    this.classList.toggle('active', S.showGrid);
+    renderDisplay();
+});
+
+// Compare split
+ $('compareSplit').addEventListener('input', function() {
+    S.comparePos = parseInt(this.value);
+    $('compareSplitVal').textContent = this.value;
+    renderDisplay();
+});
+
+// Drop zone
+const dropZone = $('dropZone');
+const fileInput = $('fileInput');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); if(e.dataTransfer.files[0]) loadImage(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e => { if(e.target.files[0]) loadImage(e.target.files[0]); });
+
+// Paste
+document.addEventListener('paste', e => {
+    const items = e.clipboardData.items;
+    for (const item of items) {
+        if (item.type.startsWith('image/')) { loadImage(item.getAsFile()); break; }
+    }
+});
+
+// Coordinate readout
+ $('previewWrap').addEventListener('mousemove', e => {
+    if (!S.maskData) return;
+    const rect = displayCanvas.getBoundingClientRect();
+    const scaleX = S.resultW / rect.width;
+    const scaleY = S.resultH / rect.height;
+    const px = Math.floor((e.clientX - rect.left) * scaleX);
+    const py = Math.floor((e.clientY - rect.top) * scaleY);
+    if (px >= 0 && px < S.resultW && py >= 0 && py < S.resultH) {
+        const bx = Math.floor(px / BOARD), by = Math.floor(py / BOARD);
+        $('coordReadout').textContent = `px ${px},${py} · board ${bx},${by}`;
+    }
+});
+
+// Board click modal
+displayCanvas.addEventListener('click', e => {
+    if (!S.maskData) return;
+    const rect = displayCanvas.getBoundingClientRect();
+    const scaleX = S.resultW / rect.width;
+    const scaleY = S.resultH / rect.height;
+    const px = Math.floor((e.clientX - rect.left) * scaleX);
+    const py = Math.floor((e.clientY - rect.top) * scaleY);
+    const bx = Math.floor(px / BOARD), by = Math.floor(py / BOARD);
+    if (bx < 0 || bx >= S.boardsWide || by < 0 || by >= S.boardsHigh) return;
+
+    const mc = $('modalCanvas');
+    mc.width = BOARD; mc.height = BOARD;
+    const mctx = mc.getContext('2d');
+    const imgData = mctx.createImageData(BOARD, BOARD);
+    const isChalk = S.renderMode === 'chalk';
+    for (let dy = 0; dy < BOARD; dy++) for (let dx = 0; dx < BOARD; dx++) {
+        const si = (by*BOARD+dy)*S.resultW + (bx*BOARD+dx);
+        const di = (dy*BOARD+dx)*4;
+        const draw = S.maskData[si];
+        if (isChalk) { imgData.data[di]=28;imgData.data[di+1]=34;imgData.data[di+2]=22; if(draw){imgData.data[di]=220;imgData.data[di+1]=218;imgData.data[di+2]=200;} }
+        else { imgData.data[di]=255;imgData.data[di+1]=255;imgData.data[di+2]=255; if(!draw){imgData.data[di]=0;imgData.data[di+1]=0;imgData.data[di+2]=0;} }
+        imgData.data[di+3] = 255;
+    }
+    mctx.putImageData(imgData, 0, 0);
+    $('modalTitle').textContent = `Board ${bx}, ${by}`;
+    $('modalInfo').textContent = `Position: (${bx}, ${by}) · ${BOARD}×${BOARD} px`;
+    $('modalOverlay').classList.add('open');
+});
+ $('modalClose').addEventListener('click', () => $('modalOverlay').classList.remove('open'));
+
+// Gallery
+ $('btnGallery').addEventListener('click', () => {
+    if (!S.img) return;
+    const grid = $('galleryGrid');
+    grid.innerHTML = '';
+    const keys = Object.keys(PRESETS);
+    keys.forEach(key => {
+        const p = PRESETS[key];
+        const item = document.createElement('div');
+        item.className = 'gallery-item' + (key === S.preset ? ' current' : '');
+        const c = document.createElement('canvas');
+        c.width = BOARD; c.height = BOARD;
+        // Render tiny preview
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = S.resultW; tmpCanvas.height = S.resultH;
+        const tmpCtx = tmpCanvas.getContext('2d', {willReadFrequently:true});
+        tmpCtx.imageSmoothingEnabled = S.toggles.smoothing;
+        tmpCtx.imageSmoothingQuality = 'high';
+        const imgAspect = S.imgW / S.imgH;
+        const boardAspect = S.resultW / S.resultH;
+        let sx=0,sy=0,sw=S.imgW,sh=S.imgH;
+        if (S.fitMode==='contain') { if(imgAspect>boardAspect){sw=S.imgH*boardAspect;sx=(S.imgW-sw)/2;}else{sh=S.imgW/boardAspect;sy=(S.imgH-sh)/2;} }
+        else if(S.fitMode==='cover'){if(imgAspect>boardAspect){sh=S.imgW/boardAspect;sy=(S.imgH-sh)/2;}else{sw=S.imgH*boardAspect;sx=(S.imgW-sw)/2;}}
+        tmpCtx.fillStyle='#fff'; tmpCtx.fillRect(0,0,S.resultW,S.resultH);
+        tmpCtx.drawImage(S.img,sx,sy,sw,sh,0,0,S.resultW,S.resultH);
+        const idata = tmpCtx.getImageData(0,0,S.resultW,S.resultH);
+        const gray = new Uint8ClampedArray(S.resultW*S.resultH);
+        for(let i=0;i<S.resultW*S.resultH;i++){const j=i*4;gray[i]=Math.round(idata.data[j]*.299+idata.data[j+1]*.587+idata.data[j+2]*.114);}
+        if(S.toggles.invert)for(let i=0;i<gray.length;i++)gray[i]=255-gray[i];
+        if(S.gamma!==100){const g=S.gamma/100;for(let i=0;i<gray.length;i++)gray[i]=Math.min(255,Math.max(0,Math.pow(gray[i]/255,g)*255));}
+
+        // Temporarily switch preset for rendering
+        const savedPreset = S.preset;
+        const savedLab = S.labVals[S.preset];
+        S.preset = key;
+        if (!S.labVals[key]) S.labVals[key] = p.lab.map(l => l.def);
+        const mask = renderPreset(gray, S.resultW, S.resultH, S.threshold, S.extra, S.lineWeight);
+        S.preset = savedPreset;
+        if (savedLab) S.labVals[savedPreset] = savedLab;
+
+        // Draw first board as thumbnail
+        const ctx2 = c.getContext('2d');
+        const thumb = ctx2.createImageData(BOARD, BOARD);
+        for(let dy=0;dy<BOARD;dy++)for(let dx=0;dx<BOARD;dx++){
+            const si=dy*S.resultW+dx;
+            const di=(dy*BOARD+dx)*4;
+            const v=mask[si]*255;
+            thumb.data[di]=v;thumb.data[di+1]=v;thumb.data[di+2]=v;thumb.data[di+3]=255;
+        }
+        ctx2.putImageData(thumb,0,0);
+        const label = document.createElement('span');
+        label.textContent = p.name;
+        item.appendChild(c);
+        item.appendChild(label);
+        item.addEventListener('click', () => {
+            document.querySelectorAll('[data-preset]').forEach(b => b.classList.remove('active'));
+            const presetBtn = document.querySelector(`[data-preset="${key}"]`);
+            if (presetBtn) presetBtn.classList.add('active');
+            configureLabSliders(key);
+            scheduleRender();
+            $('galleryOverlay').classList.remove('open');
+        });
+        grid.appendChild(item);
+    });
+    $('galleryOverlay').classList.add('open');
+});
+ $('galleryClose').addEventListener('click', () => $('galleryOverlay').classList.remove('open'));
+
+// BG2 Wall download
+ $('btnBlackboardWall').addEventListener('click', () => {
+    const w = S.boardsWide, h = S.boardsHigh;
+    const plan = {
+        version: 2,
+        builder: "Building Gadgets 2",
+        name: `blackboard-wall-${w}x${h}`,
+        x: 0, y: 0, z: 0,
+        sizeX: w, sizeY: h, sizeZ: 1,
+        blocks: []
+    };
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        plan.blocks.push({ x, y, z: 0, state: "supplementaries:blackboard" });
+    }
+    downloadJSON(plan, `bg2-wall-${w}x${h}.json`);
+});
+
+// Export PNG
+ $('btnDownloadPng').addEventListener('click', () => {
+    if (!S.maskData) return;
+    const link = document.createElement('a');
+    link.download = ($('planName').value || 'blackboard') + '.png';
+    link.href = displayCanvas.toDataURL('image/png');
+    link.click();
+});
+
+// Export Plan JSON — v2 supplementaries-blackboard-plan schema
+function generatePlan() {
+    if (!S.maskData) return null;
+    const w = S.boardsWide, h = S.boardsHigh;
+    const exportMode = ($('exportMode') && $('exportMode').value) || 'auto';
+    const polarityMode = ($('polarityMode') && $('polarityMode').value) || 'wysiwyg';
+    const totalW = w * BOARD, totalH = h * BOARD;
+    // Determine if we need to flip the mask for export.
+    // When invert is ON, the mask's 1s represent BRIGHT areas of the original image.
+    // The JSON legend says '1 = draw black', so we flip to make the JSON match
+    // what the user sees in the preview (WYSIWYG).
+    const flipForExport = (polarityMode === 'wysiwyg') && S.toggles.invert;
+    const mask = flipForExport
+        ? S.maskData.map(v => v ? 0 : 1)
+        : S.maskData;
+
+    // Build boards with row-string encoding (one 16-char '0'/'1' string per row).
+    // 1 always means "draw this pixel as black"; 0 means "leave board background".
+    const boards = [];
+    for (let by = 0; by < h; by++) {
+        for (let bx = 0; bx < w; bx++) {
+            const rows = new Array(BOARD);
+            let drawPixelCount = 0;
+            for (let dy = 0; dy < BOARD; dy++) {
+                const rowBase = (by*BOARD + dy) * S.resultW + (bx*BOARD);
+                let row = '';
+                for (let dx = 0; dx < BOARD; dx++) {
+                    const v = mask[rowBase + dx] ? 1 : 0;
+                    row += v;
+                    if (v) drawPixelCount++;
+                }
+                rows[dy] = row;
+            }
+            boards.push({
+                x: bx,
+                y: by,
+                blackPixelCount: drawPixelCount,
+                drawPixelCount: drawPixelCount,
+                rows: rows
+            });
+        }
+    }
+
+    return {
+        kind: 'supplementaries-blackboard-plan',
+        version: 2,
+        generator: 'Blackboard Converter v8.5',
+        createdAt: new Date().toISOString(),
+        legend: {
+            '0': 'Leave this pixel white.',
+            '1': 'Draw this pixel as black in Minecraft.'
+        },
+        output: {
+            boardsWide: w,
+            boardsHigh: h,
+            tileSize: BOARD,
+            preset: S.preset,
+            threshold: S.threshold,
+            contrast: S.contrast,
+            sharpness: S.sharpness,
+            extra: S.extra,
+            fitMode: S.fitMode,
+            // CRITICAL: when flipForExport is true, the inversion is already
+            // baked into the mask bytes. Setting invert=true here would cause
+            // the mod to double-flip, producing only outlines instead of fills.
+            invert: flipForExport ? false : !!S.toggles.invert,
+            renderMode: S.renderMode,
+            exportMode: exportMode,
+            drawColor: 'black',
+            backgroundColor: 'white',
+            drawMeaning: '1 always means draw this position; 0 always means leave the board background untouched.',
+            maskPolarity: flipForExport ? 'flipped-for-wysiwyg' : 'stable',
+            sourceInversionIsIndependent: true,
+            previewMatched: exportMode === 'auto',
+            sourceInverted: !!S.toggles.invert,
+            exportFlipped: flipForExport,
+            totalWidth: totalW,
+            totalHeight: totalH
+        },
+        boardCount: boards.length,
+        boards: boards
+    };
+}
+
+ $('btnDownloadPlan').addEventListener('click', () => {
+    const plan = generatePlan();
+    if (plan) downloadJSON(plan, ($('planName').value || 'blackboard-plan') + '.json');
+});
+
+ $('btnCopyPlan').addEventListener('click', () => {
+    const plan = generatePlan();
+    if (plan) navigator.clipboard.writeText(JSON.stringify(plan, null, 2)).then(() => {
+        const btn = $('btnCopyPlan');
+        btn.textContent = 'COPIED!';
+        setTimeout(() => btn.textContent = 'COPY PLAN JSON', 1500);
+    });
+});
+
+function downloadJSON(obj, filename) {
+    const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
+// Undo/Redo (simple: store mask snapshots)
+ $('btnUndo').addEventListener('click', () => {
+    // Simplified undo — re-render with previous state
+    scheduleRender();
+});
+ $('btnRedo').addEventListener('click', scheduleRender);
+ $('btnResetPreset').addEventListener('click', () => {
+    S.labVals[S.preset] = PRESETS[S.preset].lab.map(l => l.def);
+    configureLabSliders(S.preset);
+    scheduleRender();
+});
+ $('btnResetAll').addEventListener('click', () => {
+    S.gamma=100;S.denoise=0;S.localContrast=0;S.whiteProtect=0;
+    S.minComponent=0;S.gapRadius=0;S.holeFill=0;
+    S.threshold=128;S.contrast=0;S.sharpness=0;S.extra=3;S.lineWeight=0;
+    S.toggles={invert:false,smoothing:true,despeckle:false,gaprepair:false,detailboost:false,smartCrop:false};
+    // Reset slider UIs
+    ['gamma','denoise','localContrast','whiteProtect','minComponent','gapRadius','holeFill','threshold','contrast','sharpness','extra','lineWeight'].forEach(id => {
+        const el = $(id);
+        el.value = S[id];
+        updateSliderFill(el);
+        const sv = $(id+'Val'); if(sv) sv.textContent = el.value;
+    });
+    $('gammaDisplay').textContent='1.00';
+    ['denoiseDisplay','localContrastDisplay','whiteProtectDisplay','minComponentDisplay','gapRadiusDisplay','holeFillDisplay','threshDisplay','contrastDisplay','sharpDisplay','extraDisplay','lineWeightDisplay'].forEach(id=>{
+        const key = id.replace('Display','').replace('thresh','threshold').replace('sharp','sharpness');
+        $(id).textContent = S[key];
+    });
+    document.querySelectorAll('.toggle-row').forEach(row => {
+        const key = row.dataset.key;
+        if (!key) return;
+        const tog = row.querySelector('.tog');
+        tog.classList.toggle('on', S.toggles[key]);
+    });
+    S.labVals[S.preset] = PRESETS[S.preset].lab.map(l => l.def);
+    configureLabSliders(S.preset);
+    scheduleRender();
+});
+
+// Quick Auto — try all presets, pick best
+ $('btnAuto').addEventListener('click', () => {
+    if (!S.img || !S.sourceData) return;
+    let bestPreset = 'manga', bestScore = -1;
+    const gray = S.sourceData;
+    const w = S.resultW, h = S.resultH;
+    const savedPreset = S.preset;
+    const savedLab = {...S.labVals};
+
+    Object.keys(PRESETS).forEach(key => {
+        S.preset = key;
+        if (!S.labVals[key]) S.labVals[key] = PRESETS[key].lab.map(l => l.def);
+        try {
+            const mask = renderPreset(gray, w, h, S.threshold, S.extra, S.lineWeight);
+            // Score: balance of detail and coverage
+            const fill = mask.reduce((a,b)=>a+b,0) / (w*h);
+            // Edge density
+            let edgeCount = 0;
+            for (let y=1;y<h-1;y++) for(let x=1;x<w-1;x++) {
+                const i=y*w+x;
+                if (mask[i] && (!mask[i-1]||!mask[i+1]||!mask[i-w]||!mask[i+w])) edgeCount++;
+            }
+            const edgeDensity = edgeCount / (w*h);
+            const score = edgeDensity * 3 + Math.min(fill, 0.5) * 2 - Math.abs(fill - 0.3) * 0.5;
+            if (score > bestScore) { bestScore = score; bestPreset = key; }
+        } catch(e) {}
+    });
+
+    S.preset = savedPreset;
+    Object.assign(S.labVals, savedLab);
+    document.querySelectorAll('[data-preset]').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector(`[data-preset="${bestPreset}"]`);
+    if (btn) btn.classList.add('active');
+    configureLabSliders(bestPreset);
+    doRender();
+});
+
+// Deep Optimize — full 3-stage parameter sweep (preset → lab params → global params)
+// Auto-chooses the best combination of options for the loaded image.
+$('btnDeep').addEventListener('click', deepOptimize);
+
+/* ─── Deep Optimization helpers ─── */
+
+// Yield to the event loop so UI stays responsive during long sweeps.
+function nextFrame() {
+    return new Promise(r => setTimeout(r, 0));
+}
+
+// Update the info-box with a status line + progress %.
+function setStatus(text, pct) {
+    const box = $('infoBox');
+    const bar = pct != null
+        ? ` <span style="display:inline-block;width:120px;height:8px;background:#222;border:1px solid #333;vertical-align:middle;margin-left:6px;">` +
+          `<span style="display:block;height:100%;width:${pct}%;background:var(--accent);"></span></span> ` +
+          `<b>${pct}%</b>`
+        : '';
+    box.innerHTML = `<b style="color:var(--accent)">DEEP OPTIMIZE</b> · ${text}${bar}`;
+}
+
+// Per-preset target fill ratios — different algorithms look "right" at different densities.
+function targetFillFor(presetKey) {
+    if (['floyd','atkinson','jjn','stucki','sierra','ordered','bayer8','ign','bluenoise'].includes(presetKey)) {
+        return 0.50;                  // dithering → ~50%
+    }
+    if (['solid','hybrid','darkart'].includes(presetKey)) return 0.40;
+    if (['halftone','stipple','crosshatch','pencil','woodcut'].includes(presetKey)) return 0.35;
+    if (['animeink','manga','lineart','bold','canny','xdog'].includes(presetKey)) return 0.22;
+    return 0.30;                      // default line/threshold targets
+}
+
+// Improved quality score: rewards clean edge density, penalises speckles and off-target fill.
+function scoreMask(mask, w, h, presetKey) {
+    const n = w * h;
+    let fill = 0, edgeCount = 0, isolatedCount = 0;
+    for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+            const i = y * w + x;
+            if (!mask[i]) continue;
+            fill++;
+            const neighbors = (mask[i-1]?1:0) + (mask[i+1]?1:0) + (mask[i-w]?1:0) + (mask[i+w]?1:0);
+            if (neighbors === 0) isolatedCount++;
+            else if (neighbors < 4) edgeCount++;
+        }
+    }
+    const sampled = Math.max(1, (w - 2) * (h - 2));
+    const fillRatio = fill / sampled;
+    const edgeDensity = edgeCount / sampled;
+    const isolatedRatio = fill > 0 ? isolatedCount / fill : 0;
+    const target = targetFillFor(presetKey);
+
+    const edgeReward     = Math.min(edgeDensity * 8, 1.6);
+    const fillReward     = (fillRatio > 0.04 && fillRatio < 0.88) ? 0.5 : 0;
+    const fillPenalty    = Math.abs(fillRatio - target) * 2.2;
+    const specklePenalty = isolatedRatio * 1.8;
+    const blankPenalty   = fillRatio < 0.04 ? 1.0 : 0;          // almost-empty → bad
+    const overPenalty    = fillRatio > 0.90 ? 1.0 : 0;          // almost-full → bad
+
+    return edgeReward + fillReward - fillPenalty - specklePenalty - blankPenalty - overPenalty;
+}
+
+// Render with a temporary preset/lab configuration and score it (no side effects on S).
+function scoreConfiguration(gray, w, h, presetKey, labVals, threshold, extra, lineWeight) {
+    const savedPreset = S.preset;
+    const savedLab = S.labVals[presetKey];
+    S.preset = presetKey;
+    S.labVals[presetKey] = labVals;
+    try {
+        const mask = renderPreset(gray, w, h, threshold, extra, lineWeight);
+        return scoreMask(mask, w, h, presetKey);
+    } catch (e) {
+        return -Infinity;
+    } finally {
+        S.preset = savedPreset;
+        S.labVals[presetKey] = savedLab;
+    }
+}
+
+// Build a coarse (default + low/mid/high) sample grid for a lab parameter.
+function labSamples(cfg) {
+    const range = cfg.max - cfg.min;
+    const step = cfg.step || 1;
+    const candidates = [
+        cfg.def,
+        Math.round((cfg.min + range * 0.25) / step) * step,
+        Math.round((cfg.min + range * 0.50) / step) * step,
+        Math.round((cfg.min + range * 0.75) / step) * step,
+    ];
+    return [...new Set(candidates)]
+        .map(v => Math.max(cfg.min, Math.min(cfg.max, v)))
+        .sort((a, b) => a - b);
+}
+
+async function deepOptimize() {
+    if (!S.img || !S.sourceData) return;
+    const btn = $('btnDeep');
+    const origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'OPTIMIZING…';
+
+    const gray = S.sourceData;
+    const w = S.resultW, h = S.resultH;
+
+    const snapshot = {
+        preset: S.preset,
+        labVals: JSON.parse(JSON.stringify(S.labVals)),
+        threshold: S.threshold,
+        contrast: S.contrast,
+        sharpness: S.sharpness,
+        extra: S.extra,
+        lineWeight: S.lineWeight,
+        gamma: S.gamma,
+        denoise: S.denoise,
+    };
+
+    try {
+        const presetKeys = Object.keys(PRESETS);
+        const total = presetKeys.length;
+
+        // ─── STAGE 1: scan all presets with default lab values ───
+        const stage1 = [];
+        for (let i = 0; i < total; i++) {
+            const key = presetKeys[i];
+            if (!S.labVals[key]) S.labVals[key] = PRESETS[key].lab.map(l => l.def);
+            const lab = [...S.labVals[key]];
+            const score = scoreConfiguration(gray, w, h, key, lab, S.threshold, S.extra, S.lineWeight);
+            stage1.push({ key, score, lab });
+            setStatus(`Stage 1/3 · scanning presets · ${PRESETS[key].name}`, Math.round((i + 1) / total * 33));
+            await nextFrame();
+        }
+        stage1.sort((a, b) => b.score - a.score);
+        const topN = Math.min(5, stage1.length);
+        const top = stage1.slice(0, topN);
+
+        // ─── STAGE 2: lab-parameter sweep on each top preset ───
+        let best = { ...top[0] };
+        let stage2Done = 0;
+        const stage2Total = top.reduce((acc, c) => {
+            const cfgs = PRESETS[c.key].lab;
+            return acc + cfgs.reduce((a, c2) => a * labSamples(c2).length, 1);
+        }, 0) || 1;
+
+        for (const cand of top) {
+            const cfgs = PRESETS[cand.key].lab;
+            const samples = cfgs.map(labSamples);
+            const queue = [[]];
+            for (const set of samples) {
+                const next = [];
+                for (const prefix of queue) for (const v of set) next.push([...prefix, v]);
+                queue.length = 0;
+                queue.push(...next);
+            }
+            for (const combo of queue) {
+                const score = scoreConfiguration(gray, w, h, cand.key, combo, S.threshold, S.extra, S.lineWeight);
+                if (score > best.score) best = { key: cand.key, score, lab: [...combo] };
+                stage2Done++;
+                setStatus(`Stage 2/3 · tuning ${PRESETS[cand.key].name} · best=${PRESETS[best.key].name}`, 33 + Math.round(stage2Done / stage2Total * 34));
+                await nextFrame();
+            }
+        }
+
+        // ─── STAGE 3: global parameter fine-tune on the winning preset ───
+        S.preset = best.key;
+        S.labVals[best.key] = [...best.lab];
+
+        const globalSteps = {
+            threshold: [64, 96, 128, 160, 192],
+            extra:     [1, 2, 3, 5, 7],
+            lineWeight:[-2, -1, 0, 1, 2],
+            sharpness: [0, 2, 4, 6],
+            denoise:   [0, 1, 2],
+        };
+        const flat = [];
+        for (const [k, vs] of Object.entries(globalSteps)) for (const v of vs) flat.push({ k, v });
+
+        for (let i = 0; i < flat.length; i++) {
+            const { k, v } = flat[i];
+            const saved = S[k];
+            S[k] = v;
+            try {
+                const mask = renderPreset(gray, w, h, S.threshold, S.extra, S.lineWeight);
+                const score = scoreMask(mask, w, h, best.key);
+                if (score > best.score) {
+                    best.score = score;
+                    best[k] = v;
+                } else {
+                    S[k] = saved;
+                }
+            } catch (e) {
+                S[k] = saved;
+            }
+            setStatus(`Stage 3/3 · fine-tuning ${k} · best=${PRESETS[best.key].name}`, 67 + Math.round((i + 1) / flat.length * 33));
+            await nextFrame();
+        }
+
+        // ─── Apply winning configuration to the UI ───
+        document.querySelectorAll('[data-preset]').forEach(b => b.classList.remove('active'));
+        const pBtn = document.querySelector(`[data-preset="${best.key}"]`);
+        if (pBtn) pBtn.classList.add('active');
+        configureLabSliders(best.key);
+        S.labVals[best.key] = [...best.lab];
+
+        ['lab1','lab2','lab3'].forEach((id, i) => {
+            const sl = $(id);
+            if (best.lab[i] != null) {
+                sl.value = best.lab[i];
+                $(id + 'Val').textContent = best.lab[i];
+                updateSliderFill(sl);
+            }
+        });
+
+        const globalIds = ['threshold','extra','lineWeight','sharpness','denoise'];
+        globalIds.forEach(id => {
+            const el = $(id); if (!el) return;
+            el.value = S[id];
+            updateSliderFill(el);
+            const sv = $(id + 'Val'); if (sv) sv.textContent = S[id];
+        });
+        if ($('threshDisplay')) $('threshDisplay').textContent = S.threshold;
+        if ($('sharpDisplay'))  $('sharpDisplay').textContent  = S.sharpness;
+        if ($('extraDisplay'))  $('extraDisplay').textContent  = S.extra;
+        if ($('lineWeightDisplay')) $('lineWeightDisplay').textContent = S.lineWeight;
+        if ($('denoiseDisplay')) $('denoiseDisplay').textContent = S.denoise;
+
+        doRender();
+        setStatus(`Done · winner: <b>${PRESETS[best.key].name}</b> · score ${best.score.toFixed(2)}`, 100);
+        setTimeout(() => { if (S.maskData) updateInfo(S.resultW, S.resultH); }, 50);
+    } catch (err) {
+        console.error('Deep optimize failed:', err);
+        S.preset = snapshot.preset;
+        Object.assign(S.labVals, snapshot.labVals);
+        S.threshold = snapshot.threshold;
+        S.contrast = snapshot.contrast;
+        S.sharpness = snapshot.sharpness;
+        S.extra = snapshot.extra;
+        S.lineWeight = snapshot.lineWeight;
+        S.gamma = snapshot.gamma;
+        S.denoise = snapshot.denoise;
+        doRender();
+        setStatus(`Failed: ${err.message || err}`, null);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = origText;
+    }
+}
+
+/* ══════════════════════════════════════
+   INIT
+   ══════════════════════════════════════ */
+configureLabSliders('manga');
+
+// Populate mix B dropdown
+const mixBSelect = $('mixB');
+Object.keys(PRESETS).forEach(key => {
+    const opt = document.createElement('option');
+    opt.value = key; opt.textContent = PRESETS[key].name;
+    mixBSelect.appendChild(opt);
+});
+mixBSelect.value = 'threshold';
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+});
+</script>
+</body>
+</html>

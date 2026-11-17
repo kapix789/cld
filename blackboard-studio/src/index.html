@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark"><meta name="description" content="An offline image-to-blackboard studio. 29 styles, live previews, and 16×16 board plans.">
+<title>Blackboard Studio</title>
+<style>/* STYLES */</style>
+</head>
+<body>
+<header class="app-header">
+  <a class="brand" href="#" aria-label="Blackboard Studio home"><span class="brand-mark" aria-hidden="true">▦</span><span>blackboard<span class="brand-sub">STUDIO / 09.3.2</span></span></a>
+  <span class="local-badge"><i></i> Local by design</span>
+  <div class="header-actions"><button id="undo" class="icon-button" title="Undo (Ctrl/⌘ Z)" aria-label="Undo" disabled>↶</button><button id="redo" class="icon-button" title="Redo (Ctrl/⌘ Shift Z)" aria-label="Redo" disabled>↷</button><span class="header-divider"></span><button id="openProject">Open project</button><button id="saveProject" disabled>Save project <span aria-hidden="true">↗</span></button></div>
+</header>
+<main class="studio">
+  <aside class="sidebar" aria-label="Source and conversion settings">
+    <div class="sidebar-heading"><span class="eyebrow">YOUR WORKSPACE</span><span class="tiny">01—03</span></div>
+    <section class="section">
+      <div class="section-heading"><span class="step">01</span><h2>Source image</h2></div>
+      <label class="upload-zone" id="dropZone" for="fileInput"><span class="upload-symbol" aria-hidden="true">↥</span><strong id="sourceName">Drop an image here</strong><span id="sourceMeta">or browse your files</span><input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif"><img id="sourceThumb" alt="Loaded source thumbnail" hidden></label>
+      <div class="source-footer"><span>Paste an image with <kbd>Ctrl V</kbd></span><button id="demo" class="text-button">Try a sample ↗</button></div>
+      <label class="check-row draft-toggle"><span>Keep a local recovery draft</span><input id="draftEnabled" type="checkbox"></label>
+      <p id="draftStatus" class="hint">Draft recovery is optional and stays on this device.</p>
+      <div id="draftRecovery" hidden><button id="restoreDraft" class="wide">Restore saved draft</button><button id="clearDraft" class="text-button">Delete local draft</button></div>
+    </section>
+    <section class="section">
+      <div class="section-heading"><span class="step">02</span><h2>Build your wall</h2><span class="tiny">16 PX / BOARD</span></div>
+      <div class="dimensions"><label>Width<input id="boardsWide" type="number" min="1" max="200" value="7"></label><button id="ratioLocked" class="lock-button active" aria-label="Lock aspect ratio" aria-pressed="true" title="Lock aspect ratio">⇄</button><label>Height<input id="boardsHigh" type="number" min="1" max="200" value="4"></label></div>
+      <div class="field"><label for="fitMode">Image placement</label><select id="fitMode"><option value="contain">Contain · keep whole image</option><option value="cover">Cover · crop to fill</option><option value="stretch">Stretch · fill dimensions</option></select></div>
+      <div class="field"><label for="quality">Resolution target</label><div class="inline-field"><select id="quality"><option value="6">Tiny · ≈36 boards</option><option value="10">Quick · ≈100 boards</option><option value="18" selected>Standard · ≈324 boards</option><option value="28">Detailed · ≈784 boards</option><option value="40">High · ≈1,600 boards</option><option value="56">Ultra · ≈3,136 boards</option><option value="80">Mega · ≈6,400 boards</option><option value="112">Colossal · ≈12,544 boards</option></select><button id="autoFit" title="Apply resolution to the source aspect ratio" disabled>Apply</button></div></div>
+      <div class="wall-summary"><span id="wallPixels">112 × 64 pixels</span><span id="wallBoards">28 boards</span></div>
+      <p id="reach" class="hint">Within the original ±64-block span.</p>
+    </section>
+    <section class="section styles-section">
+      <div class="section-heading"><span class="step">03</span><h2>Find your style</h2><span class="count">29</span></div>
+      <label class="sr-only" for="presetSearch">Search styles</label><input id="presetSearch" type="search" placeholder="Search styles…" autocomplete="off">
+      <div class="category-tabs" aria-label="Style category"><button data-category="all" class="active" aria-pressed="true">All</button><button data-category="ink" aria-pressed="false">Ink</button><button data-category="dither" aria-pressed="false">Dither</button><button data-category="texture" aria-pressed="false">Texture</button></div>
+      <div id="presets" class="preset-list"></div><p id="noStyles" class="hint" hidden>No matching styles.</p>
+      <button id="gallery" class="wide" disabled>▦ &nbsp; Compare all styles</button>
+      <button id="optimize" class="wide subtle" disabled>✧ &nbsp; Quick suggestion</button>
+      <button id="megaCompare" class="wide primary" disabled>✦ &nbsp; Mega compare</button>
+      <p class="hint">Explore styles, fine-tuning, and mixes. Compare the strongest candidates before applying.</p>
+    </section>
+  </aside>
+  <section class="workspace" aria-label="Image preview">
+    <div class="workspace-title"><div><span class="eyebrow">LIVE PREVIEW</span><h1>Image workspace.</h1></div><span class="version-tag">BLACKBOARD<br>CONVERTER 9.3.2</span></div>
+    <div class="canvas-card">
+      <div class="canvas-toolbar"><div class="segmented" aria-label="Preview mode"><button data-view="result" class="active" aria-pressed="true">Result</button><button data-view="source" aria-pressed="false">Source</button><button data-view="compare" aria-pressed="false">Compare</button></div><button id="grid" class="icon-button" title="Board grid (G)" aria-label="Toggle board grid" aria-pressed="false">▦</button><select id="renderMode" aria-label="Preview appearance"><option value="mask">Ink on paper</option><option value="chalk">Chalk on board</option></select></div>
+      <div id="stage" class="stage">
+        <div id="emptyState" class="empty-state"><div class="empty-art" aria-hidden="true"><svg viewBox="0 0 280 180" fill="none"><rect x="35" y="12" width="210" height="146" rx="3" stroke="currentColor"/><path d="M35 108L87 55L126 95L153 72L245 143M35 132L96 101L135 125L182 95L245 151" stroke="currentColor"/><circle cx="193" cy="49" r="14" fill="currentColor"/><path d="M18 170H260M73 158V170M207 158V170" stroke="currentColor"/><path d="M87 12V158M140 12V158M192 12V158M35 60H245M35 109H245" stroke="currentColor" stroke-opacity=".2"/></svg></div><span class="eyebrow">MAKE SOMETHING WORTH BUILDING</span><h2>Your next wall starts here.</h2><p>Turn an image into a blackboard build.<br>Choose a style. Fine-tune every pixel. Make it yours.</p><button id="emptyBrowse" class="primary">Choose an image <span>↗</span></button><button id="emptyDemo" class="text-button">Or explore with a sample</button></div>
+        <div id="canvasHolder" hidden><canvas id="preview" title="Fit smooth blends screen pixels for a clean overview. Choose Fit pixels or 100% to inspect the actual pattern. Exports are unchanged." tabindex="0" aria-label="Converted image. Click a board to inspect its 16 by 16 pixels."></canvas></div>
+        <div id="busy" class="busy" hidden><span class="spinner"></span><span id="busyText">Rendering…</span><button id="cancelRender">Cancel</button></div>
+      </div>
+      <div id="compareBar" class="compare-bar" hidden><span>Source</span><input type="range" id="compareSplit" min="0" max="100" value="50" aria-label="Comparison split"><span>Result</span></div>
+      <div class="canvas-footer"><span id="coordinates">Click any board to inspect</span><div class="zoom-controls"><output id="zoomReadout" aria-live="off" title="Preview scale">—</output><button id="zoomOut" aria-label="Zoom out">−</button><select id="zoom" aria-label="Zoom"><option value="fit">Fit · smooth</option><option value="pixels">Fit · pixels</option><option value="1">100%</option><option value="2">200%</option><option value="4">400%</option><option value="8">800%</option></select><button id="zoomIn" aria-label="Zoom in">+</button></div></div>
+    </div>
+    <div class="metrics"><div><span>OUTPUT SIZE</span><strong id="metricSize">112 × 64 <small>px</small></strong></div><div><span>BOARDS TO BUILD</span><strong id="metricBoards">28 <small>boards</small></strong></div><div><span>INK COVERAGE</span><strong id="metricFill">— <small>%</small></strong></div><div><span>RENDER TIME</span><strong id="metricTime">— <small>ms</small></strong></div></div>
+    <p id="buildEffort" class="build-effort">Build effort appears after rendering.</p>
+    <div class="workspace-bottom"><span><i class="status-dot"></i><span id="status" role="status" aria-live="polite">Ready when you are.</span></span><span>Private. Offline. Yours.</span></div>
+  </section>
+  <aside class="inspector" aria-label="Fine tuning and export">
+    <div class="inspector-tabs" role="tablist" aria-label="Inspector"><button id="tuneTab" role="tab" aria-controls="tunePanel" aria-selected="true" class="active">Fine-tune</button><button id="exportTab" role="tab" aria-controls="exportPanel" aria-selected="false">Export <span>↗</span></button></div>
+    <div id="tunePanel" role="tabpanel" aria-labelledby="tuneTab">
+      <div class="inspector-intro"><span class="eyebrow">THE FINISHING TOUCHES</span><h2 id="activeName">Manga</h2><p id="activeDescription">Sleek ink lines</p></div>
+      <section class="tune-section"><div class="section-heading"><h3>Style controls</h3><button id="resetStyle" class="text-button">Reset</button></div><div id="labControls"></div></section>
+      <details open><summary>Tone & detail</summary><div id="toneControls" class="details-body"></div></details>
+      <details><summary>Cleanup</summary><div id="cleanupControls" class="details-body"></div></details>
+      <details><summary>Mix two styles <span class="new-tag">REBUILT</span></summary><div class="details-body"><label class="check-row"><span>Enable mixing</span><input id="mixOn" type="checkbox"></label><div class="field"><label for="mixPreset">Second style</label><select id="mixPreset"></select></div><div class="field"><label for="mixMethod">Combination</label><select id="mixMethod"><option value="spatial">Spatial blend</option><option value="add">Union · A or B</option><option value="intersect">Intersection · A and B</option><option value="edgefill">A + dark fill from B</option></select></div><div id="mixControls"></div></div></details>
+      <section class="tune-section"><label class="check-row"><span>Invert source</span><input id="invert" type="checkbox"></label><label class="check-row"><span>Smooth resizing</span><input id="smoothing" type="checkbox" checked></label><label class="check-row"><span>Boost detail</span><input id="detailboost" type="checkbox"></label><label class="check-row"><span>Flip final pixels</span><input id="flipOutput" type="checkbox"></label><p class="hint">Flip changes both the preview and the exported plan.</p></section>
+      <button id="resetAll" class="wide subtle">Reset adjustments</button>
+    </div>
+    <div id="exportPanel" role="tabpanel" aria-labelledby="exportTab" hidden>
+      <div class="inspector-intro"><span class="eyebrow">FROM SCREEN TO BUILD</span><h2>Make it real.</h2><p>Your image, one board at a time.</p></div>
+      <div class="field"><label for="planName">File name</label><input id="planName" type="text" value="blackboard-plan" maxlength="100"></div>
+      <div class="export-card"><span class="file-badge">JSON</span><h3>Pixel drawing plan</h3><p>16 × 16 pixel instructions per board. Use the wall template below for Building Gadgets.</p><button id="downloadPlan" class="primary wide" disabled>Download plan ↓</button><button id="copyPlan" class="wide subtle" disabled>Copy drawing plan</button><p class="hint">1 = draw black. 0 = leave white.<br>Chalk is an alternate preview palette.</p></div>
+      <div class="export-card"><span class="file-badge">PNG</span><h3>Pixel-perfect sheet</h3><p>Clean output at its native resolution, without preview overlays.</p><label class="sr-only" for="exportMode">PNG appearance</label><select id="exportMode"><option value="auto">Match preview palette</option><option value="mask">Black ink on white</option><option value="chalk">Chalk on board</option></select><button id="downloadPNG" class="wide" disabled>Download PNG ↓</button></div>
+      <div class="export-card"><span class="file-badge">WALL</span><h3>Building Gadgets wall</h3><p>Blank blackboards in the Template Manager format.</p><button id="copyWall" class="primary wide">Copy wall template</button><button id="downloadWall" class="wide">Download wall JSON ↓</button><p class="hint">Paste this template into Building Gadgets to place the wall. The picture’s pixel instructions are in the drawing plan above.</p></div>
+      <p class="hint">Save a project to keep your source image and every adjustment together.</p>
+    </div>
+  </aside>
+</main>
+<input id="projectInput" type="file" accept=".json,.blackboard" hidden>
+<dialog id="galleryDialog" aria-labelledby="galleryTitle"><div class="dialog-heading"><div><span class="eyebrow">29 WAYS TO SEE IT</span><h2 id="galleryTitle">Find your favorite.</h2></div><button data-close="galleryDialog" aria-label="Close style comparison">✕</button></div><p class="hint">Whole-image previews at a smaller resolution. Click a style to apply it.</p><progress id="galleryProgress" max="1" value="0"></progress><div id="galleryGrid" class="gallery-grid"></div></dialog>
+<dialog id="megaDialog" aria-labelledby="megaTitle">
+ <div class="dialog-heading"><div><span class="eyebrow">A SMALL SEARCH FOR A BETTER PICTURE</span><h2 id="megaTitle">Mega compare.</h2></div><button data-close="megaDialog" aria-label="Close mega comparison">✕</button></div>
+ <p class="mega-intro">Rank styles first, then fine-tune the strongest style’s sliders and optionally explore two-style combinations. Keep your current version until you find something you prefer.</p>
+ <div class="search-options">
+  <label>Search depth<select id="searchDepth"><option value="160">Quick · 160 candidates</option><option value="600" selected>Deep · 600 candidates</option><option value="1200">Mega · 1,200 candidates</option></select></label>
+  <label>What matters most<select id="searchGoal"><option value="balanced">Balanced</option><option value="tone">Tonal fidelity</option><option value="clean">Less noise</option><option value="outline">Clean outlines</option></select></label>
+  <label>Style search<select id="searchStyle"><option value="auto">Rank styles → tune the winner</option><option value="current">Tune my current style only</option></select></label>
+  <label class="check-row"><span>Explore two-style mixes</span><input id="searchMix" type="checkbox" checked></label>
+  <label class="check-row"><span>Check top 3 at full wall size</span><input id="searchFullSize" type="checkbox" checked></label>
+  <label>Draw-pixel budget (0 = unlimited)<input id="searchPixelBudget" type="number" min="0" max="10240000" step="1" value="0"><small class="hint">A pixel budget always uses full-size checks.</small></label>
+  <button id="startSearch" class="primary">Start comparison ↗</button>
+ </div>
+ <div class="search-progress"><div><span id="searchStatus" role="status" aria-live="polite">Ready to explore.</span><button id="cancelSearch" hidden>Stop search</button></div><progress id="searchProgress" max="1" value="0" hidden></progress></div>
+ <div id="searchPreview" class="search-preview" hidden><div><span class="eyebrow">CURRENT</span><canvas id="searchBefore"></canvas></div><div><span class="eyebrow" id="candidatePreviewLabel">SELECTED CANDIDATE</span><canvas id="searchAfter"></canvas></div></div>
+ <div id="searchAB" class="search-ab" hidden>
+  <div class="search-ab-toolbar"><span id="abLabel">Current ← → Candidate</span><label>Zoom<select id="abZoom"><option value="fit">Fit</option><option value="1">100%</option><option value="2">200%</option><option value="4">400%</option></select></label></div>
+  <div id="abStage"><div id="abHolder"><canvas id="abCanvas" aria-label="Current and selected candidate at identical zoom"></canvas></div></div>
+  <label class="ab-slider">Current<input id="abSplit" type="range" min="0" max="100" value="50" aria-label="Current versus candidate split">Candidate</label>
+ </div>
+ <div id="searchResults" class="search-results"></div>
+ <div class="search-footer"><p id="searchNote" class="hint">Scores are visual heuristics, not a guarantee. Searches use smaller previews, then recheck a shortlist at higher resolution. Final output can differ at full size.</p><button id="applySearch" class="primary" disabled>Apply selected</button></div>
+</dialog>
+<dialog id="boardDialog" aria-labelledby="boardTitle"><div class="dialog-heading"><div><span class="eyebrow">THE SMALL DETAILS</span><h2 id="boardTitle">Board 0, 0</h2></div><button data-close="boardDialog" aria-label="Close board inspection">✕</button></div><canvas id="boardCanvas" width="16" height="16"></canvas><p id="boardInfo" class="hint"></p><div class="dialog-actions"><button id="prevBoard">← Previous</button><button id="nextBoard">Next →</button></div></dialog>
+<dialog id="helpDialog" aria-labelledby="helpTitle"><div class="dialog-heading"><h2 id="helpTitle">Keyboard shortcuts</h2><button data-close="helpDialog" aria-label="Close help">✕</button></div><p>Ctrl / ⌘ Z — Undo<br>Ctrl / ⌘ Shift Z — Redo<br>Ctrl / ⌘ S — Save project<br>G — Toggle board grid<br>F — Fit preview<br>? — Show this help<br>Escape — Close dialog</p></dialog>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+<script id="engine-source">/* ENGINE */</script>
+<script>/* VIEWPORT */</script>
+<script>/* DRAFTS */</script>
+<script id="search-source" type="text/plain">/* SEARCH */</script>
+<script id="worker-source" type="text/plain">/* WORKER */</script>
+<script>/* APP */</script>
+</body></html>

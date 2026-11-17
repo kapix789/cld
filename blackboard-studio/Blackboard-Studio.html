@@ -1,0 +1,1624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark"><meta name="description" content="An offline image-to-blackboard studio. 29 styles, live previews, and 16×16 board plans.">
+<title>Blackboard Studio</title>
+<style>:root{--bg:#151817;--surface:#1b1f1d;--raised:#222724;--line:#343b35;--text:#ecede5;--muted:#9da79e;--accent:#d9ed98;--ink:#1d2917;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;--radius:8px;color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}button,input,select{font:inherit}button,a,input,select{touch-action:manipulation}button{border:1px solid var(--line);background:var(--raised);color:var(--text);padding:9px 12px;border-radius:6px;cursor:pointer;transition:background .16s,border-color .16s}button:hover:not(:disabled){background:#30382f;border-color:#65755e}button:disabled{opacity:.4;cursor:not-allowed}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,canvas:focus-visible{outline:2px solid var(--accent);outline-offset:3px}a{color:inherit;text-decoration:none}h1,h2,h3,p{margin:0}h2{font-size:14px;font-weight:600}h3{font-size:13px;font-weight:600}input:not([type=range]):not([type=checkbox]):not([type=file]),select{width:100%;min-width:0;background:#151917;color:var(--text);border:1px solid var(--line);border-radius:6px;padding:10px 11px;outline-offset:2px}select{padding-right:24px}input[type=checkbox]{width:30px;height:17px;accent-color:var(--accent);cursor:pointer}input[type=range]{width:100%;margin:10px 0 6px;accent-color:var(--accent);cursor:pointer;height:16px}input[type=range]:disabled{opacity:.35}label{color:#c2c9bf;font-size:12px}button.active,button[aria-pressed=true]{border-color:#647445;background:#343d27;color:var(--accent)}[hidden]{display:none!important}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}.app-header{height:80px;padding:0 28px;display:flex;align-items:center;gap:30px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:12px;font-size:23px;font-weight:650;letter-spacing:-.9px}.brand-mark{font-size:33px;color:var(--accent);font-weight:400}.brand-sub{display:block;font:9px var(--mono);letter-spacing:2.7px;color:var(--muted);margin-top:2px}.local-badge{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px}.local-badge i,.status-dot{width:6px;height:6px;background:var(--accent);display:inline-block;border-radius:50%}.header-actions{margin-left:auto;display:flex;gap:8px;align-items:center}.header-actions>button:last-child{border-color:#596349}.header-divider{height:20px;width:1px;background:var(--line);margin:0 6px}.icon-button{font-size:20px;line-height:1;min-width:34px;padding:7px 9px;background:transparent}.studio{display:grid;grid-template-columns:270px minmax(340px,1fr) 278px;max-width:1920px;margin:auto;min-height:calc(100vh - 80px)}.sidebar{border-right:1px solid var(--line);padding:22px 20px;min-width:0}.sidebar-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}.eyebrow{font:9px var(--mono);letter-spacing:1.65px;color:var(--muted)}.tiny{font:9px var(--mono);color:var(--muted)}.section{padding-bottom:22px;margin-bottom:23px;border-bottom:1px solid var(--line)}.section:last-child{border:0;margin:0}.section-heading{display:flex;align-items:center;gap:8px;margin-bottom:16px}.section-heading .tiny,.section-heading .count,.section-heading .text-button{margin-left:auto}.step{font:10px var(--mono);color:var(--accent)}.section-heading h2{font-size:13px}.upload-zone{border:1px dashed #515d4b;border-radius:8px;display:flex;min-height:136px;flex-direction:column;align-items:center;justify-content:center;gap:7px;position:relative;cursor:pointer;background:#20251f;overflow:hidden;padding:16px;text-align:center}.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:#2b3325}.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:2}.upload-zone:focus-within{outline:2px solid var(--accent);outline-offset:3px}.upload-symbol{font-size:26px;line-height:1;color:var(--accent);margin-bottom:5px}.upload-zone strong{font-size:12px;font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.upload-zone>span:last-of-type{font-size:11px;color:var(--muted)}#sourceThumb{height:56px;max-width:100%;object-fit:contain;order:-1;border-radius:3px}.upload-zone:has(#sourceThumb:not([hidden])) .upload-symbol{display:none}.source-footer{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:11px;font-size:10px;color:var(--muted)}kbd{font:9px var(--mono);border:1px solid var(--line);padding:2px 4px;border-radius:3px}.text-button{background:none;border:0;padding:0;color:var(--accent);font-size:11px}.text-button:hover:not(:disabled){background:none;text-decoration:underline}.dimensions{display:grid;grid-template-columns:1fr 30px 1fr;align-items:end;gap:7px}.dimensions label input{margin-top:8px;font:15px var(--mono)}.lock-button{height:39px;padding:5px;font-size:19px;background:transparent}.field{margin-top:15px}.field>label{display:block;margin-bottom:7px}.inline-field{display:flex;gap:6px}.inline-field select{font-size:11px}.inline-field button{font-size:11px;padding:6px 9px}.wall-summary{display:flex;justify-content:space-between;font:10px var(--mono);color:var(--accent);margin-top:14px}.hint{font-size:10px;color:var(--muted);line-height:1.7;margin-top:10px}.hint.warning{color:#f2b887}.count{border:1px solid var(--line);padding:2px 5px;border-radius:4px;font:10px var(--mono);color:var(--muted)}input[type=search]{font-size:11px}.category-tabs{display:flex;margin:12px 0;gap:4px}.category-tabs button{flex:1;border:0;padding:7px 4px;font-size:10px;color:var(--muted);background:none}.category-tabs button.active{background:#303a26;color:var(--accent)}.preset-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:310px;overflow:auto;margin-bottom:12px;padding:2px}.preset-button{text-align:left;padding:11px 9px;background:transparent;min-height:64px}.preset-button strong{font-size:11px;display:block;font-weight:550}.preset-button small{font-size:9px;color:var(--muted);display:block;margin-top:5px;line-height:1.4}.preset-button.active:before{content:'●';font-size:6px;float:right;margin-top:4px}.wide{width:100%;margin-top:8px;font-size:11px}.subtle{background:transparent}.primary{background:var(--accent);color:var(--ink);border-color:var(--accent);font-weight:650}.primary:hover:not(:disabled){background:#e5f8b0;border-color:#e5f8b0}.workspace{min-width:0;padding:35px 28px 24px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;max-height:1100px}.workspace-title{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:25px}.workspace-title h1{font-size:clamp(26px,2.9vw,44px);font-weight:450;line-height:1.12;letter-spacing:-1.6px;margin-top:13px}.version-tag{font:8px/1.7 var(--mono);letter-spacing:1.3px;color:#879482;border:1px solid var(--line);border-radius:4px;padding:8px;margin-top:24px}.canvas-card{border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;flex:1;min-height:350px;background:#1c211e}.canvas-toolbar{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:12px}.segmented{display:flex;gap:2px}.segmented button{padding:7px 10px;border:0;background:transparent;color:var(--muted);font-size:11px}.segmented button.active{background:#323a2c;color:var(--text)}.canvas-toolbar>.icon-button{margin-left:auto}.canvas-toolbar>select{width:133px;font-size:10px;padding:8px}.stage{position:relative;flex:1;min-height:230px;overflow:auto;display:flex;background-color:#121714;background-image:radial-gradient(#384039 0.65px,transparent 0.65px);background-size:14px 14px;overscroll-behavior:contain}#canvasHolder{padding:24px;min-width:100%;min-height:100%;width:max-content;height:max-content;display:flex;align-items:center;justify-content:center}#preview{display:block;image-rendering:pixelated;box-shadow:0 8px 35px #0005;cursor:crosshair;flex-shrink:0}.empty-state{margin:auto;text-align:center;padding:26px 20px;max-width:480px}.empty-art{width:220px;max-width:65%;margin:0 auto 18px;color:#9eb881}.empty-state .eyebrow{font-size:8px;color:#b9c5b1}.empty-state h2{font-size:24px;font-weight:450;letter-spacing:-.5px;margin:12px 0}.empty-state p{font-size:12px;line-height:1.8;color:var(--muted);margin-bottom:20px}.empty-state .primary{display:block;margin:0 auto 14px;min-width:195px;padding:11px 17px}.empty-state .primary span{margin-left:25px}.canvas-footer{display:flex;justify-content:space-between;align-items:center;padding:10px 13px;border-top:1px solid var(--line);gap:8px;min-height:48px}.canvas-footer>span{font:9px var(--mono);color:var(--muted)}.zoom-controls{display:flex;align-items:center;gap:4px}.zoom-controls button{border:0;background:transparent;padding:4px 8px;font-size:16px}.zoom-controls select{padding:5px 22px 5px 8px;font:10px var(--mono);width:76px}.metrics{display:grid;grid-template-columns:1.1fr 1.1fr 1fr 1fr;margin-top:19px;padding:4px 0}.metrics>div{border-right:1px solid var(--line);padding:0 14px}.metrics>div:first-child{padding-left:0}.metrics>div:last-child{border:0;padding-right:0}.metrics span{font:8px var(--mono);letter-spacing:1px;color:var(--muted);display:block;margin-bottom:9px}.metrics strong{font:18px var(--mono);white-space:nowrap}.metrics small{font:10px var(--mono);color:var(--muted)}.workspace-bottom{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:24px;font-size:9px;color:var(--muted);line-height:1.7}.status-dot{width:5px;height:5px;margin-right:7px}.inspector{border-left:1px solid var(--line);padding:0 20px 24px;min-width:0}.inspector-tabs{display:flex;border-bottom:1px solid var(--line);margin:0 -20px;padding:0 20px;gap:22px}.inspector-tabs button{border-radius:0;border:0;background:none;padding:22px 0 16px;color:var(--muted);font-size:12px}.inspector-tabs button.active{border-bottom:2px solid var(--accent);color:var(--text)}.inspector-tabs button span{margin-left:30px}.inspector-intro{margin:28px 0 24px}.inspector-intro h2{font-size:25px;letter-spacing:-.7px;font-weight:450;margin:11px 0 8px}.inspector-intro p{font-size:11px;color:var(--muted);line-height:1.7}.tune-section{padding:0 0 17px;margin-bottom:17px;border-bottom:1px solid var(--line)}.slider-control{margin:15px 0 4px}.slider-label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px}.slider-label output{font:11px var(--mono);color:var(--accent)}.slider-extents{display:flex;justify-content:space-between;font:8px var(--mono);color:#83907f}.slider-control.disabled{opacity:.45}details{border-bottom:1px solid var(--line);margin-bottom:17px;padding-bottom:14px}summary{font-size:12px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px}summary:after{content:'+';margin-left:auto;color:var(--muted)}details[open]>summary:after{content:'−'}.details-body{padding-top:2px}.new-tag{font:7px var(--mono);letter-spacing:.5px;color:var(--accent);border:1px solid #455335;padding:3px 5px;border-radius:3px}.check-row{display:flex;align-items:center;justify-content:space-between;min-height:32px;cursor:pointer;font-size:11px}.export-card{padding:19px 0;border-bottom:1px solid var(--line)}.export-card h3{margin:11px 0 7px;font-size:15px}.export-card p{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:12px}.file-badge{font:9px var(--mono);color:var(--accent);background:#303926;border:1px solid #485839;border-radius:3px;padding:4px 6px}.export-card select{font-size:11px}.compare-bar{display:flex;gap:12px;align-items:center;padding:5px 15px;font:10px var(--mono);color:var(--muted);border-top:1px solid var(--line)}.compare-bar input{margin:5px 0}.busy{position:sticky;align-self:flex-start;right:12px;top:12px;flex-shrink:0;display:flex;align-items:center;gap:9px;padding:8px 10px;background:#293225;box-shadow:0 4px 18px #0006;border:1px solid #5c7048;border-radius:6px;font-size:11px;z-index:2;height:42px;margin-left:-270px;min-width:250px;max-width:270px}.busy button{padding:5px 8px;margin-left:auto;font-size:10px}.spinner{display:inline-block;width:12px;height:12px;border:2px solid #687753;border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}dialog{width:min(900px,92vw);max-height:88vh;background:var(--surface);color:var(--text);border:1px solid #536449;border-radius:12px;padding:24px;box-shadow:0 25px 100px #0008}dialog::backdrop{background:#000b;backdrop-filter:blur(5px)}.dialog-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}.dialog-heading h2{font-size:28px;font-weight:450;margin-top:8px}.dialog-heading button{background:transparent}.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:15px}.gallery-item{padding:10px;text-align:left}.gallery-item canvas{width:100%;height:110px;object-fit:contain;background:#101411;image-rendering:pixelated}.gallery-item strong{display:block;font-size:12px;margin:10px 0 3px}.gallery-item span{font-size:10px;color:var(--muted)}progress{width:100%;height:4px;accent-color:var(--accent);margin:15px 0 0}#boardDialog{width:380px}#boardCanvas{width:100%;height:auto;image-rendering:pixelated;display:block;margin-top:20px}#boardInfo{font-size:12px}.dialog-actions{display:flex;justify-content:space-between;margin-top:16px}#helpDialog{width:430px}#helpDialog p{line-height:2.2;margin-top:20px;color:var(--muted)}#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--ink);padding:12px 18px;border-radius:7px;box-shadow:0 6px 30px #0005;max-width:min(90vw,550px);font-size:12px;z-index:20}*{scrollbar-width:thin;scrollbar-color:#424d40 transparent}@media(min-width:1600px){.studio{grid-template-columns:290px minmax(340px,1fr) 300px}.workspace{padding:40px}.sidebar,.inspector{padding-left:24px;padding-right:24px}.workspace-title h1{font-size:46px}}@media(max-width:1190px){.studio{grid-template-columns:250px minmax(320px,1fr)}.inspector{grid-column:1/-1;border-top:1px solid var(--line);border-left:0;padding-bottom:25px}.inspector #tunePanel{display:grid;grid-template-columns:repeat(3,1fr);gap:0 28px}.inspector-intro{grid-column:1/-1}.inspector #exportPanel{display:grid;grid-template-columns:repeat(3,1fr);gap:0 25px}.inspector #exportPanel>.field{grid-column:1/-1;max-width:350px}.workspace{position:relative;height:850px;max-height:calc(100vh + 40px);padding:28px 22px}.sidebar{padding:22px 18px}.workspace-title h1{font-size:34px}.version-tag{display:none}}@media(max-width:700px){.app-header{height:70px;padding:0 16px;gap:10px}.brand{font-size:19px;gap:8px}.brand-mark{font-size:28px}.brand-sub{font-size:7px}.local-badge,.header-divider{display:none}.header-actions{gap:4px}.header-actions>button{font-size:10px;padding:7px}.header-actions .icon-button{display:none}.studio{display:flex;flex-direction:column}.workspace{order:0;height:690px;max-height:none;padding:25px 16px 20px}.sidebar{order:1;border-top:1px solid var(--line);border-right:0;padding:22px 20px}.inspector{order:2}.workspace-title h1{font-size:33px}.workspace-title{margin-bottom:20px}.canvas-toolbar{gap:4px;padding:8px}.segmented button{padding:7px 8px;font-size:10px}.canvas-toolbar>select{width:116px}.metrics strong{font-size:13px}.metrics small{font-size:8px}.metrics span{font-size:7px;letter-spacing:.3px}.metrics>div{padding:0 9px}.workspace-bottom>span:last-child{display:none}.empty-art{width:160px;margin-bottom:10px}.empty-state h2{font-size:21px}.empty-state p{font-size:11px}.empty-state .eyebrow{font-size:7px}.empty-state{padding:20px 12px}.preset-list{max-height:300px;grid-template-columns:repeat(3,1fr)}.source-footer{flex-direction:row;justify-content:space-between}.inspector #tunePanel,.inspector #exportPanel{display:block}.upload-zone{min-height:120px}.sidebar-heading{margin-bottom:22px}.canvas-footer>span{font-size:8px}.gallery-grid{grid-template-columns:1fr 1fr}.gallery-item canvas{height:100px}.gallery-item{padding:8px}dialog{padding:17px}.dialog-heading h2{font-size:24px}#canvasHolder{padding:16px}.busy{min-width:225px;margin-left:-237px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* 9.1 — neutral black glass. Blur is restricted to UI chrome, never the image. */
+:root{--bg:#070709;--surface:#111114;--raised:#1b1b20;--line:#2c2c33;--text:#f2f2f5;--muted:#a0a0ad;--accent:#e4e8f5;--ink:#101116}
+body{background:radial-gradient(ellipse at 60% 0%,#1c1c2580,transparent 55%),#070709}
+button{background:#ffffff06;border-color:#ffffff16;border-radius:8px}
+button:hover:not(:disabled){background:#ffffff10;border-color:#ffffff3a}
+button.active,button[aria-pressed=true]{background:#ffffff10;border-color:#ffffff42;color:#fff}
+input:not([type=range]):not([type=checkbox]):not([type=file]),select{background:#07070999;border-color:#ffffff19;color:#ebebf1}
+.app-header{background:#0c0c10b8;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-color:#ffffff10}
+.brand-mark{color:#e5e7ee}.local-badge i,.status-dot{background:#b6c2ed}.brand-sub{color:#9393a3}
+.header-actions>button:last-child{background:#ffffff0b;border-color:#ffffff25}
+.sidebar,.inspector{background:#0e0e1280;border-color:#ffffff10}
+.section,details,.tune-section,.export-card,.inspector-tabs{border-color:#ffffff12}
+.upload-zone{background:linear-gradient(145deg,#ffffff06,#ffffff02);border-color:#ffffff30;border-radius:11px}
+.upload-zone:hover,.upload-zone.dragover{background:#ffffff09;border-color:#b9c3e4}
+label{color:#c2c2cd}.eyebrow,.tiny,.hint,.source-footer{color:#9b9ba9}.step,.wall-summary{color:#c0c7df}
+.category-tabs button.active,.segmented button.active{background:#ffffff0e;color:#f1f1f8}
+.preset-button{background:#ffffff02;border-color:#ffffff10}.preset-button.active{background:linear-gradient(135deg,#ffffff14,#ffffff05);border-color:#ffffff42}
+.preset-button small{color:#a4a4b0}.text-button{background:none;border:0;color:#d5d9e9}.text-button:hover:not(:disabled){background:none}
+.primary{background:linear-gradient(135deg,#f5f5fa,#c7cee4);color:#11131a;border:1px solid #f0f1fc88;box-shadow:0 3px 14px #0004}
+.primary:hover:not(:disabled){background:linear-gradient(135deg,#fff,#dde3f5);border-color:#fff}
+.workspace-title h1{font-size:clamp(26px,2.4vw,38px);font-weight:450;line-height:1.18;letter-spacing:-1.2px}
+.workspace-title{margin-bottom:22px}.workspace-title>.version-tag{border-color:#ffffff13;color:#9393a2}
+.canvas-card{background:#11111499;border-color:#ffffff1b;box-shadow:0 18px 65px #0006,inset 0 1px 0 #ffffff06;border-radius:13px}
+.canvas-toolbar,.canvas-footer{background:linear-gradient(135deg,#ffffff04,#ffffff01);border-color:#ffffff12}
+.stage{background:#08080a;background-image:none;isolation:isolate}
+#canvasHolder{flex:0 0 auto;min-width:100%;min-height:100%;width:max-content;height:max-content}
+#preview{image-rendering:auto;box-shadow:0 3px 35px #0008;outline:1px solid #ffffff12}
+.empty-art{color:#a0aac4}.empty-state .eyebrow{color:#a6abbd}
+.busy{position:absolute;top:12px;right:12px;margin:0;background:#17171ee8;border-color:#ffffff2c;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.spinner{border-color:#535463;border-top-color:#e4e8f5}.metrics>div{border-color:#ffffff12}
+input[type=range]{accent-color:#c8d0ec}input[type=checkbox]{accent-color:#c8d0ec}
+.inspector-tabs button.active{color:#fff;border-bottom-color:#ccd3ed;background:none}.slider-label output{color:#d0d6ed}.slider-extents{color:#8a8a99}
+.new-tag,.file-badge{background:#ffffff06;border-color:#ffffff21;color:#c9d0e4}
+.compare-bar{border-color:#ffffff12}.zoom-controls select{width:118px}.zoom-controls output{font:9px var(--mono);color:#9899aa;min-width:40px;text-align:right}
+#toast{background:#e1e5f3;color:#151720;border:1px solid #fff6}
+dialog{background:linear-gradient(145deg,#1b1b23f5,#101014fa);border:1px solid #ffffff2b;box-shadow:0 25px 100px #000b,inset 0 1px 0 #ffffff0c;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+dialog::backdrop{background:#000a;backdrop-filter:blur(7px)}
+.gallery-item canvas{background:#08080a;image-rendering:auto}
+#megaDialog{width:min(1100px,94vw);padding:28px;max-height:92vh}
+.mega-intro{color:var(--muted);font-size:12px;line-height:1.8;max-width:690px;margin:16px 0 20px}
+.search-options{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px;padding:16px;background:#ffffff04;border:1px solid #ffffff13;border-radius:10px;align-items:end}
+.search-options>label{display:flex;flex-direction:column;gap:8px;font-size:11px}.search-options>.check-row{flex-direction:row;align-self:center;gap:8px}.search-options button{height:38px;white-space:nowrap;font-size:11px}.search-options select{font-size:11px}
+.search-progress{margin:20px 0}.search-progress>div{display:flex;justify-content:space-between;align-items:center;gap:15px;min-height:30px}.search-progress span{font:11px/1.7 var(--mono);color:#c4c9dc}.search-progress button{font-size:11px;white-space:nowrap}
+.search-preview{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}.search-preview>div{background:#08080b;border:1px solid #ffffff14;border-radius:9px;padding:12px}.search-preview canvas{display:block;width:100%;height:clamp(140px,24vh,270px);object-fit:contain;image-rendering:auto;margin-top:12px}.search-preview .eyebrow{font-size:9px}
+.search-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.search-card{display:flex;flex-direction:column;text-align:left;padding:12px;gap:8px;min-width:0;background:#ffffff03}.search-card .eyebrow{font-size:8px}.search-card canvas{width:100%;height:130px;object-fit:contain;background:#08080b;image-rendering:auto;border-radius:5px}.search-card strong{font-size:12px;font-weight:550}.search-card small{font-size:10px;line-height:1.7;color:#a3a3b2}.candidate-score{font:10px var(--mono);color:#bcc8eb}.search-card.active{box-shadow:inset 0 0 0 1px #e5eaff3a;background:#ffffff0a}
+.search-footer{display:flex;gap:22px;align-items:center;justify-content:space-between;margin-top:22px;border-top:1px solid #ffffff16;padding-top:15px}.search-footer p{max-width:700px;margin:0;font-size:11px}.search-footer button{white-space:nowrap;font-size:12px}
+@media(max-width:1190px){.search-options{grid-template-columns:1fr 1fr}.workspace-title h1{font-size:32px}}
+@media(max-width:700px){.workspace-title h1{font-size:30px}.zoom-controls select{width:107px}.zoom-controls output{font-size:8px;min-width:30px}.canvas-footer{flex-wrap:wrap}.canvas-footer>span{max-width:120px}.zoom-controls{margin-left:auto}.busy{margin:0}.search-options{grid-template-columns:1fr;gap:13px}#megaDialog{padding:18px}.search-results{grid-template-columns:1fr 1fr}.search-card{padding:9px}.search-card canvas{height:100px}.search-footer{flex-direction:column;align-items:stretch;gap:14px}.search-preview{gap:8px}.search-preview>div{padding:8px}.search-preview .eyebrow{font-size:7px}.search-preview canvas{height:150px}.search-progress span{font-size:10px}}
+@media(prefers-reduced-transparency:reduce){.app-header,.sidebar,.inspector,dialog,.canvas-card{background:#111115;backdrop-filter:none;-webkit-backdrop-filter:none}}
+.search-ab{margin:20px 0;border:1px solid #ffffff20;border-radius:10px;overflow:hidden;background:#08080b}.search-ab-toolbar{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:10px 14px;font:10px var(--mono);border-bottom:1px solid #ffffff14}.search-ab-toolbar label{display:flex;align-items:center;gap:8px;font-size:10px}.search-ab-toolbar select{width:80px;padding:6px;font-size:10px}#abStage{height:350px;overflow:auto;position:relative;display:flex}#abHolder{padding:16px;min-width:100%;min-height:100%;width:max-content;height:max-content;display:flex;align-items:center;justify-content:center;flex:0 0 auto}#abCanvas{display:block;flex-shrink:0}.ab-slider{display:flex;gap:15px;align-items:center;padding:8px 14px;font-size:10px;border-top:1px solid #ffffff14}.ab-slider input{margin:0}.draft-toggle{margin-top:12px}.draft-toggle span{font-size:10px}#draftRecovery .text-button{margin-top:10px}.search-options{grid-template-columns:repeat(3,minmax(0,1fr))}.search-options input[type=number]{font-size:11px}@media(max-width:700px){.search-options{grid-template-columns:1fr}#abStage{height:270px}.search-ab-toolbar{flex-wrap:wrap}.search-ab-toolbar span{font-size:9px}.ab-slider{gap:9px}}
+.build-effort{font:10px/1.7 var(--mono);color:#adb5cb;margin:14px 0 0}
+</style>
+</head>
+<body>
+<header class="app-header">
+  <a class="brand" href="#" aria-label="Blackboard Studio home"><span class="brand-mark" aria-hidden="true">▦</span><span>blackboard<span class="brand-sub">STUDIO / 09.3.2</span></span></a>
+  <span class="local-badge"><i></i> Local by design</span>
+  <div class="header-actions"><button id="undo" class="icon-button" title="Undo (Ctrl/⌘ Z)" aria-label="Undo" disabled>↶</button><button id="redo" class="icon-button" title="Redo (Ctrl/⌘ Shift Z)" aria-label="Redo" disabled>↷</button><span class="header-divider"></span><button id="openProject">Open project</button><button id="saveProject" disabled>Save project <span aria-hidden="true">↗</span></button></div>
+</header>
+<main class="studio">
+  <aside class="sidebar" aria-label="Source and conversion settings">
+    <div class="sidebar-heading"><span class="eyebrow">YOUR WORKSPACE</span><span class="tiny">01—03</span></div>
+    <section class="section">
+      <div class="section-heading"><span class="step">01</span><h2>Source image</h2></div>
+      <label class="upload-zone" id="dropZone" for="fileInput"><span class="upload-symbol" aria-hidden="true">↥</span><strong id="sourceName">Drop an image here</strong><span id="sourceMeta">or browse your files</span><input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/avif"><img id="sourceThumb" alt="Loaded source thumbnail" hidden></label>
+      <div class="source-footer"><span>Paste an image with <kbd>Ctrl V</kbd></span><button id="demo" class="text-button">Try a sample ↗</button></div>
+      <label class="check-row draft-toggle"><span>Keep a local recovery draft</span><input id="draftEnabled" type="checkbox"></label>
+      <p id="draftStatus" class="hint">Draft recovery is optional and stays on this device.</p>
+      <div id="draftRecovery" hidden><button id="restoreDraft" class="wide">Restore saved draft</button><button id="clearDraft" class="text-button">Delete local draft</button></div>
+    </section>
+    <section class="section">
+      <div class="section-heading"><span class="step">02</span><h2>Build your wall</h2><span class="tiny">16 PX / BOARD</span></div>
+      <div class="dimensions"><label>Width<input id="boardsWide" type="number" min="1" max="200" value="7"></label><button id="ratioLocked" class="lock-button active" aria-label="Lock aspect ratio" aria-pressed="true" title="Lock aspect ratio">⇄</button><label>Height<input id="boardsHigh" type="number" min="1" max="200" value="4"></label></div>
+      <div class="field"><label for="fitMode">Image placement</label><select id="fitMode"><option value="contain">Contain · keep whole image</option><option value="cover">Cover · crop to fill</option><option value="stretch">Stretch · fill dimensions</option></select></div>
+      <div class="field"><label for="quality">Resolution target</label><div class="inline-field"><select id="quality"><option value="6">Tiny · ≈36 boards</option><option value="10">Quick · ≈100 boards</option><option value="18" selected>Standard · ≈324 boards</option><option value="28">Detailed · ≈784 boards</option><option value="40">High · ≈1,600 boards</option><option value="56">Ultra · ≈3,136 boards</option><option value="80">Mega · ≈6,400 boards</option><option value="112">Colossal · ≈12,544 boards</option></select><button id="autoFit" title="Apply resolution to the source aspect ratio" disabled>Apply</button></div></div>
+      <div class="wall-summary"><span id="wallPixels">112 × 64 pixels</span><span id="wallBoards">28 boards</span></div>
+      <p id="reach" class="hint">Within the original ±64-block span.</p>
+    </section>
+    <section class="section styles-section">
+      <div class="section-heading"><span class="step">03</span><h2>Find your style</h2><span class="count">29</span></div>
+      <label class="sr-only" for="presetSearch">Search styles</label><input id="presetSearch" type="search" placeholder="Search styles…" autocomplete="off">
+      <div class="category-tabs" aria-label="Style category"><button data-category="all" class="active" aria-pressed="true">All</button><button data-category="ink" aria-pressed="false">Ink</button><button data-category="dither" aria-pressed="false">Dither</button><button data-category="texture" aria-pressed="false">Texture</button></div>
+      <div id="presets" class="preset-list"></div><p id="noStyles" class="hint" hidden>No matching styles.</p>
+      <button id="gallery" class="wide" disabled>▦ &nbsp; Compare all styles</button>
+      <button id="optimize" class="wide subtle" disabled>✧ &nbsp; Quick suggestion</button>
+      <button id="megaCompare" class="wide primary" disabled>✦ &nbsp; Mega compare</button>
+      <p class="hint">Explore styles, fine-tuning, and mixes. Compare the strongest candidates before applying.</p>
+    </section>
+  </aside>
+  <section class="workspace" aria-label="Image preview">
+    <div class="workspace-title"><div><span class="eyebrow">LIVE PREVIEW</span><h1>Image workspace.</h1></div><span class="version-tag">BLACKBOARD<br>CONVERTER 9.3.2</span></div>
+    <div class="canvas-card">
+      <div class="canvas-toolbar"><div class="segmented" aria-label="Preview mode"><button data-view="result" class="active" aria-pressed="true">Result</button><button data-view="source" aria-pressed="false">Source</button><button data-view="compare" aria-pressed="false">Compare</button></div><button id="grid" class="icon-button" title="Board grid (G)" aria-label="Toggle board grid" aria-pressed="false">▦</button><select id="renderMode" aria-label="Preview appearance"><option value="mask">Ink on paper</option><option value="chalk">Chalk on board</option></select></div>
+      <div id="stage" class="stage">
+        <div id="emptyState" class="empty-state"><div class="empty-art" aria-hidden="true"><svg viewBox="0 0 280 180" fill="none"><rect x="35" y="12" width="210" height="146" rx="3" stroke="currentColor"/><path d="M35 108L87 55L126 95L153 72L245 143M35 132L96 101L135 125L182 95L245 151" stroke="currentColor"/><circle cx="193" cy="49" r="14" fill="currentColor"/><path d="M18 170H260M73 158V170M207 158V170" stroke="currentColor"/><path d="M87 12V158M140 12V158M192 12V158M35 60H245M35 109H245" stroke="currentColor" stroke-opacity=".2"/></svg></div><span class="eyebrow">MAKE SOMETHING WORTH BUILDING</span><h2>Your next wall starts here.</h2><p>Turn an image into a blackboard build.<br>Choose a style. Fine-tune every pixel. Make it yours.</p><button id="emptyBrowse" class="primary">Choose an image <span>↗</span></button><button id="emptyDemo" class="text-button">Or explore with a sample</button></div>
+        <div id="canvasHolder" hidden><canvas id="preview" title="Fit smooth blends screen pixels for a clean overview. Choose Fit pixels or 100% to inspect the actual pattern. Exports are unchanged." tabindex="0" aria-label="Converted image. Click a board to inspect its 16 by 16 pixels."></canvas></div>
+        <div id="busy" class="busy" hidden><span class="spinner"></span><span id="busyText">Rendering…</span><button id="cancelRender">Cancel</button></div>
+      </div>
+      <div id="compareBar" class="compare-bar" hidden><span>Source</span><input type="range" id="compareSplit" min="0" max="100" value="50" aria-label="Comparison split"><span>Result</span></div>
+      <div class="canvas-footer"><span id="coordinates">Click any board to inspect</span><div class="zoom-controls"><output id="zoomReadout" aria-live="off" title="Preview scale">—</output><button id="zoomOut" aria-label="Zoom out">−</button><select id="zoom" aria-label="Zoom"><option value="fit">Fit · smooth</option><option value="pixels">Fit · pixels</option><option value="1">100%</option><option value="2">200%</option><option value="4">400%</option><option value="8">800%</option></select><button id="zoomIn" aria-label="Zoom in">+</button></div></div>
+    </div>
+    <div class="metrics"><div><span>OUTPUT SIZE</span><strong id="metricSize">112 × 64 <small>px</small></strong></div><div><span>BOARDS TO BUILD</span><strong id="metricBoards">28 <small>boards</small></strong></div><div><span>INK COVERAGE</span><strong id="metricFill">— <small>%</small></strong></div><div><span>RENDER TIME</span><strong id="metricTime">— <small>ms</small></strong></div></div>
+    <p id="buildEffort" class="build-effort">Build effort appears after rendering.</p>
+    <div class="workspace-bottom"><span><i class="status-dot"></i><span id="status" role="status" aria-live="polite">Ready when you are.</span></span><span>Private. Offline. Yours.</span></div>
+  </section>
+  <aside class="inspector" aria-label="Fine tuning and export">
+    <div class="inspector-tabs" role="tablist" aria-label="Inspector"><button id="tuneTab" role="tab" aria-controls="tunePanel" aria-selected="true" class="active">Fine-tune</button><button id="exportTab" role="tab" aria-controls="exportPanel" aria-selected="false">Export <span>↗</span></button></div>
+    <div id="tunePanel" role="tabpanel" aria-labelledby="tuneTab">
+      <div class="inspector-intro"><span class="eyebrow">THE FINISHING TOUCHES</span><h2 id="activeName">Manga</h2><p id="activeDescription">Sleek ink lines</p></div>
+      <section class="tune-section"><div class="section-heading"><h3>Style controls</h3><button id="resetStyle" class="text-button">Reset</button></div><div id="labControls"></div></section>
+      <details open><summary>Tone & detail</summary><div id="toneControls" class="details-body"></div></details>
+      <details><summary>Cleanup</summary><div id="cleanupControls" class="details-body"></div></details>
+      <details><summary>Mix two styles <span class="new-tag">REBUILT</span></summary><div class="details-body"><label class="check-row"><span>Enable mixing</span><input id="mixOn" type="checkbox"></label><div class="field"><label for="mixPreset">Second style</label><select id="mixPreset"></select></div><div class="field"><label for="mixMethod">Combination</label><select id="mixMethod"><option value="spatial">Spatial blend</option><option value="add">Union · A or B</option><option value="intersect">Intersection · A and B</option><option value="edgefill">A + dark fill from B</option></select></div><div id="mixControls"></div></div></details>
+      <section class="tune-section"><label class="check-row"><span>Invert source</span><input id="invert" type="checkbox"></label><label class="check-row"><span>Smooth resizing</span><input id="smoothing" type="checkbox" checked></label><label class="check-row"><span>Boost detail</span><input id="detailboost" type="checkbox"></label><label class="check-row"><span>Flip final pixels</span><input id="flipOutput" type="checkbox"></label><p class="hint">Flip changes both the preview and the exported plan.</p></section>
+      <button id="resetAll" class="wide subtle">Reset adjustments</button>
+    </div>
+    <div id="exportPanel" role="tabpanel" aria-labelledby="exportTab" hidden>
+      <div class="inspector-intro"><span class="eyebrow">FROM SCREEN TO BUILD</span><h2>Make it real.</h2><p>Your image, one board at a time.</p></div>
+      <div class="field"><label for="planName">File name</label><input id="planName" type="text" value="blackboard-plan" maxlength="100"></div>
+      <div class="export-card"><span class="file-badge">JSON</span><h3>Pixel drawing plan</h3><p>16 × 16 pixel instructions per board. Use the wall template below for Building Gadgets.</p><button id="downloadPlan" class="primary wide" disabled>Download plan ↓</button><button id="copyPlan" class="wide subtle" disabled>Copy drawing plan</button><p class="hint">1 = draw black. 0 = leave white.<br>Chalk is an alternate preview palette.</p></div>
+      <div class="export-card"><span class="file-badge">PNG</span><h3>Pixel-perfect sheet</h3><p>Clean output at its native resolution, without preview overlays.</p><label class="sr-only" for="exportMode">PNG appearance</label><select id="exportMode"><option value="auto">Match preview palette</option><option value="mask">Black ink on white</option><option value="chalk">Chalk on board</option></select><button id="downloadPNG" class="wide" disabled>Download PNG ↓</button></div>
+      <div class="export-card"><span class="file-badge">WALL</span><h3>Building Gadgets wall</h3><p>Blank blackboards in the Template Manager format.</p><button id="copyWall" class="primary wide">Copy wall template</button><button id="downloadWall" class="wide">Download wall JSON ↓</button><p class="hint">Paste this template into Building Gadgets to place the wall. The picture’s pixel instructions are in the drawing plan above.</p></div>
+      <p class="hint">Save a project to keep your source image and every adjustment together.</p>
+    </div>
+  </aside>
+</main>
+<input id="projectInput" type="file" accept=".json,.blackboard" hidden>
+<dialog id="galleryDialog" aria-labelledby="galleryTitle"><div class="dialog-heading"><div><span class="eyebrow">29 WAYS TO SEE IT</span><h2 id="galleryTitle">Find your favorite.</h2></div><button data-close="galleryDialog" aria-label="Close style comparison">✕</button></div><p class="hint">Whole-image previews at a smaller resolution. Click a style to apply it.</p><progress id="galleryProgress" max="1" value="0"></progress><div id="galleryGrid" class="gallery-grid"></div></dialog>
+<dialog id="megaDialog" aria-labelledby="megaTitle">
+ <div class="dialog-heading"><div><span class="eyebrow">A SMALL SEARCH FOR A BETTER PICTURE</span><h2 id="megaTitle">Mega compare.</h2></div><button data-close="megaDialog" aria-label="Close mega comparison">✕</button></div>
+ <p class="mega-intro">Rank styles first, then fine-tune the strongest style’s sliders and optionally explore two-style combinations. Keep your current version until you find something you prefer.</p>
+ <div class="search-options">
+  <label>Search depth<select id="searchDepth"><option value="160">Quick · 160 candidates</option><option value="600" selected>Deep · 600 candidates</option><option value="1200">Mega · 1,200 candidates</option></select></label>
+  <label>What matters most<select id="searchGoal"><option value="balanced">Balanced</option><option value="tone">Tonal fidelity</option><option value="clean">Less noise</option><option value="outline">Clean outlines</option></select></label>
+  <label>Style search<select id="searchStyle"><option value="auto">Rank styles → tune the winner</option><option value="current">Tune my current style only</option></select></label>
+  <label class="check-row"><span>Explore two-style mixes</span><input id="searchMix" type="checkbox" checked></label>
+  <label class="check-row"><span>Check top 3 at full wall size</span><input id="searchFullSize" type="checkbox" checked></label>
+  <label>Draw-pixel budget (0 = unlimited)<input id="searchPixelBudget" type="number" min="0" max="10240000" step="1" value="0"><small class="hint">A pixel budget always uses full-size checks.</small></label>
+  <button id="startSearch" class="primary">Start comparison ↗</button>
+ </div>
+ <div class="search-progress"><div><span id="searchStatus" role="status" aria-live="polite">Ready to explore.</span><button id="cancelSearch" hidden>Stop search</button></div><progress id="searchProgress" max="1" value="0" hidden></progress></div>
+ <div id="searchPreview" class="search-preview" hidden><div><span class="eyebrow">CURRENT</span><canvas id="searchBefore"></canvas></div><div><span class="eyebrow" id="candidatePreviewLabel">SELECTED CANDIDATE</span><canvas id="searchAfter"></canvas></div></div>
+ <div id="searchAB" class="search-ab" hidden>
+  <div class="search-ab-toolbar"><span id="abLabel">Current ← → Candidate</span><label>Zoom<select id="abZoom"><option value="fit">Fit</option><option value="1">100%</option><option value="2">200%</option><option value="4">400%</option></select></label></div>
+  <div id="abStage"><div id="abHolder"><canvas id="abCanvas" aria-label="Current and selected candidate at identical zoom"></canvas></div></div>
+  <label class="ab-slider">Current<input id="abSplit" type="range" min="0" max="100" value="50" aria-label="Current versus candidate split">Candidate</label>
+ </div>
+ <div id="searchResults" class="search-results"></div>
+ <div class="search-footer"><p id="searchNote" class="hint">Scores are visual heuristics, not a guarantee. Searches use smaller previews, then recheck a shortlist at higher resolution. Final output can differ at full size.</p><button id="applySearch" class="primary" disabled>Apply selected</button></div>
+</dialog>
+<dialog id="boardDialog" aria-labelledby="boardTitle"><div class="dialog-heading"><div><span class="eyebrow">THE SMALL DETAILS</span><h2 id="boardTitle">Board 0, 0</h2></div><button data-close="boardDialog" aria-label="Close board inspection">✕</button></div><canvas id="boardCanvas" width="16" height="16"></canvas><p id="boardInfo" class="hint"></p><div class="dialog-actions"><button id="prevBoard">← Previous</button><button id="nextBoard">Next →</button></div></dialog>
+<dialog id="helpDialog" aria-labelledby="helpTitle"><div class="dialog-heading"><h2 id="helpTitle">Keyboard shortcuts</h2><button data-close="helpDialog" aria-label="Close help">✕</button></div><p>Ctrl / ⌘ Z — Undo<br>Ctrl / ⌘ Shift Z — Redo<br>Ctrl / ⌘ S — Save project<br>G — Toggle board grid<br>F — Fit preview<br>? — Show this help<br>Escape — Close dialog</p></dialog>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+<script id="engine-source">/* Blackboard Studio 9 — processing engine. Adapted from the supplied v8.5. */
+(function(root){
+"use strict";
+const PRESETS = {
+    softink:   { name:'Soft Ink', desc:'Smooth contours + deep shadows', lab:[
+        {label:'Blur Sigma',min:2,max:40,step:1,def:12},{label:'Edge Threshold',min:5,max:80,step:1,def:12},{label:'Shadow Cutoff',min:0,max:160,step:1,def:48}]},
+    animeink:  { name:'Anime Ink+', desc:'Clean edges + shadow fill', lab:[
+        {label:'Blur Sigma',min:2,max:80,step:1,def:14},{label:'Edge Threshold',min:5,max:120,step:1,def:30},{label:'Shadow Depth',min:0,max:80,step:1,def:25}]},
+    manga:     { name:'Manga', desc:'Sleek ink lines', lab:[
+        {label:'Blur Sigma',min:2,max:80,step:1,def:10},{label:'Edge Threshold',min:5,max:120,step:1,def:22},{label:'Post Threshold',min:10,max:200,step:1,def:128}]},
+    lineart:   { name:'Line Art', desc:'DoG edge detection', lab:[
+        {label:'Sigma Small',min:2,max:40,step:1,def:8},{label:'Sigma Large',min:10,max:100,step:1,def:30},{label:'Threshold',min:0,max:100,step:1,def:18}]},
+    bold:      { name:'Bold', desc:'Thick graphic strokes', lab:[
+        {label:'Blur Sigma',min:5,max:100,step:1,def:25},{label:'Threshold',min:10,max:150,step:1,def:55},{label:'Line Widen',min:0,max:5,step:1,def:2}]},
+    solid:     { name:'Solid', desc:'Flat cel shading', lab:[
+        {label:'Quantize Levels',min:2,max:8,step:1,def:3},{label:'Edge Threshold',min:0,max:80,step:1,def:20},{label:'Smoothing',min:0,max:10,step:1,def:2}]},
+    canny:     { name:'Canny+', desc:'Linked edge outlines', lab:[
+        {label:'Low Threshold',min:5,max:100,step:1,def:20},{label:'High Threshold',min:20,max:200,step:1,def:60},{label:'Blur Sigma',min:2,max:40,step:1,def:8}]},
+    xdog:      { name:'XDoG', desc:'Extended DoG for anime', lab:[
+        {label:'Sigma 1',min:2,max:40,step:1,def:6},{label:'Sigma 2',min:10,max:120,step:1,def:40},{label:'Phi',min:80,max:300,step:1,def:150}]},
+    sauvola:   { name:'Sauvola', desc:'Local adaptive threshold', lab:[
+        {label:'Window Radius',min:3,max:30,step:1,def:10},{label:'Weight k',min:1,max:50,step:1,def:12},{label:'Offset R',min:10,max:200,step:1,def:128}]},
+    wolf:      { name:'Wolf', desc:'Uneven lighting fix', lab:[
+        {label:'Window',min:5,max:40,step:1,def:15},{label:'k Factor',min:1,max:50,step:1,def:18},{label:'Offset',min:0,max:100,step:1,def:0}]},
+    hybrid:    { name:'Hybrid', desc:'Edges + tonal fill', lab:[
+        {label:'Edge Weight',min:0,max:100,step:1,def:60},{label:'Tone Levels',min:2,max:10,step:1,def:4},{label:'Blend',min:0,max:100,step:1,def:50}]},
+    darkart:   { name:'Dark Art', desc:'Shadow detail emphasis', lab:[
+        {label:'Shadow Boost',min:0,max:100,step:1,def:40},{label:'Edge Threshold',min:5,max:80,step:1,def:20},{label:'Merge',min:0,max:100,step:1,def:60}]},
+    floyd:     { name:'Dither FS', desc:'Floyd-Steinberg diffusion', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Spread',min:50,max:150,step:1,def:100},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    atkinson:  { name:'Atkinson', desc:'High-contrast dither', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Passes',min:1,max:4,step:1,def:1},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    jjn:       { name:'JJN', desc:'Jarvis-Judice-Ninke', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Spread',min:50,max:150,step:1,def:100},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    stucki:    { name:'Stucki', desc:'Smooth serpentine', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Spread',min:50,max:150,step:1,def:100},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    sierra:    { name:'Sierra', desc:'Crisp serpentine', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Spread',min:50,max:150,step:1,def:100},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    ordered:   { name:'Bayer', desc:'Ordered 4×4 dither', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Strength',min:10,max:100,step:1,def:60},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    bayer8:    { name:'Bayer 8×8', desc:'Smooth ordered dither', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Strength',min:10,max:100,step:1,def:55},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+    ign:       { name:'IGN', desc:'Interleaved gradient noise', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Noise Scale',min:10,max:200,step:1,def:80},{label:'Strength',min:10,max:100,step:1,def:60}]},
+    bluenoise: { name:'Grain', desc:'Deterministic hashed grain', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Grain Size',min:10,max:100,step:1,def:40},{label:'Strength',min:10,max:100,step:1,def:55}]},
+    bradley:   { name:'Bradley', desc:'Adaptive threshold', lab:[
+        {label:'Window',min:3,max:40,step:1,def:12},{label:'Bias',min:-30,max:30,step:1,def:-5},{label:'Post Blur',min:0,max:10,step:1,def:0}]},
+    adaptive:  { name:'Adaptive', desc:'Region-aware threshold', lab:[
+        {label:'Block Size',min:4,max:40,step:1,def:16},{label:'Bias',min:-30,max:30,step:1,def:0},{label:'Smooth',min:0,max:10,step:1,def:1}]},
+    crosshatch:{ name:'Crosshatch', desc:'Diagonal line shading', lab:[
+        {label:'Line Spacing',min:3,max:30,step:1,def:8},{label:'Angle Layers',min:1,max:4,step:1,def:3},{label:'Threshold',min:10,max:200,step:1,def:120}]},
+    pencil:    { name:'Pencil', desc:'Multi-angle hatching', lab:[
+        {label:'Line Spacing',min:3,max:30,step:1,def:6},{label:'Density',min:1,max:20,step:1,def:8},{label:'Cutoff',min:50,max:255,step:1,def:180}]},
+    halftone:  { name:'Halftone', desc:'Screentone dot matrix', lab:[
+        {label:'Dot Spacing',min:4,max:30,step:1,def:8},{label:'Angle',min:0,max:90,step:1,def:45},{label:'Threshold',min:10,max:200,step:1,def:128}]},
+    stipple:   { name:'Stipple', desc:'Organic dot texture', lab:[
+        {label:'Dot Size',min:1,max:8,step:1,def:2},{label:'Density',min:10,max:100,step:1,def:50},{label:'Threshold',min:10,max:200,step:1,def:128}]},
+    woodcut:   { name:'Woodcut', desc:'Flow-line engraving', lab:[
+        {label:'Line Spacing',min:2,max:20,step:1,def:5},{label:'Direction',min:0,max:180,step:1,def:90},{label:'Threshold',min:10,max:200,step:1,def:128}]},
+    threshold: { name:'Threshold', desc:'Plain binarize', lab:[
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Unused',min:0,max:100,step:1,def:50},{label:'Unused',min:0,max:100,step:1,def:50}]}
+};
+
+function gaussBlur(src, w, h, radius) {
+    if (radius <= 0) return new Float32Array(src);
+    const r = Math.ceil(radius * 2.5);
+    const kernel = new Float32Array(r * 2 + 1);
+    let sum = 0;
+    for (let i = -r; i <= r; i++) {
+        const v = Math.exp(-(i * i) / (2 * radius * radius));
+        kernel[i + r] = v;
+        sum += v;
+    }
+    for (let i = 0; i < kernel.length; i++) kernel[i] /= sum;
+
+    const tmp = new Float32Array(w * h);
+    const out = new Float32Array(w * h);
+
+    // Horizontal pass
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            let val = 0;
+            for (let k = -r; k <= r; k++) {
+                const sx = Math.min(w - 1, Math.max(0, x + k));
+                val += src[y * w + sx] * kernel[k + r];
+            }
+            tmp[y * w + x] = val;
+        }
+    }
+    // Vertical pass
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            let val = 0;
+            for (let k = -r; k <= r; k++) {
+                const sy = Math.min(h - 1, Math.max(0, y + k));
+                val += tmp[sy * w + x] * kernel[k + r];
+            }
+            out[y * w + x] = val;
+        }
+    }
+    return out;
+}
+
+// Difference of Gaussians for edge detection
+function dogEdges(gray, w, h, sigma1, sigma2) {
+    const g1 = gaussBlur(gray, w, h, sigma1);
+    const g2 = gaussBlur(gray, w, h, sigma2);
+    const out = new Float32Array(w * h);
+    for (let i = 0; i < w * h; i++) {
+        const diff = g1[i] - g2[i];
+        out[i] = Math.min(255, Math.max(0, Math.abs(diff) * 2.5));
+    }
+    return out;
+}
+
+// Simple median filter for denoising
+function medianFilter(gray, w, h, radius) {
+    const out = new Float32Array(w * h);
+    const size = (2 * radius + 1) * (2 * radius + 1);
+    const buf = new Uint8ClampedArray(size);
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            let idx = 0;
+            for (let dy = -radius; dy <= radius; dy++) {
+                for (let dx = -radius; dx <= radius; dx++) {
+                    const sx = Math.min(w-1, Math.max(0, x+dx));
+                    const sy = Math.min(h-1, Math.max(0, y+dy));
+                    buf[idx++] = gray[sy * w + sx];
+                }
+            }
+            buf.sort();
+            out[y * w + x] = buf[Math.floor(size / 2)];
+        }
+    }
+    return out;
+}
+
+// Unsharp mask for sharpening
+function unsharpMask(gray, w, h, amount) {
+    if (amount <= 0) return new Float32Array(gray);
+    const blurred = gaussBlur(gray, w, h, 1.2);
+    const out = new Float32Array(w * h);
+    for (let i = 0; i < w * h; i++) {
+        // A soft noise floor keeps small texture fluctuations from becoming ink.
+        const difference = gray[i] - blurred[i];
+        const detail = Math.sign(difference) * Math.max(0, Math.abs(difference) - 8);
+        out[i] = Math.min(255, Math.max(0, gray[i] + detail * amount * 0.5));
+    }
+    return out;
+}
+
+// Local contrast enhancement (CLAHE-inspired)
+function localContrast(gray, w, h, strength) {
+    if (strength <= 0) return new Uint8ClampedArray(gray);
+    const blurred = gaussBlur(gray, w, h, Math.max(3, Math.floor(w / 20)));
+    const out = new Float32Array(w * h);
+    const s = strength / 100;
+    for (let i = 0; i < w * h; i++) {
+        const diff = gray[i] - blurred[i];
+        out[i] = Math.min(255, Math.max(0, gray[i] + diff * s * 1.5));
+    }
+    return out;
+}
+
+// Simple connected component removal by size
+function removeSmallComponents(mask, w, h, minSize) {
+    if (minSize <= 0) return mask;
+    const visited = new Uint8Array(w * h);
+    const out = new Uint8Array(w * h);
+    const stack = [];
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const idx = y * w + x;
+            if (visited[idx] || !mask[idx]) continue;
+            // Flood fill
+            stack.length = 0;
+            stack.push(idx);
+            visited[idx] = 1;
+            let count = 0;
+            const region = [];
+            while (stack.length) {
+                const ci = stack.pop();
+                region.push(ci);
+                count++;
+                const cx = ci % w, cy = (ci - cx) / w;
+                for (const [dx, dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+                    const nx = cx+dx, ny = cy+dy;
+                    if (nx>=0 && nx<w && ny>=0 && ny<h) {
+                        const ni = ny*w+nx;
+                        if (!visited[ni] && mask[ni]) { visited[ni]=1; stack.push(ni); }
+                    }
+                }
+            }
+            if (count >= minSize) region.forEach(i => out[i] = 1);
+        }
+    }
+    return out;
+}
+
+// Gap repair: dilate then intersect with original
+// Morphological closing bridges narrow breaks, then restores stroke thickness.
+function repairGaps(mask, w, h, radius) {
+    if (!radius) return mask;
+    let src = mask;
+    for (const dilation of [true, false]) {
+        const out = new Uint8Array(w*h);
+        for (let y=0;y<h;y++) for(let x=0;x<w;x++) {
+            let value = dilation ? 0 : 1;
+            search: for(let dy=-radius;dy<=radius;dy++) for(let dx=-radius;dx<=radius;dx++) {
+                const nx=Math.max(0,Math.min(w-1,x+dx)), ny=Math.max(0,Math.min(h-1,y+dy));
+                if (dilation ? src[ny*w+nx] : !src[ny*w+nx]) { value=dilation?1:0; break search; }
+            }
+            out[y*w+x]=value;
+        }
+        src=out;
+    }
+    return src;
+}
+
+// Fill small white holes inside black regions
+function fillHoles(mask, w, h, maxSize) {
+    if (maxSize <= 0) return mask;
+    const visited = new Uint8Array(w * h);
+    const out = new Uint8Array(mask);
+    const stack = [];
+
+    // Flood fill white regions from border (these are background)
+    for (let x = 0; x < w; x++) {
+        if (!mask[x] && !visited[x]) { stack.push(x); visited[x]=1; }
+        const bi = (h-1)*w+x;
+        if (!mask[bi] && !visited[bi]) { stack.push(bi); visited[bi]=1; }
+    }
+    for (let y = 0; y < h; y++) {
+        if (!mask[y*w] && !visited[y*w]) { stack.push(y*w); visited[y*w]=1; }
+        const ri = y*w+w-1;
+        if (!mask[ri] && !visited[ri]) { stack.push(ri); visited[ri]=1; }
+    }
+    while (stack.length) {
+        const ci = stack.pop();
+        const cx = ci%w, cy = (ci-cx)/w;
+        for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+            const nx=cx+dx, ny=cy+dy;
+            if (nx>=0&&nx<w&&ny>=0&&ny<h) {
+                const ni = ny*w+nx;
+                if (!visited[ni] && !mask[ni]) { visited[ni]=1; stack.push(ni); }
+            }
+        }
+    }
+    // Any unvisited white pixel is an interior hole — fill if small
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const idx = y*w+x;
+            if (!mask[idx] && !visited[idx]) {
+                // Count hole size
+                stack.length = 0;
+                stack.push(idx);
+                visited[idx] = 1;
+                let count = 0;
+                const hole = [];
+                while (stack.length) {
+                    const ci = stack.pop();
+                    hole.push(ci);
+                    count++;
+                    const cx=ci%w, cy=(ci-cx)/w;
+                    for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+                        const nx=cx+dx, ny=cy+dy;
+                        if (nx>=0&&nx<w&&ny>=0&&ny<h) {
+                            const ni=ny*w+nx;
+                            if (!visited[ni] && !mask[ni]) { visited[ni]=1; stack.push(ni); }
+                        }
+                    }
+                }
+                if (count <= maxSize) hole.forEach(i => out[i] = 1);
+            }
+        }
+    }
+    return out;
+}
+
+// Bayer ordered dither matrices
+const BAYER4 = [
+    [0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]
+];
+const BAYER8 = Array.from({length:64}, (_,i) => {
+    const x=i%8, y=Math.floor(i/8);
+    return 4*BAYER4[y%4][x%4]+[[0,2],[3,1]][Math.floor(y/4)][Math.floor(x/4)];
+});
+
+/* ══════════════════════════════════════
+   PRESET RENDER FUNCTIONS — QUALITY UPGRADED
+   ══════════════════════════════════════ */
+
+function getLab(S) {
+    const v = S.labVals[S.preset] || PRESETS[S.preset].lab.map(l => l.def);
+    return v;
+}
+
+function renderPreset(gray, w, h, thresh, extra, lw, S) {
+    const lab = getLab(S);
+    const preset = S.preset;
+    const out = new Uint8Array(w * h);
+
+    // Helper: apply threshold with hysteresis for cleaner edges
+    function applyThreshold(edgeMap, t) {
+        for (let i = 0; i < w*h; i++) out[i] = edgeMap[i] > t ? 1 : 0;
+    }
+
+    // Helper: dilate mask by n pixels (for line weight)
+    function dilate(mask, n) {
+        if (n <= 0) return mask;
+        let src = mask;
+        for (let pass = 0; pass < n; pass++) {
+            const d = new Uint8Array(w*h);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                if (src[y*w+x]) { d[y*w+x]=1; continue; }
+                for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+                    const nx=x+dx,ny=y+dy;
+                    if (nx>=0&&nx<w&&ny>=0&&ny<h&&src[ny*w+nx]) { d[y*w+x]=1; break; }
+                }
+            }
+            src = d;
+        }
+        return src;
+    }
+
+    // Helper: erode mask
+    function erode(mask, n) {
+        if (n <= 0) return mask;
+        let src = mask;
+        for (let pass = 0; pass < n; pass++) {
+            const e = new Uint8Array(w*h);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                if (!src[y*w+x]) continue;
+                let ok = true;
+                for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+                    const nx=x+dx,ny=y+dy;
+                    if (nx<0||nx>=w||ny<0||ny>=h||!src[ny*w+nx]) { ok=false; break; }
+                }
+                if (ok) e[y*w+x] = 1;
+            }
+            src = e;
+        }
+        return src;
+    }
+
+    switch(preset) {
+        case 'softink': {
+            const sigma=lab[0]/10,small=gaussBlur(gray,w,h,sigma*.5),large=gaussBlur(gray,w,h,sigma);
+            for(let i=0;i<w*h;i++)out[i]=((large[i]-small[i])*2.5*(1+extra*.15)>lab[1]||gray[i]<lab[2])?1:0;
+            break;
+        }
+        case 'animeink': {
+            const sigma = lab[0]/10;
+            const edgeT = lab[1];
+            const shadowBoost = lab[2];
+            const edges = dogEdges(gray, w, h, sigma * 0.5, sigma);
+            // Add shadow regions
+            // Greater depth adds shadows; zero means outlines only.
+            const shadowThresh = shadowBoost * 2.5;
+            for (let i = 0; i < w*h; i++) {
+                const edgeVal = Math.min(255, edges[i] * (1 + extra * 0.15));
+                const shadowVal = gray[i] < shadowThresh ? (shadowThresh - gray[i]) * 1.5 : 0;
+                out[i] = (edgeVal + shadowVal) > edgeT ? 1 : 0;
+            }
+            break;
+        }
+        case 'manga': {
+            const sigma = lab[0]/10;
+            const edgeT = lab[1];
+            const postT = lab[2];
+            let edges = dogEdges(gray, w, h, sigma * 0.4, sigma);
+            // Boost edges based on extra sensitivity
+            edges = gaussBlur(edges, w, h, 0.5); // slight smooth for cleaner lines
+            for (let i = 0; i < w*h; i++) {
+                const v = Math.min(255, edges[i] * (1 + extra * 0.2));
+                out[i] = v > edgeT ? 1 : 0;
+            }
+            // Post-threshold cleanup: remove faint residuals
+            if (postT < 250) {
+                const cleaned = gaussBlur(gray, w, h, sigma * 0.3);
+                for (let i = 0; i < w*h; i++) {
+                    if (out[i] && cleaned[i] > postT) out[i] = 0;
+                }
+            }
+            break;
+        }
+        case 'lineart': {
+            const s1 = lab[0]/10, s2 = lab[1]/10, t = lab[2];
+            const edges = dogEdges(gray, w, h, s1, s2);
+            for (let i = 0; i < w*h; i++) {
+                out[i] = edges[i] * (1 + extra*0.15) > t ? 1 : 0;
+            }
+            break;
+        }
+        case 'bold': {
+            const sigma = lab[0]/10, t = lab[1], widen = lab[2];
+            const edges = dogEdges(gray, w, h, sigma*0.3, sigma);
+            for (let i = 0; i < w*h; i++) out[i] = edges[i] > t ? 1 : 0;
+            const dilated = dilate(out, widen);
+            for (let i = 0; i < w*h; i++) out[i] = dilated[i];
+            break;
+        }
+        case 'solid': {
+            const levels = lab[0], edgeT = lab[1], smooth = lab[2]/10;
+            // Quantize then edge-detect the quantized result
+            const step = 256 / levels;
+            const quantized = new Uint8ClampedArray(w*h);
+            for (let i = 0; i < w*h; i++) quantized[i] = Math.floor(gray[i]/step)*step + step/2;
+            if (smooth > 0.5) { const s = gaussBlur(quantized, w, h, smooth); for(let i=0;i<w*h;i++) quantized[i]=s[i]; }
+            const edges = dogEdges(quantized, w, h, 0.8, 1.5);
+            for (let i = 0; i < w*h; i++) {
+                const isEdge = edges[i] > edgeT;
+                const isDark = gray[i] < thresh;
+                out[i] = (isEdge || isDark) ? 1 : 0;
+            }
+            break;
+        }
+        case 'canny': {
+            const lo = lab[0], hi = lab[1], sigma = lab[2]/10;
+            const blurred = gaussBlur(gray, w, h, sigma);
+            // Sobel gradients
+            const gx = new Float32Array(w*h), gy = new Float32Array(w*h);
+            const mag = new Float32Array(w*h);
+            for (let y = 1; y < h-1; y++) for (let x = 1; x < w-1; x++) {
+                const idx = y*w+x;
+                gx[idx] = -blurred[(y-1)*w+x-1] + blurred[(y-1)*w+x+1]
+                           -2*blurred[y*w+x-1] + 2*blurred[y*w+x+1]
+                           -blurred[(y+1)*w+x-1] + blurred[(y+1)*w+x+1];
+                gy[idx] = -blurred[(y-1)*w+x-1] - 2*blurred[(y-1)*w+x] - blurred[(y-1)*w+x+1]
+                           +blurred[(y+1)*w+x-1] + 2*blurred[(y+1)*w+x] + blurred[(y+1)*w+x+1];
+                mag[idx] = Math.sqrt(gx[idx]*gx[idx] + gy[idx]*gy[idx]);
+            }
+            // Non-maximum suppression
+            const nms = new Float32Array(w*h);
+            for (let y = 1; y < h-1; y++) for (let x = 1; x < w-1; x++) {
+                const idx = y*w+x;
+                const angle = Math.atan2(gy[idx], gx[idx]) * 180 / Math.PI;
+                const a = ((angle % 180) + 180) % 180;
+                let n1=0, n2=0;
+                if (a < 22.5 || a >= 157.5) { n1=mag[y*w+x-1]; n2=mag[y*w+x+1]; }
+                else if (a < 67.5) { n1=mag[(y-1)*w+x+1]; n2=mag[(y+1)*w+x-1]; }
+                else if (a < 112.5) { n1=mag[(y-1)*w+x]; n2=mag[(y+1)*w+x]; }
+                else { n1=mag[(y-1)*w+x-1]; n2=mag[(y+1)*w+x+1]; }
+                nms[idx] = (mag[idx] >= n1 && mag[idx] >= n2) ? mag[idx] : 0;
+            }
+            // Double threshold + hysteresis
+            for (let i = 0; i < w*h; i++) out[i] = nms[i] > hi ? 1 : 0;
+            // Connect weak edges
+            let changed = true;
+            while (changed) {
+                changed = false;
+                for (let y = 1; y < h-1; y++) for (let x = 1; x < w-1; x++) {
+                    const idx = y*w+x;
+                    if (out[idx] || nms[idx] < lo) continue;
+                    for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,1],[-1,1],[1,-1]]) {
+                        if (out[(y+dy)*w+x+dx]) { out[idx]=1; changed=true; break; }
+                    }
+                }
+            }
+            break;
+        }
+        case 'xdog': {
+            const s1 = lab[0]/10, s2 = lab[1]/10, phi = lab[2]/100;
+            const g1 = gaussBlur(gray, w, h, s1);
+            const g2 = gaussBlur(gray, w, h, s2);
+            for (let i = 0; i < w*h; i++) {
+                // Unit-gain high-pass response: a uniform image must stay blank.
+                // Phi controls edge steepness rather than subtracting image brightness.
+                const response=(g1[i]-g2[i])/255;
+                const v=response>=0?1:1+Math.tanh(10*phi*response);
+                out[i] = v < (0.95 - extra*0.03) ? 1 : 0;
+            }
+            break;
+        }
+        case 'sauvola': case 'wolf': {
+            const {mean, std} = localStats(gray,w,h,lab[0]);
+            let maxStd=1, minGray=255;
+            for(let i=0;i<gray.length;i++){maxStd=Math.max(maxStd,std[i]);minGray=Math.min(minGray,gray[i]);}
+            for(let i=0;i<gray.length;i++) {
+                const t=preset==='sauvola'
+                    ? mean[i]*(1+lab[1]/100*(std[i]/lab[2]-1))
+                    : mean[i]+lab[1]/100*(std[i]/maxStd-1)*(mean[i]-minGray)+lab[2];
+                out[i]=gray[i]<t?1:0;
+            }
+            break;
+        }
+        case 'hybrid': {
+            const edgeW = lab[0]/100, levels = lab[1], blend = lab[2]/100;
+            // Get edges
+            const edges = dogEdges(gray, w, h, 1, 3);
+            const edgeMask = new Uint8Array(w*h);
+            for (let i=0;i<w*h;i++) edgeMask[i] = edges[i]*edgeW > 20 ? 1 : 0;
+            // Get tonal
+            const step = 256/levels;
+            const toneMask = new Uint8Array(w*h);
+            for (let i=0;i<w*h;i++) toneMask[i] = (Math.floor(gray[i]/step)+0.5)*step < thresh ? 1 : 0;
+            // Blend
+            for (let i=0;i<w*h;i++) {
+                if (edgeMask[i]) out[i]=1;
+                else if (toneMask[i] && (BAYER4[Math.floor(i/w)%4][i%w%4]+0.5)/16 < blend) out[i]=1;
+            }
+            break;
+        }
+        case 'darkart': {
+            const boost = lab[0]/100, edgeT = lab[1], merge = lab[2]/100;
+            // Boost shadows
+            const boosted = new Uint8ClampedArray(w*h);
+            for (let i=0;i<w*h;i++) {
+                if (gray[i] < 128) boosted[i] = Math.max(0, gray[i] - boost * (128-gray[i]));
+                else boosted[i] = gray[i];
+            }
+            const edges = dogEdges(boosted, w, h, 0.8, 2.5);
+            for (let i=0;i<w*h;i++) {
+                const edgeVal = edges[i] * (1+extra*0.1);
+                const shadowVal = (128 - boosted[i]) * merge * 0.8;
+                out[i] = (edgeVal + shadowVal) > edgeT ? 1 : 0;
+            }
+            break;
+        }
+        case 'floyd': case 'jjn': case 'stucki': case 'sierra': {
+            const t = lab[0], spread = lab[1]/100, preBlur = lab[0+2] !== undefined ? lab[2] : 0;
+            let src = gray;
+            if (preBlur > 0.5) src = gaussBlur(gray, w, h, preBlur/10);
+            const err = new Float32Array(src);
+            // Diffusion kernels
+            let kernel;
+            if (preset==='floyd') kernel=[[1,0,7/16],[-1,1,3/16],[0,1,5/16],[1,1,1/16]];
+            else if (preset==='jjn') kernel=[[1,0,7/48],[2,0,5/48],[-2,1,3/48],[-1,1,5/48],[0,1,7/48],[1,1,5/48],[2,1,3/48],[-2,2,1/48],[-1,2,3/48],[0,2,5/48],[1,2,3/48],[2,2,1/48]];
+            else if (preset==='stucki') kernel=[[1,0,8/42],[2,0,4/42],[-2,1,2/42],[-1,1,4/42],[0,1,8/42],[1,1,4/42],[2,1,2/42],[-2,2,1/42],[-1,2,2/42],[0,2,4/42],[1,2,2/42],[2,2,1/42]];
+            else kernel=[[1,0,2/4],[-1,1,1/4],[0,1,1/4]]; // Sierra Lite, total weight 1
+            const serpentine = ['stucki','sierra','floyd'].includes(preset);
+            for (let y = 0; y < h; y++) {
+                const leftToRight = serpentine ? (y%2===0) : true;
+                const xStart = leftToRight ? 0 : w-1;
+                const xEnd = leftToRight ? w : -1;
+                const xStep = leftToRight ? 1 : -1;
+                for (let x = xStart; x !== xEnd; x += xStep) {
+                    const idx = y*w+x;
+                    const old = err[idx];
+                    const nv = old < t ? 0 : 255;
+                    out[idx] = nv < 128 ? 1 : 0;
+                    const diff = (old - nv) * spread;
+                    for (const [dx,dy,wgt] of kernel) {
+                        const nx=x+dx*xStep, ny=y+dy;
+                        if (nx>=0&&nx<w&&ny>=0&&ny<h) err[ny*w+nx] += diff * wgt;
+                    }
+                }
+            }
+            break;
+        }
+        case 'atkinson': {
+            const t = lab[0], passes = lab[1], preBlur = lab[2];
+            let src = gray;
+            if (preBlur > 0.5) src = gaussBlur(gray, w, h, preBlur/10);
+            const err = new Float32Array(src);
+            const kernel = [[1,0,1/8],[2,0,1/8],[-1,1,1/8],[0,1,1/8],[1,1,1/8],[0,2,1/8]];
+            for (let p = 0; p < passes; p++) {
+                for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                    const idx = y*w+x;
+                    const old = err[idx];
+                    const nv = old < t ? 0 : 255;
+                    if (p === passes-1) out[idx] = nv < 128 ? 1 : 0;
+                    err[idx] = nv;
+                    const diff = old - nv; // Atkinson only diffuses 6/8
+                    for (const [dx,dy,wgt] of kernel) {
+                        const nx=x+dx, ny=y+dy;
+                        if (nx>=0&&nx<w&&ny>=0&&ny<h) err[ny*w+nx] += diff * wgt;
+                    }
+                }
+            }
+            break;
+        }
+        case 'ordered': {
+            const t = lab[0], strength = lab[1]/100, preBlur = lab[2];
+            let src = gray;
+            if (preBlur > 0.5) src = gaussBlur(gray, w, h, preBlur/10);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bayerVal = ((BAYER4[y%4][x%4]+0.5) / 16 - 0.5) * 255 * strength;
+                out[y*w+x] = (src[y*w+x] + bayerVal) < t ? 1 : 0;
+            }
+            break;
+        }
+        case 'bayer8': {
+            const t = lab[0], strength = lab[1]/100, preBlur = lab[2];
+            let src = gray;
+            if (preBlur > 0.5) src = gaussBlur(gray, w, h, preBlur/10);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bayerVal = ((BAYER8[(y%8)*8+(x%8)]+0.5) / 64 - 0.5) * 255 * strength;
+                out[y*w+x] = (src[y*w+x] + bayerVal) < t ? 1 : 0;
+            }
+            break;
+        }
+        case 'ign': {
+            const t = lab[0], scale = lab[1]/100, strength = lab[2]/100;
+            // Interleaved gradient noise approximation
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const n = ((x * 12.9898 + y * 78.233) % 1) * 255 * strength * scale;
+                out[y*w+x] = (gray[y*w+x] + n) < t + 128*(1-strength) ? 1 : 0;
+            }
+            break;
+        }
+        case 'bluenoise': {
+            const t = lab[0], grain = lab[1]/10, strength = lab[2]/100;
+            // Blue noise approximation using shuffled grid
+            const seed = 42;
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bx = Math.floor(x/grain), by = Math.floor(y/grain);
+                const hash = Math.sin(bx*127.1+by*311.7+seed)*43758.5453 % 1;
+                const n = Math.abs(hash) * 255 * strength;
+                out[y*w+x] = (gray[y*w+x] + n) < t + 128*(1-strength) ? 1 : 0;
+            }
+            break;
+        }
+        case 'bradley': {
+            const win = lab[0], bias = lab[1]/10, postBlur = lab[2];
+            const src = postBlur > 0 ? gaussBlur(gray,w,h,postBlur/10) : gray;
+            const blurred = localStats(src,w,h,win).mean;
+            for (let i = 0; i < w*h; i++) {
+                out[i] = src[i] < blurred[i] - bias ? 1 : 0;
+            }
+            break;
+        }
+        case 'adaptive': {
+            const block = lab[0], bias = lab[1]/10, smooth = lab[2]/10;
+            const src = smooth > 0 ? gaussBlur(gray,w,h,smooth) : gray;
+            const blurred = localStats(src,w,h,block).mean;
+            for (let i = 0; i < w*h; i++) {
+                out[i] = src[i] < blurred[i] * (1 + bias/100) ? 1 : 0;
+            }
+            break;
+        }
+        case 'crosshatch': {
+            const spacing = Math.max(2, lab[0]);
+            const layers = Math.min(4, Math.max(1, lab[1]));
+            const cutoff = lab[2];
+            const angles = [Math.PI/4, -Math.PI/4, Math.PI/6, -Math.PI/6];
+            const cosA = angles.map(a => Math.cos(a));
+            const sinA = angles.map(a => Math.sin(a));
+            const lineW = Math.min(1.4, Math.max(0.6, spacing * 0.09));
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bright = gray[y*w+x];
+                if (bright >= cutoff) continue;
+                const darkness = (cutoff - bright) / cutoff;
+                const nLayers = Math.max(0, Math.floor(darkness * layers * 1.8));
+                if (nLayers < 1) continue;
+                let hit = false;
+                for (let a = 0; a < Math.min(nLayers, layers); a++) {
+                    const proj = x*cosA[a] + y*sinA[a];
+                    const pos = ((proj % spacing) + spacing) % spacing;
+                    if (pos < lineW) { hit=true; break; }
+                }
+                if (darkness > 0.92) hit = true;
+                if (hit) out[y*w+x] = 1;
+            }
+            break;
+        }
+        case 'pencil': {
+            const spacing = Math.max(2, lab[0]);
+            const density = lab[1];
+            const cutoff = lab[2];
+            const maxLayers = Math.min(4, Math.max(1, Math.ceil(density/5)));
+            const densityScale = 0.8 + (density/20)*1.2;
+            const angles = [Math.PI/6, -Math.PI/6, Math.PI/3, -Math.PI/3];
+            const cosA = angles.map(a => Math.cos(a));
+            const sinA = angles.map(a => Math.sin(a));
+            const lineW = Math.min(1.5, Math.max(0.6, spacing*0.085));
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bright = gray[y*w+x];
+                if (bright >= cutoff) continue;
+                const darkness = Math.min(1, (cutoff - bright) / cutoff);
+                if (darkness > 0.9) { out[y*w+x]=1; continue; }
+                const nLayers = Math.floor(darkness * maxLayers * densityScale);
+                if (nLayers < 1) continue;
+                let hit = false;
+                for (let a = 0; a < Math.min(nLayers, 4); a++) {
+                    const proj = x*cosA[a] + y*sinA[a];
+                    const pos = ((proj % spacing) + spacing) % spacing;
+                    if (pos < lineW) { hit=true; break; }
+                }
+                if (hit) out[y*w+x] = 1;
+            }
+            break;
+        }
+        case 'halftone': {
+            const dotSpace = Math.max(3, lab[0]);
+            const angle = lab[1] * Math.PI / 180;
+            const t = lab[2];
+            const cosA = Math.cos(angle), sinA = Math.sin(angle);
+            const cx = w/2, cy = h/2;
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                // Rotate coordinate
+                const rx = (x-cx)*cosA + (y-cy)*sinA + cx;
+                const ry = -(x-cx)*sinA + (y-cy)*cosA + cy;
+                const bx = ((rx % dotSpace) + dotSpace) % dotSpace;
+                const by = ((ry % dotSpace) + dotSpace) % dotSpace;
+                const dx = bx - dotSpace/2, dy = by - dotSpace/2;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const maxR = dotSpace * 0.45;
+                const bright = gray[y*w+x];
+                const targetR = maxR * Math.sqrt(Math.max(0,Math.min(1,(t+127-bright)/255)));
+                if (dist < targetR) out[y*w+x] = 1;
+            }
+            break;
+        }
+        case 'stipple': {
+            const dotR = Math.max(1, lab[0]);
+            const density = lab[1]/100;
+            const t = lab[2];
+            // Use jittered grid for organic feel
+            const seed = 7;
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bright = gray[y*w+x];
+                if (bright > t) continue;
+                const darkness = 1 - bright/t;
+                // Probabilistic dot placement
+                const hash = Math.abs(Math.sin(x*12.9898+y*78.233+seed)*43758.5453 % 1);
+                if (hash < darkness * density) {
+                    // Draw dot
+                    for (let dy = -dotR; dy <= dotR; dy++) for (let dx = -dotR; dx <= dotR; dx++) {
+                        if (dx*dx+dy*dy <= dotR*dotR) {
+                            const nx=x+dx, ny=y+dy;
+                            if (nx>=0&&nx<w&&ny>=0&&ny<h) out[ny*w+nx]=1;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        case 'woodcut': {
+            const spacing = Math.max(2, lab[0]);
+            const dir = lab[1] * Math.PI / 180;
+            const t = lab[2];
+            const cosD = Math.cos(dir), sinD = Math.sin(dir);
+            // Flow lines follow gradient direction perpendicular to specified direction
+            const gx = new Float32Array(w*h), gy = new Float32Array(w*h);
+            for (let y=1;y<h-1;y++) for (let x=1;x<w-1;x++) {
+                const i=y*w+x;
+                gx[i] = gray[i+1]-gray[i-1];
+                gy[i] = gray[i+w]-gray[i-w];
+            }
+            const lineW = Math.max(0.8, spacing * 0.12);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const bright = gray[y*w+x];
+                if (bright > t) continue;
+                // Project position along flow direction, perturbed by gradient
+                const i = y*w+x;
+                const perturb = (gx[i]*cosD + gy[i]*sinD) * 0.3 * extra;
+                const proj = x*cosD + y*sinD + perturb;
+                const pos = ((proj % spacing) + spacing) % spacing;
+                if (pos < lineW) out[i] = 1;
+                if ((t - bright)/t > 0.9) out[i] = 1;
+            }
+            break;
+        }
+        case 'threshold':
+        default: {
+            for (let i = 0; i < w*h; i++) out[i] = gray[i] < lab[0] ? 1 : 0;
+            break;
+        }
+    }
+
+    // Apply line weight
+    if (lw > 0) {
+        const d = dilate(out, lw);
+        for (let i = 0; i < w*h; i++) out[i] = d[i];
+    } else if (lw < 0) {
+        const e = erode(out, -lw);
+        for (let i = 0; i < w*h; i++) out[i] = e[i];
+    }
+
+    return out;
+}
+
+
+function localStats(gray,w,h,radius) {
+    const stride=w+1, n=stride*(h+1), sums=new Float64Array(n), squares=new Float64Array(n);
+    for(let y=1;y<=h;y++) {
+        let s=0, sq=0;
+        for(let x=1;x<=w;x++){const v=gray[(y-1)*w+x-1];s+=v;sq+=v*v;sums[y*stride+x]=sums[(y-1)*stride+x]+s;squares[y*stride+x]=squares[(y-1)*stride+x]+sq;}
+    }
+    const mean=new Float32Array(w*h), std=new Float32Array(w*h);
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++) {
+        const x0=Math.max(0,x-radius),y0=Math.max(0,y-radius),x1=Math.min(w,x+radius+1),y1=Math.min(h,y+radius+1);
+        const a=y0*stride+x0,b=y0*stride+x1,c=y1*stride+x0,d=y1*stride+x1,area=(x1-x0)*(y1-y0),i=y*w+x;
+        mean[i]=(sums[d]-sums[b]-sums[c]+sums[a])/area;
+        std[i]=Math.sqrt(Math.max(0,(squares[d]-squares[b]-squares[c]+squares[a])/area-mean[i]*mean[i]));
+    }
+    return {mean,std};
+}
+const DEFAULTS={boardsWide:7,boardsHigh:4,ratioLocked:true,fitMode:'contain',preset:'manga',labVals:{},gamma:100,denoise:0,localContrast:0,whiteProtect:0,minComponent:0,gapRadius:0,holeFill:0,threshold:128,contrast:0,sharpness:0,extra:3,lineWeight:0,invert:false,smoothing:true,detailboost:false,mixOn:false,mixPreset:'threshold',mixRatio:50,mixMethod:'spatial',mixThresholdB:128,mixExtraB:5,renderMode:'mask',exportMode:'auto',flipOutput:false,planName:'blackboard-plan',quality:18};
+const ranges={boardsWide:[1,200],boardsHigh:[1,200],gamma:[50,200],denoise:[0,4],localContrast:[0,100],whiteProtect:[0,100],minComponent:[0,32],gapRadius:[0,2],holeFill:[0,32],threshold:[0,255],contrast:[0,50],sharpness:[0,10],extra:[1,10],lineWeight:[-3,3],mixRatio:[0,100],mixThresholdB:[0,255],mixExtraB:[1,10],quality:[1,112]};
+function settings(raw={}) {
+    if(!raw||typeof raw!=='object'||Array.isArray(raw))raw={};
+    const s=JSON.parse(JSON.stringify(DEFAULTS));
+    for(const k of Object.keys(s)){
+        if(k==='labVals') continue;
+        if(k in ranges){const v=Number(raw[k]);if(Number.isFinite(v)&&raw[k]!==undefined)s[k]=Math.max(ranges[k][0],Math.min(ranges[k][1],Math.round(v)));}
+        else if(typeof s[k]==='boolean'&&typeof raw[k]==='boolean')s[k]=raw[k];
+    }
+    for(const [k,choices] of Object.entries({fitMode:['contain','cover','stretch'],preset:Object.keys(PRESETS),mixPreset:Object.keys(PRESETS),mixMethod:['spatial','add','intersect','edgefill'],renderMode:['mask','chalk'],exportMode:['auto','mask','chalk']})) if(choices.includes(raw[k]))s[k]=raw[k];
+    if(typeof raw.planName==='string')s.planName=raw.planName.slice(0,100);
+    for(const [k,p] of Object.entries(PRESETS))s.labVals[k]=p.lab.map((cfg,i)=>{const v=Number(raw.labVals?.[k]?.[i]);return Number.isFinite(v)?Math.max(cfg.min,Math.min(cfg.max,Math.round(v))):cfg.def;});
+    return s;
+}
+function preprocess(input,w,h,s) {
+    let gray=new Float32Array(input);
+    const gamma=s.gamma/100, contrast=1+s.contrast/50;
+    for(let i=0;i<gray.length;i++) {
+        let v=s.invert?255-gray[i]:gray[i];
+        v=Math.pow(v/255,gamma)*255;
+        gray[i]=v;
+    }
+    if(s.denoise)gray=medianFilter(gray,w,h,s.denoise);
+    if(s.localContrast)gray=localContrast(gray,w,h,s.localContrast);
+    for(let i=0;i<gray.length;i++) {
+        let v=gray[i];
+        if(v>200)v+=(255-v)*s.whiteProtect/100*0.5;
+        gray[i]=Math.max(0,Math.min(255,(v-127.5)*contrast+127.5));
+    }
+    // One bounded pass prevents Sharpness and Detail boost multiplying each other.
+    const sharpening=Math.min(3,s.sharpness*.2+(s.detailboost?1.5+s.extra*.15:0));
+    if(sharpening)gray=unsharpMask(gray,w,h,sharpening);
+    return gray;
+}
+function process(input,w,h,s) {
+    if(!Number.isInteger(w)||!Number.isInteger(h)||w<1||h<1||w>3200||h>3200||input.length!==w*h)throw Error('Invalid image dimensions.');
+    const gray=preprocess(input,w,h,s);
+    return processPrepared(gray,w,h,s);
+}
+function processPrepared(gray,w,h,s) {
+    if(!Number.isInteger(w)||!Number.isInteger(h)||w<1||h<1||w>3200||h>3200||gray.length!==w*h)throw Error('Invalid image dimensions.');
+    let mask=renderPreset(gray,w,h,s.threshold,s.extra,s.lineWeight,s);
+    if(s.mixOn){
+        const bSettings={...s,preset:s.mixPreset,labVals:{...s.labVals,[s.mixPreset]:[...(s.labVals[s.mixPreset]||PRESETS[s.mixPreset].lab.map(c=>c.def))]}};
+        // The secondary threshold is meaningful for threshold-based presets.
+        const cfg=PRESETS[s.mixPreset].lab;
+        cfg.forEach((v,i)=>{if(v.label==='Threshold')bSettings.labVals[s.mixPreset][i]=s.mixThresholdB;});
+        const b=renderPreset(gray,w,h,s.mixThresholdB,s.mixExtraB,s.lineWeight,bSettings),ratio=s.mixRatio/100;
+        for(let i=0;i<mask.length;i++){
+            const a=mask[i];
+            if(s.mixMethod==='add')mask[i]=a|b[i];
+            else if(s.mixMethod==='intersect')mask[i]=a&b[i];
+            else if(s.mixMethod==='edgefill')mask[i]=a|(b[i]&&gray[i]<s.mixThresholdB?1:0);
+            else mask[i]=((BAYER8[(Math.floor(i/w)%8)*8+i%w%8]+0.5)/64<ratio)?b[i]:a;
+        }
+    }
+    if(s.minComponent)mask=removeSmallComponents(mask,w,h,s.minComponent);
+    if(s.gapRadius)mask=repairGaps(mask,w,h,s.gapRadius);
+    if(s.holeFill)mask=fillHoles(mask,w,h,s.holeFill);
+    if(s.flipOutput)for(let i=0;i<mask.length;i++)mask[i]=1-mask[i];
+    return mask;
+}
+function rgba(mask,w,h,mode='mask') {
+    const out=new Uint8ClampedArray(w*h*4), ink=mode==='chalk'?[229,232,207]:[0,0,0],paper=mode==='chalk'?[29,39,35]:[255,255,255];
+    for(let i=0;i<mask.length;i++){const c=mask[i]?ink:paper;out.set(c,i*4);out[i*4+3]=255;}
+    return out;
+}
+function plan(mask,w,h,s) {
+    if(w!==s.boardsWide*16||h!==s.boardsHigh*16||mask.length!==w*h)throw Error('Render the current dimensions before exporting.');
+    const boards=[];
+    for(let by=0;by<s.boardsHigh;by++)for(let bx=0;bx<s.boardsWide;bx++) {
+        const rows=[];let count=0;
+        for(let y=0;y<16;y++){let row='';for(let x=0;x<16;x++){const v=mask[(by*16+y)*w+bx*16+x]?1:0;row+=v;count+=v;}rows.push(row);}
+        boards.push({x:bx,y:by,blackPixelCount:count,drawPixelCount:count,rows});
+    }
+    return {kind:'supplementaries-blackboard-plan',version:2,generator:'Blackboard Studio 9.3.2',createdAt:new Date().toISOString(),legend:{'0':'Leave this pixel white.','1':'Draw this pixel as black in Minecraft.'},output:{boardsWide:s.boardsWide,boardsHigh:s.boardsHigh,tileSize:16,preset:s.preset,threshold:s.threshold,contrast:s.contrast,sharpness:s.sharpness,extra:s.extra,fitMode:s.fitMode,invert:false,renderMode:s.renderMode,exportMode:s.exportMode,drawColor:'black',backgroundColor:'white',drawMeaning:'1 means draw; 0 means leave the background.',maskPolarity:'stable',sourceInversionIsIndependent:true,previewMatched:s.renderMode==='mask',sourceInverted:s.invert,exportFlipped:s.flipOutput,totalWidth:w,totalHeight:h},boardCount:boards.length,boards};
+}
+function wall(s) {
+    const {boardsWide:w,boardsHigh:h}=settings(s),block='supplementaries:blackboard',count=w*h;
+    const statePosArrayList=`{blockstatemap:[{Name:"${block}",Properties:{facing:"north",waterlogged:"false"}}],endpos:{X:${w-1},Y:${h-1},Z:0},startpos:{X:0,Y:0,Z:0},statelist:[I;${new Array(count).fill(0).join(',')}]}`;
+    return {name:`blackboard-wall-${w}x${h}`,statePosArrayList,requiredItems:{[`supplementaries:Reference{ResourceKey[minecraft:item / ${block}]=${block}}`]:count}};
+}
+// Heuristic only: compare coarse tone and edge preservation, not perceived quality.
+function score(mask,gray,w,h) {
+    let error=0,blocks=0,isolated=0,filled=0;
+    for(let y=0;y<h;y+=8)for(let x=0;x<w;x+=8){let a=0,b=0,n=0;for(let dy=y;dy<Math.min(y+8,h);dy++)for(let dx=x;dx<Math.min(x+8,w);dx++){const i=dy*w+dx;a+=mask[i];b+=1-gray[i]/255;n++;}error+=Math.abs(a-b)/n;blocks++;}
+    for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const i=y*w+x;if(mask[i]){filled++;if(!mask[i-1]&&!mask[i+1]&&!mask[i-w]&&!mask[i+w])isolated++;}}
+    return 1-error/blocks-(filled?isolated/filled*0.05:0);
+}
+const api={PRESETS,DEFAULTS,settings,process,processPrepared,preprocess,renderPreset,rgba,plan,wall,score,repairGaps,localStats,BAYER8};
+root.BlackboardEngine=api;
+if(typeof module!=='undefined'&&module.exports)module.exports=api;
+
+})(typeof globalThis!=="undefined"?globalThis:this);
+</script>
+<script>/* Preview-only scale calculations; never change the exported bitmap. */
+(function(root){
+'use strict';
+function scale(w,h,availableW,availableH,mode='fit',dpr=1){
+ const fit=Math.max(0.001,Math.min(Math.max(1,availableW)/w,Math.max(1,availableH)/h));
+ dpr=Number.isFinite(dpr)&&dpr>0?dpr:1;
+ let z=fit;
+ if(mode==='pixels'){
+  // Whole device pixels when enlarged; reciprocal steps when reduced.
+  const physical=fit*dpr;
+  z=(physical>=1?Math.floor(physical):1/Math.ceil(1/physical))/dpr;
+ }else if(mode!=='fit')z=Math.max(.01,Number(mode)||1);
+ return {scale:z,width:w*z,height:h*z,pixelated:mode!=='fit'};
+}
+root.BlackboardViewport={scale};
+if(typeof module!=='undefined'&&module.exports)module.exports=root.BlackboardViewport;
+})(typeof globalThis!=='undefined'?globalThis:this);
+</script>
+<script>/* Optional local recovery. No network access; one replaceable draft per browser origin. */
+(function(root){
+'use strict';
+class DraftStore{
+ constructor(factory=root.indexedDB){this.factory=factory;this.database=null;}
+ async open(){
+  if(this.database)return this.database;
+  if(!this.factory)throw Error('Local recovery is unavailable in this browser.');
+  this.database=await new Promise((resolve,reject)=>{const request=this.factory.open('blackboard-studio-recovery',1);request.onupgradeneeded=()=>request.result.createObjectStore('drafts');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(Error('Could not open local draft storage.'));request.onblocked=()=>reject(Error('Close other Blackboard tabs and retry draft recovery.'));});
+  return this.database;
+ }
+ async operation(mode,action){const db=await this.open();return new Promise((resolve,reject)=>{const tx=db.transaction('drafts',mode);let value;const request=action(tx.objectStore('drafts'));if(request)request.onsuccess=()=>value=request.result;tx.oncomplete=()=>resolve(value);tx.onerror=()=>reject(Error('Local draft storage failed or is full.'));tx.onabort=()=>reject(Error('Local draft save was interrupted.'));});}
+ async save(project){if(project.kind!=='blackboard-studio-project'||typeof project.source?.dataURL!=='string')throw Error('Invalid recovery draft.');return this.operation('readwrite',store=>store.put({...project,savedAt:new Date().toISOString()},'latest'));}
+ read(){return this.operation('readonly',store=>store.get('latest'));}
+ clear(){return this.operation('readwrite',store=>store.delete('latest'));}
+ close(){this.database?.close();this.database=null;}
+}
+root.BlackboardDraftStore=DraftStore;
+if(typeof module!=='undefined'&&module.exports)module.exports=DraftStore;
+})(typeof globalThis!=='undefined'?globalThis:this);
+</script>
+<script id="search-source" type="text/plain">/* Bounded multi-stage search. Runs only in a worker; current settings are never mutated. */
+(function(root){
+'use strict';
+const copy=value=>JSON.parse(JSON.stringify(value));
+function reference(gray,s){return Float32Array.from(gray,v=>(s.invert!==s.flipOutput)?255-v:v);}
+function outlineTarget(gray,w,h){
+ const E=root.BlackboardEngine,cfg=E.settings({preset:'canny'});
+ return E.renderPreset(gray,w,h,128,3,0,cfg);
+}
+function outlineScore(mask,target,w,h){
+ let predicted=0,actual=0,matchedPredicted=0,matchedActual=0;
+ function near(array,x,y){for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const nx=x+dx,ny=y+dy;if(nx>=0&&nx<w&&ny>=0&&ny<h&&array[ny*w+nx])return true;}return false;}
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;if(mask[i]){predicted++;if(near(target,x,y))matchedPredicted++;}if(target[i]){actual++;if(near(mask,x,y))matchedActual++;}}
+ if(!actual)return predicted?0:1;
+ const precision=predicted?matchedPredicted/predicted:0,recall=matchedActual/actual;
+ return precision+recall?2*precision*recall/(precision+recall):0;
+}
+function effort(mask,w,h){
+ let drawPixels=0,activeBoards=0;
+ for(let by=0;by<h;by+=16)for(let bx=0;bx<w;bx+=16){let count=0;for(let y=by;y<Math.min(h,by+16);y++)for(let x=bx;x<Math.min(w,bx+16);x++)count+=mask[y*w+x];drawPixels+=count;if(count)activeBoards++;}
+ return {drawPixels,activeBoards,boardCount:Math.ceil(w/16)*Math.ceil(h/16)};
+}
+function metric(mask,gray,w,h,goal='balanced',outline){
+ if(goal==='outline')return outlineScore(mask,outline||outlineTarget(gray,w,h),w,h);
+
+ let tone=0,edge=0,edges=0,isolated=0,filled=0;
+ for(const block of [4,8]){
+  const cols=Math.ceil(w/block),rows=Math.ceil(h/block),a=new Float32Array(cols*rows),b=new Float32Array(cols*rows);
+  let error=0;
+  for(let cy=0;cy<rows;cy++)for(let cx=0;cx<cols;cx++){
+   let ink=0,dark=0,n=0;
+   for(let y=cy*block;y<Math.min(h,(cy+1)*block);y++)for(let x=cx*block;x<Math.min(w,(cx+1)*block);x++){const i=y*w+x;ink+=mask[i];dark+=1-gray[i]/255;n++;}
+   const i=cy*cols+cx;a[i]=ink/n;b[i]=dark/n;error+=Math.abs(a[i]-b[i]);
+  }
+  tone+=error/a.length/2;
+  for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){const i=y*cols+x;for(const j of [x+1<cols?i+1:-1,y+1<rows?i+cols:-1])if(j>=0){edge+=Math.abs((a[i]-a[j])-(b[i]-b[j]));edges++;}}
+ }
+ for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const i=y*w+x;if(mask[i]){filled++;if(!mask[i-1]&&!mask[i+1]&&!mask[i-w]&&!mask[i+w])isolated++;}}
+ const noise=filled?isolated/filled:0,structure=edge/Math.max(1,edges);
+ const weights=goal==='tone'?[.8,.18,.02]:goal==='clean'?[.35,.30,.35]:[.62,.33,.05];
+ return Math.max(0,Math.min(1,1-tone*weights[0]-structure*weights[1]-noise*weights[2]));
+}
+function signature(s){return JSON.stringify([s.preset,s.labVals[s.preset],s.gamma,s.contrast,s.sharpness,s.denoise,s.localContrast,s.whiteProtect,s.threshold,s.extra,s.lineWeight,s.minComponent,s.gapRadius,s.holeFill,s.detailboost,s.mixOn,s.mixOn?[s.mixPreset,s.labVals[s.mixPreset],s.mixMethod,s.mixRatio,s.mixThresholdB,s.mixExtraB]:null]);}
+function fingerprint(mask){let h=2166136261;for(let i=0;i<mask.length;i++)h=Math.imul(h^mask[i],16777619);return h>>>0;}
+function search(data,emit){
+ const E=root.BlackboardEngine,s=E.settings(data.settings),{gray,w,h}=data;
+ const budget=[160,600,1200].includes(data.options?.budget)?data.options.budget:600;
+ const goal=['balanced','tone','clean','outline'].includes(data.options?.goal)?data.options.goal:'balanced',currentStyle=data.options?.style==='current',mixes=data.options?.mixes!==false&&!currentStyle;
+ const timeLimit=budget===160?30000:budget===600?75000:120000,start=performance.now(),target=reference(gray,s);
+ const edgeReference=goal==='outline'?outlineTarget(target,w,h):null;
+ const maxDrawPixels=Math.max(0,Math.floor(Number(data.options?.maxDrawPixels)||0)),nativePixels=s.boardsWide*s.boardsHigh*256;
+ const rank=(entry)=>entry.score-(maxDrawPixels?Math.max(0,entry.drawFraction*nativePixels/maxDrawPixels-1)*.5:0);
+ const seen=new Map(),top=[],byPreset=new Map(),prepared=new Map(),slidersTuned=new Set();let evaluated=0,seed=271828,stage='Scanning styles',limited=false,mixCount=0,preprocessRuns=0,cacheHits=0;
+ const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+ const choose=items=>items[Math.floor(random()*items.length)];
+ const allowed=()=>{if(evaluated>=budget)return false;if(performance.now()-start>timeLimit){limited=true;return false;}return true;};
+ function report(force=false){if(force||evaluated%8===0)emit({type:'searchProgress',stage,evaluated,budget,progress:evaluated/budget*.86,best:top[0]?.score??0,elapsed:performance.now()-start});}
+ function evaluate(candidate){
+  if(!allowed())return null;const cfg=E.settings(candidate),key=signature(cfg);if(seen.has(key))return seen.get(key);
+  const prepKey=JSON.stringify([cfg.invert,cfg.gamma,cfg.contrast,cfg.denoise,cfg.localContrast,cfg.whiteProtect,cfg.sharpness,cfg.detailboost,cfg.detailboost?cfg.extra:0]);
+  let input=prepared.get(prepKey);
+  if(input){cacheHits++;prepared.delete(prepKey);}else{input=E.preprocess(gray,w,h,cfg);preprocessRuns++;}
+  prepared.set(prepKey,input);if(prepared.size>8)prepared.delete(prepared.keys().next().value);
+  const mask=E.processPrepared(input,w,h,cfg),score=metric(mask,target,w,h,goal,edgeReference),entry={settings:cfg,score,drawFraction:mask.reduce((sum,v)=>sum+v,0)/mask.length,fingerprint:fingerprint(mask)};evaluated++;seen.set(key,entry);if(cfg.mixOn)mixCount++;
+  if(!top.some(item=>item.fingerprint===entry.fingerprint))top.push(entry);top.sort((a,b)=>rank(b)-rank(a));if(top.length>30)top.length=30;
+  if(!cfg.mixOn&&(!byPreset.has(cfg.preset)||rank(entry)>rank(byPreset.get(cfg.preset))))byPreset.set(cfg.preset,entry);
+  report();return entry;
+ }
+ evaluate(s);
+ const neutral=E.settings({...s,gamma:100,contrast:0,sharpness:0,denoise:0,localContrast:0,whiteProtect:0,threshold:128,extra:3,lineWeight:0,minComponent:0,gapRadius:0,holeFill:0,detailboost:false,mixOn:false});
+ const defaults=E.settings();
+ const presets=currentStyle?[s.preset]:Object.keys(E.PRESETS);
+ for(const preset of presets){
+  evaluate({...neutral,preset,labVals:{...neutral.labVals,[preset]:defaults.labVals[preset]}});
+  evaluate({...s,preset,mixOn:false});
+ }
+ stage='Refining style controls';report(true);
+ const leaders=[...byPreset.values()].sort((a,b)=>rank(b)-rank(a)).slice(0,3);
+ for(const entry of leaders){
+  let best=entry;
+  for(let axis=0;axis<3;axis++){
+   const spec=E.PRESETS[best.settings.preset].lab[axis];if(spec.label==='Unused')continue;
+   for(const f of (budget===160?[.25,.75]:[0,.25,.5,.75,1])){
+    if(evaluated>=budget*.47||!allowed())break;
+    const cfg=copy(best.settings);cfg.labVals[cfg.preset][axis]=Math.round(spec.min+(spec.max-spec.min)*f);
+    const tried=evaluate(cfg);if(tried&&rank(tried)>rank(best))best=tried;
+   }
+  }
+ }
+ const knobs={gamma:[50,100,150,200],contrast:[0,25,50],sharpness:[0,3,6,10],denoise:[0,2,4],localContrast:[0,50,100],whiteProtect:[0,50,100],threshold:[0,128,255],extra:[1,5,10],lineWeight:[-3,0,3],minComponent:[0,16,32],gapRadius:[0,1,2],holeFill:[0,16,32],detailboost:[false,true]};
+ function relevantKeys(cfg){return Object.keys(knobs).filter(key=>key!=='threshold'||['solid','hybrid'].includes(cfg.preset));}
+ let winner=[...byPreset.values()].filter(e=>presets.includes(e.settings.preset)).sort((a,b)=>rank(b)-rank(a))[0];
+ const tunedStyle=winner.settings.preset,knobKeys=relevantKeys(winner.settings),tuneLimit=Math.floor(budget*(mixes?.86:1));
+ stage=`Fine-tuning ${E.PRESETS[tunedStyle].name}`;report(true);
+ // Coordinate sweeps guarantee every relevant slider gets attention before random trials.
+ for(const key of knobKeys){
+  for(const value of knobs[key]){
+   if(!allowed()||evaluated>=tuneLimit)break;
+   const tried=evaluate({...winner.settings,[key]:value});
+   if(tried){slidersTuned.add(key);if(rank(tried)>rank(winner))winner=tried;}
+  }
+ }
+ for(let axis=0;axis<3;axis++){
+  const spec=E.PRESETS[tunedStyle].lab[axis];if(spec.label==='Unused')continue;
+  for(const f of [0,.5,1]){
+   if(!allowed()||evaluated>=tuneLimit)break;
+   const cfg=copy(winner.settings);cfg.labVals[tunedStyle][axis]=Math.round(spec.min+(spec.max-spec.min)*f);
+   const tried=evaluate(cfg);if(tried&&rank(tried)>rank(winner))winner=tried;
+  }
+ }
+ function mutate(base,local=false){
+  const cfg=copy(base);
+  for(let i=0,n=1+Math.floor(random()*3);i<n;i++){
+   if(random()<.4){const axis=Math.floor(random()*3),spec=E.PRESETS[cfg.preset].lab[axis];if(spec.label!=='Unused'){const radius=Math.max(1,(spec.max-spec.min)*.12);cfg.labVals[cfg.preset][axis]=local?Math.max(spec.min,Math.min(spec.max,Math.round(cfg.labVals[cfg.preset][axis]+(random()*2-1)*radius))):Math.round(spec.min+random()*(spec.max-spec.min));}}
+   else{const key=choose(relevantKeys(cfg)),values=knobs[key],min=values[0],max=values.at(-1);cfg[key]=local&&typeof min==='number'?Math.max(min,Math.min(max,Math.round(cfg[key]+(random()*2-1)*Math.max(1,(max-min)*.12)))):choose(values);}
+  }
+  return cfg;
+ }
+ stage=`Polishing ${E.PRESETS[tunedStyle].name}`;report(true);
+ let attempts=0;
+ while(allowed()&&evaluated<tuneLimit&&attempts++<budget*15){
+  const tried=evaluate(mutate(winner.settings,random()<.8));if(tried&&rank(tried)>rank(winner))winner=tried;
+ }
+ if(mixes&&allowed()){
+  stage='Combining styles';report(true);
+  const pool=[...byPreset.values()].sort((a,b)=>rank(b)-rank(a)).slice(0,8);attempts=0;
+  while(allowed()&&attempts++<budget*15){
+   const a=choose(pool),b=choose(pool);if(a.settings.preset===b.settings.preset)continue;
+   let cfg=copy(a.settings);cfg.mixOn=true;cfg.mixPreset=b.settings.preset;cfg.labVals[cfg.mixPreset]=[...b.settings.labVals[cfg.mixPreset]];cfg.mixMethod=choose(['spatial','add','intersect','edgefill']);cfg.mixRatio=cfg.mixMethod==='spatial'?choose([0,20,40,60,80,100]):50;cfg.mixThresholdB=choose([0,64,128,192,255]);cfg.mixExtraB=choose([1,b.settings.extra,10]);
+   if(random()<.4){const axis=Math.floor(random()*3),spec=E.PRESETS[cfg.mixPreset].lab[axis];if(spec.label!=='Unused')cfg.labVals[cfg.mixPreset][axis]=Math.round(spec.min+random()*(spec.max-spec.min));}
+   if(random()<.4)cfg=mutate(cfg);evaluate(cfg);
+  }
+ }
+ // Always compare finalists and the baseline against the same higher-resolution source.
+ stage='Rechecking the shortlist';report(true);
+ const fine=data.fine||{gray,w,h},fineTarget=reference(fine.gray,s),fineOutline=goal==='outline'?outlineTarget(fineTarget,fine.w,fine.h):null,shortlist=[],sigs=new Set();
+ const fullResolution=!!data.options?.fullResolution||maxDrawPixels>0,shortlistLimit=fullResolution?4:13;
+ if(fullResolution&&(fine.w!==s.boardsWide*16||fine.h!==s.boardsHigh*16))throw Error('Full-size check requires the actual wall dimensions.');
+ for(const entry of [ {settings:s}, ...top.filter(e=>!currentStyle||(e.settings.preset===s.preset&&!e.settings.mixOn)) ]){const key=signature(entry.settings);if(sigs.has(key))continue;sigs.add(key);shortlist.push(entry);if(shortlist.length===shortlistLimit)break;}
+ const finalists=[];let baseline;
+ for(let index=0;index<shortlist.length;index++){
+  const cfg=shortlist[index].settings,mask=E.process(fine.gray,fine.w,fine.h,cfg),score=metric(mask,fineTarget,fine.w,fine.h,goal,fineOutline);
+  const entry={settings:cfg,score,mask,effort:effort(mask,fine.w,fine.h),fingerprint:fingerprint(mask)};
+  if(index===0)baseline=entry;else finalists.push(entry);
+  emit({type:'searchProgress',stage,evaluated,budget,progress:.86+.14*(index+1)/shortlist.length,best:score,elapsed:performance.now()-start});
+ }
+ finalists.sort((a,b)=>b.score-a.score);
+ const unique=[],hashes=new Set([baseline.fingerprint]);
+ for(const entry of finalists){if(hashes.has(entry.fingerprint)||(maxDrawPixels&&entry.effort.drawPixels>maxDrawPixels))continue;hashes.add(entry.fingerprint);unique.push(entry);if(unique.length===8)break;}
+ return {type:'searchComplete',baseline,candidates:unique,w:fine.w,h:fine.h,evaluated,mixCount,rechecked:shortlist.length,budget,limited,elapsed:performance.now()-start,goal,fullResolution,maxDrawPixels,stylesScanned:presets.length,tunedStyle,slidersTuned:[...slidersTuned],preprocessRuns,cacheHits};
+}
+root.BlackboardSearch={search,metric,reference,signature,effort,outlineTarget,outlineScore};
+if(typeof module!=='undefined'&&module.exports)module.exports=root.BlackboardSearch;
+})(typeof globalThis!=='undefined'?globalThis:this);
+</script>
+<script id="worker-source" type="text/plain">/* Engine is prepended by build.py. Each job runs in an isolated, cancellable worker. */
+self.onmessage=({data})=>{
+    const {id,type,gray,w,h,settings:s}=data,E=self.BlackboardEngine;
+    try {
+        if(type==='search'){const result=self.BlackboardSearch.search(data,message=>self.postMessage({id,...message}));self.postMessage({id,...result},[result.baseline.mask.buffer,...result.candidates.map(c=>c.mask.buffer)]);return;}
+        if(type==='render'){
+            const start=performance.now(),mask=E.process(gray,w,h,s);
+            self.postMessage({id,type,mask,w,h,elapsed:performance.now()-start},[mask.buffer]);return;
+        }
+        if(type==='optimize'){
+            const result=self.BlackboardSearch.search({...data,options:{budget:160,mixes:false}},message=>self.postMessage({id,type:'progress',progress:message.progress,stage:message.stage}));
+            const best=[result.baseline,...result.candidates].sort((a,b)=>b.score-a.score)[0];
+            self.postMessage({id,type:'optimized',best:{settings:best.settings,preset:best.settings.preset,lab:best.settings.labVals[best.settings.preset],score:best.score}});return;
+        }
+        const keys=Object.keys(E.PRESETS),results=[],base=E.settings({...s,mixOn:false}),target=self.BlackboardSearch.reference(gray,base);
+        for(let index=0;index<keys.length;index++){
+            const preset=keys[index],cfg={...base,preset},mask=E.process(gray,w,h,cfg);
+            results.push({preset,score:self.BlackboardSearch.metric(mask,target,w,h),lab:[...cfg.labVals[preset]]});
+            self.postMessage({id,type:'thumbnail',preset,mask,w,h,progress:(index+1)/keys.length},[mask.buffer]);
+        }
+        results.sort((a,b)=>b.score-a.score);
+        self.postMessage({id,type:'complete',results});
+    } catch(error){self.postMessage({id,type:'error',message:error.message||'Processing failed.'});}
+};
+</script>
+<script>/* Blackboard Studio — UI controller. No network requests, frameworks, or build dependencies. */
+(()=>{
+'use strict';
+const E=BlackboardEngine, $=id=>document.getElementById(id), clone=o=>JSON.parse(JSON.stringify(o));
+let s=E.settings(), source=null, sourceURL='', sourceName='', result=null, renderWorker=null, auxiliaryWorker=null, renderTimer=null, renderRevision=0, sourceRevision=0;
+let view='result', grid=false, split=50, zoom='fit', boardIndex=0, history=[clone(s)], historyIndex=0, category='all', toastTimer, auxiliaryJob='';
+const workerURL=URL.createObjectURL(new Blob([$ ('engine-source').textContent,'\n',$('search-source').textContent,'\n',$('worker-source').textContent],{type:'text/javascript'}));
+const inkKeys=['softink','animeink','manga','lineart','bold','solid','canny','xdog','sauvola','wolf','hybrid','darkart','bradley','adaptive','threshold'];
+const ditherKeys=['floyd','atkinson','jjn','stucki','sierra','ordered','bayer8','ign','bluenoise'];
+const sliderSpecs=[
+ ['gamma','Gamma',50,200,100,'toneControls'],['threshold','Tone threshold',0,255,128,'toneControls'],['contrast','Contrast',0,50,0,'toneControls'],['sharpness','Sharpness',0,10,0,'toneControls'],['extra','Edge sensitivity',1,10,3,'toneControls'],['lineWeight','Line weight',-3,3,0,'toneControls'],
+ ['denoise','Denoise radius',0,4,0,'cleanupControls'],['localContrast','Local contrast',0,100,0,'cleanupControls'],['whiteProtect','Bright protection',0,100,0,'cleanupControls'],['minComponent','Remove islands below',0,32,0,'cleanupControls'],['gapRadius','Bridge gaps',0,2,0,'cleanupControls'],['holeFill','Fill holes up to',0,32,0,'cleanupControls'],
+ ['mixRatio','Blend toward B',0,100,50,'mixControls'],['mixThresholdB','B threshold',0,255,128,'mixControls'],['mixExtraB','B edge sensitivity',1,10,5,'mixControls']
+];
+function toast(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,4000);}
+function status(message){$('status').textContent=message;}
+function processingKey(cfg=s){const {renderMode,exportMode,planName,ratioLocked,quality,...rest}=cfg;return JSON.stringify(rest);}
+function isCurrent(){return !!result&&result.key===processingKey()&&result.sourceRevision===sourceRevision&&!renderWorker&&!renderTimer;}
+function updateActions(){const ready=isCurrent();for(const id of ['downloadPlan','downloadPNG','copyPlan'])$(id).disabled=!ready;for(const id of ['saveProject','autoFit','gallery','optimize','megaCompare'])$(id).disabled=!source;$('undo').disabled=historyIndex===0;$('redo').disabled=historyIndex>=history.length-1;}
+function remember(){queueDraft();if(JSON.stringify(s)!==JSON.stringify(history[historyIndex])){history=history.slice(0,historyIndex+1);history.push(clone(s));if(history.length>80)history.shift();historyIndex=history.length-1;}updateActions();}
+function historyMove(delta){const target=historyIndex+delta;if(target<0||target>=history.length)return;stopAuxiliary();s=clone(history[target]);historyIndex=target;sync();scheduleRender();}
+function slider(id,label,min,max,value,parent){
+ const wrap=document.createElement('div');wrap.className='slider-control';wrap.innerHTML=`<div class="slider-label"><label for="${id}"></label><output for="${id}" id="${id}Value"></output></div><input type="range" id="${id}" min="${min}" max="${max}" step="1" value="${value}"><div class="slider-extents"><span>${min}</span><span>${max}</span></div>`;
+ wrap.querySelector('label').textContent=label;$(parent).appendChild(wrap);return $(id);
+}
+function displayValue(id,value){if(id==='gamma')return (value/100).toFixed(2);if(['contrast','localContrast','whiteProtect','mixRatio'].includes(id))return value+'%';if(['gapRadius','holeFill','minComponent','lineWeight','denoise'].includes(id))return value+' px';return String(value);}
+for(const [id,label,min,max,value,parent] of sliderSpecs){
+ const el=slider(id,label,min,max,value,parent);
+ el.addEventListener('input',()=>{s[id]=+el.value;$(id+'Value').textContent=displayValue(id,s[id]);stopAuxiliary();scheduleRender();});
+ el.addEventListener('change',remember);
+}
+for(let i=0;i<3;i++){
+ const el=slider('lab'+i,'Style parameter',0,100,50,'labControls');
+ el.addEventListener('input',()=>{s.labVals[s.preset][i]=+el.value;$('lab'+i+'Value').textContent=el.value;stopAuxiliary();scheduleRender();});el.addEventListener('change',remember);
+}
+for(const [key,p] of Object.entries(E.PRESETS)){
+ const btn=document.createElement('button');btn.className='preset-button';btn.dataset.preset=key;btn.setAttribute('aria-pressed','false');
+ const name=document.createElement('strong'),desc=document.createElement('small');name.textContent=p.name;desc.textContent=p.desc;btn.append(name,desc);btn.onclick=()=>choosePreset(key);$('presets').append(btn);
+ const opt=document.createElement('option');opt.value=key;opt.textContent=p.name;$('mixPreset').append(opt);
+}
+function choosePreset(key){stopAuxiliary();s.preset=key;remember();sync();scheduleRender();}
+function sync(){
+ for(const [id] of sliderSpecs){$(id).value=s[id];$(id+'Value').textContent=displayValue(id,s[id]);}
+ for(const id of ['boardsWide','boardsHigh','fitMode','quality','mixPreset','mixMethod','renderMode','exportMode','planName'])$(id).value=s[id];
+ for(const id of ['invert','smoothing','detailboost','mixOn','flipOutput'])$(id).checked=s[id];
+ $('ratioLocked').classList.toggle('active',s.ratioLocked);$('ratioLocked').setAttribute('aria-pressed',s.ratioLocked);
+ const p=E.PRESETS[s.preset];$('activeName').textContent=p.name;$('activeDescription').textContent=p.desc;
+ p.lab.forEach((cfg,i)=>{const el=$('lab'+i);el.min=cfg.min;el.max=cfg.max;el.step=cfg.step;el.value=s.labVals[s.preset][i];el.disabled=cfg.label==='Unused';el.closest('.slider-control').hidden=el.disabled;document.querySelector(`label[for="lab${i}"]`).textContent=cfg.label;$('lab'+i+'Value').textContent=el.value;const bounds=el.parentElement.querySelectorAll('.slider-extents span');bounds[0].textContent=cfg.min;bounds[1].textContent=cfg.max;});
+ // Avoid presenting controls that have no effect for the active style.
+ const toneRelevant=['solid','hybrid'].includes(s.preset);$('threshold').closest('.slider-control').hidden=!toneRelevant;
+ const extraRelevant=['softink','animeink','manga','lineart','xdog','darkart','woodcut'].includes(s.preset);$('extra').closest('.slider-control').hidden=!extraRelevant;
+ $('mixRatio').disabled=!s.mixOn||s.mixMethod!=='spatial';$('mixThresholdB').disabled=!s.mixOn;$('mixExtraB').disabled=!s.mixOn;
+ document.querySelectorAll('[data-preset]').forEach(el=>{el.classList.toggle('active',el.dataset.preset===s.preset);el.setAttribute('aria-pressed',el.dataset.preset===s.preset);});
+ updateWall();updateActions();
+}
+function updateWall(){
+ const w=s.boardsWide*16,h=s.boardsHigh*16,n=s.boardsWide*s.boardsHigh;
+ $('wallPixels').textContent=`${w} × ${h} pixels`;$('wallBoards').textContent=`${n.toLocaleString()} boards`;
+ $('metricSize').innerHTML=`${w} × ${h} <small>px</small>`;$('metricBoards').innerHTML=`${n.toLocaleString()} <small>boards</small>`;
+ const large=Math.max(s.boardsWide,s.boardsHigh)>128;$('reach').classList.toggle('warning',large);$('reach').textContent=large?'Exceeds the original ±64-block span. Large walls may need repositioning.':'Within the original ±64-block span.';
+ if(w*h>2000000)$('reach').textContent+=' Large renders can take longer; Cancel stays available.';
+}
+function filterPresets(){let count=0;const query=$('presetSearch').value.toLowerCase().trim();document.querySelectorAll('[data-preset]').forEach(el=>{const key=el.dataset.preset,group=inkKeys.includes(key)?'ink':ditherKeys.includes(key)?'dither':'texture';el.hidden=!(category==='all'||category===group)||!`${E.PRESETS[key].name} ${E.PRESETS[key].desc}`.toLowerCase().includes(query);if(!el.hidden)count++;});$('noStyles').hidden=count>0;}
+$('presetSearch').oninput=filterPresets;
+document.querySelectorAll('[data-category]').forEach(btn=>btn.onclick=()=>{category=btn.dataset.category;document.querySelectorAll('[data-category]').forEach(b=>{b.classList.toggle('active',b===btn);b.setAttribute('aria-pressed',b===btn);});filterPresets();});
+function setDimensions(key,value){
+ const ratio=source?source.naturalWidth/source.naturalHeight:s.boardsWide/s.boardsHigh;
+ s[key]=Math.max(1,Math.min(200,Math.round(Number(value)||1)));
+ if(s.ratioLocked){const other=key==='boardsWide'?'boardsHigh':'boardsWide';s[other]=Math.max(1,Math.min(200,Math.round(key==='boardsWide'?s[key]/ratio:s[key]*ratio)));}
+ stopAuxiliary();sync();remember();scheduleRender();
+}
+for(const key of ['boardsWide','boardsHigh'])$(key).onchange=e=>setDimensions(key,e.target.value);
+$('ratioLocked').onclick=()=>{s.ratioLocked=!s.ratioLocked;remember();sync();};
+$('autoFit').onclick=()=>{if(!source)return;const ratio=source.naturalWidth/source.naturalHeight;let w=s.quality*Math.sqrt(ratio),h=s.quality/Math.sqrt(ratio);const scale=Math.min(1,200/w,200/h);s.boardsWide=Math.max(1,Math.round(w*scale));s.boardsHigh=Math.max(1,Math.round(h*scale));stopAuxiliary();remember();sync();scheduleRender();toast(`Wall set to ${s.boardsWide} × ${s.boardsHigh} boards.`);};
+for(const id of ['fitMode','mixPreset','mixMethod'])$(id).onchange=e=>{s[id]=e.target.value;stopAuxiliary();remember();sync();scheduleRender();};
+$('quality').onchange=e=>{s.quality=+e.target.value;remember();};
+for(const id of ['invert','smoothing','detailboost','mixOn','flipOutput'])$(id).onchange=e=>{s[id]=e.target.checked;stopAuxiliary();remember();sync();scheduleRender();};
+$('renderMode').onchange=e=>{s.renderMode=e.target.value;remember();drawPreview();};
+$('exportMode').onchange=e=>{s.exportMode=e.target.value;remember();};
+$('planName').onchange=e=>{s.planName=e.target.value;remember();};
+$('resetStyle').onclick=()=>{s.labVals[s.preset]=E.PRESETS[s.preset].lab.map(c=>c.def);stopAuxiliary();remember();sync();scheduleRender();};
+$('resetAll').onclick=()=>{const keep={boardsWide:s.boardsWide,boardsHigh:s.boardsHigh,fitMode:s.fitMode,ratioLocked:s.ratioLocked,quality:s.quality,planName:s.planName};s=E.settings(keep);stopAuxiliary();remember();sync();scheduleRender();toast('Adjustments reset. Undo is available.');};
+$('undo').onclick=()=>historyMove(-1);$('redo').onclick=()=>historyMove(1);
+function openTab(name){const tuning=name==='tune';$('tunePanel').hidden=!tuning;$('exportPanel').hidden=tuning;for(const id of ['tune','export']){$(id+'Tab').classList.toggle('active',id===name);$(id+'Tab').setAttribute('aria-selected',id===name);$(id+'Tab').tabIndex=id===name?0:-1;}}
+$('tuneTab').onclick=()=>openTab('tune');$('exportTab').onclick=()=>openTab('export');
+for(const id of ['tuneTab','exportTab'])$(id).onkeydown=e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();const next=id==='tuneTab'?'export':'tune';openTab(next);$(next+'Tab').focus();}};
+function stopRender(){clearTimeout(renderTimer);renderTimer=null;if(renderWorker){renderWorker.terminate();renderWorker=null;}renderRevision++;updateActions();}
+function stopAuxiliary(){
+ const wasSearch=auxiliaryJob==='search';
+ if(auxiliaryWorker){auxiliaryWorker.terminate();auxiliaryWorker=null;auxiliaryJob='';$('galleryProgress').hidden=true;}
+ if(wasSearch){setSearchRunning(false);$('searchStatus').textContent='Search stopped. Your current settings are unchanged.';$('searchProgress').hidden=true;}
+ setBusy();
+}
+function setBusy(message){const active=!!renderWorker||(!!auxiliaryWorker&&auxiliaryJob!=='search');$('busy').hidden=!active;if(message)$('busyText').textContent=message;}
+function scheduleRender(){stopRender();if(!source)return;status('Changes pending…');renderTimer=setTimeout(()=>{renderTimer=null;startRender();},100);updateActions();}
+function preparedSource(maxSide){
+ let w=s.boardsWide*16,h=s.boardsHigh*16;if(maxSide){const ratio=Math.min(1,maxSide/Math.max(w,h));w=Math.max(1,Math.round(w*ratio));h=Math.max(1,Math.round(h*ratio));}
+ const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.imageSmoothingEnabled=s.smoothing;ctx.imageSmoothingQuality='high';
+ const iw=source.naturalWidth,ih=source.naturalHeight;
+ if(s.fitMode==='stretch')ctx.drawImage(source,0,0,w,h);else{const scale=s.fitMode==='cover'?Math.max(w/iw,h/ih):Math.min(w/iw,h/ih);const dw=iw*scale,dh=ih*scale;ctx.drawImage(source,(w-dw)/2,(h-dh)/2,dw,dh);}
+ const pixels=ctx.getImageData(0,0,w,h),gray=new Uint8ClampedArray(w*h);for(let i=0;i<w*h;i++)gray[i]=Math.round(pixels.data[i*4]*.299+pixels.data[i*4+1]*.587+pixels.data[i*4+2]*.114);
+ return {w,h,gray,pixels};
+}
+function startRender(){
+ if(!source)return;const id=++renderRevision,key=processingKey();let input;
+ try{input=preparedSource();renderWorker=new Worker(workerURL);}catch(err){toast('Unable to start rendering: '+err.message);status('Rendering unavailable.');renderWorker=null;setBusy();updateActions();return;}
+ updateActions();setBusy('Rendering…');status('Rendering in the background…');
+ const onError=message=>{if(id!==renderRevision)return;renderWorker?.terminate();renderWorker=null;setBusy();status('Render failed. Change a setting to retry.');toast(message);updateActions();};
+ renderWorker.onerror=e=>onError(e.message||'The rendering worker failed.');
+ renderWorker.onmessage=({data})=>{if(id!==renderRevision)return;if(data.type==='error'){onError(data.message);return;}if(data.type!=='render')return;
+   result={...data,source:input.pixels,key,sourceRevision,settings:clone(s)};renderWorker.terminate();renderWorker=null;$('emptyState').hidden=true;$('canvasHolder').hidden=false;drawPreview();
+   const drawPixels=data.mask.reduce((n,v)=>n+v,0),fill=drawPixels/data.mask.length*100;$('buildEffort').textContent=`${drawPixels.toLocaleString()} draw pixels · ${s.boardsWide*s.boardsHigh} boards · native ${data.w} × ${data.h}`;$('metricFill').innerHTML=`${fill.toFixed(1)} <small>%</small>`;$('metricTime').innerHTML=`${Math.round(data.elapsed).toLocaleString()} <small>ms</small>`;
+   status(`${E.PRESETS[s.preset].name} · ${data.w} × ${data.h} · ready`);setBusy();updateActions();
+ };
+ renderWorker.postMessage({id,type:'render',gray:input.gray,w:input.w,h:input.h,settings:clone(s)},[input.gray.buffer]);
+}
+$('cancelRender').onclick=()=>{stopRender();stopAuxiliary();setBusy();if(result){s=clone(result.settings);remember();sync();drawPreview();status('Cancelled. Restored the last completed render.');}else{status('Cancelled. Adjust a control to render again.');}updateActions();toast('Processing cancelled.');};
+function drawPreview(){
+ if(!result)return;const {mask,w,h}=result,c=$('preview');c.width=w;c.height=h;const ctx=c.getContext('2d');
+ if(view==='source')ctx.putImageData(result.source,0,0);else{
+  ctx.putImageData(new ImageData(E.rgba(mask,w,h,s.renderMode),w,h),0,0);
+  if(view==='compare'){const cut=Math.floor(w*split/100);if(cut)ctx.putImageData(result.source,0,0,0,0,cut,h);if(cut>0&&cut<w){ctx.fillStyle='#c1c9e8';ctx.fillRect(cut,0,1,h);}}
+ }
+ if(grid){ctx.strokeStyle=s.renderMode==='mask'?'rgba(59,110,68,.65)':'rgba(210,216,239,.5)';ctx.lineWidth=.5;ctx.beginPath();for(let x=16;x<w;x+=16){ctx.moveTo(x+.25,0);ctx.lineTo(x+.25,h);}for(let y=16;y<h;y+=16){ctx.moveTo(0,y+.25);ctx.lineTo(w,y+.25);}ctx.stroke();}
+ applyZoom();
+}
+function applyZoom(){
+ if(!result)return;
+ const stage=$('stage'),padding=innerWidth<=700?32:48;
+ const fit=BlackboardViewport.scale(result.w,result.h,stage.clientWidth-padding-1,stage.clientHeight-padding-1,zoom,window.devicePixelRatio||1);
+ const canvas=$('preview');canvas.style.width=fit.width+'px';canvas.style.height=fit.height+'px';canvas.style.imageRendering=fit.pixelated?'pixelated':'auto';
+ $('zoom').value=String(zoom);$('zoomReadout').textContent=(fit.scale*100).toFixed(fit.scale<1?1:0)+'%';
+}
+new ResizeObserver(()=>applyZoom()).observe($('stage'));
+$('zoom').onchange=e=>{zoom=e.target.value;$('stage').scrollTop=0;$('stage').scrollLeft=0;applyZoom();};
+function nudgeZoom(delta){const values=['fit','pixels','1','2','4','8'];zoom=values[Math.max(0,Math.min(values.length-1,values.indexOf(String(zoom))+delta))];applyZoom();}
+$('zoomOut').onclick=()=>nudgeZoom(-1);$('zoomIn').onclick=()=>nudgeZoom(1);
+function toggleGrid(){grid=!grid;$('grid').classList.toggle('active',grid);$('grid').setAttribute('aria-pressed',grid);drawPreview();}
+$('grid').onclick=toggleGrid;
+document.querySelectorAll('[data-view]').forEach(btn=>btn.onclick=()=>{view=btn.dataset.view;document.querySelectorAll('[data-view]').forEach(b=>{b.classList.toggle('active',btn===b);b.setAttribute('aria-pressed',btn===b);});$('compareBar').hidden=view!=='compare';drawPreview();});
+$('compareSplit').oninput=e=>{split=+e.target.value;drawPreview();};
+function pixelPosition(e){const rect=$('preview').getBoundingClientRect();return {x:Math.floor((e.clientX-rect.left)*result.w/rect.width),y:Math.floor((e.clientY-rect.top)*result.h/rect.height)};}
+$('preview').onpointermove=e=>{if(!result)return;const {x,y}=pixelPosition(e);$('coordinates').textContent=`px ${x}, ${y} · board ${Math.floor(x/16)}, ${Math.floor(y/16)}`;};
+$('preview').onpointerleave=()=>$('coordinates').textContent='Click any board to inspect';
+function inspectBoard(){
+ if(!result)return;const columns=result.w/16,total=columns*result.h/16;boardIndex=Math.max(0,Math.min(total-1,boardIndex));const bx=boardIndex%columns,by=Math.floor(boardIndex/columns),mask=new Uint8Array(256);let count=0;
+ for(let y=0;y<16;y++)for(let x=0;x<16;x++){const v=result.mask[(by*16+y)*result.w+bx*16+x];mask[y*16+x]=v;count+=v;}
+ $('boardTitle').textContent=`Board ${bx}, ${by}`;$('boardCanvas').getContext('2d').putImageData(new ImageData(E.rgba(mask,16,16,s.renderMode),16,16),0,0);$('boardInfo').textContent=`${count} / 256 draw pixels · row ${by+1}, column ${bx+1}. Coordinates start at the top-left.`;$('prevBoard').disabled=boardIndex===0;$('nextBoard').disabled=boardIndex===total-1;if(!$('boardDialog').open)$('boardDialog').showModal();
+}
+$('preview').onclick=e=>{if(!result)return;const {x,y}=pixelPosition(e);boardIndex=Math.floor(y/16)*(result.w/16)+Math.floor(x/16);inspectBoard();};
+$('preview').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();boardIndex=0;inspectBoard();}};
+$('prevBoard').onclick=()=>{boardIndex--;inspectBoard();};$('nextBoard').onclick=()=>{boardIndex++;inspectBoard();};
+function readFile(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Could not read the file.'));reader.readAsDataURL(file);});}
+function decode(url){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{if(img.naturalWidth*img.naturalHeight>32000000)reject(Error('Image is too large. Resize it below 32 megapixels.'));else resolve(img);};img.onerror=()=>reject(Error('This image could not be decoded. Try PNG, JPEG, or WebP.'));img.src=url;});}
+let loadingToken=0;
+async function installSource(url,name,projectSettings,token=++loadingToken){
+ let image=await decode(url);if(token!==loadingToken)return false;
+ if(url.startsWith('data:image/gif;')){
+  const frozen=document.createElement('canvas');frozen.width=image.naturalWidth;frozen.height=image.naturalHeight;frozen.getContext('2d').drawImage(image,0,0);url=frozen.toDataURL('image/png');image=await decode(url);if(token!==loadingToken)return false;
+ }
+ stopRender();stopAuxiliary();source=image;sourceURL=url;sourceName=name.slice(0,150);sourceRevision++;result=null;
+ if(projectSettings)s=E.settings(projectSettings);else{s=E.settings({...s,planName:name.replace(/\.[^.]+$/,'')||'blackboard-plan'});const ratio=image.naturalWidth/image.naturalHeight;let w=Math.sqrt(40*ratio),h=Math.sqrt(40/ratio),scale=Math.min(1,200/w,200/h);s.boardsWide=Math.max(1,Math.round(w*scale));s.boardsHigh=Math.max(1,Math.round(h*scale));}
+ history=[clone(s)];historyIndex=0;$('sourceName').textContent=sourceName;$('sourceMeta').textContent=`${image.naturalWidth.toLocaleString()} × ${image.naturalHeight.toLocaleString()} · change image`;$('sourceThumb').src=url;$('sourceThumb').hidden=false;
+ $('canvasHolder').hidden=true;$('emptyState').hidden=true;$('metricFill').textContent='—';$('metricTime').textContent='—';zoom='fit';sync();scheduleRender();queueDraft();return true;
+}
+async function loadImage(file){if(!file)return;const token=++loadingToken;try{if(file.size>25000000)throw Error('Choose an image smaller than 25 MB.');if(!/^image\/(png|jpeg|webp|gif|bmp|avif)$/i.test(file.type))throw Error('Use a PNG, JPEG, WebP, GIF, BMP, or AVIF image.');const url=await readFile(file);if(token!==loadingToken)return;await installSource(url,file.name,undefined,token);if(file.type==='image/gif')toast('Loaded the first displayed frame of the GIF.');}catch(err){toast(err.message);}finally{$('fileInput').value='';}}
+$('fileInput').onchange=e=>loadImage(e.target.files[0]);$('emptyBrowse').onclick=()=>$('fileInput').click();
+for(const type of ['dragenter','dragover'])$('dropZone').addEventListener(type,e=>{e.preventDefault();$('dropZone').classList.add('dragover');});
+$('dropZone').ondragleave=()=>$('dropZone').classList.remove('dragover');$('dropZone').ondrop=e=>{e.preventDefault();$('dropZone').classList.remove('dragover');loadImage(e.dataTransfer.files[0]);};
+// Prevent an accidental drop elsewhere from navigating away from unsaved work.
+document.addEventListener('dragover',e=>{if(e.dataTransfer.types.includes('Files'))e.preventDefault();});document.addEventListener('drop',e=>{if(e.target.closest('#dropZone'))return;if(e.dataTransfer.files.length){e.preventDefault();loadImage(e.dataTransfer.files[0]);}});
+document.addEventListener('paste',e=>{for(const item of e.clipboardData?.items||[]){if(item.type.startsWith('image/')){e.preventDefault();loadImage(item.getAsFile());break;}}});
+function demo(){
+ const c=document.createElement('canvas');c.width=1000;c.height=640;const ctx=c.getContext('2d');
+ const sky=ctx.createLinearGradient(0,0,0,640);sky.addColorStop(0,'#ece4c9');sky.addColorStop(1,'#9da995');ctx.fillStyle=sky;ctx.fillRect(0,0,1000,640);
+ ctx.fillStyle='#fff4d7';ctx.beginPath();ctx.arc(727,166,79,0,Math.PI*2);ctx.fill();
+ function mountain(points,color){ctx.beginPath();ctx.moveTo(0,640);for(const [x,y] of points)ctx.lineTo(x,y);ctx.lineTo(1000,640);ctx.closePath();ctx.fillStyle=color;ctx.fill();}
+ mountain([[0,340],[144,217],[246,320],[414,125],[607,355],[759,261],[1000,387]],'#788b80');
+ mountain([[0,455],[204,327],[290,396],[523,252],[712,443],[875,346],[1000,399]],'#425d54');
+ ctx.fillStyle='#dfe0c6';ctx.beginPath();ctx.moveTo(329,228);ctx.lineTo(414,125);ctx.lineTo(490,216);ctx.lineTo(446,196);ctx.lineTo(427,217);ctx.lineTo(403,192);ctx.lineTo(377,232);ctx.lineTo(371,208);ctx.closePath();ctx.fill();
+ mountain([[0,514],[200,486],[422,524],[683,465],[1000,521]],'#263e35');
+ for(let i=0;i<24;i++){const x=i*47-24,y=470+Math.sin(i*1.8)*36,height=60+(i*31%94);ctx.fillStyle='#172d27';ctx.fillRect(x-2,y,4,height);for(let n=0;n<3;n++){ctx.beginPath();ctx.moveTo(x,y-30+n*height*.22);ctx.lineTo(x-height*.23,y+height*.36+n*height*.22);ctx.lineTo(x+height*.23,y+height*.36+n*height*.22);ctx.closePath();ctx.fill();}}
+ ctx.fillStyle='#f0e9ce';ctx.font='500 16px sans-serif';ctx.fillText('THE QUIET OUTSIDE',54,58);ctx.font='12px monospace';ctx.fillText('A BLACKBOARD STUDIO SAMPLE',54,82);
+ installSource(c.toDataURL('image/png'),'quiet-outside.png').then(loaded=>{if(!loaded)return;s.preset='floyd';s.boardsWide=24;s.boardsHigh=15;history=[clone(s)];historyIndex=0;sync();scheduleRender();}).catch(e=>toast(e.message));
+}
+$('demo').onclick=demo;$('emptyDemo').onclick=demo;
+function filename(suffix){const name=(s.planName||'blackboard-plan').replace(/[^\p{L}\p{N}._-]+/gu,'-').replace(/^\.+/,'').slice(0,90)||'blackboard-plan';return name+suffix;}
+function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function downloadJSON(value,name){download(new Blob([JSON.stringify(value,null,2)],{type:'application/json'}),name);}
+function plan(){if(!isCurrent()){toast('Wait for the current render before exporting.');return null;}return E.plan(result.mask,result.w,result.h,s);}
+$('downloadPlan').onclick=()=>{const data=plan();if(data)downloadJSON(data,filename('.json'));};
+async function copyJSON(data,message){
+ const text=JSON.stringify(data,null,2);
+ try{if(!navigator.clipboard)throw Error('Clipboard unavailable');await navigator.clipboard.writeText(text);toast(message);}
+ catch{const area=document.createElement('textarea');area.value=text;area.style.cssText='position:fixed;left:-10000px;top:0';document.body.append(area);area.select();let copied=false;try{copied=document.execCommand('copy');}catch{}area.remove();toast(copied?message:'Clipboard access is unavailable. Download this JSON and copy the file contents instead.');}
+}
+$('copyPlan').onclick=()=>{const data=plan();if(data)copyJSON(data,'Drawing plan copied. For Building Gadgets, use Copy wall template.');};
+$('downloadPNG').onclick=()=>{if(!isCurrent())return;const c=document.createElement('canvas');c.width=result.w;c.height=result.h;const mode=s.exportMode==='auto'?s.renderMode:s.exportMode;c.getContext('2d').putImageData(new ImageData(E.rgba(result.mask,c.width,c.height,mode),c.width,c.height),0,0);c.toBlob(blob=>{if(blob)download(blob,filename('.png'));else toast('PNG export failed.');},'image/png');};
+$('downloadWall').onclick=()=>downloadJSON(E.wall(s),filename('-wall.json'));
+$('copyWall').onclick=()=>copyJSON(E.wall(s),'Wall template copied. Paste it into the Building Gadgets Template Manager.');
+function saveProject(){if(!source)return;remember();downloadJSON({...projectPayload(),createdAt:new Date().toISOString()},filename('.blackboard.json'));status('Project downloaded with source image and settings.');}
+$('saveProject').onclick=saveProject;$('openProject').onclick=()=>$('projectInput').click();
+$('projectInput').onchange=async e=>{const file=e.target.files[0];if(!file)return;const token=++loadingToken;try{if(file.size>50000000)throw Error('Project exceeds the 50 MB limit.');const data=JSON.parse(await file.text());if(data.kind!=='blackboard-studio-project'||data.version!==1)throw Error('Choose a Blackboard Studio project file, not a build plan.');if(typeof data.source?.dataURL!=='string'||!/^data:image\/(png|jpeg|webp|gif|bmp|avif);base64,/i.test(data.source.dataURL))throw Error('Project has an invalid source image.');if(token!==loadingToken)return;await installSource(data.source.dataURL,String(data.source.name||'project-image'),data.settings,token);toast('Project restored.');}catch(err){toast(err instanceof SyntaxError?'This file is not valid JSON.':err.message);}finally{e.target.value='';}};
+function startAuxiliary(type){
+ if(!source)return;stopAuxiliary();const input=preparedSource(176),snapshot=clone(s),revision=sourceRevision,key=processingKey();auxiliaryJob=type;
+ try{auxiliaryWorker=new Worker(workerURL);}catch(err){toast('Could not start style previews: '+err.message);auxiliaryJob='';return;}
+ if(type==='gallery'){$('galleryGrid').replaceChildren();$('galleryProgress').hidden=false;$('galleryProgress').value=0;$('galleryDialog').showModal();}else{setBusy('Comparing styles…');status('Finding a tone-based suggestion…');}
+ auxiliaryWorker.onerror=e=>{stopAuxiliary();toast(e.message||'Style comparison failed.');status('Style comparison stopped.');};
+ auxiliaryWorker.onmessage=({data})=>{
+  if(revision!==sourceRevision||key!==processingKey()){stopAuxiliary();return;}
+  if(data.type==='error'){stopAuxiliary();toast(data.message);return;}
+  if(data.type==='thumbnail'){
+   if(type==='gallery'){
+    const button=document.createElement('button');button.className='gallery-item';button.dataset.galleryPreset=data.preset;if(data.preset===s.preset)button.classList.add('active');
+    const canvas=document.createElement('canvas');canvas.width=data.w;canvas.height=data.h;canvas.getContext('2d').putImageData(new ImageData(E.rgba(data.mask,data.w,data.h,s.renderMode),data.w,data.h),0,0);
+    const name=document.createElement('strong');name.textContent=E.PRESETS[data.preset].name;const desc=document.createElement('span');desc.textContent=E.PRESETS[data.preset].desc;button.append(canvas,name,desc);button.onclick=()=>{$('galleryDialog').close();choosePreset(data.preset);};$('galleryGrid').append(button);$('galleryProgress').value=data.progress;
+   }else setBusy(`Comparing styles · ${Math.round(data.progress*100)}%`);
+  }
+  if(data.type==='progress')setBusy(`${data.stage||'Refining suggestion'} · ${Math.round(data.progress*100)}%`);
+  if(data.type==='complete'){stopAuxiliary();$('galleryProgress').hidden=true;}
+  if(data.type==='optimized'){
+   stopAuxiliary();s=E.settings({...data.best.settings,planName:s.planName,renderMode:s.renderMode,exportMode:s.exportMode,ratioLocked:s.ratioLocked,quality:s.quality});remember();sync();scheduleRender();toast(`Suggested ${E.PRESETS[s.preset].name}. Undo to compare with your previous settings.`);
+  }
+ };
+ auxiliaryWorker.postMessage({id:Date.now(),type,gray:input.gray,w:input.w,h:input.h,settings:snapshot},[input.gray.buffer]);
+}
+// Mega comparison is opt-in and never applies a candidate automatically.
+let searchResult=null,selectedCandidate=-1,searchContext=null,abCurrent=null,abCandidate=null,abCachedIndex=null,abCachedPalette=null;
+function setSearchRunning(running){
+ for(const id of ['searchDepth','searchGoal','searchStyle','searchMix','searchFullSize','searchPixelBudget','startSearch'])$(id).disabled=running;
+ $('searchMix').disabled=running||$('searchStyle').value==='current';
+ $('cancelSearch').hidden=!running;$('startSearch').textContent=running?'Searching…':'Start comparison ↗';
+}
+function paintSearch(canvas,entry){
+ if(!entry||!searchResult)return;
+ const temporary=document.createElement('canvas');temporary.width=searchResult.w;temporary.height=searchResult.h;
+ temporary.getContext('2d').putImageData(new ImageData(E.rgba(entry.mask,temporary.width,temporary.height,s.renderMode),temporary.width,temporary.height),0,0);
+ const scale=Math.min(1,320/Math.max(temporary.width,temporary.height));canvas.width=Math.max(1,Math.round(temporary.width*scale));canvas.height=Math.max(1,Math.round(temporary.height*scale));
+ const ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(temporary,0,0,canvas.width,canvas.height);
+ temporary.width=temporary.height=1;
+}
+function drawAB(){
+ if(!searchResult||!$('megaDialog').open)return;const entry=selectedCandidate<0?searchResult.baseline:searchResult.candidates[selectedCandidate];
+ const {w,h}=searchResult,canvas=$('abCanvas');if(canvas.width!==w)canvas.width=w;if(canvas.height!==h)canvas.height=h;const ctx=canvas.getContext('2d');
+ if(abCachedPalette!==s.renderMode||!abCurrent){abCurrent=document.createElement('canvas');abCurrent.width=w;abCurrent.height=h;abCurrent.getContext('2d').putImageData(new ImageData(E.rgba(searchResult.baseline.mask,w,h,s.renderMode),w,h),0,0);abCachedIndex=null;abCachedPalette=s.renderMode;}
+ if(abCachedIndex!==selectedCandidate||!abCandidate){abCandidate=document.createElement('canvas');abCandidate.width=w;abCandidate.height=h;abCandidate.getContext('2d').putImageData(new ImageData(E.rgba(entry.mask,w,h,s.renderMode),w,h),0,0);abCachedIndex=selectedCandidate;}
+ ctx.imageSmoothingEnabled=false;ctx.drawImage(abCandidate,0,0);
+ const cut=Math.floor(w*Number($('abSplit').value)/100);
+ if(cut)ctx.drawImage(abCurrent,0,0,cut,h,0,0,cut,h);
+ if(cut>0&&cut<w){ctx.fillStyle='#b7c5ef';ctx.fillRect(cut,0,1,h);}
+ const mode=$('abZoom').value,stage=$('abStage'),fit=BlackboardViewport.scale(w,h,Math.max(1,stage.clientWidth-32),Math.max(1,stage.clientHeight-32),mode);
+ canvas.style.width=fit.width+'px';canvas.style.height=fit.height+'px';canvas.style.imageRendering=mode==='fit'?'auto':'pixelated';
+ $('abLabel').textContent=`Current / ${selectedCandidate<0?'Current':candidateName(entry.settings)} · ${w} × ${h}`;
+}
+$('abSplit').oninput=()=>requestAnimationFrame(drawAB);$('abZoom').onchange=()=>{$('abStage').scrollTop=0;$('abStage').scrollLeft=0;drawAB();};
+new ResizeObserver(()=>{if(searchResult&&!$('searchAB').hidden)drawAB();}).observe($('abStage'));
+function candidateName(cfg){return E.PRESETS[cfg.preset].name+(cfg.mixOn?' + '+E.PRESETS[cfg.mixPreset].name:'');}
+function candidateDescription(cfg){
+ const parts=[`gamma ${(cfg.gamma/100).toFixed(2)}`,`contrast ${cfg.contrast}`,`sharpness ${cfg.sharpness}`];
+ if(cfg.denoise)parts.push(`denoise ${cfg.denoise}`);if(cfg.minComponent)parts.push(`islands < ${cfg.minComponent}px`);if(cfg.gapRadius)parts.push(`gaps ${cfg.gapRadius}px`);
+ if(cfg.mixOn)parts.push(cfg.mixMethod==='spatial'?`${cfg.mixRatio}% B`:cfg.mixMethod);
+ return parts.join(' · ');
+}
+function selectCandidate(index){
+ selectedCandidate=index;const entry=index<0?searchResult.baseline:searchResult.candidates[index];
+ paintSearch($('searchBefore'),searchResult.baseline);paintSearch($('searchAfter'),entry);$('searchPreview').hidden=false;$('searchAB').hidden=false;drawAB();
+ $('candidatePreviewLabel').textContent=index<0?'CURRENT SETTINGS':candidateName(entry.settings).toUpperCase();
+ document.querySelectorAll('[data-candidate]').forEach(btn=>{const chosen=+btn.dataset.candidate===index;btn.classList.toggle('active',chosen);btn.setAttribute('aria-pressed',chosen);});
+ $('applySearch').disabled=index<0;
+}
+function showSearchResults(){
+ $('searchResults').replaceChildren();
+ const entries=[searchResult.baseline,...searchResult.candidates];
+ entries.forEach((entry,i)=>{
+  const button=document.createElement('button');button.className='search-card';button.dataset.candidate=String(i-1);button.setAttribute('aria-pressed','false');
+  const canvas=document.createElement('canvas');paintSearch(canvas,entry);
+  const tag=document.createElement('span');tag.className='eyebrow';tag.textContent=i===0?'YOUR CURRENT VERSION':`CANDIDATE ${String(i).padStart(2,'0')}`;
+  const name=document.createElement('strong');name.textContent=i===0?'Current settings':candidateName(entry.settings);
+  const score=document.createElement('span');score.className='candidate-score';const delta=(entry.score-searchResult.baseline.score)*100;score.textContent=`${(entry.score*100).toFixed(1)} / 100`+(i?` · ${delta>=0?'+':''}${delta.toFixed(1)} vs current`:' · baseline');
+  const desc=document.createElement('small');desc.textContent=candidateDescription(entry.settings)+` · ${entry.effort.drawPixels.toLocaleString()} draw pixels · ${entry.effort.activeBoards} boards with ink`;
+  button.append(tag,canvas,name,score,desc);button.onclick=()=>selectCandidate(i-1);$('searchResults').append(button);
+ });
+ const better=searchResult.candidates.findIndex(c=>c.score>searchResult.baseline.score+0.00001);selectCandidate(better);
+ const elapsed=(searchResult.elapsed/1000).toFixed(1);
+ $('searchStatus').textContent=`${searchResult.evaluated.toLocaleString()} candidates · ${searchResult.mixCount} mixes · ${searchResult.rechecked} rechecked · tuned ${E.PRESETS[searchResult.tunedStyle].name} · ${elapsed}s`+(searchResult.limited?' · time limit reached':'');
+ if(!searchResult.candidates.length)$('searchStatus').textContent+=' · no checked alternative meets the budget or differs from current';
+ else if(better<0)$('searchStatus').textContent+=' · current settings scored highest';
+ $('searchNote').textContent=`Ranked for ${searchResult.goal==='outline'?'clean outlines':searchResult.goal==='clean'?'less noise':searchResult.goal==='tone'?'tonal fidelity':'balance'} at ${searchResult.w} × ${searchResult.h}${searchResult.fullResolution?' (actual wall resolution)':' (preview resolution)'}. Scores are heuristic. ${searchResult.maxDrawPixels?'Draw-pixel budget: '+searchResult.maxDrawPixels.toLocaleString()+'. ':''}Use 100% zoom in A/B to inspect details before applying.`;
+}
+function openSearch(){
+ if(!source)return;stopAuxiliary();abCurrent=abCandidate=null;abCachedIndex=abCachedPalette=null;$('searchFullSize').checked=s.boardsWide*s.boardsHigh*256<=1500000;searchResult=null;searchContext=null;selectedCandidate=-1;$('searchResults').replaceChildren();$('searchPreview').hidden=true;$('searchAB').hidden=true;$('applySearch').disabled=true;$('searchProgress').hidden=true;$('searchStatus').textContent='Ready to explore. Your current settings stay untouched.';setSearchRunning(false);$('megaDialog').showModal();
+}
+function startSearch(){
+ if(!source)return;stopAuxiliary();abCurrent=abCandidate=null;abCachedIndex=abCachedPalette=null;searchResult=null;selectedCandidate=-1;$('applySearch').disabled=true;$('searchResults').replaceChildren();$('searchPreview').hidden=true;$('searchAB').hidden=true;
+ const fullCheck=$('searchFullSize').checked||Number($('searchPixelBudget').value)>0;const input=preparedSource(160),fine=preparedSource(fullCheck?undefined:320),snapshot=clone(s),revision=sourceRevision,key=processingKey();searchContext={revision,key};
+ try{auxiliaryWorker=new Worker(workerURL);}catch(err){toast('Could not start comparison: '+err.message);return;}
+ const worker=auxiliaryWorker;auxiliaryJob='search';setSearchRunning(true);$('searchProgress').hidden=false;$('searchProgress').value=0;$('searchStatus').textContent='Ranking styles before fine-tuning…';setBusy();
+ worker.onerror=e=>{if(auxiliaryWorker!==worker)return;stopAuxiliary();$('searchStatus').textContent='Comparison failed. Your settings are unchanged.';toast(e.message||'Search failed.');};
+ worker.onmessage=({data})=>{
+  if(auxiliaryWorker!==worker)return;
+  if(revision!==sourceRevision||key!==processingKey()){stopAuxiliary();return;}
+  if(data.type==='error'){stopAuxiliary();$('searchStatus').textContent='Comparison failed: '+data.message;return;}
+  if(data.type==='searchProgress'){$('searchProgress').value=data.progress;$('searchStatus').textContent=`${data.stage} · ${data.evaluated} / ${data.budget} candidates · ${(data.elapsed/1000).toFixed(0)}s`;}
+  if(data.type==='searchComplete'){
+   worker.terminate();auxiliaryWorker=null;auxiliaryJob='';setSearchRunning(false);setBusy();searchResult=data;$('searchProgress').value=1;showSearchResults();
+  }
+ };
+ worker.postMessage({id:Date.now(),type:'search',gray:input.gray,w:input.w,h:input.h,fine:{gray:fine.gray,w:fine.w,h:fine.h},settings:snapshot,options:{budget:+$('searchDepth').value,goal:$('searchGoal').value,style:$('searchStyle').value,mixes:$('searchMix').checked,fullResolution:fullCheck,maxDrawPixels:Number($('searchPixelBudget').value)||0}},[input.gray.buffer,fine.gray.buffer]);
+}
+$('megaCompare').onclick=openSearch;$('startSearch').onclick=startSearch;$('cancelSearch').onclick=stopAuxiliary;
+$('megaDialog').addEventListener('close',()=>{if(auxiliaryJob==='search')stopAuxiliary();});
+$('applySearch').onclick=()=>{
+ if(!searchResult||selectedCandidate<0)return;
+ if(searchContext.revision!==sourceRevision||searchContext.key!==processingKey()){toast('Your image or settings changed. Run a new comparison.');$('applySearch').disabled=true;return;}
+ const cfg=searchResult.candidates[selectedCandidate].settings;
+ // Preserve presentation-only choices made while the worker was running.
+ s=E.settings({...cfg,planName:s.planName,renderMode:s.renderMode,exportMode:s.exportMode,ratioLocked:s.ratioLocked,quality:s.quality});
+ remember();sync();$('megaDialog').close();scheduleRender();toast('Candidate applied at full resolution. Undo returns to your previous settings.');
+};
+$('searchStyle').onchange=()=>setSearchRunning(false);
+$('gallery').onclick=()=>startAuxiliary('gallery');$('optimize').onclick=()=>startAuxiliary('optimize');
+$('galleryDialog').addEventListener('close',()=>{if(auxiliaryJob==='gallery')stopAuxiliary();});
+document.querySelectorAll('[data-close]').forEach(button=>button.onclick=()=>$(button.dataset.close).close());
+for(const dialog of document.querySelectorAll('dialog'))dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
+document.addEventListener('keydown',e=>{
+ const editing=e.target.matches('input,textarea,select,[contenteditable]');const command=e.ctrlKey||e.metaKey;
+ if(command&&e.key.toLowerCase()==='s'){e.preventDefault();saveProject();return;}
+ if(editing||document.querySelector('dialog[open]'))return;
+ if(command&&e.key.toLowerCase()==='z'){e.preventDefault();historyMove(e.shiftKey?1:-1);}else if(command&&e.key.toLowerCase()==='y'){e.preventDefault();historyMove(1);}else if(!command&&e.key.toLowerCase()==='g')toggleGrid();else if(!command&&e.key.toLowerCase()==='f'){zoom='fit';applyZoom();}else if(e.key==='?')$('helpDialog').showModal();
+});
+// Recovery is off until enabled; saved drafts are offered, never silently loaded.
+const draftStore=new BlackboardDraftStore();let draftTimer=null,recoveryDraft=null,draftWrites=Promise.resolve();
+function projectPayload(){return {kind:'blackboard-studio-project',version:1,settings:clone(s),source:{name:sourceName,dataURL:sourceURL}};}
+function queueDraft(){
+ if(!$('draftEnabled').checked||!source)return;
+ clearTimeout(draftTimer);draftTimer=setTimeout(()=>{draftTimer=null;saveDraftNow();},600);
+}
+function saveDraftNow(){
+ if(!$('draftEnabled').checked||!source)return draftWrites;
+ const payload=projectPayload();
+ draftWrites=draftWrites.catch(()=>{}).then(()=>draftStore.save(payload)).then(()=>{$('draftStatus').textContent='Recovery draft saved on this device.';recoveryDraft=payload;$('draftRecovery').hidden=false;}).catch(error=>{$('draftStatus').textContent=error.message;});
+ return draftWrites;
+}
+$('draftEnabled').onchange=()=>{try{localStorage.setItem('blackboard-recovery-enabled',String($('draftEnabled').checked));}catch{}if($('draftEnabled').checked){$('draftStatus').textContent='Local recovery enabled.';queueDraft();}else{clearTimeout(draftTimer);draftTimer=null;$('draftStatus').textContent='Autosave paused. Existing draft is kept until deleted.';}};
+$('restoreDraft').onclick=async()=>{if(!recoveryDraft)return;try{clearTimeout(draftTimer);await draftWrites;const project=await draftStore.read();if(!project)throw Error('No recovery draft is available.');await installSource(project.source.dataURL,project.source.name,project.settings);toast('Local recovery draft restored.');}catch(error){toast(error.message);}};
+$('clearDraft').onclick=async()=>{clearTimeout(draftTimer);draftTimer=null;await draftWrites;try{await draftStore.clear();recoveryDraft=null;$('draftRecovery').hidden=true;$('draftStatus').textContent='Local draft deleted.';}catch(error){toast(error.message);}};
+async function initializeDraft(){
+ try{try{$('draftEnabled').checked=localStorage.getItem('blackboard-recovery-enabled')==='true';}catch{}
+ recoveryDraft=await draftStore.read();if(recoveryDraft){$('draftRecovery').hidden=false;$('draftStatus').textContent='A saved draft is available. Restore it when you want.';}
+ }catch(error){$('draftEnabled').checked=false;$('draftEnabled').disabled=true;$('draftStatus').textContent=error.message;}
+}
+initializeDraft();
+window.addEventListener('pagehide',()=>{if(draftTimer){clearTimeout(draftTimer);draftTimer=null;saveDraftNow();}renderWorker?.terminate();auxiliaryWorker?.terminate();URL.revokeObjectURL(workerURL);});
+sync();openTab('tune');
+})();
+</script>
+</body></html>
