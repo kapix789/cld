@@ -28,3 +28,16 @@ test('plan JSON keeps the 9.3.2 field layout read by the mod',()=>{const s=E.set
  assert.deepEqual(Object.keys(p.output),['boardsWide','boardsHigh','tileSize','preset','threshold','contrast','sharpness','extra','fitMode','invert','renderMode','exportMode','drawColor','backgroundColor','drawMeaning','maskPolarity','sourceInversionIsIndependent','previewMatched','sourceInverted','exportFlipped','totalWidth','totalHeight']);
  assert.deepEqual(p.legend,{'0':'Leave this pixel white.','1':'Draw this pixel as black in Minecraft.'});
  for(const b of p.boards){assert.deepEqual(Object.keys(b),['x','y','blackPixelCount','drawPixelCount','rows']);assert.equal(b.rows.length,16);for(const row of b.rows)assert.match(row,/^[01]{16}$/);}});
+// Dither tone fidelity: on a flat grey, ink coverage should match darkness at default settings.
+const inkPercent=(preset,level,lab)=>{const n=128,flat=new Uint8ClampedArray(n*n).fill(level),s=E.settings({preset,...(lab?{labVals:{[preset]:lab}}:{})}),m=E.process(flat,n,n,s);return m.reduce((a,b)=>a+b,0)/m.length*100;};
+for(const preset of ['floyd','jjn','stucki','sierra','ordered','bayer8','ign','bluenoise'])test(`${preset}: default settings preserve tone on flat greys`,()=>{
+ for(const level of [32,64,128,192,224]){const ideal=(1-level/255)*100,actual=inkPercent(preset,level);assert.ok(Math.abs(actual-ideal)<=3,`grey ${level}: ${actual.toFixed(1)}% ink, expected ≈${ideal.toFixed(1)}%`);}
+});
+test('Grain and IGN strength changes texture, not overall brightness',()=>{
+ for(const [preset,strengthAxis] of [['bluenoise',2],['ign',2]])for(const strength of [10,40,70,100]){const lab=E.PRESETS[preset].lab.map(c=>c.def);lab[strengthAxis]=strength;const actual=inkPercent(preset,128,lab);assert.ok(Math.abs(actual-50)<=3,`${preset} strength ${strength}: ${actual.toFixed(1)}% ink on mid grey`);}
+});
+test('IGN produces a fine interleaved pattern rather than long streaks',()=>{
+ const n=128,m=E.process(new Uint8ClampedArray(n*n).fill(128),n,n,E.settings({preset:'ign'}));let longest=0;
+ for(let y=0;y<n;y++){let run=1;for(let x=1;x<n;x++){run=m[y*n+x]===m[y*n+x-1]?run+1:1;longest=Math.max(longest,run);}}
+ assert.ok(longest<=3,`longest horizontal run ${longest}`);
+});

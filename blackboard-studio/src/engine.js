@@ -37,13 +37,13 @@ const PRESETS = {
     sierra:    { name:'Sierra', desc:'Crisp serpentine', lab:[
         {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Spread',min:50,max:150,step:1,def:100},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
     ordered:   { name:'Bayer', desc:'Ordered 4×4 dither', lab:[
-        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Strength',min:10,max:100,step:1,def:60},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Strength',min:10,max:100,step:1,def:100},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
     bayer8:    { name:'Bayer 8×8', desc:'Smooth ordered dither', lab:[
-        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Strength',min:10,max:100,step:1,def:55},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Strength',min:10,max:100,step:1,def:100},{label:'Pre-blur',min:0,max:20,step:1,def:0}]},
     ign:       { name:'IGN', desc:'Interleaved gradient noise', lab:[
-        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Noise Scale',min:10,max:200,step:1,def:80},{label:'Strength',min:10,max:100,step:1,def:60}]},
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Noise Scale',min:10,max:200,step:1,def:100},{label:'Strength',min:10,max:100,step:1,def:100}]},
     bluenoise: { name:'Grain', desc:'Deterministic hashed grain', lab:[
-        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Grain Size',min:10,max:100,step:1,def:40},{label:'Strength',min:10,max:100,step:1,def:55}]},
+        {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Grain Size',min:10,max:100,step:1,def:40},{label:'Strength',min:10,max:100,step:1,def:100}]},
     bradley:   { name:'Bradley', desc:'Adaptive threshold', lab:[
         {label:'Window',min:3,max:40,step:1,def:12},{label:'Bias',min:-30,max:30,step:1,def:-5},{label:'Post Blur',min:0,max:10,step:1,def:0}]},
     adaptive:  { name:'Adaptive', desc:'Region-aware threshold', lab:[
@@ -283,6 +283,7 @@ function fillHoles(mask, w, h, maxSize) {
 const BAYER4 = [
     [0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]
 ];
+const fract = v => v - Math.floor(v);
 const BAYER8 = Array.from({length:64}, (_,i) => {
     const x=i%8, y=Math.floor(i/8);
     return 4*BAYER4[y%4][x%4]+[[0,2],[3,1]][Math.floor(y/4)][Math.floor(x/4)];
@@ -593,23 +594,24 @@ function renderPreset(gray, w, h, thresh, extra, lw, S) {
             break;
         }
         case 'ign': {
-            const t = lab[0], scale = lab[1]/100, strength = lab[2]/100;
-            // Interleaved gradient noise approximation
+            // Noise Scale and Strength both set the noise amplitude; 100% of each spans the full tone range.
+            const t = lab[0], amplitude = 255 * (lab[1]/100) * (lab[2]/100);
             for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-                const n = ((x * 12.9898 + y * 78.233) % 1) * 255 * strength * scale;
-                out[y*w+x] = (gray[y*w+x] + n) < t + 128*(1-strength) ? 1 : 0;
+                // Interleaved gradient noise (Jimenez 2014), centred on zero so it never shifts brightness.
+                const n = fract(52.9829189 * fract(0.06711056*x + 0.00583715*y)) - 0.5;
+                out[y*w+x] = (gray[y*w+x] + n * amplitude) < t ? 1 : 0;
             }
             break;
         }
         case 'bluenoise': {
-            const t = lab[0], grain = lab[1]/10, strength = lab[2]/100;
-            // Blue noise approximation using shuffled grid
+            const t = lab[0], grain = lab[1]/10, amplitude = 255 * lab[2]/100;
+            // Hashed value noise on a grain-sized grid, centred on zero so Strength never shifts brightness.
             const seed = 42;
             for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
                 const bx = Math.floor(x/grain), by = Math.floor(y/grain);
                 const hash = Math.sin(bx*127.1+by*311.7+seed)*43758.5453 % 1;
-                const n = Math.abs(hash) * 255 * strength;
-                out[y*w+x] = (gray[y*w+x] + n) < t + 128*(1-strength) ? 1 : 0;
+                const n = Math.abs(hash) - 0.5;
+                out[y*w+x] = (gray[y*w+x] + n * amplitude) < t ? 1 : 0;
             }
             break;
         }
