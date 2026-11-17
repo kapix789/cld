@@ -77,3 +77,22 @@ test('local contrast keeps flat images flat and stays fast on large walls',()=>{
  E.preprocess(g,w,h,E.settings({localContrast:60}));const ms=performance.now()-start;
  assert.ok(ms<1000,`took ${Math.round(ms)} ms (an exact 80 px Gaussian took several seconds)`);
 });
+// Texture styles: ink should follow tone across the whole range, not only in the darkest areas.
+test('hatching, woodcut, stipple and halftone follow a grey ramp',()=>{
+ const n=256,rows=64,ramp=new Uint8ClampedArray(n*rows);for(let y=0;y<rows;y++)for(let x=0;x<n;x++)ramp[y*n+x]=255-x;
+ for(const [preset,paper] of [['crosshatch',230],['pencil',235],['woodcut',230],['stipple',230],['halftone',255]]){
+  const m=E.process(ramp,n,rows,E.settings({preset}));let previous=-1;
+  for(let band=0;band<8;band++){let ink=0;for(let y=0;y<rows;y++)for(let x=band*32;x<band*32+32;x++)ink+=m[y*n+x];ink/=32*rows;
+   const grey=255-(band*32+15.5),ideal=Math.max(0,Math.min(1,(paper-grey)/paper));
+   assert.ok(Math.abs(ink-ideal)<=.12,`${preset} band ${band}: ${(ink*100).toFixed(0)}% ink, expected ≈${(ideal*100).toFixed(0)}%`);
+   // Line and dot patterns snap to whole pixels, so allow a small wobble.
+   assert.ok(ink>=previous-.05,`${preset} gets lighter as the ramp darkens at band ${band}`);previous=ink;}
+ }
+});
+test('Manga and Bold keep their look on large walls',()=>{
+ const draw=n=>{const g=new Uint8ClampedArray(n*n).fill(225);for(let y=0;y<n;y++)for(let x=0;x<n;x++){const u=x/n,v=y/n;if((u-.35)**2+(v-.4)**2<.04||(u>.55&&u<.85&&v>.5&&v<.8))g[y*n+x]=45;}return g;};
+ for(const preset of ['manga','bold']){
+  const ink=n=>{const m=E.process(draw(n),n,n,E.settings({preset}));return m.reduce((a,b)=>a+b,0)/m.length;},small=ink(384),large=ink(1152);
+  assert.ok(small>0&&large>small*.6&&large<small*1.6,`${preset}: ${(small*100).toFixed(1)}% ink at 384 px vs ${(large*100).toFixed(1)}% at 1152 px`);
+ }
+});

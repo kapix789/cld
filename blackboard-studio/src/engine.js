@@ -49,15 +49,15 @@ const PRESETS = {
     adaptive:  { name:'Adaptive', desc:'Region-aware threshold', lab:[
         {label:'Block Size',min:4,max:40,step:1,def:16},{label:'Bias',min:-30,max:30,step:1,def:0},{label:'Smooth',min:0,max:10,step:1,def:1}]},
     crosshatch:{ name:'Crosshatch', desc:'Diagonal line shading', lab:[
-        {label:'Line Spacing',min:3,max:30,step:1,def:8},{label:'Angle Layers',min:1,max:4,step:1,def:3},{label:'Threshold',min:10,max:200,step:1,def:120}]},
+        {label:'Line Spacing',min:3,max:30,step:1,def:8},{label:'Angle Layers',min:1,max:4,step:1,def:3},{label:'Threshold',min:10,max:255,step:1,def:230}]},
     pencil:    { name:'Pencil', desc:'Multi-angle hatching', lab:[
-        {label:'Line Spacing',min:3,max:30,step:1,def:6},{label:'Density',min:1,max:20,step:1,def:8},{label:'Cutoff',min:50,max:255,step:1,def:180}]},
+        {label:'Line Spacing',min:3,max:30,step:1,def:6},{label:'Density',min:1,max:20,step:1,def:8},{label:'Cutoff',min:50,max:255,step:1,def:235}]},
     halftone:  { name:'Halftone', desc:'Screentone dot matrix', lab:[
         {label:'Dot Spacing',min:4,max:30,step:1,def:8},{label:'Angle',min:0,max:90,step:1,def:45},{label:'Threshold',min:10,max:200,step:1,def:128}]},
     stipple:   { name:'Stipple', desc:'Organic dot texture', lab:[
-        {label:'Dot Size',min:1,max:8,step:1,def:2},{label:'Density',min:10,max:100,step:1,def:50},{label:'Threshold',min:10,max:200,step:1,def:128}]},
+        {label:'Dot Size',min:1,max:8,step:1,def:2},{label:'Density',min:10,max:100,step:1,def:50},{label:'Threshold',min:10,max:255,step:1,def:230}]},
     woodcut:   { name:'Woodcut', desc:'Flow-line engraving', lab:[
-        {label:'Line Spacing',min:2,max:20,step:1,def:5},{label:'Direction',min:0,max:180,step:1,def:90},{label:'Threshold',min:10,max:200,step:1,def:128}]},
+        {label:'Line Spacing',min:2,max:20,step:1,def:5},{label:'Direction',min:0,max:180,step:1,def:90},{label:'Threshold',min:10,max:255,step:1,def:230}]},
     threshold: { name:'Threshold', desc:'Plain binarize', lab:[
         {label:'Threshold',min:0,max:255,step:1,def:128},{label:'Unused',min:0,max:100,step:1,def:50},{label:'Unused',min:0,max:100,step:1,def:50}]}
 };
@@ -324,6 +324,103 @@ const BAYER8 = Array.from({length:64}, (_,i) => {
    PRESET RENDER FUNCTIONS — QUALITY UPGRADED
    ══════════════════════════════════════ */
 
+// Line hatching whose ink coverage follows tone. Layers of parallel lines fill in one after
+// another as the tone darkens, and each layer's lines thicken from nothing to `duty` of the
+// spacing. A lookup table corrects for overlapping layers so coverage matches darkness;
+// anything darker than the layers can reach is drawn solid.
+function hatchTone(darkness, w, h, out, spacing, angles, wobble) {
+    const L = angles.length, duty = 1 - Math.pow(0.1, 1 / L);
+    const coverage = d => { let clear = 1; for (let k = 0; k < L; k++) clear *= 1 - duty * Math.min(1, Math.max(0, d * L - k)); return 1 - clear; };
+    const full = coverage(1), lut = new Float32Array(257);
+    for (let i = 0; i <= 256; i++) {
+        const target = i / 256;
+        if (target >= full) { lut[i] = 2; continue; }
+        let lo = 0, hi = 1;
+        for (let it = 0; it < 24; it++) { const mid = (lo + hi) / 2; if (coverage(mid) < target) lo = mid; else hi = mid; }
+        lut[i] = hi;
+    }
+    const cosA = angles.map(Math.cos), sinA = angles.map(Math.sin);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = y * w + x, d = darkness[i];
+        if (d <= 0) continue;
+        const t = lut[Math.round(Math.min(1, d) * 256)];
+        if (t > 1) { out[i] = 1; continue; }
+        for (let k = 0; k < L; k++) {
+            const share = Math.min(1, t * L - k);
+            if (share <= 0) break;
+            const half = share * duty * spacing / 2;
+            let pos = (x + 0.5) * cosA[k] + (y + 0.5) * sinA[k];
+            if (wobble) pos += wobble * (Math.sin(x * 0.071 + k * 1.7) + Math.sin(y * 0.053 + k * 2.9));
+            pos %= spacing; if (pos < 0) pos += spacing;
+            if (pos < half || pos > spacing - half) { out[i] = 1; break; }
+        }
+    }
+}
+// Share of a square cell of side s covered by a centred disc of radius r.
+function dotArea(r, s) {
+    const half = s / 2;
+    if (r <= half) return Math.PI * r * r / (s * s);
+    if (r >= half * Math.SQRT2) return 1;
+    const segment = r * r * Math.acos(half / r) - half * Math.sqrt(r * r - half * half);
+    return (Math.PI * r * r - 4 * segment) / (s * s);
+}
+// Stipple placement shared by rendering and calibration: error-diffuse the wanted dot density over
+// the cell grid and stamp a slightly jittered round dot in each chosen cell.
+function stampStipple(want, gw, gh, step, dotR, w, h, out) {
+    for (let cy = 0; cy < gh; cy++) for (let cx = 0; cx < gw; cx++) {
+        const i = cy*gw+cx, v = want[i], dot = v >= 0.5, err = v - (dot ? 1 : 0);
+        if (cx+1 < gw) want[i+1] += err * 7/16;
+        if (cy+1 < gh) { if (cx > 0) want[i+gw-1] += err * 3/16; want[i+gw] += err * 5/16; if (cx+1 < gw) want[i+gw+1] += err * 1/16; }
+        if (!dot) continue;
+        const ox = cx*step + Math.floor(step/2) + Math.round((pixelHash(cx, cy, 7) - 0.5) * dotR);
+        const oy = cy*step + Math.floor(step/2) + Math.round((pixelHash(cx, cy, 11) - 0.5) * dotR);
+        for (let dy = -dotR; dy <= dotR; dy++) for (let dx = -dotR; dx <= dotR; dx++) {
+            if (dx*dx + dy*dy > dotR*dotR) continue;
+            const nx = ox + dx, ny = oy + dy;
+            if (nx >= 0 && nx < w && ny >= 0 && ny < h) out[ny*w+nx] = 1;
+        }
+    }
+}
+// How much paper a given dot density covers, measured once per dot size on a flat test field,
+// then inverted so a wanted coverage maps straight to a dot density.
+const stippleCurves = new Map();
+function stippleCurve(dotR) {
+    if (stippleCurves.has(dotR)) return stippleCurves.get(dotR);
+    const step = dotR + 1, cells = 40, size = cells * step, samples = 20, measured = [0];
+    for (let k = 1; k <= samples; k++) {
+        const out = new Uint8Array(size * size);
+        stampStipple(new Float32Array(cells * cells).fill(k / samples), cells, cells, step, dotR, size, size, out);
+        let ink = 0, n = 0;
+        for (let y = size >> 2; y < size - (size >> 2); y++) for (let x = size >> 2; x < size - (size >> 2); x++) { ink += out[y*size+x]; n++; }
+        measured.push(Math.max(measured[k-1], ink / n));
+    }
+    const full = measured[samples];
+    const density = cover => {
+        let k = 1;
+        while (k < samples && measured[k] < cover) k++;
+        const lo = measured[k-1], hi = measured[k];
+        return (k - 1 + (hi > lo ? (cover - lo) / (hi - lo) : 1)) / samples;
+    };
+    const curve = { full, density };
+    stippleCurves.set(dotR, curve);
+    return curve;
+}
+// Manga and Bold find edges at a fine fixed scale against a hard threshold, so on big walls
+// their edges fade out. Their blur sizes are tuned for a 384 px wall and grow beyond that.
+function wallScale(w, h) { return Math.max(1, Math.max(w, h) / 384); }
+// Darkness in [0,1] relative to a paper level: tones at or above `paper` stay blank.
+function darknessBelow(gray, paper) {
+    const out = new Float32Array(gray.length);
+    for (let i = 0; i < gray.length; i++) out[i] = Math.max(0, Math.min(1, (paper - gray[i]) / paper));
+    return out;
+}
+// Uniform value in [0,1) for a pixel, stable across renders.
+function pixelHash(x, y, seed) {
+    let n = Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(seed, 1442695041);
+    n = Math.imul(n ^ (n >>> 13), 1274126177);
+    return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
+}
+
 function getLab(S) {
     const v = S.labVals[S.preset] || PRESETS[S.preset].lab.map(l => l.def);
     return v;
@@ -339,38 +436,26 @@ function renderPreset(gray, w, h, thresh, extra, lw, S) {
         for (let i = 0; i < w*h; i++) out[i] = edgeMap[i] > t ? 1 : 0;
     }
 
-    // Helper: dilate mask by n pixels (for line weight)
+    // Helper: grow ink by n pixels (4-connected), for line weight
     function dilate(mask, n) {
-        if (n <= 0) return mask;
         let src = mask;
         for (let pass = 0; pass < n; pass++) {
             const d = new Uint8Array(w*h);
-            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-                if (src[y*w+x]) { d[y*w+x]=1; continue; }
-                for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
-                    const nx=x+dx,ny=y+dy;
-                    if (nx>=0&&nx<w&&ny>=0&&ny<h&&src[ny*w+nx]) { d[y*w+x]=1; break; }
-                }
+            for (let y = 0; y < h; y++) for (let x = 0, i = y*w; x < w; x++, i++) {
+                if (src[i] || (x > 0 && src[i-1]) || (x < w-1 && src[i+1]) || (y > 0 && src[i-w]) || (y < h-1 && src[i+w])) d[i] = 1;
             }
             src = d;
         }
         return src;
     }
 
-    // Helper: erode mask
+    // Helper: shrink ink by n pixels; anything touching the image border also shrinks
     function erode(mask, n) {
-        if (n <= 0) return mask;
         let src = mask;
         for (let pass = 0; pass < n; pass++) {
             const e = new Uint8Array(w*h);
-            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-                if (!src[y*w+x]) continue;
-                let ok = true;
-                for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
-                    const nx=x+dx,ny=y+dy;
-                    if (nx<0||nx>=w||ny<0||ny>=h||!src[ny*w+nx]) { ok=false; break; }
-                }
-                if (ok) e[y*w+x] = 1;
+            for (let y = 1; y < h-1; y++) for (let x = 1, i = y*w+1; x < w-1; x++, i++) {
+                if (src[i] && src[i-1] && src[i+1] && src[i-w] && src[i+w]) e[i] = 1;
             }
             src = e;
         }
@@ -399,12 +484,12 @@ function renderPreset(gray, w, h, thresh, extra, lw, S) {
             break;
         }
         case 'manga': {
-            const sigma = lab[0]/10;
+            const scale = wallScale(w, h);
+            const sigma = lab[0]/10 * scale;
             const edgeT = lab[1];
             const postT = lab[2];
             let edges = dogEdges(gray, w, h, sigma * 0.4, sigma);
-            // Boost edges based on extra sensitivity
-            edges = gaussBlur(edges, w, h, 0.5); // slight smooth for cleaner lines
+            edges = gaussBlur(edges, w, h, 0.5 * scale); // slight smooth for cleaner lines
             for (let i = 0; i < w*h; i++) {
                 const v = Math.min(255, edges[i] * (1 + extra * 0.2));
                 out[i] = v > edgeT ? 1 : 0;
@@ -427,7 +512,7 @@ function renderPreset(gray, w, h, thresh, extra, lw, S) {
             break;
         }
         case 'bold': {
-            const sigma = lab[0]/10, t = lab[1], widen = lab[2];
+            const scale = wallScale(w, h), sigma = lab[0]/10 * scale, t = lab[1], widen = Math.round(lab[2] * scale);
             const edges = dogEdges(gray, w, h, sigma*0.3, sigma);
             for (let i = 0; i < w*h; i++) out[i] = edges[i] > t ? 1 : 0;
             const dilated = dilate(out, widen);
@@ -670,55 +755,15 @@ function renderPreset(gray, w, h, thresh, extra, lw, S) {
             break;
         }
         case 'crosshatch': {
-            const spacing = Math.max(2, lab[0]);
+            // Layers: both diagonals, then horizontal, then vertical.
             const layers = Math.min(4, Math.max(1, lab[1]));
-            const cutoff = lab[2];
-            const angles = [Math.PI/4, -Math.PI/4, Math.PI/6, -Math.PI/6];
-            const cosA = angles.map(a => Math.cos(a));
-            const sinA = angles.map(a => Math.sin(a));
-            const lineW = Math.min(1.4, Math.max(0.6, spacing * 0.09));
-            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-                const bright = gray[y*w+x];
-                if (bright >= cutoff) continue;
-                const darkness = (cutoff - bright) / cutoff;
-                const nLayers = Math.max(0, Math.floor(darkness * layers * 1.8));
-                if (nLayers < 1) continue;
-                let hit = false;
-                for (let a = 0; a < Math.min(nLayers, layers); a++) {
-                    const proj = x*cosA[a] + y*sinA[a];
-                    const pos = ((proj % spacing) + spacing) % spacing;
-                    if (pos < lineW) { hit=true; break; }
-                }
-                if (darkness > 0.92) hit = true;
-                if (hit) out[y*w+x] = 1;
-            }
+            hatchTone(darknessBelow(gray, lab[2]), w, h, out, Math.max(2, lab[0]), [Math.PI/4, -Math.PI/4, 0, Math.PI/2].slice(0, layers), 0);
             break;
         }
         case 'pencil': {
-            const spacing = Math.max(2, lab[0]);
-            const density = lab[1];
-            const cutoff = lab[2];
-            const maxLayers = Math.min(4, Math.max(1, Math.ceil(density/5)));
-            const densityScale = 0.8 + (density/20)*1.2;
-            const angles = [Math.PI/6, -Math.PI/6, Math.PI/3, -Math.PI/3];
-            const cosA = angles.map(a => Math.cos(a));
-            const sinA = angles.map(a => Math.sin(a));
-            const lineW = Math.min(1.5, Math.max(0.6, spacing*0.085));
-            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-                const bright = gray[y*w+x];
-                if (bright >= cutoff) continue;
-                const darkness = Math.min(1, (cutoff - bright) / cutoff);
-                if (darkness > 0.9) { out[y*w+x]=1; continue; }
-                const nLayers = Math.floor(darkness * maxLayers * densityScale);
-                if (nLayers < 1) continue;
-                let hit = false;
-                for (let a = 0; a < Math.min(nLayers, 4); a++) {
-                    const proj = x*cosA[a] + y*sinA[a];
-                    const pos = ((proj % spacing) + spacing) % spacing;
-                    if (pos < lineW) { hit=true; break; }
-                }
-                if (hit) out[y*w+x] = 1;
-            }
+            // Density sets how many stroke directions build up the shading; a slight wobble keeps lines hand-drawn.
+            const layers = Math.min(4, Math.max(1, Math.ceil(lab[1] / 5)));
+            hatchTone(darknessBelow(gray, lab[2]), w, h, out, Math.max(2, lab[0]), [Math.PI/6, -Math.PI/6, Math.PI/3, -Math.PI/3].slice(0, layers), 0.6);
             break;
         }
         case 'halftone': {
@@ -734,61 +779,42 @@ function renderPreset(gray, w, h, thresh, extra, lw, S) {
                 const bx = ((rx % dotSpace) + dotSpace) % dotSpace;
                 const by = ((ry % dotSpace) + dotSpace) % dotSpace;
                 const dx = bx - dotSpace/2, dy = by - dotSpace/2;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                const maxR = dotSpace * 0.45;
-                const bright = gray[y*w+x];
-                const targetR = maxR * Math.sqrt(Math.max(0,Math.min(1,(t+127-bright)/255)));
-                if (dist < targetR) out[y*w+x] = 1;
+                const tone = Math.max(0, Math.min(1, (t + 127 - gray[y*w+x]) / 255));
+                // Ink where the share of the cell inside this pixel's radius is below the tone,
+                // so each cell's dot covers exactly that share and dots merge as it nears black.
+                if (dotArea(Math.sqrt(dx*dx + dy*dy), dotSpace) < tone) out[y*w+x] = 1;
             }
             break;
         }
         case 'stipple': {
-            const dotR = Math.max(1, lab[0]);
-            const density = lab[1]/100;
-            const t = lab[2];
-            // Use jittered grid for organic feel
-            const seed = 7;
-            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-                const bright = gray[y*w+x];
-                if (bright > t) continue;
-                const darkness = 1 - bright/t;
-                // Probabilistic dot placement
-                const hash = Math.abs(Math.sin(x*12.9898+y*78.233+seed)*43758.5453 % 1);
-                if (hash < darkness * density) {
-                    // Draw dot
-                    for (let dy = -dotR; dy <= dotR; dy++) for (let dx = -dotR; dx <= dotR; dx++) {
-                        if (dx*dx+dy*dy <= dotR*dotR) {
-                            const nx=x+dx, ny=y+dy;
-                            if (nx>=0&&nx<w&&ny>=0&&ny<h) out[ny*w+nx]=1;
-                        }
-                    }
-                }
+            // Dots sit on a grid about one dot apart; error diffusion picks which cells get one, so dots
+            // stay evenly spread and keep detail. A measured coverage curve turns tone into dot density.
+            const dotR = Math.max(1, lab[0]), gain = lab[1] / 50, darkness = darknessBelow(gray, lab[2]);
+            const step = dotR + 1, gw = Math.ceil(w / step), gh = Math.ceil(h / step), want = new Float32Array(gw * gh);
+            const curve = stippleCurve(dotR), solid = new Uint8Array(gw * gh);
+            for (let cy = 0; cy < gh; cy++) for (let cx = 0; cx < gw; cx++) {
+                let sum = 0, n = 0;
+                for (let y = cy*step; y < Math.min(h, (cy+1)*step); y++) for (let x = cx*step; x < Math.min(w, (cx+1)*step); x++) { sum += darkness[y*w+x]; n++; }
+                const cover = Math.min(1, sum / n * gain), i = cy*gw+cx;
+                if (cover > curve.full) { solid[i] = 1; want[i] = 1; } else want[i] = curve.density(cover);
             }
+            stampStipple(want, gw, gh, step, dotR, w, h, out);
+            for (let cy = 0; cy < gh; cy++) for (let cx = 0; cx < gw; cx++) if (solid[cy*gw+cx])
+                for (let y = cy*step; y < Math.min(h, (cy+1)*step); y++) for (let x = cx*step; x < Math.min(w, (cx+1)*step); x++) out[y*w+x] = 1;
             break;
         }
         case 'woodcut': {
-            const spacing = Math.max(2, lab[0]);
-            const dir = lab[1] * Math.PI / 180;
-            const t = lab[2];
+            const spacing = Math.max(2, lab[0]), dir = lab[1] * Math.PI / 180, darkness = darknessBelow(gray, lab[2]);
             const cosD = Math.cos(dir), sinD = Math.sin(dir);
-            // Flow lines follow gradient direction perpendicular to specified direction
-            const gx = new Float32Array(w*h), gy = new Float32Array(w*h);
-            for (let y=1;y<h-1;y++) for (let x=1;x<w-1;x++) {
-                const i=y*w+x;
-                gx[i] = gray[i+1]-gray[i-1];
-                gy[i] = gray[i+w]-gray[i-w];
-            }
-            const lineW = Math.max(0.8, spacing * 0.12);
+            // Engraving: lines are displaced by smoothed brightness so they bend around shapes,
+            // and swell with darkness. Edge sensitivity sets how far they bend.
+            const smooth = gaussBlur(gray, w, h, Math.max(2, spacing * 0.6)), bend = spacing * extra * 0.25 / 255;
             for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-                const bright = gray[y*w+x];
-                if (bright > t) continue;
-                // Project position along flow direction, perturbed by gradient
-                const i = y*w+x;
-                const perturb = (gx[i]*cosD + gy[i]*sinD) * 0.3 * extra;
-                const proj = x*cosD + y*sinD + perturb;
-                const pos = ((proj % spacing) + spacing) % spacing;
-                if (pos < lineW) out[i] = 1;
-                if ((t - bright)/t > 0.9) out[i] = 1;
+                const i = y*w+x, d = darkness[i];
+                if (d <= 0) continue;
+                let pos = ((x+0.5)*cosD + (y+0.5)*sinD + smooth[i] * bend) % spacing; if (pos < 0) pos += spacing;
+                const half = d * spacing / 2;
+                if (pos < half || pos > spacing - half) out[i] = 1;
             }
             break;
         }
