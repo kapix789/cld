@@ -1,7 +1,7 @@
-# Blackboard Studio 9.4.0
+# Blackboard Studio 9.5.0
 
 A rebuilt offline workspace for converting images into 16 × 16 blackboard plans.
-Based on your supplied **Blackboard Converter v8.5**. The UI and application controller are new; the image engine is retained, separated, and corrected, and now has 29 styles.
+Based on your supplied **Blackboard Converter v8.5**. The UI and application controller are new; the image engine is retained, separated, and corrected, and now has 30 styles.
 
 ## Start here
 
@@ -9,7 +9,7 @@ Open **Blackboard-Studio.html** in a modern desktop browser. No installation, se
 
 1. Choose, drop, or paste an image, or click **Try a sample**.
 2. Set the wall dimensions. **Apply** uses the resolution target and image aspect ratio. Each board stays exactly 16 × 16 pixels.
-3. Choose one of 29 styles. Search by name or category, compare whole-image thumbnails, or use **Mega compare** to rank styles and tune the best one, with an A/B preview before applying.
+3. Choose one of 30 styles (use **Manga Panel** for manga, manhwa or comic art). Search by name or category, compare whole-image thumbnails, or use **Mega compare** to rank styles and tune the best one, with an A/B preview before applying.
 4. Use **Fine-tune** for the active style, tonal adjustments, cleanup, and two-style mixing.
 5. Open **Export** for the build plan, clean PNG sheet, or wall layout.
 6. Use **Save project** to download the source image plus all settings. **Open project** restores that `.blackboard.json` file. A build-plan JSON is a different format and cannot be opened as a project.
@@ -84,7 +84,7 @@ No framework migration was necessary: Canvas does the image work and Workers kee
 
 ## Validation
 
-**74 automated tests pass**: 60 engine checks, 7 worker and search checks, and 7 controller integration checks. They cover every preset, binary semantics, every exported row, the plan and wall JSON layouts, dither tone fidelity, denoise and Canny equivalence, gap repair, local variance, blending, style search, project round trips, history/reset, image upload, board inspection, contain/cover geometry, stale exports, all gallery thumbnails, and PNG/plan equality with preview overlays enabled.
+**79 automated tests pass**: 65 engine checks, 7 worker and search checks, and 7 controller integration checks. They cover every preset, binary semantics, every exported row, the plan and wall JSON layouts, dither tone fidelity, denoise and Canny equivalence, gap repair, local variance, blending, style search, project round trips, history/reset, image upload, board inspection, contain/cover geometry, stale exports, all gallery thumbnails, and PNG/plan equality with preview overlays enabled.
 
 Controller tests run in **jsdom with native canvas and Node worker threads**, an emulated DOM. Separately, the built file was opened from `file://` in headless Chromium: the sample renders, style search runs, exports download, the layout has no horizontal scroll at 1440 px or 390 px wide, and the console shows no errors. Firefox, Safari, clipboard permissions, and screen readers have not been checked.
 

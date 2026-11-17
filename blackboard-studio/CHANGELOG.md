@@ -1,3 +1,11 @@
+# 9.5.0
+
+- New style: **Manga Panel**, for converting existing manga, manhwa or comic art. Dark ink (lines, solid blacks, lettering) stays solid, colour and grey areas become a 45° dot screentone, and tone boundaries without a drawn line get one on their darker side. Printed screentone in the source is re-screened cleanly instead of turning into moiré, and yellowed paper prints white.
+  - Ink Level: how dark something must be to stay solid black.
+  - Tone Size: screentone dot spacing in pixels.
+  - Tone Steps: number of flat tone levels (0 = smooth gradients).
+  - Edge sensitivity (Tone & detail) controls how many extra outlines are added from colour boundaries.
+
 # 9.4.0
 
 ## Styles

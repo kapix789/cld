@@ -96,3 +96,31 @@ test('Manga and Bold keep their look on large walls',()=>{
   assert.ok(small>0&&large>small*.6&&large<small*1.6,`${preset}: ${(small*100).toFixed(1)}% ink at 384 px vs ${(large*100).toFixed(1)}% at 1152 px`);
  }
 });
+// Manga Panel: keeps ink, turns flat greys into an even screentone, re-screens printed dots, no halos.
+const panelScene=(w,h,fill)=>{const g=new Uint8ClampedArray(w*h).fill(255);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const v=fill(x,y);if(v!==undefined)g[y*w+x]=v;}return g;};
+const coverage=(m,w,x0,y0,x1,y1)=>{let ink=0,n=0;for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){ink+=m[y*w+x];n++;}return ink/n;};
+test('Manga Panel keeps ink lines solid and paper white',()=>{
+ const w=240,h=160,g=panelScene(w,h,(x,y)=>Math.abs(y-80)<3||(x>20&&x<40&&y>20&&y<60)?10:undefined),m=E.process(g,w,h,E.settings({preset:'panel'}));
+ for(let x=0;x<w;x++)for(let y=78;y<=82;y++)assert.equal(m[y*w+x],1,`line pixel ${x},${y}`);
+ assert.equal(coverage(m,w,21,21,39,59),1);
+ assert.equal(coverage(m,w,120,10,230,60),0);
+});
+test('Manga Panel turns a flat grey into an even screentone at the stepped tone',()=>{
+ const w=320,h=240,g=panelScene(w,h,(x,y)=>x>40&&x<200&&y>40&&y<200?150:undefined),m=E.process(g,w,h,E.settings({preset:'panel'}));
+ // paper 245, ink 70: tone (245-150)/175 = .54, 3 steps -> 2/3, at 75% max dot coverage -> 50%
+ const c=coverage(m,w,60,60,180,180);assert.ok(Math.abs(c-.5)<.06,`coverage ${c.toFixed(3)}`);
+});
+test('Manga Panel re-screens printed screentone instead of copying its dots',()=>{
+ const w=320,h=240,inside=(x,y)=>x>40&&x<200&&y>40&&y<200;
+ const flat=panelScene(w,h,(x,y)=>inside(x,y)?150:undefined);
+ // a similar grey as a printed screen: 2x2 black dots every 3 px (averages ~142, the same tone step)
+ const printed=panelScene(w,h,(x,y)=>inside(x,y)?(x%3>0&&y%3>0?0:255):undefined);
+ const a=E.process(flat,w,h,E.settings({preset:'panel'})),b=E.process(printed,w,h,E.settings({preset:'panel'}));
+ let same=0,n=0;for(let y=60;y<180;y++)for(let x=60;x<180;x++){n++;if(a[y*w+x]===b[y*w+x])same++;}
+ assert.ok(same/n>.85,`only ${(same/n*100).toFixed(1)}% of the re-screened area matches the flat-grey result`);
+});
+test('Manga Panel tones stay even right up to solid black areas',()=>{
+ const w=320,h=200,g=panelScene(w,h,(x,y)=>y>20&&y<180&&x>20&&x<300?(x<100?5:150):undefined),m=E.process(g,w,h,E.settings({preset:'panel'}));
+ const near=coverage(m,w,104,40,112,160),far=coverage(m,w,200,40,280,160);
+ assert.ok(Math.abs(near-far)<.12,`next to black ${near.toFixed(2)} vs away ${far.toFixed(2)}`);
+});

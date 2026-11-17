@@ -2,6 +2,8 @@
 (function(root){
 "use strict";
 const PRESETS = {
+    panel:     { name:'Manga Panel', desc:'Ink + solid blacks + screentone', lab:[
+        {label:'Ink Level',min:10,max:160,step:1,def:70},{label:'Tone Size',min:3,max:12,step:1,def:5},{label:'Tone Steps',min:0,max:6,step:1,def:3}]},
     softink:   { name:'Soft Ink', desc:'Smooth contours + deep shadows', lab:[
         {label:'Blur Sigma',min:2,max:40,step:1,def:12},{label:'Edge Threshold',min:5,max:80,step:1,def:12},{label:'Shadow Cutoff',min:0,max:160,step:1,def:48}]},
     animeink:  { name:'Anime Ink+', desc:'Clean edges + shadow fill', lab:[
@@ -463,6 +465,37 @@ function renderPreset(gray, w, h, thresh, extra, lw, S) {
     }
 
     switch(preset) {
+        case 'panel': {
+            // For existing comic art. Dark ink (lines, hair, lettering) stays solid; colour and grey
+            // areas become a 45° dot screentone; tone boundaries without a drawn line get one on
+            // their darker side, so existing lines don't pick up halos.
+            const inkLevel = lab[0], pitch = Math.max(3, lab[1]), steps = lab[2], scale = wallScale(w, h);
+            const fine = gaussBlur(gray, w, h, 0.7 * scale), coarse = gaussBlur(gray, w, h, 2.2 * scale), edgeT = 44 - extra * 4;
+            let ink = new Uint8Array(w*h);
+            for (let i = 0; i < w*h; i++) if (gray[i] < inkLevel || coarse[i] - fine[i] > edgeT) ink[i] = 1;
+            // Tiny specks are printed screentone dots or grain in the source, not drawn ink.
+            ink = removeSmallComponents(ink, w, h, 12);
+            // Read tones from a blurred copy that only averages non-ink pixels: printed screentone
+            // turns into flat grey before re-screening, and black areas don't darken their surroundings.
+            const paperOnly = new Float32Array(w*h), weight = new Float32Array(w*h);
+            for (let i = 0; i < w*h; i++) if (!ink[i]) { paperOnly[i] = gray[i]; weight[i] = 1; }
+            const sum = gaussBlur(paperOnly, w, h, pitch * 0.45), share = gaussBlur(weight, w, h, pitch * 0.45), toneSrc = new Float32Array(w*h);
+            for (let i = 0; i < w*h; i++) toneSrc[i] = share[i] > 0.05 ? sum[i] / share[i] : gray[i];
+            // The lightest areas print as paper, which also cleans up yellowed scans.
+            const sorted = Float32Array.from(toneSrc).sort(), paper = Math.max(inkLevel + 30, Math.min(245, Math.max(180, sorted[Math.floor((sorted.length - 1) * 0.92)])));
+            const cosA = Math.SQRT1_2, sinA = Math.SQRT1_2, maxCover = 0.75;
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const i = y*w+x;
+                if (ink[i]) { out[i] = 1; continue; }
+                let tone = Math.max(0, Math.min(1, (paper - toneSrc[i]) / (paper - inkLevel)));
+                if (steps) tone = Math.round(tone * steps) / steps;
+                if (tone <= 0) continue;
+                const u = ((x + 0.5) * cosA + (y + 0.5) * sinA) / pitch, v = (-(x + 0.5) * sinA + (y + 0.5) * cosA) / pitch;
+                const du = u - Math.floor(u) - 0.5, dv = v - Math.floor(v) - 0.5;
+                if (dotArea(Math.hypot(du, dv) * pitch, pitch) < tone * maxCover) out[i] = 1;
+            }
+            break;
+        }
         case 'softink': {
             const sigma=lab[0]/10,small=gaussBlur(gray,w,h,sigma*.5),large=gaussBlur(gray,w,h,sigma);
             for(let i=0;i<w*h;i++)out[i]=((large[i]-small[i])*2.5*(1+extra*.15)>lab[1]||gray[i]<lab[2])?1:0;
@@ -929,7 +962,7 @@ function plan(mask,w,h,s) {
         for(let y=0;y<16;y++){let row='';for(let x=0;x<16;x++){const v=mask[(by*16+y)*w+bx*16+x]?1:0;row+=v;count+=v;}rows.push(row);}
         boards.push({x:bx,y:by,blackPixelCount:count,drawPixelCount:count,rows});
     }
-    return {kind:'supplementaries-blackboard-plan',version:2,generator:'Blackboard Studio 9.4.0',createdAt:new Date().toISOString(),legend:{'0':'Leave this pixel white.','1':'Draw this pixel as black in Minecraft.'},output:{boardsWide:s.boardsWide,boardsHigh:s.boardsHigh,tileSize:16,preset:s.preset,threshold:s.threshold,contrast:s.contrast,sharpness:s.sharpness,extra:s.extra,fitMode:s.fitMode,invert:false,renderMode:s.renderMode,exportMode:s.exportMode,drawColor:'black',backgroundColor:'white',drawMeaning:'1 means draw; 0 means leave the background.',maskPolarity:'stable',sourceInversionIsIndependent:true,previewMatched:s.renderMode==='mask',sourceInverted:s.invert,exportFlipped:s.flipOutput,totalWidth:w,totalHeight:h},boardCount:boards.length,boards};
+    return {kind:'supplementaries-blackboard-plan',version:2,generator:'Blackboard Studio 9.5.0',createdAt:new Date().toISOString(),legend:{'0':'Leave this pixel white.','1':'Draw this pixel as black in Minecraft.'},output:{boardsWide:s.boardsWide,boardsHigh:s.boardsHigh,tileSize:16,preset:s.preset,threshold:s.threshold,contrast:s.contrast,sharpness:s.sharpness,extra:s.extra,fitMode:s.fitMode,invert:false,renderMode:s.renderMode,exportMode:s.exportMode,drawColor:'black',backgroundColor:'white',drawMeaning:'1 means draw; 0 means leave the background.',maskPolarity:'stable',sourceInversionIsIndependent:true,previewMatched:s.renderMode==='mask',sourceInverted:s.invert,exportFlipped:s.flipOutput,totalWidth:w,totalHeight:h},boardCount:boards.length,boards};
 }
 function wall(s) {
     const {boardsWide:w,boardsHigh:h}=settings(s),block='supplementaries:blackboard',count=w*h;

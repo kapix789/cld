@@ -5,7 +5,7 @@ const E=BlackboardEngine, $=id=>document.getElementById(id), clone=o=>JSON.parse
 let s=E.settings(), source=null, sourceURL='', sourceName='', result=null, renderWorker=null, auxiliaryWorker=null, renderTimer=null, renderRevision=0, sourceRevision=0;
 let view='result', grid=false, split=50, zoom='fit', boardIndex=0, history=[clone(s)], historyIndex=0, category='all', toastTimer, auxiliaryJob='';
 const workerURL=URL.createObjectURL(new Blob([$ ('engine-source').textContent,'\n',$('search-source').textContent,'\n',$('worker-source').textContent],{type:'text/javascript'}));
-const inkKeys=['softink','animeink','manga','lineart','bold','solid','canny','xdog','sauvola','wolf','hybrid','darkart','bradley','adaptive','threshold'];
+const inkKeys=['panel','softink','animeink','manga','lineart','bold','solid','canny','xdog','sauvola','wolf','hybrid','darkart','bradley','adaptive','threshold'];
 const ditherKeys=['floyd','atkinson','jjn','stucki','sierra','ordered','bayer8','ign','bluenoise'];
 const sliderSpecs=[
  ['gamma','Gamma',50,200,100,'toneControls'],['threshold','Tone threshold',0,255,128,'toneControls'],['contrast','Contrast',0,50,0,'toneControls'],['sharpness','Sharpness',0,10,0,'toneControls'],['extra','Edge sensitivity',1,10,3,'toneControls'],['lineWeight','Line weight',-3,3,0,'toneControls'],
@@ -48,7 +48,7 @@ function sync(){
  p.lab.forEach((cfg,i)=>{const el=$('lab'+i);el.min=cfg.min;el.max=cfg.max;el.step=cfg.step;el.value=s.labVals[s.preset][i];el.disabled=cfg.label==='Unused';el.closest('.slider-control').hidden=el.disabled;document.querySelector(`label[for="lab${i}"]`).textContent=cfg.label;$('lab'+i+'Value').textContent=el.value;const bounds=el.parentElement.querySelectorAll('.slider-extents span');bounds[0].textContent=cfg.min;bounds[1].textContent=cfg.max;});
  // Avoid presenting controls that have no effect for the active style.
  const toneRelevant=['solid','hybrid'].includes(s.preset);$('threshold').closest('.slider-control').hidden=!toneRelevant;
- const extraRelevant=['softink','animeink','manga','lineart','xdog','darkart','woodcut'].includes(s.preset);$('extra').closest('.slider-control').hidden=!extraRelevant;
+ const extraRelevant=['panel','softink','animeink','manga','lineart','xdog','darkart','woodcut'].includes(s.preset);$('extra').closest('.slider-control').hidden=!extraRelevant;
  $('mixRatio').disabled=!s.mixOn||s.mixMethod!=='spatial';$('mixThresholdB').disabled=!s.mixOn;$('mixExtraB').disabled=!s.mixOn;
  document.querySelectorAll('[data-preset]').forEach(el=>{el.classList.toggle('active',el.dataset.preset===s.preset);el.setAttribute('aria-pressed',el.dataset.preset===s.preset);});
  updateWall();updateActions();

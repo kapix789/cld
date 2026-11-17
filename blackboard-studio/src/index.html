@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="dark"><meta name="description" content="An offline image-to-blackboard studio. 29 styles, live previews, and 16×16 board plans.">
+<meta name="color-scheme" content="dark"><meta name="description" content="An offline image-to-blackboard studio. 30 styles, live previews, and 16×16 board plans.">
 <title>Blackboard Studio</title>
 <style>/* STYLES */</style>
 </head>
 <body>
 <header class="app-header">
-  <a class="brand" href="#" aria-label="Blackboard Studio home"><span class="brand-mark" aria-hidden="true">▦</span><span>blackboard<span class="brand-sub">STUDIO / 09.4.0</span></span></a>
+  <a class="brand" href="#" aria-label="Blackboard Studio home"><span class="brand-mark" aria-hidden="true">▦</span><span>blackboard<span class="brand-sub">STUDIO / 09.5.0</span></span></a>
   <span class="local-badge"><i></i> Local by design</span>
   <div class="header-actions"><button id="undo" class="icon-button" title="Undo (Ctrl/⌘ Z)" aria-label="Undo" disabled>↶</button><button id="redo" class="icon-button" title="Redo (Ctrl/⌘ Shift Z)" aria-label="Redo" disabled>↷</button><span class="header-divider"></span><button id="openProject">Open project</button><button id="saveProject" disabled>Save project <span aria-hidden="true">↗</span></button></div>
 </header>
@@ -32,7 +32,7 @@
       <p id="reach" class="hint">Within the original ±64-block span.</p>
     </section>
     <section class="section styles-section">
-      <div class="section-heading"><span class="step">03</span><h2>Find your style</h2><span class="count">29</span></div>
+      <div class="section-heading"><span class="step">03</span><h2>Find your style</h2><span class="count">30</span></div>
       <label class="sr-only" for="presetSearch">Search styles</label><input id="presetSearch" type="search" placeholder="Search styles…" autocomplete="off">
       <div class="category-tabs" aria-label="Style category"><button data-category="all" class="active" aria-pressed="true">All</button><button data-category="ink" aria-pressed="false">Ink</button><button data-category="dither" aria-pressed="false">Dither</button><button data-category="texture" aria-pressed="false">Texture</button></div>
       <div id="presets" class="preset-list"></div><p id="noStyles" class="hint" hidden>No matching styles.</p>
@@ -43,7 +43,7 @@
     </section>
   </aside>
   <section class="workspace" aria-label="Image preview">
-    <div class="workspace-title"><div><span class="eyebrow">LIVE PREVIEW</span><h1>Image workspace.</h1></div><span class="version-tag">BLACKBOARD<br>CONVERTER 9.4.0</span></div>
+    <div class="workspace-title"><div><span class="eyebrow">LIVE PREVIEW</span><h1>Image workspace.</h1></div><span class="version-tag">BLACKBOARD<br>CONVERTER 9.5.0</span></div>
     <div class="canvas-card">
       <div class="canvas-toolbar"><div class="segmented" aria-label="Preview mode"><button data-view="result" class="active" aria-pressed="true">Result</button><button data-view="source" aria-pressed="false">Source</button><button data-view="compare" aria-pressed="false">Compare</button></div><button id="grid" class="icon-button" title="Board grid (G)" aria-label="Toggle board grid" aria-pressed="false">▦</button><select id="renderMode" aria-label="Preview appearance"><option value="mask">Ink on paper</option><option value="chalk">Chalk on board</option></select></div>
       <div id="stage" class="stage">
@@ -80,7 +80,7 @@
   </aside>
 </main>
 <input id="projectInput" type="file" accept=".json,.blackboard" hidden>
-<dialog id="galleryDialog" aria-labelledby="galleryTitle"><div class="dialog-heading"><div><span class="eyebrow">29 WAYS TO SEE IT</span><h2 id="galleryTitle">Find your favorite.</h2></div><button data-close="galleryDialog" aria-label="Close style comparison">✕</button></div><p class="hint">Whole-image previews at a smaller resolution. Click a style to apply it.</p><progress id="galleryProgress" max="1" value="0"></progress><div id="galleryGrid" class="gallery-grid"></div></dialog>
+<dialog id="galleryDialog" aria-labelledby="galleryTitle"><div class="dialog-heading"><div><span class="eyebrow">30 WAYS TO SEE IT</span><h2 id="galleryTitle">Find your favorite.</h2></div><button data-close="galleryDialog" aria-label="Close style comparison">✕</button></div><p class="hint">Whole-image previews at a smaller resolution. Click a style to apply it.</p><progress id="galleryProgress" max="1" value="0"></progress><div id="galleryGrid" class="gallery-grid"></div></dialog>
 <dialog id="megaDialog" aria-labelledby="megaTitle">
  <div class="dialog-heading"><div><span class="eyebrow">A SMALL SEARCH FOR A BETTER PICTURE</span><h2 id="megaTitle">Mega compare.</h2></div><button data-close="megaDialog" aria-label="Close mega comparison">✕</button></div>
  <p class="mega-intro">Rank styles first, then fine-tune the strongest style’s sliders and optionally explore two-style combinations. Keep your current version until you find something you prefer.</p>
