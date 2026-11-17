@@ -155,9 +155,36 @@ function unsharpMask(gray, w, h, amount) {
 }
 
 // Local contrast enhancement (CLAHE-inspired)
+// Gaussian blur approximated by three box blurs (clamp-to-edge). Cost does not depend on
+// sigma, which matters for very wide blurs where the exact kernel has hundreds of taps.
+function boxBlur3(src, w, h, sigma) {
+    const n = 3, ideal = Math.sqrt(12 * sigma * sigma / n + 1);
+    let lower = Math.floor(ideal); if (lower % 2 === 0) lower--;
+    const lowerCount = Math.round((12 * sigma * sigma - n * lower * lower - 4 * n * lower - 3 * n) / (-4 * lower - 4));
+    let a = Float32Array.from(src), b = new Float32Array(w * h);
+    const pass = (from, to, length, count, step, stride, r) => {
+        const scale = 1 / (2 * r + 1), at = k => k < 0 ? 0 : k >= length ? length - 1 : k;
+        for (let line = 0; line < count; line++) {
+            const base = line * stride;
+            let sum = 0;
+            for (let k = -r; k <= r; k++) sum += from[base + at(k) * step];
+            for (let i = 0; i < length; i++) {
+                to[base + i * step] = sum * scale;
+                sum += from[base + at(i + r + 1) * step] - from[base + at(i - r) * step];
+            }
+        }
+    };
+    for (let k = 0; k < n; k++) {
+        const r = ((k < lowerCount ? lower : lower + 2) - 1) / 2;
+        pass(a, b, w, h, 1, w, r);   // horizontal
+        pass(b, a, h, w, w, 1, r);   // vertical
+    }
+    return a;
+}
+
 function localContrast(gray, w, h, strength) {
     if (strength <= 0) return new Uint8ClampedArray(gray);
-    const blurred = gaussBlur(gray, w, h, Math.max(3, Math.floor(w / 20)));
+    const blurred = boxBlur3(gray, w, h, Math.max(3, Math.floor(w / 20)));
     const out = new Float32Array(w * h);
     const s = strength / 100;
     for (let i = 0; i < w * h; i++) {

@@ -70,3 +70,10 @@ test('Canny edge linking stays fast on long weak-edge chains',()=>{
  const g=cannyStress(1200,1200),start=performance.now();E.process(g,1200,1200,E.settings({preset:'canny'}));const ms=performance.now()-start;
  assert.ok(ms<3000,`took ${Math.round(ms)} ms (9.3.2 took about 7 s here)`);
 });
+test('local contrast keeps flat images flat and stays fast on large walls',()=>{
+ const flat=new Uint8ClampedArray(300*200).fill(90),out=E.preprocess(flat,300,200,E.settings({localContrast:100}));
+ assert.ok(out.every(v=>Math.abs(v-90)<1e-3));
+ const w=1600,h=1200,g=Uint8ClampedArray.from({length:w*h},(_,i)=>128+100*Math.sin(i%w/40)*Math.cos(Math.floor(i/w)/30)),start=performance.now();
+ E.preprocess(g,w,h,E.settings({localContrast:60}));const ms=performance.now()-start;
+ assert.ok(ms<1000,`took ${Math.round(ms)} ms (an exact 80 px Gaussian took several seconds)`);
+});
