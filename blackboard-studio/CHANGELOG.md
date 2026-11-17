@@ -1,3 +1,18 @@
+# 9.4.0
+
+## Styles
+- Canny: diagonal and curved edges were being suppressed (wrong neighbours in the 45°/135° case), so outlines broke into dashes. Fixed.
+- Crosshatch, Pencil, Woodcut, Stipple: only the darkest tones were drawn; faces and mid tones came out blank. Ink now follows tone across the whole range. Hatch lines thicken and layers build up as it gets darker, Woodcut lines swell and bend around shapes, Stipple spaces dots evenly. Their threshold now acts as a paper level and defaults higher (230, Pencil 235).
+- Halftone: dots now grow until they merge, so black reaches 100% instead of about 60%.
+- Manga and Bold: nearly blank on walls above ~400 px. Their blur sizes now scale with the wall, so they look the same at any size.
+
+## Style search
+- Clean outlines compared every candidate against default Canny, so default Canny always won with a perfect score. Outlines are now judged against edges found on a coarse grid, with penalties for specks, filled areas and hairlines. The full-size check compares different styles, and the winner gets a short line weight and cleanup pass at the real wall size.
+
+## Speed
+- Local contrast: 2–3 s per render on large walls down to ~0.1 s (box-blur approximation of the wide Gaussian).
+- Line weight / Bold widening: no per-pixel allocations, same output.
+
 # 9.3.3 — bug fixes
 
 Plan JSON and Building Gadgets wall JSON are unchanged apart from the `generator` string; this was checked by exporting 360-board walls from 9.3.2 and 9.3.3 and comparing them.

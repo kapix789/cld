@@ -1,4 +1,4 @@
-# Blackboard Studio 9.3.3
+# Blackboard Studio 9.4.0
 
 A rebuilt offline workspace for converting images into 16 × 16 blackboard plans.
 Based on your supplied **Blackboard Converter v8.5**. The UI and application controller are new; the image engine is retained, separated, and corrected, and now has 29 styles.
@@ -84,7 +84,7 @@ No framework migration was necessary: Canvas does the image work and Workers kee
 
 ## Validation
 
-**68 automated tests pass**: 56 engine checks, 5 real-worker checks, and 7 controller integration checks. They cover every preset, binary semantics, every exported row, the plan and wall JSON layouts, dither tone fidelity, denoise and Canny equivalence, gap repair, local variance, blending, style search, project round trips, history/reset, image upload, board inspection, contain/cover geometry, stale exports, all gallery thumbnails, and PNG/plan equality with preview overlays enabled.
+**74 automated tests pass**: 60 engine checks, 7 worker and search checks, and 7 controller integration checks. They cover every preset, binary semantics, every exported row, the plan and wall JSON layouts, dither tone fidelity, denoise and Canny equivalence, gap repair, local variance, blending, style search, project round trips, history/reset, image upload, board inspection, contain/cover geometry, stale exports, all gallery thumbnails, and PNG/plan equality with preview overlays enabled.
 
 Controller tests run in **jsdom with native canvas and Node worker threads**, an emulated DOM. Separately, the built file was opened from `file://` in headless Chromium: the sample renders, style search runs, exports download, the layout has no horizontal scroll at 1440 px or 390 px wide, and the console shows no errors. Firefox, Safari, clipboard permissions, and screen readers have not been checked.
 
