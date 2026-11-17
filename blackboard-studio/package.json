@@ -1,6 +1,6 @@
 {
   "name": "blackboard-studio",
-  "version": "9.3.2",
+  "version": "9.3.3",
   "private": true,
   "description": "Offline image-to-blackboard converter",
   "scripts": {

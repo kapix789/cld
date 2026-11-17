@@ -61,7 +61,7 @@ dialog::backdrop{background:#000a;backdrop-filter:blur(7px)}
 </head>
 <body>
 <header class="app-header">
-  <a class="brand" href="#" aria-label="Blackboard Studio home"><span class="brand-mark" aria-hidden="true">▦</span><span>blackboard<span class="brand-sub">STUDIO / 09.3.2</span></span></a>
+  <a class="brand" href="#" aria-label="Blackboard Studio home"><span class="brand-mark" aria-hidden="true">▦</span><span>blackboard<span class="brand-sub">STUDIO / 09.3.3</span></span></a>
   <span class="local-badge"><i></i> Local by design</span>
   <div class="header-actions"><button id="undo" class="icon-button" title="Undo (Ctrl/⌘ Z)" aria-label="Undo" disabled>↶</button><button id="redo" class="icon-button" title="Redo (Ctrl/⌘ Shift Z)" aria-label="Redo" disabled>↷</button><span class="header-divider"></span><button id="openProject">Open project</button><button id="saveProject" disabled>Save project <span aria-hidden="true">↗</span></button></div>
 </header>
@@ -96,7 +96,7 @@ dialog::backdrop{background:#000a;backdrop-filter:blur(7px)}
     </section>
   </aside>
   <section class="workspace" aria-label="Image preview">
-    <div class="workspace-title"><div><span class="eyebrow">LIVE PREVIEW</span><h1>Image workspace.</h1></div><span class="version-tag">BLACKBOARD<br>CONVERTER 9.3.2</span></div>
+    <div class="workspace-title"><div><span class="eyebrow">LIVE PREVIEW</span><h1>Image workspace.</h1></div><span class="version-tag">BLACKBOARD<br>CONVERTER 9.3.3</span></div>
     <div class="canvas-card">
       <div class="canvas-toolbar"><div class="segmented" aria-label="Preview mode"><button data-view="result" class="active" aria-pressed="true">Result</button><button data-view="source" aria-pressed="false">Source</button><button data-view="compare" aria-pressed="false">Compare</button></div><button id="grid" class="icon-button" title="Board grid (G)" aria-label="Toggle board grid" aria-pressed="false">▦</button><select id="renderMode" aria-label="Preview appearance"><option value="mask">Ink on paper</option><option value="chalk">Chalk on board</option></select></div>
       <div id="stage" class="stage">
@@ -1035,7 +1035,7 @@ function plan(mask,w,h,s) {
         for(let y=0;y<16;y++){let row='';for(let x=0;x<16;x++){const v=mask[(by*16+y)*w+bx*16+x]?1:0;row+=v;count+=v;}rows.push(row);}
         boards.push({x:bx,y:by,blackPixelCount:count,drawPixelCount:count,rows});
     }
-    return {kind:'supplementaries-blackboard-plan',version:2,generator:'Blackboard Studio 9.3.2',createdAt:new Date().toISOString(),legend:{'0':'Leave this pixel white.','1':'Draw this pixel as black in Minecraft.'},output:{boardsWide:s.boardsWide,boardsHigh:s.boardsHigh,tileSize:16,preset:s.preset,threshold:s.threshold,contrast:s.contrast,sharpness:s.sharpness,extra:s.extra,fitMode:s.fitMode,invert:false,renderMode:s.renderMode,exportMode:s.exportMode,drawColor:'black',backgroundColor:'white',drawMeaning:'1 means draw; 0 means leave the background.',maskPolarity:'stable',sourceInversionIsIndependent:true,previewMatched:s.renderMode==='mask',sourceInverted:s.invert,exportFlipped:s.flipOutput,totalWidth:w,totalHeight:h},boardCount:boards.length,boards};
+    return {kind:'supplementaries-blackboard-plan',version:2,generator:'Blackboard Studio 9.3.3',createdAt:new Date().toISOString(),legend:{'0':'Leave this pixel white.','1':'Draw this pixel as black in Minecraft.'},output:{boardsWide:s.boardsWide,boardsHigh:s.boardsHigh,tileSize:16,preset:s.preset,threshold:s.threshold,contrast:s.contrast,sharpness:s.sharpness,extra:s.extra,fitMode:s.fitMode,invert:false,renderMode:s.renderMode,exportMode:s.exportMode,drawColor:'black',backgroundColor:'white',drawMeaning:'1 means draw; 0 means leave the background.',maskPolarity:'stable',sourceInversionIsIndependent:true,previewMatched:s.renderMode==='mask',sourceInverted:s.invert,exportFlipped:s.flipOutput,totalWidth:w,totalHeight:h},boardCount:boards.length,boards};
 }
 function wall(s) {
     const {boardsWide:w,boardsHigh:h}=settings(s),block='supplementaries:blackboard',count=w*h;

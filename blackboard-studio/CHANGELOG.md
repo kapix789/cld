@@ -1,3 +1,30 @@
+# 9.3.3 — bug fixes
+
+Plan JSON and Building Gadgets wall JSON are unchanged apart from the `generator` string; this was checked by exporting 360-board walls from 9.3.2 and 9.3.3 and comparing them.
+
+## Fixed
+
+1. **Grain and IGN: Strength changed brightness.** The noise was not centred, so on mid grey, strength 10 gave 100% ink and strength 100 gave 0%, and light greys rendered blank at almost every setting. Noise is now centred on zero, so Strength changes only the texture.
+2. **IGN drew horizontal streaks.** It now uses the standard interleaved gradient noise formula.
+3. **Ordered and noise dithers lost shadows and highlights by default.** Bayer, Bayer 8×8, IGN and Grain defaulted to 55–60% strength, which turned dark greys solid black and light greys solid white (dark grey: 94% ink instead of 75%). Defaults are now 100%, which reproduces every grey level. Saved projects keep their stored values. Lower Strength for a punchier, higher-contrast look.
+4. **Denoise was slow at large sizes.** Radius 4 took about 4.8 s on a 1600 × 1600 wall; it now takes about 0.5 s, with identical output.
+5. **Canny could take tens of seconds.** Edge linking rescanned the whole image until nothing changed. On images with long faint edges this took 24.6 s at 1600 × 1600; it now takes 0.35 s, with identical output. Style search's Clean outlines goal also uses Canny.
+6. **Zoom menu text was cut off** ("Fit · smoot"). The menu now sizes to its longest option.
+
+## Project
+
+- `src/` now matches the shipped HTML. The previous bundle's sources built 9.0, so running `build.py` would have overwritten 9.3.2.
+- `build.py` inlines all seven source files in one pass and checks that every template token is present.
+- Tests updated for 9.3.2 and extended to 68: format locks for plan and wall JSON, dither tone fidelity, median and Canny equivalence, Canny worst-case time, style search.
+
+# 9.1 – 9.3.2 (reconstructed from the 9.3.2 build; original notes were not included)
+
+- Added **Soft Ink** (29 styles).
+- Added **Mega compare**: ranks styles, tunes the best one, optionally explores two-style mixes, rechecks finalists at full wall size, with goals (balanced, tonal fidelity, less noise, clean outlines), a draw-pixel budget, and an A/B preview.
+- Added optional local recovery drafts (IndexedDB) and a pixel-exact "Fit · pixels" zoom.
+- Wall JSON switched to the Building Gadgets `statePosArrayList` template format.
+- XDoG: a uniform image now stays blank; Phi controls edge steepness. Anime Ink: Shadow Depth 0 now means outlines only. Sharpness and Detail boost combine into one bounded pass, and small texture is no longer amplified into ink.
+
 # 9.0 — renewal of the supplied v8.5 project
 
 ## Functional defects fixed
