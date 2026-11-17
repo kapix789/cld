@@ -41,3 +41,24 @@ test('IGN produces a fine interleaved pattern rather than long streaks',()=>{
  for(let y=0;y<n;y++){let run=1;for(let x=1;x<n;x++){run=m[y*n+x]===m[y*n+x-1]?run+1:1;longest=Math.max(longest,run);}}
  assert.ok(longest<=3,`longest horizontal run ${longest}`);
 });
+// Denoise: the histogram median must equal sorting every clamp-to-edge window (the 9.3.2 method).
+test('histogram median matches a sorted-window median exactly',()=>{
+ const sortedMedian=(g,w,h,r)=>{const out=new Float32Array(w*h),size=(2*r+1)**2,buf=new Uint8ClampedArray(size);for(let y=0;y<h;y++)for(let x=0;x<w;x++){let k=0;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)buf[k++]=g[Math.min(h-1,Math.max(0,y+dy))*w+Math.min(w-1,Math.max(0,x+dx))];buf.sort();out[y*w+x]=buf[size>>1];}return out;};
+ let seed=7;const rnd=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+ for(const [w,h] of [[1,1],[1,9],[9,1],[3,2],[17,13],[40,31]])for(let r=0;r<=4;r++){
+  // Fractional values, including exact .5 ties, exercise the same 0-255 rounding.
+  const g=Float32Array.from({length:w*h},()=>rnd()<.2?Math.floor(rnd()*255)+.5:rnd()*260-2);
+  assert.deepEqual(E.medianFilter(g,w,h,r),sortedMedian(g,w,h,r),`${w}x${h} radius ${r}`);
+ }
+});
+// Canny: edge linking must reproduce 9.3.2 output and stay linear-time on long weak-edge chains.
+const cannyStress=(w,h)=>{const g=new Uint8ClampedArray(w*h);for(let y=0;y<h;y++)for(let x=0;x<w;x++){let v=128+100*Math.sin(x/w*7)*Math.cos(y/h*5);if(((x-w/2)**2+(y-h/2)**2)<(w/4)**2)v=40;g[y*w+x]=v+((x*7919+y*104729)%37)-18;}return g;};
+const fingerprint=m=>{let h=2166136261;for(let i=0;i<m.length;i++)h=Math.imul(h^m[i],16777619);return h>>>0;};
+test('Canny output is identical to 9.3.2',()=>{
+ const g=cannyStress(240,180);
+ for(const [lab,expected] of [[undefined,3131910075],[[10,40,8],1045875418],[[60,30,20],1839547104]])assert.equal(fingerprint(E.process(g,240,180,E.settings({preset:'canny',...(lab?{labVals:{canny:lab}}:{})}))),expected,JSON.stringify(lab));
+});
+test('Canny edge linking stays fast on long weak-edge chains',()=>{
+ const g=cannyStress(1200,1200),start=performance.now();E.process(g,1200,1200,E.settings({preset:'canny'}));const ms=performance.now()-start;
+ assert.ok(ms<3000,`took ${Math.round(ms)} ms (9.3.2 took about 7 s here)`);
+});

@@ -275,23 +275,27 @@ function dogEdges(gray, w, h, sigma1, sigma2) {
     return out;
 }
 
-// Simple median filter for denoising
+// Median filter for denoising, with clamp-to-edge borders.
+// A sliding 256-bin histogram (Huang's algorithm) gives exactly the result of sorting
+// every window, but costs O(radius) per pixel instead of O(radius² log radius).
 function medianFilter(gray, w, h, radius) {
     const out = new Float32Array(w * h);
-    const size = (2 * radius + 1) * (2 * radius + 1);
-    const buf = new Uint8ClampedArray(size);
+    const levels = new Uint8ClampedArray(gray); // same 0-255 rounding the sorted window used
+    const span = 2 * radius + 1, half = (span * span) >> 1;
+    const hist = new Int32Array(256), rows = new Int32Array(span);
+    const clampX = x => x < 0 ? 0 : x >= w ? w - 1 : x;
     for (let y = 0; y < h; y++) {
+        for (let k = 0; k < span; k++) { const sy = y - radius + k; rows[k] = (sy < 0 ? 0 : sy >= h ? h - 1 : sy) * w; }
+        hist.fill(0);
+        for (let dx = -radius; dx <= radius; dx++) { const sx = clampX(dx); for (let k = 0; k < span; k++) hist[levels[rows[k] + sx]]++; }
         for (let x = 0; x < w; x++) {
-            let idx = 0;
-            for (let dy = -radius; dy <= radius; dy++) {
-                for (let dx = -radius; dx <= radius; dx++) {
-                    const sx = Math.min(w-1, Math.max(0, x+dx));
-                    const sy = Math.min(h-1, Math.max(0, y+dy));
-                    buf[idx++] = gray[sy * w + sx];
-                }
+            if (x > 0) {
+                const gone = clampX(x - radius - 1), added = clampX(x + radius);
+                if (gone !== added) for (let k = 0; k < span; k++) { hist[levels[rows[k] + gone]]--; hist[levels[rows[k] + added]]++; }
             }
-            buf.sort();
-            out[y * w + x] = buf[Math.floor(size / 2)];
+            let v = 0, seen = hist[0];
+            while (seen <= half) seen += hist[++v];
+            out[y * w + x] = v;
         }
     }
     return out;
@@ -609,16 +613,19 @@ function renderPreset(gray, w, h, thresh, extra, lw, S) {
             }
             // Double threshold + hysteresis
             for (let i = 0; i < w*h; i++) out[i] = nms[i] > hi ? 1 : 0;
-            // Connect weak edges
-            let changed = true;
-            while (changed) {
-                changed = false;
-                for (let y = 1; y < h-1; y++) for (let x = 1; x < w-1; x++) {
-                    const idx = y*w+x;
-                    if (out[idx] || nms[idx] < lo) continue;
-                    for (const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,1],[-1,1],[1,-1]]) {
-                        if (out[(y+dy)*w+x+dx]) { out[idx]=1; changed=true; break; }
-                    }
+            // Connect weak edges: grow every strong edge through 8-connected interior pixels with nms >= lo.
+            // One stack pass reaches the same result as rescanning the image until nothing changes,
+            // without that approach's worst case of one full-image pass per pixel of chain length.
+            const stack = [];
+            for (let i = 0; i < w*h; i++) if (out[i]) stack.push(i);
+            const neighbours = [-1, 1, -w, w, -w-1, -w+1, w-1, w+1];
+            while (stack.length) {
+                const i = stack.pop(), x = i % w, y = (i - x) / w;
+                if (x < 1 || y < 1 || x >= w-1 || y >= h-1) continue;
+                for (const d of neighbours) {
+                    const j = i + d, jx = j % w, jy = (j - jx) / w;
+                    if (out[j] || nms[j] < lo || jx < 1 || jy < 1 || jx >= w-1 || jy >= h-1) continue;
+                    out[j] = 1; stack.push(j);
                 }
             }
             break;
@@ -1042,7 +1049,7 @@ function score(mask,gray,w,h) {
     for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const i=y*w+x;if(mask[i]){filled++;if(!mask[i-1]&&!mask[i+1]&&!mask[i-w]&&!mask[i+w])isolated++;}}
     return 1-error/blocks-(filled?isolated/filled*0.05:0);
 }
-const api={PRESETS,DEFAULTS,settings,process,processPrepared,preprocess,renderPreset,rgba,plan,wall,score,repairGaps,localStats,BAYER8};
+const api={PRESETS,DEFAULTS,settings,process,processPrepared,preprocess,renderPreset,rgba,plan,wall,score,repairGaps,localStats,medianFilter,BAYER8};
 root.BlackboardEngine=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 
