@@ -16,6 +16,8 @@ Open **Blackboard-Studio.html** in a modern desktop browser. No installation, se
 
 Images stay on your computer; nothing is uploaded and there are no analytics. **Keep a local recovery draft** is off until you enable it; it then keeps one draft in this browser (IndexedDB), offered for restore but never loaded automatically. Otherwise, save a project before closing the tab. History retains up to 80 settings snapshots for the current source; opening another image or project starts a new history.
 
+Built with help from AI.
+
 ## What changed from v8.5
 
 | Area | Upgrade |
