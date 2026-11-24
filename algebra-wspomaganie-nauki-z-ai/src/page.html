@@ -1,0 +1,405 @@
+<header><div class="wrap">
+<h1>Macierze <span>· trener do algebry</span></h1>
+<nav id="nav">
+<button data-t="liczby">X na liczbach</button>
+<button data-t="rownania">X na literach</button>
+<button data-t="uklady">Układy równań</button>
+<button data-t="cwiczenia">Ćwiczenia</button>
+<button data-t="sprawdzian">Sprawdzian</button>
+<button data-t="blad">Znajdź błąd</button>
+<button data-t="postep">Postęp</button>
+<button data-t="sciaga">Ściąga</button>
+</nav>
+</div></header>
+
+<main class="wrap">
+
+<!-- ===================== X NA LICZBACH ===================== -->
+<section id="liczby">
+<div class="card">
+<div class="row" style="margin-top:0">
+<span class="mute">Rozmiar:</span>
+<button class="chip" data-n="2">2×2</button>
+<button class="chip" data-n="3">3×3</button>
+<span class="mute" style="margin-left:6px">X:</span>
+<button class="chip" data-shape="sq">kwadratowa</button>
+<button class="chip" data-shape="rect">prostokątna</button>
+</div>
+<div class="row"><select id="ntSel" class="code"></select></div>
+<p class="mute" id="ntNote" style="margin-top:8px"></p>
+</div>
+<div class="card">
+<div class="row" style="margin-top:0"><span class="q">Wyznacz macierz <i>X</i></span><span class="score" id="nScore"></span></div>
+<div class="eq" id="nEq"></div>
+<div class="given" id="nGiven"></div>
+<div id="nAns" style="margin-top:6px"></div>
+<div class="row">
+<button class="btn" id="nCheck">Sprawdź</button>
+<button class="btn ghost" id="nHint">Podpowiedź</button>
+<button class="btn play" id="nPlay">▶ Krok po kroku</button>
+<button class="btn ghost" id="nSol">Rozwiązanie</button>
+<button class="btn ghost" id="nNew">Nowe zadanie</button>
+</div>
+<div class="msg" id="nMsg"></div>
+<div class="sol" id="nSolBox"></div>
+</div>
+</section>
+
+<!-- ===================== X NA LITERACH ===================== -->
+<section id="rownania">
+<div class="card">
+<h2>Równanie</h2>
+<input id="eqIn" class="code" autocomplete="off" autocapitalize="characters" spellcheck="false" value="A^TB^-1XCA=(AD)^-1D">
+<div class="keys" id="keys">
+<button data-i="A"><i>A</i></button><button data-i="B"><i>B</i></button><button data-i="C"><i>C</i></button><button data-i="D"><i>D</i></button><button data-i="X"><i>X</i></button><button data-i="I"><i>I</i></button><button data-i="=">=</button>
+<button data-i="^T"><i>M</i><sup>T</sup></button><button data-i="^-1"><i>M</i><sup>−1</sup></button><button data-i="(">(</button><button data-i=")">)</button><button data-i="+">+</button><button data-i="-">−</button><button data-i="⌫" class="w">⌫</button>
+<button data-i="2">2</button><button data-i="3">3</button><button data-i="^2"><i>M</i><sup>2</sup></button><button data-i="CLR" class="w span4">wyczyść</button>
+</div>
+<div class="row">
+<button class="btn" id="solveBtn">Rozwiąż</button>
+<span class="mute">Losuj:</span>
+<button class="btn ghost small" data-lvl="1">łatwe</button>
+<button class="btn ghost small" data-lvl="2">średnie</button>
+<button class="btn ghost small" data-lvl="3">trudne</button>
+</div>
+<p class="mute" style="margin-top:10px">Zapis: <code>A^T</code>, <code>B^-1</code>, <code>(AD)^-1</code>, <code>2X</code>, <code>A^2</code>, <code>I</code> = macierz jednostkowa.</p>
+<div class="msg" id="eqErr"></div>
+</div>
+
+<div id="eqWork" style="display:none">
+<div class="card">
+<div class="eq" id="eqShow"></div>
+<p class="mute" id="eqTry" style="text-align:center;margin:0">Spróbuj sam wyznaczyć <i>X</i>, zanim zajrzysz do rozwiązania.</p>
+</div>
+<div class="card" id="ansCard">
+<h2>Twoja odpowiedź</h2>
+<div class="row" style="margin-top:0;flex-wrap:nowrap"><span class="m" style="font-size:20px"><i>X</i>&nbsp;=</span><input id="ansIn" class="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="np. A^-1(C-B)"></div>
+<div class="row"><button class="btn" id="ansBtn">Sprawdź</button><span class="mute">klawiatura wyżej też tu wpisuje</span></div>
+<div class="msg" id="ansMsg"></div>
+</div>
+<div class="card" id="stepsCard">
+<h2>Rozwiązanie krok po kroku</h2>
+<div id="steps"></div>
+<div class="row"><button class="btn play" id="symPlay">▶ Krok po kroku</button><button class="btn" id="nextStep">Następny krok</button><button class="btn ghost" id="allSteps">Pokaż wszystko</button></div>
+</div>
+<div class="card" id="numCard">
+<h2>Policz na liczbach</h2>
+<p class="mute">Wpisz swoje macierze: liczby oddzielaj spacjami, każdy wiersz w nowej linii (ułamki: <code>1/2</code>, <code>-3/4</code>). Na start są przykładowe macierze 2×2 — podmień je na swoje.</p>
+<div class="mxs" id="mxIns"></div>
+<div class="row"><button class="btn" id="numBtn">Oblicz X</button><button class="btn play" id="numPlay">▶ Krok po kroku</button><button class="btn ghost" id="numRnd">Wstaw inne przykładowe</button></div>
+<div class="msg" id="numMsg"></div>
+<div class="sol on" id="numOut"></div>
+</div>
+</div>
+</section>
+
+<!-- ===================== UKŁADY RÓWNAŃ ===================== -->
+<section id="uklady">
+<div class="card">
+<div class="row" style="margin-top:0"><span class="lbl">Rozmiar</span>
+<button class="chip" data-ss="2">2×2</button><button class="chip" data-ss="3">3×3</button><button class="chip" data-ss="4">4×4</button><button class="chip" data-ss="r">nietypowy (m ≠ n)</button></div>
+<div class="row"><span class="lbl">Rodzaj</span>
+<button class="chip" data-sm="one">zawsze jedno rozwiązanie</button><button class="chip" data-sm="any">losowy (też sprzeczne i nieoznaczone)</button></div>
+<div class="row"><span class="lbl">Metoda</span>
+<button class="chip" data-me="gauss">Gauss</button><button class="chip" data-me="mac">macierzowa <span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span></button><button class="chip" data-me="cra">Cramer</button></div>
+</div>
+
+<div class="card">
+<div class="row" style="margin-top:0"><span class="q">Rozwiąż układ równań</span><span class="score" id="sScore"></span></div>
+<div class="sysbox" id="sEq"></div>
+<p class="mute" style="margin:6px 0">Ile rozwiązań ma ten układ?</p>
+<div class="chips" id="sType"><button class="chip" data-st="one">jedno</button><button class="chip" data-st="inf">nieskończenie wiele</button><button class="chip" data-st="none">brak — układ sprzeczny</button></div>
+<div class="nums" id="sVals" style="margin-top:12px"></div>
+<div class="row">
+<button class="btn" id="sCheck">Sprawdź</button>
+<button class="btn ghost" id="sHint">Podpowiedź</button>
+<button class="btn play" id="sPlay">▶ Krok po kroku</button>
+<button class="btn ghost" id="sSol">Rozwiązanie</button>
+<button class="btn ghost" id="sNew">Nowe zadanie</button>
+</div>
+<p class="mute" style="margin-top:8px">Ułamki wpisuj jako <code>1/2</code> lub <code>-3/4</code>.</p>
+<div class="msg" id="sMsg"></div>
+<div class="sol" id="sSolBox"></div>
+</div>
+
+<div class="card">
+<h2>Twój układ</h2>
+<p class="mute">Każde równanie w osobnej linii. Niewiadome: <code>x y z t</code> albo <code>x1 x2 x3</code>. Wyrazy mogą stać po obu stronach „=”.</p>
+<textarea id="sysIn" class="code" rows="4" autocomplete="off" autocapitalize="off" spellcheck="false">2x + y - z = 3
+x - y + 2z = 5
+3x + 2y + z = 10</textarea>
+<div class="row"><button class="btn" id="sysBtn">Rozwiąż</button><button class="btn play" id="sysPlay">▶ Krok po kroku</button><span class="mute">metodą wybraną na górze</span></div>
+<div class="msg" id="sysErr"></div>
+<div class="sol on" id="sysOut"></div>
+</div>
+</section>
+
+<!-- ===================== ĆWICZENIA (z rejestru TOPICS) ===================== -->
+<section id="cwiczenia">
+<div class="card">
+<div class="row" style="margin-top:0"><span class="lbl">Dział</span><div class="chips" id="cwSecs"></div></div>
+<div class="row"><span class="lbl">Temat</span><div class="chips" id="cwTopics"></div></div>
+</div>
+<div id="cwBox"></div>
+</section>
+
+<!-- ===================== SPRAWDZIAN ===================== -->
+<section id="sprawdzian">
+<div class="card" id="exSetup">
+<h2>Sprawdzian</h2>
+<p class="mute">Losuję zestaw zadań z wybranych działów. W trakcie nie ma podpowiedzi ani rozwiązań — wynik, ocenę i animowane rozwiązania zobaczysz na końcu.</p>
+<div class="row"><span class="lbl">Działy</span><div class="chips" id="exSecs"></div></div>
+<div class="row"><span class="lbl">Zadań</span><div class="chips" id="exN"><button class="chip" data-exn="5">5</button><button class="chip on" data-exn="8">8</button><button class="chip" data-exn="10">10</button></div></div>
+<div class="row"><span class="lbl">Czas</span><div class="chips" id="exT"><button class="chip on" data-ext="0">bez limitu</button><button class="chip" data-ext="20">20 min</button><button class="chip" data-ext="45">45 min</button><button class="chip" data-ext="90">90 min</button></div></div>
+<div class="row"><button class="btn" id="exStart">Rozpocznij sprawdzian</button></div>
+<div class="msg" id="exMsg"></div>
+</div>
+<div id="exRun" hidden>
+<div class="card">
+<div class="row" style="margin-top:0"><span class="q" id="exHead"></span><span class="score" id="exClock"></span></div>
+<div class="exdots" id="exDots"></div>
+<div class="mute" id="exTopic"></div>
+<div class="q" id="exQ" style="margin-top:6px"></div>
+<div id="exBody"></div>
+<div id="exAns" style="margin-top:10px"></div>
+<p class="mute" style="margin-top:8px">Ułamki wpisuj jako <code>1/2</code> lub <code>-3/4</code>. Odpowiedzi zapisują się same — możesz wracać do zadań.</p>
+<div class="row"><button class="btn ghost" id="exPrev">◀ Poprzednie</button><button class="btn" id="exNext">Następne ▶</button><button class="btn ghost" id="exEnd">Zakończ i oceń</button></div>
+<div class="msg" id="exConfirm"></div>
+</div>
+</div>
+<div id="exRes" hidden></div>
+</section>
+
+<!-- ===================== ZNAJDŹ MÓJ BŁĄD ===================== -->
+<section id="blad">
+<div class="card">
+<h2>Znajdź mój błąd</h2>
+<p class="mute">Przepisz swoje rachunki z zeszytu — trener sprawdzi każdy krok i pokaże, gdzie pojawił się błąd.</p>
+<div class="chips" id="fbMode"><button class="chip on" data-fb="gauss">Eliminacja Gaussa</button><button class="chip" data-fb="mul">Mnożenie macierzy</button></div>
+<div id="fbGauss" style="margin-top:10px">
+<p class="mute">Kolejne macierze oddziel pustą linią. Liczby oddzielaj spacjami, kreskę możesz zaznaczyć znakiem <code>|</code>. W jednym kroku możesz zrobić kilka operacji naraz. Działa dla układów [<i>A</i> | <i>B</i>], odwrotności [<i>A</i> | <i>I</i>] i zwykłych macierzy (rząd).</p>
+<textarea id="fbIn" class="code" rows="12" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
+<div class="row"><button class="btn" id="fbBtn">Sprawdź moje kroki</button><button class="btn ghost" id="fbEx">Wstaw przykład z błędem</button><button class="btn ghost" id="fbClr">Wyczyść</button></div>
+</div>
+<div id="fbMul" hidden style="margin-top:10px">
+<p class="mute">Wpisz <i>A</i>, <i>B</i> i swój wynik <i>A</i>·<i>B</i>: liczby spacjami, każdy wiersz w nowej linii.</p>
+<div class="mxs">
+<label class="mx" for="fbA"><span><i>A</i> =</span><textarea id="fbA" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false">2 1
+-1 3</textarea></label>
+<label class="mx" for="fbB"><span><i>B</i> =</span><textarea id="fbB" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false">1 4
+2 -2</textarea></label>
+<label class="mx" for="fbC"><span><i>AB</i> =</span><textarea id="fbC" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false">4 6
+5 -2</textarea></label>
+</div>
+<div class="row"><button class="btn" id="fbMulBtn">Sprawdź iloczyn</button></div>
+</div>
+<div class="msg" id="fbMsg"></div>
+</div>
+<div id="fbOut"></div>
+</section>
+
+<!-- ===================== POSTĘP ===================== -->
+<section id="postep">
+<div class="card">
+<h2>Twój postęp</h2>
+<p class="mute">Zapisuje się w tej przeglądarce — na innym urządzeniu zaczynasz od zera. Liczy się 10 ostatnich prób każdego typu zadania (z ćwiczeń, trenerów i sprawdzianów).</p>
+<div class="stats" id="prStats"></div>
+<div class="row"><button class="btn" id="prGo">Rozpocznij powtórkę</button><button class="btn ghost" id="prReset">Wyczyść postęp</button></div>
+<p class="mute" style="margin-top:8px">Powtórka częściej losuje tematy, które idą słabo, nowe i dawno nie ćwiczone.</p>
+<div class="msg" id="prMsg"></div>
+</div>
+<div id="prBox"></div>
+<div class="card"><h2>Tematy</h2><div id="prList"></div></div>
+</section>
+
+<!-- ===================== ŚCIĄGA ===================== -->
+<section id="sciaga">
+<div class="card">
+<h2>Przepis na równanie macierzowe</h2>
+<ol>
+<li><b>Rozpisz nawiasy</b> z <sup>T</sup> i <sup>−1</sup> — kolejność się <b>odwraca</b>.</li>
+<li><b>Przenieś</b> wyrazy z <i>X</i> na lewo, bez <i>X</i> na prawo (zmiana znaku).</li>
+<li>Jeśli <i>X</i> jest kilka razy — <b>wyciągnij go przed nawias</b> (patrz niżej).</li>
+<li>To, co stoi <b>przed</b> <i>X</i>, usuwasz mnożąc <b>obie strony z lewej</b> przez odwrotność.</li>
+<li>To, co stoi <b>za</b> <i>X</i>, usuwasz mnożąc <b>obie strony z prawej</b> przez odwrotność.</li>
+<li>Dopiero teraz podstawiasz liczby: liczysz odwrotną, potem iloczyny.</li>
+</ol>
+<div class="warn"><b>Najczęstsze błędy</b>
+<ul class="rules">
+<li>Mnożenie jednej strony z lewej, a drugiej z prawej. Zawsze <b>ta sama strona</b>!</li>
+<li><span class="f">(<i>AB</i>)<sup>−1</sup> ≠ <i>A</i><sup>−1</sup><i>B</i><sup>−1</sup></span> — poprawnie <span class="f"><i>B</i><sup>−1</sup><i>A</i><sup>−1</sup></span>.</li>
+<li><span class="f"><i>AX</i> − <i>X</i> = (<i>A</i> − 1)<i>X</i></span> — <b>źle</b>! Od macierzy nie odejmiesz liczby. Poprawnie <span class="f">(<i>A</i> − <i>I</i>)<i>X</i></span>.</li>
+<li>„Dzielenie” przez macierz nie istnieje — tylko mnożenie przez odwrotną.</li>
+</ul></div>
+</div>
+
+<div class="card ex">
+<h2>Gdy X występuje dwa razy</h2>
+<div class="eq"><i>AX</i> = <i>X</i> + <i>B</i></div>
+<p>Przenoszę <i>X</i> na lewo: <span class="f"><i>AX</i> − <i>X</i> = <i>B</i></span>. Samotne <i>X</i> to <span class="f"><i>IX</i></span>, więc:</p>
+<div class="eq">(<i>A</i> − <i>I</i>)<i>X</i> = <i>B</i> &nbsp;⇒&nbsp; <i>X</i> = (<i>A</i> − <i>I</i>)<sup>−1</sup><i>B</i></div>
+<p>Uwaga na stronę: w <span class="f"><i>XA</i> − 2<i>X</i></span> <i>X</i> jest z lewej, więc <span class="f"><i>X</i>(<i>A</i> − 2<i>I</i>)</span>. A <span class="f"><i>AX</i> + <i>XB</i></span> nie da się tak zapisać.</p>
+</div>
+
+<div class="card ex">
+<h2>Przykład: A<sup>T</sup>B<sup>−1</sup>XCA = (AD)<sup>−1</sup>D</h2>
+<p><b>1.</b> <span class="f">(<i>AD</i>)<sup>−1</sup> = <i>D</i><sup>−1</sup><i>A</i><sup>−1</sup></span>:</p>
+<div class="eq"><i>A</i><sup>T</sup><i>B</i><sup>−1</sup><i>XCA</i> = <i>D</i><sup>−1</sup><i>A</i><sup>−1</sup><i>D</i></div>
+<p><b>2.</b> Z lewej przez <span class="f">(<i>A</i><sup>T</sup><i>B</i><sup>−1</sup>)<sup>−1</sup> = <i>B</i>(<i>A</i><sup>T</sup>)<sup>−1</sup></span>:</p>
+<div class="eq"><i>XCA</i> = <span class="hl"><i>B</i>(<i>A</i><sup>T</sup>)<sup>−1</sup></span><i>D</i><sup>−1</sup><i>A</i><sup>−1</sup><i>D</i></div>
+<p><b>3.</b> Z prawej przez <span class="f">(<i>CA</i>)<sup>−1</sup> = <i>A</i><sup>−1</sup><i>C</i><sup>−1</sup></span>:</p>
+<div class="eq"><i>X</i> = <i>B</i>(<i>A</i><sup>T</sup>)<sup>−1</sup><i>D</i><sup>−1</sup><i>A</i><sup>−1</sup><i>D</i><span class="hl"><i>A</i><sup>−1</sup><i>C</i><sup>−1</sup></span></div>
+<div class="row"><button class="btn ghost small" id="openEx">Otwórz w trenerze</button></div>
+</div>
+
+<div class="card">
+<h2>Wzory do równań</h2>
+<ul class="rules f">
+<li>(<i>AB</i>)<sup>T</sup> = <i>B</i><sup>T</sup><i>A</i><sup>T</sup> &nbsp;&nbsp; (<i>ABC</i>)<sup>T</sup> = <i>C</i><sup>T</sup><i>B</i><sup>T</sup><i>A</i><sup>T</sup></li>
+<li>(<i>AB</i>)<sup>−1</sup> = <i>B</i><sup>−1</sup><i>A</i><sup>−1</sup> &nbsp;&nbsp; (<i>ABC</i>)<sup>−1</sup> = <i>C</i><sup>−1</sup><i>B</i><sup>−1</sup><i>A</i><sup>−1</sup></li>
+<li>(<i>A</i><sup>T</sup>)<sup>T</sup> = <i>A</i> &nbsp;&nbsp; (<i>A</i><sup>−1</sup>)<sup>−1</sup> = <i>A</i> &nbsp;&nbsp; (<i>A</i><sup>T</sup>)<sup>−1</sup> = (<i>A</i><sup>−1</sup>)<sup>T</sup></li>
+<li><i>AA</i><sup>−1</sup> = <i>A</i><sup>−1</sup><i>A</i> = <i>I</i>, &nbsp; <i>AI</i> = <i>IA</i> = <i>A</i></li>
+<li>(<i>A</i> + <i>B</i>)<sup>T</sup> = <i>A</i><sup>T</sup> + <i>B</i><sup>T</sup> &nbsp;&nbsp; (<i>kA</i>)<sup>T</sup> = <i>kA</i><sup>T</sup> &nbsp;&nbsp; (<i>kA</i>)<sup>−1</sup> = <sup>1</sup>⁄<sub><i>k</i></sub><i>A</i><sup>−1</sup></li>
+<li>(<i>A</i> + <i>B</i>)<sup>−1</sup> — <b>nie da się</b> rozpisać!</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>Macierz odwrotna — metoda Gaussa</h2>
+<p>Zapisz obok siebie <span class="f">[<i>A</i> | <i>I</i>]</span> i operacjami na <b>wierszach</b> doprowadź lewą część do <i>I</i>. Po prawej wyjdzie <span class="f"><i>A</i><sup>−1</sup></span>.</p>
+<p>Dozwolone operacje (zawsze na całym wierszu, po obu stronach kreski):</p>
+<ul class="rules">
+<li><span class="f">w<sub>1</sub> ↔ w<sub>2</sub></span> — zamiana wierszy</li>
+<li><span class="f">w<sub>1</sub> : 3</span> — podzielenie wiersza przez liczbę ≠ 0</li>
+<li><span class="f">w<sub>2</sub> − 3w<sub>1</sub></span> — od wiersza 2 odejmij 3 × wiersz 1</li>
+</ul>
+<div class="tip"><b>Kolejność:</b> kolumna po kolumnie. W kolumnie robisz „1” na przekątnej, potem zera nad i pod nią. Wygodnie zacząć od wiersza, który ma w danej kolumnie 1 lub −1.<br><b>Kontrola:</b> <span class="f"><i>A</i>·<i>A</i><sup>−1</sup></span> musi dać <i>I</i>.</div>
+</div>
+
+<div class="card ex">
+<h2>Równanie macierzowe przez niewiadome</h2>
+<p>Gdy <i>X</i> nie da się wyciągnąć przed nawias (<span class="f"><i>AX</i> + <i>XB</i></span>, <span class="f"><i>AX</i> = <i>XA</i></span>, <span class="f"><i>X</i></span> razem z <span class="f"><i>X</i><sup>T</sup></span>) albo macierz do odwrócenia nie jest kwadratowa lub odwracalna — liczysz na elementach:</p>
+<ol>
+<li>Ustal wymiar <i>X</i> z wymiarów działań i zapisz <span class="f"><i>X</i> = </span><span class="mat" style="grid-template-columns:repeat(2,auto)"><span><i>x</i></span><span><i>y</i></span><span><i>z</i></span><span><i>t</i></span></span>.</li>
+<li>Wymnóż obie strony — elementy wyjdą jako wyrażenia z <i>x</i>, <i>y</i>, <i>z</i>, <i>t</i>.</li>
+<li>Macierze są równe, gdy są równe <b>wszystkie elementy</b> — porównaj je i dostaniesz układ równań.</li>
+<li>Rozwiąż układ (Gauss). Może wyjść jedno <i>X</i>, nieskończenie wiele albo żadne.</li>
+</ol>
+<p><b>Przykład:</b> wszystkie <i>X</i> przemienne z <span class="f"><i>A</i> = </span><span class="mat" style="grid-template-columns:repeat(2,auto)"><span>1</span><span>1</span><span>0</span><span>1</span></span>, czyli <span class="f"><i>AX</i> = <i>XA</i></span>:</p>
+<div class="eq"><i>AX</i> = <span class="mat" style="grid-template-columns:repeat(2,auto)"><span><i>x</i> + <i>z</i></span><span><i>y</i> + <i>t</i></span><span><i>z</i></span><span><i>t</i></span></span> &nbsp; <i>XA</i> = <span class="mat" style="grid-template-columns:repeat(2,auto)"><span><i>x</i></span><span><i>x</i> + <i>y</i></span><span><i>z</i></span><span><i>z</i> + <i>t</i></span></span></div>
+<p>Porównanie daje <span class="f"><i>z</i> = 0</span> i <span class="f"><i>t</i> = <i>x</i></span>, więc <span class="f"><i>X</i> = </span><span class="mat" style="grid-template-columns:repeat(2,auto)"><span><i>x</i></span><span><i>y</i></span><span>0</span><span><i>x</i></span></span>, gdzie <span class="f"><i>x</i>, <i>y</i> ∈ ℝ</span> — nieskończenie wiele rozwiązań.</p>
+<div class="row"><button class="btn ghost small" id="openEx2">Otwórz w trenerze</button></div>
+</div>
+
+<div class="card">
+<h2>Układ równań jako równanie macierzowe</h2>
+<p>Każdy układ liniowy to równanie <span class="f"><i>AX</i> = <i>B</i></span>: <i>A</i> — współczynniki, <i>X</i> — kolumna niewiadomych, <i>B</i> — wyrazy wolne. Macierz rozszerzona to <span class="f">[<i>A</i> | <i>B</i>]</span>.</p>
+<div class="sysbox" id="chSys"></div>
+</div>
+
+<div class="card">
+<h2>Ile rozwiązań? Twierdzenie Kroneckera–Capellego</h2>
+<p><i>n</i> — liczba niewiadomych, rz — rząd (liczba niezerowych wierszy po eliminacji Gaussa).</p>
+<ul class="rules">
+<li><b>rz <i>A</i> = rz [<i>A</i> | <i>B</i>] = <i>n</i></b> → dokładnie <b>jedno</b> rozwiązanie (układ oznaczony).</li>
+<li><b>rz <i>A</i> = rz [<i>A</i> | <i>B</i>] = <i>r</i> &lt; <i>n</i></b> → <b>nieskończenie wiele</b> rozwiązań, zależnych od <b><i>n</i> − <i>r</i></b> parametrów.</li>
+<li><b>rz <i>A</i> &lt; rz [<i>A</i> | <i>B</i>]</b> → <b>brak</b> rozwiązań (układ sprzeczny).</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>Metoda Gaussa dla układu</h2>
+<ol>
+<li>Zapisz macierz rozszerzoną <span class="f">[<i>A</i> | <i>B</i>]</span>.</li>
+<li>Operacjami na wierszach (tymi samymi co przy <i>A</i><sup>−1</sup>) zrób kolumna po kolumnie jedynki na „schodkach” i zera nad nimi i pod nimi.</li>
+<li>Wiersz <span class="f">[0 … 0 | 0]</span>, czyli 0 = 0 — skreśl. Wiersz <span class="f">[0 … 0 | 5]</span>, czyli 0 = 5 — układ jest <b>sprzeczny</b>.</li>
+<li>Niewiadome w kolumnach bez schodka są <b>swobodne</b> (dowolne liczby). Pozostałe wyraź przez nie.</li>
+</ol>
+<div class="tip"><b>Zapis rozwiązania ogólnego:</b> <span class="f"><i>x</i> = 2 − 3<i>z</i>, &nbsp;<i>y</i> = 1 + <i>z</i>, &nbsp;<i>z</i> ∈ ℝ</span>. Każda liczba podstawiona za <i>z</i> daje jedno rozwiązanie.</div>
+</div>
+
+<div class="card">
+<h2>Metoda macierzowa i wzory Cramera</h2>
+<p>Obie działają tylko dla układu <b>kwadratowego</b> z <span class="f">det <i>A</i> ≠ 0</span>. Gdy <span class="f">det <i>A</i> = 0</span>, układ jest sprzeczny albo ma nieskończenie wiele rozwiązań — rozstrzyga Gauss.</p>
+<ul class="rules">
+<li><b>Macierzowa:</b> <span class="f"><i>AX</i> = <i>B</i> ⇒ <i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>. Mnożysz <b>z lewej</b> — <span class="f"><i>BA</i><sup>−1</sup></span> to błąd (i zwykle nawet się nie da).</li>
+<li><b>Cramer:</b> <span class="f"><i>W</i> = det <i>A</i></span>, a <span class="f"><i>W<sub>x</sub></i></span> to wyznacznik <i>A</i>, w którym kolumnę przy <i>x</i> zastępujesz kolumną wyrazów wolnych. Wtedy <span class="f"><i>x</i> = <i>W<sub>x</sub></i> / <i>W</i></span>, <span class="f"><i>y</i> = <i>W<sub>y</sub></i> / <i>W</i></span> …</li>
+<li><b>Wyznacznik 2×2:</b> <span class="f"><span class="mat det" style="grid-template-columns:repeat(2,auto)"><span><i>a</i></span><span><i>b</i></span><span><i>c</i></span><span><i>d</i></span></span> = <i>ad</i> − <i>bc</i></span>.</li>
+<li><b>Wyznacznik 3×3 (Sarrus):</b> trzy iloczyny po przekątnych „w prawo w dół” z plusem, trzy „w lewo w dół” z minusem: <span class="f"><i>a</i><sub>11</sub><i>a</i><sub>22</sub><i>a</i><sub>33</sub> + <i>a</i><sub>12</sub><i>a</i><sub>23</sub><i>a</i><sub>31</sub> + <i>a</i><sub>13</sub><i>a</i><sub>21</sub><i>a</i><sub>32</sub> − <i>a</i><sub>13</sub><i>a</i><sub>22</sub><i>a</i><sub>31</sub> − <i>a</i><sub>11</sub><i>a</i><sub>23</sub><i>a</i><sub>32</sub> − <i>a</i><sub>12</sub><i>a</i><sub>21</sub><i>a</i><sub>33</sub></span>.</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>Wyznaczniki — własności</h2>
+<ul class="rules f">
+<li>det(<i>AB</i>) = det <i>A</i> · det <i>B</i> &nbsp;&nbsp; det(<i>A</i><sup>T</sup>) = det <i>A</i> &nbsp;&nbsp; det(<i>A</i><sup>−1</sup>) = 1 / det <i>A</i></li>
+<li>det(<i>kA</i>) = <i>k</i><sup><i>n</i></sup> · det <i>A</i> dla macierzy <i>n</i>×<i>n</i> (liczba wychodzi z każdego wiersza!)</li>
+<li>det(<i>A</i> + <i>B</i>) ≠ det <i>A</i> + det <i>B</i> — tego nie ma.</li>
+</ul>
+<ul class="rules">
+<li>Zamiana dwóch wierszy (kolumn) zmienia znak wyznacznika.</li>
+<li>Dodanie do wiersza wielokrotności innego wiersza <b>nie zmienia</b> wyznacznika — tak robi się zera przed Laplace'em.</li>
+<li>Wiersz zer albo dwa proporcjonalne wiersze → det = 0.</li>
+<li>Macierz trójkątna: det = iloczyn liczb na przekątnej.</li>
+<li><i>A</i> jest odwracalna ⇔ det <i>A</i> ≠ 0.</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>Rozwinięcie Laplace'a</h2>
+<p>Wybierz wiersz albo kolumnę z największą liczbą zer. Dla każdego niezerowego elementu <span class="f"><i>a</i><sub><i>ij</i></sub></span>:</p>
+<div class="eq">det <i>A</i> = Σ (−1)<sup><i>i</i>+<i>j</i></sup> · <i>a</i><sub><i>ij</i></sub> · det <i>M</i><sub><i>ij</i></sub></div>
+<p><span class="f"><i>M</i><sub><i>ij</i></sub></span> — minor: macierz bez <i>i</i>-tego wiersza i <i>j</i>-tej kolumny. Znaki układają się w szachownicę: + − + − / − + − + …</p>
+</div>
+
+<div class="card">
+<h2>Rząd macierzy</h2>
+<ul class="rules">
+<li>Rząd = liczba niezerowych wierszy po sprowadzeniu macierzy do postaci schodkowej (Gauss, zera <b>pod</b> elementami głównymi).</li>
+<li>Operacje na wierszach (i kolumnach) nie zmieniają rzędu.</li>
+<li>rz <i>A</i> ≤ min(liczba wierszy, liczba kolumn). Dla macierzy kwadratowej <i>n</i>×<i>n</i>: rz <i>A</i> = <i>n</i> ⇔ det <i>A</i> ≠ 0.</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>Układ z parametrem — przepis</h2>
+<ol>
+<li>Policz wyznacznik główny <span class="f"><i>W</i>(<i>a</i>)</span>, traktując <i>a</i> jak zwykłą liczbę.</li>
+<li>Rozwiąż <span class="f"><i>W</i>(<i>a</i>) = 0</span>. Dla pozostałych <i>a</i> układ ma <b>dokładnie jedno</b> rozwiązanie.</li>
+<li>Każdą wartość z <span class="f"><i>W</i> = 0</span> podstaw do układu i rozstrzygnij Gaussem (albo rzędami): sprzeczny czy nieskończenie wiele rozwiązań.</li>
+<li>Odpowiedź zbierz w punktach: dla <i>a</i> ∉ {…}, dla <i>a</i> = …, dla <i>a</i> = ….</li>
+</ol>
+</div>
+
+<div class="card">
+<h2>Działania</h2>
+<ul class="rules">
+<li><b>Dodawanie</b>: tylko te same wymiary, element po elemencie.</li>
+<li><b>Mnożenie</b> <span class="f"><i>A</i>·<i>B</i></span>: (m×<b>n</b>)·(<b>n</b>×p) = m×p. Element <span class="f"><i>c</i><sub>ij</sub></span> = <i>i</i>-ty wiersz <i>A</i> „razy” <i>j</i>-ta kolumna <i>B</i>.</li>
+<li><span class="f"><i>AB</i> ≠ <i>BA</i></span> — kolejność ma znaczenie.</li>
+<li><b>Transpozycja</b>: wiersze stają się kolumnami; m×n → n×m.</li>
+<li><span class="f"><i>A</i><sup>2</sup> = <i>A</i>·<i>A</i></span> (macierzowo, nie każdy element do kwadratu!)</li>
+</ul>
+</div>
+</section>
+</main>
+
+<div class="pl" id="pl" hidden role="dialog" aria-modal="true" aria-labelledby="plT">
+<div class="pl-box">
+<div class="pl-top"><span class="pl-count" id="plCount"></span><span class="pl-name" id="plName"></span><button class="pl-xbtn" id="plClose" aria-label="Zamknij">✕</button></div>
+<div class="pl-bar"><span id="plProg"></span></div>
+<div class="pl-body" id="plBody">
+<div class="pl-sec" id="plSec"></div>
+<h2 class="pl-t" id="plT"></h2>
+<p class="pl-x" id="plX"></p>
+<div class="pl-stage" id="plStage"></div>
+<div class="pl-calc" id="plCalc"></div>
+</div>
+<div class="pl-ctl">
+<button class="btn ghost" id="plPrev">◀ Wstecz</button>
+<button class="btn ghost" id="plPlay">▶ Odtwarzaj</button>
+<button class="btn" id="plNext">Dalej ▶</button>
+<div class="sp" id="plSpd"><button class="chip" data-spd="1.7">wolno</button><button class="chip on" data-spd="1">normalnie</button><button class="chip" data-spd="0.55">szybko</button></div>
+</div>
+</div>
+</div>
