@@ -1,0 +1,2554 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Algebra — wspomaganie nauki z AI</title>
+<meta name="description" content="Trener algebry liniowej: macierze, równania macierzowe, układy równań, wyznaczniki, rząd — z animowanymi rozwiązaniami krok po kroku.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+/* Układ: wąska kolumna kart, przypięte zakładki u góry; matematyka w STIX, interfejs w Inter */
+:root{--bg:#f5f4ef;--card:#fff;--ink:#1c1c1f;--mute:#6a6a72;--line:#e2e0d8;--acc:#3451c7;--acc-soft:#e9edff;--ok:#2b8a3e;--ok-soft:#e5f5e9;--bad:#d6336c;--bad-soft:#fdeaf0;--key:#efeee9;--scrim:rgba(24,24,32,.48);--amb:#a35f00;--amb-soft:#fff0d4;--col-soft:#eceef6;--on-acc:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#131316;--card:#1d1d21;--ink:#ececf1;--mute:#9b9ba5;--line:#313138;--acc:#8ea2ff;--acc-soft:#252b46;--ok:#63d17a;--ok-soft:#1b3123;--bad:#ff7aa2;--bad-soft:#3a1d27;--key:#2a2a30;--scrim:rgba(0,0,0,.62);--amb:#f2b457;--amb-soft:#3b2f18;--col-soft:#262933;--on-acc:#131316;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#131316;--card:#1d1d21;--ink:#ececf1;--mute:#9b9ba5;--line:#313138;--acc:#8ea2ff;--acc-soft:#252b46;--ok:#63d17a;--ok-soft:#1b3123;--bad:#ff7aa2;--bad-soft:#3a1d27;--key:#2a2a30;--scrim:rgba(0,0,0,.62);--amb:#f2b457;--amb-soft:#3b2f18;--col-soft:#262933;--on-acc:#131316;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+h1{font-size:17px;margin:0;padding:12px 0 8px;letter-spacing:-.01em}
+h1 span{color:var(--mute);font-weight:500}
+nav{display:flex;gap:6px;padding-bottom:10px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button,.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 13px;border-radius:999px;font:500 14px Inter,sans-serif;cursor:pointer}
+nav button.on,.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+section{display:none;padding-bottom:40px}
+section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:14px 0}
+h2{font-size:16px;margin:0 0 8px}
+h3{font-size:13px;margin:16px 0 6px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em}
+p{margin:6px 0}
+.mute{color:var(--mute);font-size:13.5px}
+.m,.eq,.mat,i,.f{font-family:'STIX Two Text',Georgia,serif}
+i{font-style:italic}
+sup{font-size:.68em;line-height:0}
+.eq{font-size:22px;text-align:center;padding:8px 2px;overflow-x:auto;white-space:nowrap}
+.mat{display:inline-grid;position:relative;padding:3px 10px;column-gap:14px;row-gap:2px;vertical-align:middle;margin:3px 4px;text-align:center;font-variant-numeric:tabular-nums;font-style:normal;font-size:16px}
+.mat::before,.mat::after{content:"";position:absolute;top:0;bottom:0;width:6px;border:1.5px solid currentColor}
+.mat::before{left:0;border-right:0;border-radius:4px 0 0 4px}
+.mat::after{right:0;border-left:0;border-radius:0 4px 4px 0}
+.mat>span{min-width:1.3em}
+.mat.aug{column-gap:10px}
+.mat .bl{border-left:1.5px solid currentColor;padding-left:9px}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;font-size:.78em;line-height:1.1;text-align:center}
+.fr>span:first-child{border-bottom:1px solid currentColor;padding:0 2px}
+.gin{column-gap:6px;row-gap:6px;padding:6px 12px}
+.gin input{width:54px;height:38px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);text-align:center;font:16px 'STIX Two Text',serif}
+input.ok{border-color:var(--ok);background:var(--ok-soft)}
+input.bad{border-color:var(--bad);background:var(--bad-soft)}
+.code{width:100%;font:17px ui-monospace,Menlo,Consolas,monospace;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+select.code{font:15px Inter,sans-serif}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.btn{border:0;background:var(--acc);color:#fff;padding:10px 16px;border-radius:10px;font:600 14px Inter,sans-serif;cursor:pointer}
+.btn.ghost{background:var(--acc-soft);color:var(--acc)}
+.btn.small{padding:7px 12px;font-size:13px}
+.keys{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
+.keys button{height:40px;border:0;border-radius:8px;background:var(--key);color:var(--ink);font:17px 'STIX Two Text',serif;cursor:pointer}
+.keys button.w{font:13px Inter,sans-serif}
+.keys .span4{grid-column:span 4}
+.msg{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:14px;display:none}
+.msg.ok{display:block;background:var(--ok-soft);color:var(--ok)}
+.msg.bad{display:block;background:var(--bad-soft);color:var(--bad)}
+.msg.info{display:block;background:var(--acc-soft);color:var(--ink)}
+.step{border-left:3px solid var(--acc);padding:4px 0 4px 12px;margin:14px 0;display:none}
+.step.on{display:block;animation:fade .25s}
+.step.final{border-color:var(--ok)}
+.step b.t{display:block;font-size:14px}
+.step .why{font-size:14px;color:var(--mute);margin:2px 0 4px}
+.step .eq{font-size:19px;text-align:left;padding:4px 0}
+.hl{color:var(--acc);font-weight:600}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.given{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;margin:8px 0}
+.gv{display:inline-flex;align-items:center;gap:4px;font-size:18px;font-family:'STIX Two Text',serif}
+.q{font-size:16px;font-weight:600}
+.sol{display:none;margin-top:12px;padding-top:6px;border-top:1px dashed var(--line);font-size:14.5px;overflow-x:auto}
+.sol.on{display:block}
+.line{margin:6px 0;font-family:'STIX Two Text',serif;font-size:16px;overflow-x:auto}
+.ops{font-size:13.5px;color:var(--acc);font-family:'STIX Two Text',serif;margin-top:8px}
+details{border:1px solid var(--line);border-radius:10px;padding:6px 10px;margin:8px 0}
+summary{cursor:pointer;font-weight:600;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.score{font-size:13px;color:var(--mute);margin-left:auto}
+ul.rules{padding-left:18px;margin:6px 0}
+ul.rules li{margin:5px 0}
+.f{font-size:17px}
+.warn{background:var(--bad-soft);border-radius:10px;padding:10px 12px;margin:8px 0}
+.tip{background:var(--acc-soft);border-radius:10px;padding:10px 12px;margin:8px 0}
+ol{padding-left:20px;margin:6px 0}
+ol li{margin:6px 0}
+.nums{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center}
+.ex .eq{text-align:left;font-size:18px}
+code{font-size:13px}
+.lbl{font-size:13px;color:var(--mute);min-width:62px}
+.sysbox{text-align:center;overflow-x:auto;padding:6px 0}
+.sysw{display:inline-flex;align-items:stretch;gap:6px;vertical-align:middle;margin:2px 4px;text-align:left}
+.sysw::before{content:"";width:9px;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 100' preserveAspectRatio='none'%3E%3Cpath d='M9.5 1Q4.5 1 4.5 8V43Q4.5 50 .5 50Q4.5 50 4.5 57V92Q4.5 99 9.5 99' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 100' preserveAspectRatio='none'%3E%3Cpath d='M9.5 1Q4.5 1 4.5 8V43Q4.5 50 .5 50Q4.5 50 4.5 57V92Q4.5 99 9.5 99' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
+.sys{display:inline-grid;column-gap:5px;row-gap:4px;align-items:baseline;font-family:'STIX Two Text',Georgia,serif;font-size:19px;font-variant-numeric:tabular-nums;white-space:nowrap;padding:3px 0}
+.sys>span{text-align:right}
+.sys>.sg{text-align:center;min-width:.75em}
+.sys>.rh{text-align:left}
+.line .sys{font-size:17px}
+.mat.det::before,.mat.det::after{width:0;border:0;border-left:1.5px solid currentColor;border-radius:0}
+.mat .hl{color:var(--acc);font-weight:600}
+.mxs{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:8px}
+.mx{display:flex;align-items:center;gap:6px;font:18px 'STIX Two Text',Georgia,serif}
+.mx textarea{width:128px;min-height:78px;resize:vertical;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px/1.45 ui-monospace,Menlo,Consolas,monospace}
+textarea.code{min-height:104px;resize:vertical;line-height:1.5;font-size:16px}
+.ans-in{display:inline-flex;align-items:center;gap:6px;font:18px 'STIX Two Text',Georgia,serif}
+.ans-in input{width:68px;height:38px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);text-align:center;font:16px 'STIX Two Text',Georgia,serif}
+.res{font-weight:600}
+.chip .f{font-size:15px}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.step.on{animation:none}}
+/* odtwarzacz kroków */
+.btn.play{background:var(--ink);color:var(--bg)}
+.btn:disabled{opacity:.4;cursor:default}
+.pl{position:fixed;inset:0;z-index:50;background:var(--scrim);display:flex;align-items:center;justify-content:center;padding:max(10px,env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
+.pl-box{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;width:100%;max-width:800px;height:min(100%,880px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.28)}
+.pl-top{display:flex;align-items:center;gap:10px;padding:12px 12px 8px 16px}
+.pl-count{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pl-name{font-size:13px;color:var(--mute);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-xbtn{flex:none;border:0;background:var(--key);color:var(--ink);width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer}
+.pl-bar{height:3px;background:var(--line);margin:0 16px;border-radius:2px;overflow:hidden}
+.pl-bar>span{display:block;height:100%;width:0;background:var(--acc);transition:width .3s}
+.pl-body{flex:1;min-height:0;overflow:auto;padding:12px 16px 18px}
+.pl-sec{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--acc);font-weight:600;min-height:16px}
+.pl-t{font-size:19px;margin:2px 0 6px;text-wrap:balance;letter-spacing:-.01em}
+.pl-x{margin:0 0 6px;font-size:15px;max-width:64ch}
+.pl-stage{padding:8px 0;overflow-x:auto}
+.pl-stage:empty{display:none}
+.pl-s{text-align:center;overflow-x:auto}
+.pl-s .eq{font-size:21px}
+.pl-boards{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:6px 10px;margin-top:6px}
+.bd{display:inline-flex;flex-direction:column;align-items:center;max-width:100%}
+.bd-lab{height:22px;line-height:22px;font:16px 'STIX Two Text',Georgia,serif;color:var(--mute);white-space:nowrap}
+.pl-j{font:24px 'STIX Two Text',Georgia,serif;margin-top:22px;align-self:center}
+.pm{column-gap:0;row-gap:3px;padding:4px 7px;font-size:18px}
+.pm>span{padding:4px 10px;border-radius:7px;white-space:nowrap;transition:background-color .35s,color .35s,box-shadow .35s,opacity .35s,transform .65s cubic-bezier(.4,0,.2,1)}
+.pm>.bl{border-radius:0 7px 7px 0}
+.pm>.col{background:var(--col-soft)}
+.pm>.src{background:var(--acc-soft)}
+.pm>.dst{background:var(--amb-soft)}
+.pm>.res{background:var(--ok-soft)}
+.pm>.dim{opacity:.38}
+.pm>.bad{background:var(--bad-soft);color:var(--bad);font-weight:700}
+.pm>.piv{box-shadow:inset 0 0 0 2px var(--acc);color:var(--acc);font-weight:700;opacity:1}
+.pm>.tgt{box-shadow:inset 0 0 0 2px var(--amb);color:var(--amb);font-weight:700}
+.pm>.pair{background:var(--acc);color:var(--on-acc);opacity:1}
+.pm>.pos{background:var(--ok-soft);color:var(--ok);font-weight:700;opacity:1}
+.pm>.neg{background:var(--bad-soft);color:var(--bad);font-weight:700;opacity:1}
+.pm>.chg{animation:flash .9s ease-out}
+.ph{color:var(--mute);opacity:.55}
+@keyframes flash{0%{background:var(--acc);color:var(--on-acc);transform:scale(1.2)}100%{}}
+.pl-calc{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 20px;font:17px 'STIX Two Text',Georgia,serif;font-variant-numeric:tabular-nums;padding:6px 0}
+.pl-calc:empty{display:none}
+.pl-calc>div{transition:opacity .35s,transform .35s;white-space:nowrap}
+.pl-calc>.full{flex-basis:100%;text-align:center;overflow-x:auto}
+.pl-calc>.hid{opacity:0;transform:translateY(5px)}
+.pl-calc.big{font-size:20px}
+.pl-ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--line)}
+.pl-ctl .sp{display:flex;gap:4px;margin-left:auto}
+.pl-ctl .chip{padding:5px 10px;font-size:12.5px}
+@media (max-width:520px){.pl{padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}.pl-box{height:100%;border-radius:0;border:0}.pl-ctl .sp{margin-left:0;width:100%;justify-content:center}.pl-ctl .btn{flex:1;padding:10px 8px}}
+@media (prefers-reduced-motion:reduce){.pm>span,.pl-calc>div,.pl-bar>span{transition:none}.pm>.chg{animation:none}}
+/* ćwiczenia, sprawdzian, postęp, znajdź błąd */
+select.ok{border-color:var(--ok);background:var(--ok-soft)}
+select.bad{border-color:var(--bad);background:var(--bad-soft)}
+@media (min-width:700px){nav{flex-wrap:wrap}}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 4px}
+.stat{background:var(--bg);border-radius:10px;padding:8px 14px;min-width:120px;flex:1}
+.stat b{display:block;font-size:22px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.stat span{font-size:12.5px;color:var(--mute)}
+.pr-sec{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 2px;font-weight:600}
+.pr-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(48px,110px) 42px 66px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.pr-name{min-width:0;text-align:left;border:0;background:none;color:var(--ink);font:500 14.5px Inter,sans-serif;cursor:pointer;padding:4px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr-name:hover{color:var(--acc)}
+.pr-bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.pr-bar>span{display:block;height:100%;border-radius:4px}
+.pr-pct{font-size:13px;text-align:right;font-variant-numeric:tabular-nums;color:var(--mute)}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap;text-align:center}
+.pill.new{background:var(--key);color:var(--mute)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.mid{background:var(--amb-soft);color:var(--amb)}
+.pill.good{background:var(--ok-soft);color:var(--ok)}
+.exdots{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.exdots button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 13px Inter,sans-serif;cursor:pointer}
+.exdots button.done{background:var(--acc-soft);border-color:var(--acc);color:var(--acc)}
+.exdots button.cur{background:var(--acc);border-color:var(--acc);color:var(--on-acc)}
+.res-top{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-end;margin:8px 0}
+.grade{font-size:46px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.rev{border-top:1px solid var(--line);padding:14px 0}
+.rev:first-of-type{border-top:0}
+.rev-head{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.rev .ansline{margin:6px 0;font-size:14.5px;overflow-x:auto}
+.mat>.mk-bad{background:var(--bad-soft);color:var(--bad);border-radius:5px;font-weight:700}
+.mat>.mk-ok{color:var(--ok)}
+.msg .rules{margin:6px 0 0}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>Macierze <span>· trener do algebry</span></h1>
+<nav id="nav">
+<button data-t="liczby">X na liczbach</button>
+<button data-t="rownania">X na literach</button>
+<button data-t="uklady">Układy równań</button>
+<button data-t="cwiczenia">Ćwiczenia</button>
+<button data-t="sprawdzian">Sprawdzian</button>
+<button data-t="blad">Znajdź błąd</button>
+<button data-t="postep">Postęp</button>
+<button data-t="sciaga">Ściąga</button>
+</nav>
+</div></header>
+
+<main class="wrap">
+
+<!-- ===================== X NA LICZBACH ===================== -->
+<section id="liczby">
+<div class="card">
+<div class="row" style="margin-top:0">
+<span class="mute">Rozmiar:</span>
+<button class="chip" data-n="2">2×2</button>
+<button class="chip" data-n="3">3×3</button>
+<span class="mute" style="margin-left:6px">X:</span>
+<button class="chip" data-shape="sq">kwadratowa</button>
+<button class="chip" data-shape="rect">prostokątna</button>
+</div>
+<div class="row"><select id="ntSel" class="code"></select></div>
+<p class="mute" id="ntNote" style="margin-top:8px"></p>
+</div>
+<div class="card">
+<div class="row" style="margin-top:0"><span class="q">Wyznacz macierz <i>X</i></span><span class="score" id="nScore"></span></div>
+<div class="eq" id="nEq"></div>
+<div class="given" id="nGiven"></div>
+<div id="nAns" style="margin-top:6px"></div>
+<div class="row">
+<button class="btn" id="nCheck">Sprawdź</button>
+<button class="btn ghost" id="nHint">Podpowiedź</button>
+<button class="btn play" id="nPlay">▶ Krok po kroku</button>
+<button class="btn ghost" id="nSol">Rozwiązanie</button>
+<button class="btn ghost" id="nNew">Nowe zadanie</button>
+</div>
+<div class="msg" id="nMsg"></div>
+<div class="sol" id="nSolBox"></div>
+</div>
+</section>
+
+<!-- ===================== X NA LITERACH ===================== -->
+<section id="rownania">
+<div class="card">
+<h2>Równanie</h2>
+<input id="eqIn" class="code" autocomplete="off" autocapitalize="characters" spellcheck="false" value="A^TB^-1XCA=(AD)^-1D">
+<div class="keys" id="keys">
+<button data-i="A"><i>A</i></button><button data-i="B"><i>B</i></button><button data-i="C"><i>C</i></button><button data-i="D"><i>D</i></button><button data-i="X"><i>X</i></button><button data-i="I"><i>I</i></button><button data-i="=">=</button>
+<button data-i="^T"><i>M</i><sup>T</sup></button><button data-i="^-1"><i>M</i><sup>−1</sup></button><button data-i="(">(</button><button data-i=")">)</button><button data-i="+">+</button><button data-i="-">−</button><button data-i="⌫" class="w">⌫</button>
+<button data-i="2">2</button><button data-i="3">3</button><button data-i="^2"><i>M</i><sup>2</sup></button><button data-i="CLR" class="w span4">wyczyść</button>
+</div>
+<div class="row">
+<button class="btn" id="solveBtn">Rozwiąż</button>
+<span class="mute">Losuj:</span>
+<button class="btn ghost small" data-lvl="1">łatwe</button>
+<button class="btn ghost small" data-lvl="2">średnie</button>
+<button class="btn ghost small" data-lvl="3">trudne</button>
+</div>
+<p class="mute" style="margin-top:10px">Zapis: <code>A^T</code>, <code>B^-1</code>, <code>(AD)^-1</code>, <code>2X</code>, <code>A^2</code>, <code>I</code> = macierz jednostkowa.</p>
+<div class="msg" id="eqErr"></div>
+</div>
+
+<div id="eqWork" style="display:none">
+<div class="card">
+<div class="eq" id="eqShow"></div>
+<p class="mute" id="eqTry" style="text-align:center;margin:0">Spróbuj sam wyznaczyć <i>X</i>, zanim zajrzysz do rozwiązania.</p>
+</div>
+<div class="card" id="ansCard">
+<h2>Twoja odpowiedź</h2>
+<div class="row" style="margin-top:0;flex-wrap:nowrap"><span class="m" style="font-size:20px"><i>X</i>&nbsp;=</span><input id="ansIn" class="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="np. A^-1(C-B)"></div>
+<div class="row"><button class="btn" id="ansBtn">Sprawdź</button><span class="mute">klawiatura wyżej też tu wpisuje</span></div>
+<div class="msg" id="ansMsg"></div>
+</div>
+<div class="card" id="stepsCard">
+<h2>Rozwiązanie krok po kroku</h2>
+<div id="steps"></div>
+<div class="row"><button class="btn play" id="symPlay">▶ Krok po kroku</button><button class="btn" id="nextStep">Następny krok</button><button class="btn ghost" id="allSteps">Pokaż wszystko</button></div>
+</div>
+<div class="card" id="numCard">
+<h2>Policz na liczbach</h2>
+<p class="mute">Wpisz swoje macierze: liczby oddzielaj spacjami, każdy wiersz w nowej linii (ułamki: <code>1/2</code>, <code>-3/4</code>). Na start są przykładowe macierze 2×2 — podmień je na swoje.</p>
+<div class="mxs" id="mxIns"></div>
+<div class="row"><button class="btn" id="numBtn">Oblicz X</button><button class="btn play" id="numPlay">▶ Krok po kroku</button><button class="btn ghost" id="numRnd">Wstaw inne przykładowe</button></div>
+<div class="msg" id="numMsg"></div>
+<div class="sol on" id="numOut"></div>
+</div>
+</div>
+</section>
+
+<!-- ===================== UKŁADY RÓWNAŃ ===================== -->
+<section id="uklady">
+<div class="card">
+<div class="row" style="margin-top:0"><span class="lbl">Rozmiar</span>
+<button class="chip" data-ss="2">2×2</button><button class="chip" data-ss="3">3×3</button><button class="chip" data-ss="4">4×4</button><button class="chip" data-ss="r">nietypowy (m ≠ n)</button></div>
+<div class="row"><span class="lbl">Rodzaj</span>
+<button class="chip" data-sm="one">zawsze jedno rozwiązanie</button><button class="chip" data-sm="any">losowy (też sprzeczne i nieoznaczone)</button></div>
+<div class="row"><span class="lbl">Metoda</span>
+<button class="chip" data-me="gauss">Gauss</button><button class="chip" data-me="mac">macierzowa <span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span></button><button class="chip" data-me="cra">Cramer</button></div>
+</div>
+
+<div class="card">
+<div class="row" style="margin-top:0"><span class="q">Rozwiąż układ równań</span><span class="score" id="sScore"></span></div>
+<div class="sysbox" id="sEq"></div>
+<p class="mute" style="margin:6px 0">Ile rozwiązań ma ten układ?</p>
+<div class="chips" id="sType"><button class="chip" data-st="one">jedno</button><button class="chip" data-st="inf">nieskończenie wiele</button><button class="chip" data-st="none">brak — układ sprzeczny</button></div>
+<div class="nums" id="sVals" style="margin-top:12px"></div>
+<div class="row">
+<button class="btn" id="sCheck">Sprawdź</button>
+<button class="btn ghost" id="sHint">Podpowiedź</button>
+<button class="btn play" id="sPlay">▶ Krok po kroku</button>
+<button class="btn ghost" id="sSol">Rozwiązanie</button>
+<button class="btn ghost" id="sNew">Nowe zadanie</button>
+</div>
+<p class="mute" style="margin-top:8px">Ułamki wpisuj jako <code>1/2</code> lub <code>-3/4</code>.</p>
+<div class="msg" id="sMsg"></div>
+<div class="sol" id="sSolBox"></div>
+</div>
+
+<div class="card">
+<h2>Twój układ</h2>
+<p class="mute">Każde równanie w osobnej linii. Niewiadome: <code>x y z t</code> albo <code>x1 x2 x3</code>. Wyrazy mogą stać po obu stronach „=”.</p>
+<textarea id="sysIn" class="code" rows="4" autocomplete="off" autocapitalize="off" spellcheck="false">2x + y - z = 3
+x - y + 2z = 5
+3x + 2y + z = 10</textarea>
+<div class="row"><button class="btn" id="sysBtn">Rozwiąż</button><button class="btn play" id="sysPlay">▶ Krok po kroku</button><span class="mute">metodą wybraną na górze</span></div>
+<div class="msg" id="sysErr"></div>
+<div class="sol on" id="sysOut"></div>
+</div>
+</section>
+
+<!-- ===================== ĆWICZENIA (z rejestru TOPICS) ===================== -->
+<section id="cwiczenia">
+<div class="card">
+<div class="row" style="margin-top:0"><span class="lbl">Dział</span><div class="chips" id="cwSecs"></div></div>
+<div class="row"><span class="lbl">Temat</span><div class="chips" id="cwTopics"></div></div>
+</div>
+<div id="cwBox"></div>
+</section>
+
+<!-- ===================== SPRAWDZIAN ===================== -->
+<section id="sprawdzian">
+<div class="card" id="exSetup">
+<h2>Sprawdzian</h2>
+<p class="mute">Losuję zestaw zadań z wybranych działów. W trakcie nie ma podpowiedzi ani rozwiązań — wynik, ocenę i animowane rozwiązania zobaczysz na końcu.</p>
+<div class="row"><span class="lbl">Działy</span><div class="chips" id="exSecs"></div></div>
+<div class="row"><span class="lbl">Zadań</span><div class="chips" id="exN"><button class="chip" data-exn="5">5</button><button class="chip on" data-exn="8">8</button><button class="chip" data-exn="10">10</button></div></div>
+<div class="row"><span class="lbl">Czas</span><div class="chips" id="exT"><button class="chip on" data-ext="0">bez limitu</button><button class="chip" data-ext="20">20 min</button><button class="chip" data-ext="45">45 min</button><button class="chip" data-ext="90">90 min</button></div></div>
+<div class="row"><button class="btn" id="exStart">Rozpocznij sprawdzian</button></div>
+<div class="msg" id="exMsg"></div>
+</div>
+<div id="exRun" hidden>
+<div class="card">
+<div class="row" style="margin-top:0"><span class="q" id="exHead"></span><span class="score" id="exClock"></span></div>
+<div class="exdots" id="exDots"></div>
+<div class="mute" id="exTopic"></div>
+<div class="q" id="exQ" style="margin-top:6px"></div>
+<div id="exBody"></div>
+<div id="exAns" style="margin-top:10px"></div>
+<p class="mute" style="margin-top:8px">Ułamki wpisuj jako <code>1/2</code> lub <code>-3/4</code>. Odpowiedzi zapisują się same — możesz wracać do zadań.</p>
+<div class="row"><button class="btn ghost" id="exPrev">◀ Poprzednie</button><button class="btn" id="exNext">Następne ▶</button><button class="btn ghost" id="exEnd">Zakończ i oceń</button></div>
+<div class="msg" id="exConfirm"></div>
+</div>
+</div>
+<div id="exRes" hidden></div>
+</section>
+
+<!-- ===================== ZNAJDŹ MÓJ BŁĄD ===================== -->
+<section id="blad">
+<div class="card">
+<h2>Znajdź mój błąd</h2>
+<p class="mute">Przepisz swoje rachunki z zeszytu — trener sprawdzi każdy krok i pokaże, gdzie pojawił się błąd.</p>
+<div class="chips" id="fbMode"><button class="chip on" data-fb="gauss">Eliminacja Gaussa</button><button class="chip" data-fb="mul">Mnożenie macierzy</button></div>
+<div id="fbGauss" style="margin-top:10px">
+<p class="mute">Kolejne macierze oddziel pustą linią. Liczby oddzielaj spacjami, kreskę możesz zaznaczyć znakiem <code>|</code>. W jednym kroku możesz zrobić kilka operacji naraz. Działa dla układów [<i>A</i> | <i>B</i>], odwrotności [<i>A</i> | <i>I</i>] i zwykłych macierzy (rząd).</p>
+<textarea id="fbIn" class="code" rows="12" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
+<div class="row"><button class="btn" id="fbBtn">Sprawdź moje kroki</button><button class="btn ghost" id="fbEx">Wstaw przykład z błędem</button><button class="btn ghost" id="fbClr">Wyczyść</button></div>
+</div>
+<div id="fbMul" hidden style="margin-top:10px">
+<p class="mute">Wpisz <i>A</i>, <i>B</i> i swój wynik <i>A</i>·<i>B</i>: liczby spacjami, każdy wiersz w nowej linii.</p>
+<div class="mxs">
+<label class="mx" for="fbA"><span><i>A</i> =</span><textarea id="fbA" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false">2 1
+-1 3</textarea></label>
+<label class="mx" for="fbB"><span><i>B</i> =</span><textarea id="fbB" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false">1 4
+2 -2</textarea></label>
+<label class="mx" for="fbC"><span><i>AB</i> =</span><textarea id="fbC" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false">4 6
+5 -2</textarea></label>
+</div>
+<div class="row"><button class="btn" id="fbMulBtn">Sprawdź iloczyn</button></div>
+</div>
+<div class="msg" id="fbMsg"></div>
+</div>
+<div id="fbOut"></div>
+</section>
+
+<!-- ===================== POSTĘP ===================== -->
+<section id="postep">
+<div class="card">
+<h2>Twój postęp</h2>
+<p class="mute">Zapisuje się w tej przeglądarce — na innym urządzeniu zaczynasz od zera. Liczy się 10 ostatnich prób każdego typu zadania (z ćwiczeń, trenerów i sprawdzianów).</p>
+<div class="stats" id="prStats"></div>
+<div class="row"><button class="btn" id="prGo">Rozpocznij powtórkę</button><button class="btn ghost" id="prReset">Wyczyść postęp</button></div>
+<p class="mute" style="margin-top:8px">Powtórka częściej losuje tematy, które idą słabo, nowe i dawno nie ćwiczone.</p>
+<div class="msg" id="prMsg"></div>
+</div>
+<div id="prBox"></div>
+<div class="card"><h2>Tematy</h2><div id="prList"></div></div>
+</section>
+
+<!-- ===================== ŚCIĄGA ===================== -->
+<section id="sciaga">
+<div class="card">
+<h2>Przepis na równanie macierzowe</h2>
+<ol>
+<li><b>Rozpisz nawiasy</b> z <sup>T</sup> i <sup>−1</sup> — kolejność się <b>odwraca</b>.</li>
+<li><b>Przenieś</b> wyrazy z <i>X</i> na lewo, bez <i>X</i> na prawo (zmiana znaku).</li>
+<li>Jeśli <i>X</i> jest kilka razy — <b>wyciągnij go przed nawias</b> (patrz niżej).</li>
+<li>To, co stoi <b>przed</b> <i>X</i>, usuwasz mnożąc <b>obie strony z lewej</b> przez odwrotność.</li>
+<li>To, co stoi <b>za</b> <i>X</i>, usuwasz mnożąc <b>obie strony z prawej</b> przez odwrotność.</li>
+<li>Dopiero teraz podstawiasz liczby: liczysz odwrotną, potem iloczyny.</li>
+</ol>
+<div class="warn"><b>Najczęstsze błędy</b>
+<ul class="rules">
+<li>Mnożenie jednej strony z lewej, a drugiej z prawej. Zawsze <b>ta sama strona</b>!</li>
+<li><span class="f">(<i>AB</i>)<sup>−1</sup> ≠ <i>A</i><sup>−1</sup><i>B</i><sup>−1</sup></span> — poprawnie <span class="f"><i>B</i><sup>−1</sup><i>A</i><sup>−1</sup></span>.</li>
+<li><span class="f"><i>AX</i> − <i>X</i> = (<i>A</i> − 1)<i>X</i></span> — <b>źle</b>! Od macierzy nie odejmiesz liczby. Poprawnie <span class="f">(<i>A</i> − <i>I</i>)<i>X</i></span>.</li>
+<li>„Dzielenie” przez macierz nie istnieje — tylko mnożenie przez odwrotną.</li>
+</ul></div>
+</div>
+
+<div class="card ex">
+<h2>Gdy X występuje dwa razy</h2>
+<div class="eq"><i>AX</i> = <i>X</i> + <i>B</i></div>
+<p>Przenoszę <i>X</i> na lewo: <span class="f"><i>AX</i> − <i>X</i> = <i>B</i></span>. Samotne <i>X</i> to <span class="f"><i>IX</i></span>, więc:</p>
+<div class="eq">(<i>A</i> − <i>I</i>)<i>X</i> = <i>B</i> &nbsp;⇒&nbsp; <i>X</i> = (<i>A</i> − <i>I</i>)<sup>−1</sup><i>B</i></div>
+<p>Uwaga na stronę: w <span class="f"><i>XA</i> − 2<i>X</i></span> <i>X</i> jest z lewej, więc <span class="f"><i>X</i>(<i>A</i> − 2<i>I</i>)</span>. A <span class="f"><i>AX</i> + <i>XB</i></span> nie da się tak zapisać.</p>
+</div>
+
+<div class="card ex">
+<h2>Przykład: A<sup>T</sup>B<sup>−1</sup>XCA = (AD)<sup>−1</sup>D</h2>
+<p><b>1.</b> <span class="f">(<i>AD</i>)<sup>−1</sup> = <i>D</i><sup>−1</sup><i>A</i><sup>−1</sup></span>:</p>
+<div class="eq"><i>A</i><sup>T</sup><i>B</i><sup>−1</sup><i>XCA</i> = <i>D</i><sup>−1</sup><i>A</i><sup>−1</sup><i>D</i></div>
+<p><b>2.</b> Z lewej przez <span class="f">(<i>A</i><sup>T</sup><i>B</i><sup>−1</sup>)<sup>−1</sup> = <i>B</i>(<i>A</i><sup>T</sup>)<sup>−1</sup></span>:</p>
+<div class="eq"><i>XCA</i> = <span class="hl"><i>B</i>(<i>A</i><sup>T</sup>)<sup>−1</sup></span><i>D</i><sup>−1</sup><i>A</i><sup>−1</sup><i>D</i></div>
+<p><b>3.</b> Z prawej przez <span class="f">(<i>CA</i>)<sup>−1</sup> = <i>A</i><sup>−1</sup><i>C</i><sup>−1</sup></span>:</p>
+<div class="eq"><i>X</i> = <i>B</i>(<i>A</i><sup>T</sup>)<sup>−1</sup><i>D</i><sup>−1</sup><i>A</i><sup>−1</sup><i>D</i><span class="hl"><i>A</i><sup>−1</sup><i>C</i><sup>−1</sup></span></div>
+<div class="row"><button class="btn ghost small" id="openEx">Otwórz w trenerze</button></div>
+</div>
+
+<div class="card">
+<h2>Wzory do równań</h2>
+<ul class="rules f">
+<li>(<i>AB</i>)<sup>T</sup> = <i>B</i><sup>T</sup><i>A</i><sup>T</sup> &nbsp;&nbsp; (<i>ABC</i>)<sup>T</sup> = <i>C</i><sup>T</sup><i>B</i><sup>T</sup><i>A</i><sup>T</sup></li>
+<li>(<i>AB</i>)<sup>−1</sup> = <i>B</i><sup>−1</sup><i>A</i><sup>−1</sup> &nbsp;&nbsp; (<i>ABC</i>)<sup>−1</sup> = <i>C</i><sup>−1</sup><i>B</i><sup>−1</sup><i>A</i><sup>−1</sup></li>
+<li>(<i>A</i><sup>T</sup>)<sup>T</sup> = <i>A</i> &nbsp;&nbsp; (<i>A</i><sup>−1</sup>)<sup>−1</sup> = <i>A</i> &nbsp;&nbsp; (<i>A</i><sup>T</sup>)<sup>−1</sup> = (<i>A</i><sup>−1</sup>)<sup>T</sup></li>
+<li><i>AA</i><sup>−1</sup> = <i>A</i><sup>−1</sup><i>A</i> = <i>I</i>, &nbsp; <i>AI</i> = <i>IA</i> = <i>A</i></li>
+<li>(<i>A</i> + <i>B</i>)<sup>T</sup> = <i>A</i><sup>T</sup> + <i>B</i><sup>T</sup> &nbsp;&nbsp; (<i>kA</i>)<sup>T</sup> = <i>kA</i><sup>T</sup> &nbsp;&nbsp; (<i>kA</i>)<sup>−1</sup> = <sup>1</sup>⁄<sub><i>k</i></sub><i>A</i><sup>−1</sup></li>
+<li>(<i>A</i> + <i>B</i>)<sup>−1</sup> — <b>nie da się</b> rozpisać!</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>Macierz odwrotna — metoda Gaussa</h2>
+<p>Zapisz obok siebie <span class="f">[<i>A</i> | <i>I</i>]</span> i operacjami na <b>wierszach</b> doprowadź lewą część do <i>I</i>. Po prawej wyjdzie <span class="f"><i>A</i><sup>−1</sup></span>.</p>
+<p>Dozwolone operacje (zawsze na całym wierszu, po obu stronach kreski):</p>
+<ul class="rules">
+<li><span class="f">w<sub>1</sub> ↔ w<sub>2</sub></span> — zamiana wierszy</li>
+<li><span class="f">w<sub>1</sub> : 3</span> — podzielenie wiersza przez liczbę ≠ 0</li>
+<li><span class="f">w<sub>2</sub> − 3w<sub>1</sub></span> — od wiersza 2 odejmij 3 × wiersz 1</li>
+</ul>
+<div class="tip"><b>Kolejność:</b> kolumna po kolumnie. W kolumnie robisz „1” na przekątnej, potem zera nad i pod nią. Wygodnie zacząć od wiersza, który ma w danej kolumnie 1 lub −1.<br><b>Kontrola:</b> <span class="f"><i>A</i>·<i>A</i><sup>−1</sup></span> musi dać <i>I</i>.</div>
+</div>
+
+<div class="card ex">
+<h2>Równanie macierzowe przez niewiadome</h2>
+<p>Gdy <i>X</i> nie da się wyciągnąć przed nawias (<span class="f"><i>AX</i> + <i>XB</i></span>, <span class="f"><i>AX</i> = <i>XA</i></span>, <span class="f"><i>X</i></span> razem z <span class="f"><i>X</i><sup>T</sup></span>) albo macierz do odwrócenia nie jest kwadratowa lub odwracalna — liczysz na elementach:</p>
+<ol>
+<li>Ustal wymiar <i>X</i> z wymiarów działań i zapisz <span class="f"><i>X</i> = </span><span class="mat" style="grid-template-columns:repeat(2,auto)"><span><i>x</i></span><span><i>y</i></span><span><i>z</i></span><span><i>t</i></span></span>.</li>
+<li>Wymnóż obie strony — elementy wyjdą jako wyrażenia z <i>x</i>, <i>y</i>, <i>z</i>, <i>t</i>.</li>
+<li>Macierze są równe, gdy są równe <b>wszystkie elementy</b> — porównaj je i dostaniesz układ równań.</li>
+<li>Rozwiąż układ (Gauss). Może wyjść jedno <i>X</i>, nieskończenie wiele albo żadne.</li>
+</ol>
+<p><b>Przykład:</b> wszystkie <i>X</i> przemienne z <span class="f"><i>A</i> = </span><span class="mat" style="grid-template-columns:repeat(2,auto)"><span>1</span><span>1</span><span>0</span><span>1</span></span>, czyli <span class="f"><i>AX</i> = <i>XA</i></span>:</p>
+<div class="eq"><i>AX</i> = <span class="mat" style="grid-template-columns:repeat(2,auto)"><span><i>x</i> + <i>z</i></span><span><i>y</i> + <i>t</i></span><span><i>z</i></span><span><i>t</i></span></span> &nbsp; <i>XA</i> = <span class="mat" style="grid-template-columns:repeat(2,auto)"><span><i>x</i></span><span><i>x</i> + <i>y</i></span><span><i>z</i></span><span><i>z</i> + <i>t</i></span></span></div>
+<p>Porównanie daje <span class="f"><i>z</i> = 0</span> i <span class="f"><i>t</i> = <i>x</i></span>, więc <span class="f"><i>X</i> = </span><span class="mat" style="grid-template-columns:repeat(2,auto)"><span><i>x</i></span><span><i>y</i></span><span>0</span><span><i>x</i></span></span>, gdzie <span class="f"><i>x</i>, <i>y</i> ∈ ℝ</span> — nieskończenie wiele rozwiązań.</p>
+<div class="row"><button class="btn ghost small" id="openEx2">Otwórz w trenerze</button></div>
+</div>
+
+<div class="card">
+<h2>Układ równań jako równanie macierzowe</h2>
+<p>Każdy układ liniowy to równanie <span class="f"><i>AX</i> = <i>B</i></span>: <i>A</i> — współczynniki, <i>X</i> — kolumna niewiadomych, <i>B</i> — wyrazy wolne. Macierz rozszerzona to <span class="f">[<i>A</i> | <i>B</i>]</span>.</p>
+<div class="sysbox" id="chSys"></div>
+</div>
+
+<div class="card">
+<h2>Ile rozwiązań? Twierdzenie Kroneckera–Capellego</h2>
+<p><i>n</i> — liczba niewiadomych, rz — rząd (liczba niezerowych wierszy po eliminacji Gaussa).</p>
+<ul class="rules">
+<li><b>rz <i>A</i> = rz [<i>A</i> | <i>B</i>] = <i>n</i></b> → dokładnie <b>jedno</b> rozwiązanie (układ oznaczony).</li>
+<li><b>rz <i>A</i> = rz [<i>A</i> | <i>B</i>] = <i>r</i> &lt; <i>n</i></b> → <b>nieskończenie wiele</b> rozwiązań, zależnych od <b><i>n</i> − <i>r</i></b> parametrów.</li>
+<li><b>rz <i>A</i> &lt; rz [<i>A</i> | <i>B</i>]</b> → <b>brak</b> rozwiązań (układ sprzeczny).</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>Metoda Gaussa dla układu</h2>
+<ol>
+<li>Zapisz macierz rozszerzoną <span class="f">[<i>A</i> | <i>B</i>]</span>.</li>
+<li>Operacjami na wierszach (tymi samymi co przy <i>A</i><sup>−1</sup>) zrób kolumna po kolumnie jedynki na „schodkach” i zera nad nimi i pod nimi.</li>
+<li>Wiersz <span class="f">[0 … 0 | 0]</span>, czyli 0 = 0 — skreśl. Wiersz <span class="f">[0 … 0 | 5]</span>, czyli 0 = 5 — układ jest <b>sprzeczny</b>.</li>
+<li>Niewiadome w kolumnach bez schodka są <b>swobodne</b> (dowolne liczby). Pozostałe wyraź przez nie.</li>
+</ol>
+<div class="tip"><b>Zapis rozwiązania ogólnego:</b> <span class="f"><i>x</i> = 2 − 3<i>z</i>, &nbsp;<i>y</i> = 1 + <i>z</i>, &nbsp;<i>z</i> ∈ ℝ</span>. Każda liczba podstawiona za <i>z</i> daje jedno rozwiązanie.</div>
+</div>
+
+<div class="card">
+<h2>Metoda macierzowa i wzory Cramera</h2>
+<p>Obie działają tylko dla układu <b>kwadratowego</b> z <span class="f">det <i>A</i> ≠ 0</span>. Gdy <span class="f">det <i>A</i> = 0</span>, układ jest sprzeczny albo ma nieskończenie wiele rozwiązań — rozstrzyga Gauss.</p>
+<ul class="rules">
+<li><b>Macierzowa:</b> <span class="f"><i>AX</i> = <i>B</i> ⇒ <i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>. Mnożysz <b>z lewej</b> — <span class="f"><i>BA</i><sup>−1</sup></span> to błąd (i zwykle nawet się nie da).</li>
+<li><b>Cramer:</b> <span class="f"><i>W</i> = det <i>A</i></span>, a <span class="f"><i>W<sub>x</sub></i></span> to wyznacznik <i>A</i>, w którym kolumnę przy <i>x</i> zastępujesz kolumną wyrazów wolnych. Wtedy <span class="f"><i>x</i> = <i>W<sub>x</sub></i> / <i>W</i></span>, <span class="f"><i>y</i> = <i>W<sub>y</sub></i> / <i>W</i></span> …</li>
+<li><b>Wyznacznik 2×2:</b> <span class="f"><span class="mat det" style="grid-template-columns:repeat(2,auto)"><span><i>a</i></span><span><i>b</i></span><span><i>c</i></span><span><i>d</i></span></span> = <i>ad</i> − <i>bc</i></span>.</li>
+<li><b>Wyznacznik 3×3 (Sarrus):</b> trzy iloczyny po przekątnych „w prawo w dół” z plusem, trzy „w lewo w dół” z minusem: <span class="f"><i>a</i><sub>11</sub><i>a</i><sub>22</sub><i>a</i><sub>33</sub> + <i>a</i><sub>12</sub><i>a</i><sub>23</sub><i>a</i><sub>31</sub> + <i>a</i><sub>13</sub><i>a</i><sub>21</sub><i>a</i><sub>32</sub> − <i>a</i><sub>13</sub><i>a</i><sub>22</sub><i>a</i><sub>31</sub> − <i>a</i><sub>11</sub><i>a</i><sub>23</sub><i>a</i><sub>32</sub> − <i>a</i><sub>12</sub><i>a</i><sub>21</sub><i>a</i><sub>33</sub></span>.</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>Wyznaczniki — własności</h2>
+<ul class="rules f">
+<li>det(<i>AB</i>) = det <i>A</i> · det <i>B</i> &nbsp;&nbsp; det(<i>A</i><sup>T</sup>) = det <i>A</i> &nbsp;&nbsp; det(<i>A</i><sup>−1</sup>) = 1 / det <i>A</i></li>
+<li>det(<i>kA</i>) = <i>k</i><sup><i>n</i></sup> · det <i>A</i> dla macierzy <i>n</i>×<i>n</i> (liczba wychodzi z każdego wiersza!)</li>
+<li>det(<i>A</i> + <i>B</i>) ≠ det <i>A</i> + det <i>B</i> — tego nie ma.</li>
+</ul>
+<ul class="rules">
+<li>Zamiana dwóch wierszy (kolumn) zmienia znak wyznacznika.</li>
+<li>Dodanie do wiersza wielokrotności innego wiersza <b>nie zmienia</b> wyznacznika — tak robi się zera przed Laplace'em.</li>
+<li>Wiersz zer albo dwa proporcjonalne wiersze → det = 0.</li>
+<li>Macierz trójkątna: det = iloczyn liczb na przekątnej.</li>
+<li><i>A</i> jest odwracalna ⇔ det <i>A</i> ≠ 0.</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>Rozwinięcie Laplace'a</h2>
+<p>Wybierz wiersz albo kolumnę z największą liczbą zer. Dla każdego niezerowego elementu <span class="f"><i>a</i><sub><i>ij</i></sub></span>:</p>
+<div class="eq">det <i>A</i> = Σ (−1)<sup><i>i</i>+<i>j</i></sup> · <i>a</i><sub><i>ij</i></sub> · det <i>M</i><sub><i>ij</i></sub></div>
+<p><span class="f"><i>M</i><sub><i>ij</i></sub></span> — minor: macierz bez <i>i</i>-tego wiersza i <i>j</i>-tej kolumny. Znaki układają się w szachownicę: + − + − / − + − + …</p>
+</div>
+
+<div class="card">
+<h2>Rząd macierzy</h2>
+<ul class="rules">
+<li>Rząd = liczba niezerowych wierszy po sprowadzeniu macierzy do postaci schodkowej (Gauss, zera <b>pod</b> elementami głównymi).</li>
+<li>Operacje na wierszach (i kolumnach) nie zmieniają rzędu.</li>
+<li>rz <i>A</i> ≤ min(liczba wierszy, liczba kolumn). Dla macierzy kwadratowej <i>n</i>×<i>n</i>: rz <i>A</i> = <i>n</i> ⇔ det <i>A</i> ≠ 0.</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>Układ z parametrem — przepis</h2>
+<ol>
+<li>Policz wyznacznik główny <span class="f"><i>W</i>(<i>a</i>)</span>, traktując <i>a</i> jak zwykłą liczbę.</li>
+<li>Rozwiąż <span class="f"><i>W</i>(<i>a</i>) = 0</span>. Dla pozostałych <i>a</i> układ ma <b>dokładnie jedno</b> rozwiązanie.</li>
+<li>Każdą wartość z <span class="f"><i>W</i> = 0</span> podstaw do układu i rozstrzygnij Gaussem (albo rzędami): sprzeczny czy nieskończenie wiele rozwiązań.</li>
+<li>Odpowiedź zbierz w punktach: dla <i>a</i> ∉ {…}, dla <i>a</i> = …, dla <i>a</i> = ….</li>
+</ol>
+</div>
+
+<div class="card">
+<h2>Działania</h2>
+<ul class="rules">
+<li><b>Dodawanie</b>: tylko te same wymiary, element po elemencie.</li>
+<li><b>Mnożenie</b> <span class="f"><i>A</i>·<i>B</i></span>: (m×<b>n</b>)·(<b>n</b>×p) = m×p. Element <span class="f"><i>c</i><sub>ij</sub></span> = <i>i</i>-ty wiersz <i>A</i> „razy” <i>j</i>-ta kolumna <i>B</i>.</li>
+<li><span class="f"><i>AB</i> ≠ <i>BA</i></span> — kolejność ma znaczenie.</li>
+<li><b>Transpozycja</b>: wiersze stają się kolumnami; m×n → n×m.</li>
+<li><span class="f"><i>A</i><sup>2</sup> = <i>A</i>·<i>A</i></span> (macierzowo, nie każdy element do kwadratu!)</li>
+</ul>
+</div>
+</section>
+</main>
+
+<div class="pl" id="pl" hidden role="dialog" aria-modal="true" aria-labelledby="plT">
+<div class="pl-box">
+<div class="pl-top"><span class="pl-count" id="plCount"></span><span class="pl-name" id="plName"></span><button class="pl-xbtn" id="plClose" aria-label="Zamknij">✕</button></div>
+<div class="pl-bar"><span id="plProg"></span></div>
+<div class="pl-body" id="plBody">
+<div class="pl-sec" id="plSec"></div>
+<h2 class="pl-t" id="plT"></h2>
+<p class="pl-x" id="plX"></p>
+<div class="pl-stage" id="plStage"></div>
+<div class="pl-calc" id="plCalc"></div>
+</div>
+<div class="pl-ctl">
+<button class="btn ghost" id="plPrev">◀ Wstecz</button>
+<button class="btn ghost" id="plPlay">▶ Odtwarzaj</button>
+<button class="btn" id="plNext">Dalej ▶</button>
+<div class="sp" id="plSpd"><button class="chip" data-spd="1.7">wolno</button><button class="chip on" data-spd="1">normalnie</button><button class="chip" data-spd="0.55">szybko</button></div>
+</div>
+</div>
+</div>
+<script>
+// ---------- Ułamki ----------
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a};
+class Fr{
+  constructor(n,d=1){if(d===0)throw new Error('div0');if(d<0){n=-n;d=-d}const g=gcd(n,d)||1;this.n=n/g;this.d=d/g}
+  add(o){return new Fr(this.n*o.d+o.n*this.d,this.d*o.d)}
+  sub(o){return new Fr(this.n*o.d-o.n*this.d,this.d*o.d)}
+  mul(o){return new Fr(this.n*o.n,this.d*o.d)}
+  div(o){return new Fr(this.n*o.d,this.d*o.n)}
+  neg(){return new Fr(-this.n,this.d)}
+  abs(){return new Fr(Math.abs(this.n),this.d)}
+  eq(o){return this.n===o.n&&this.d===o.d}
+  get z(){return this.n===0}
+  get one(){return this.n===1&&this.d===1}
+  str(){return (this.n<0?'−':'')+Math.abs(this.n)+(this.d===1?'':'/'+this.d)}
+  html(){const s=this.n<0?'−':'',a=Math.abs(this.n);return this.d===1?s+a:`${s}<span class="fr"><span>${a}</span><span>${this.d}</span></span>`}
+}
+const F=(n,d=1)=>new Fr(n,d);
+function parseFr(s){
+  s=String(s).trim().replace(/\s+/g,'').replace(',','.').replace(/[−–]/g,'-');
+  if(!s)return null;
+  let m=s.match(/^([+-]?\d+)\/([+-]?\d+)$/);
+  if(m){const d=+m[2];return d===0?null:F(+m[1],d)}
+  m=s.match(/^([+-]?)(\d*)\.?(\d*)$/);
+  if(m&&(m[2]||m[3])){const dec=m[3]||'';return F((m[1]==='-'?-1:1)*parseInt((m[2]||'0')+dec,10),10**dec.length)}
+  return null;
+}
+const fmt=x=>(x.n<0||x.d!==1)?`(${x.str()})`:x.str();
+
+// ---------- Macierze ----------
+class DimErr extends Error{}
+const dimS=A=>`${A.length}×${A[0].length}`;
+function sameDim(A,B,w){if(A.length!==B.length||A[0].length!==B[0].length)throw new DimErr(`Nie da się ${w} macierzy ${dimS(A)} i ${dimS(B)} — muszą mieć ten sam wymiar.`)}
+const M={
+  make:(r,c,f)=>Array.from({length:r},(_,i)=>Array.from({length:c},(_,j)=>f(i,j))),
+  ints:a=>a.map(r=>r.map(x=>F(x))),
+  add:(A,B)=>{sameDim(A,B,'dodać');return M.make(A.length,A[0].length,(i,j)=>A[i][j].add(B[i][j]))},
+  sub:(A,B)=>{sameDim(A,B,'odjąć');return M.make(A.length,A[0].length,(i,j)=>A[i][j].sub(B[i][j]))},
+  scale:(k,A)=>A.map(r=>r.map(x=>x.mul(k))),
+  mul:(A,B)=>{if(A[0].length!==B.length)throw new DimErr(`Nie da się pomnożyć macierzy ${dimS(A)} przez ${dimS(B)} — liczba kolumn pierwszej musi być równa liczbie wierszy drugiej.`);return M.make(A.length,B[0].length,(i,j)=>{let s=F(0);for(let k=0;k<B.length;k++)s=s.add(A[i][k].mul(B[k][j]));return s})},
+  T:A=>M.make(A[0].length,A.length,(i,j)=>A[j][i]),
+  I:n=>M.make(n,n,(i,j)=>F(i===j?1:0)),
+  inv(A){if(A.length!==A[0].length)throw Object.assign(new DimErr(`Macierz ${dimS(A)} nie jest kwadratowa — nie ma odwrotnej.`),{inv:true});const g=gaussInv(A);return g?g.inv:null},
+  eq:(A,B)=>A.length===B.length&&A[0].length===B[0].length&&A.every((r,i)=>r.every((x,j)=>x.eq(B[i][j]))),
+  html:A=>`<span class="mat" style="grid-template-columns:repeat(${A[0].length},auto)">${A.flat().map(x=>`<span>${x.html()}</span>`).join('')}</span>`
+};
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function rich(lo,hi,pz=.12){for(;;){const v=rnd(lo,hi);if(v!==0||Math.random()<pz)return v}}
+const randR=(r,c,lo=-5,hi=7)=>M.make(r,c,()=>F(rich(lo,hi)));
+const det2=A=>A[0][0].mul(A[1][1]).sub(A[0][1].mul(A[1][0])); // tylko wewnętrznie, do losowania
+function unimod2(){for(;;){const a=rnd(-2,2),b=rnd(-2,2),c=rnd(-2,2),d=rnd(-2,2);if(Math.abs(a*d-b*c)===1&&(b||c)&&[a,b,c,d].filter(x=>!x).length<=1)return M.ints([[a,b],[c,d]])}}
+// macierz odwracalna z całkowitą odwrotną, ale "ładnymi", różnymi liczbami
+function richUni(n,dets=[1]){
+  if(n===2){for(;;){const e=[rich(-6,7,0),rich(-6,7,0),rich(-6,7,0),rich(-6,7,0)];const d=Math.abs(e[0]*e[3]-e[1]*e[2]);
+    if(!dets.includes(d))continue;if(e.filter(x=>Math.abs(x)<=1).length<=1&&Math.max(...e.map(Math.abs))>=3)return M.ints([[e[0],e[1]],[e[2],e[3]]])}}
+  for(;;){
+    const L=M.make(3,3,(i,j)=>F(i===j?1:i>j?rnd(-3,3):0)),U=M.make(3,3,(i,j)=>F(i===j?pick([1,-1]):i<j?rnd(-3,3):0));
+    let A=M.mul(L,U);const p=pick([[0,1,2],[1,0,2],[2,0,1],[1,2,0],[0,2,1],[2,1,0]]);A=p.map(k=>A[k]);
+    const v=A.flat().map(x=>Math.abs(x.n));
+    if(Math.max(...v)<=8&&v.filter(x=>x===0).length<=1&&v.filter(x=>x<=1).length<=4&&Math.max(...v)>=3)return A;
+  }
+}
+
+// ---------- Eliminacja Gaussa [A|I] ----------
+const W=i=>`w<sub>${i+1}</sub>`;
+function gaussInv(A0){
+  const n=A0.length;let L=A0.map(r=>r.slice()),R=M.I(n);const cp=X=>X.map(r=>r.slice());
+  const steps=[{ops:[],L:cp(L),R:cp(R)}];
+  const score=x=>x.z?1e9:(x.d===1&&Math.abs(x.n)===1)?0:Math.abs(x.n/x.d)+(x.d!==1?100:0);
+  for(let j=0;j<n;j++){
+    const ops=[];let best=-1;
+    for(let i=j;i<n;i++)if(!L[i][j].z&&(best<0||score(L[i][j])<score(L[best][j])))best=i;
+    if(best<0)return null;
+    if(best!==j){[L[j],L[best]]=[L[best],L[j]];[R[j],R[best]]=[R[best],R[j]];ops.push(`${W(j)} ↔ ${W(best)}`)}
+    const p=L[j][j];
+    if(!p.one){const iv=F(1).div(p);L[j]=L[j].map(x=>x.mul(iv));R[j]=R[j].map(x=>x.mul(iv));ops.push(p.n===-1&&p.d===1?`${W(j)} · (−1)`:`${W(j)} : ${fmt(p)}`)}
+    for(let i=0;i<n;i++){
+      if(i===j||L[i][j].z)continue;const k=L[i][j],a=k.abs();
+      L[i]=L[i].map((x,q)=>x.sub(k.mul(L[j][q])));R[i]=R[i].map((x,q)=>x.sub(k.mul(R[j][q])));
+      ops.push(`${W(i)} ${k.n>0?'−':'+'} ${a.one?'':a.d===1?a.str():'('+a.str()+')'}${W(j)}`);
+    }
+    if(ops.length)steps.push({ops,L:cp(L),R:cp(R)});
+  }
+  return {inv:R,steps};
+}
+function augHtml(A,B){let c='';for(let i=0;i<A.length;i++)c+=A[i].map(x=>`<span>${x.html()}</span>`).join('')+B[i].map((x,j)=>`<span${j?'':' class="bl"'}>${x.html()}</span>`).join('');return `<span class="mat aug" style="grid-template-columns:repeat(${A[0].length+B[0].length},auto)">${c}</span>`}
+function gaussHtml(name,resName,A){
+  const g=gaussInv(A);
+  let s=`<p class="mute">[${name} | <i>I</i>] → operacje na wierszach → [<i>I</i> | ${resName}]</p>`;
+  g.steps.forEach((st,k)=>{if(k)s+=`<div class="ops">${st.ops.join(', &nbsp;')}</div>`;s+=`<div class="line">${augHtml(st.L,st.R)}</div>`});
+  return s+`<div class="line">${resName} = ${M.html(g.inv)}</div>`;
+}
+
+// ---------- Parser ----------
+function tokenize(s){
+  s=s.replace(/ᵀ/g,'^T').replace(/⁻¹/g,'^-1').replace(/²/g,'^2').replace(/[−–]/g,'-').replace(/[\s*·]/g,'').toUpperCase();
+  const t=[];let i=0;
+  while(i<s.length){
+    const c=s[i];
+    if(/[A-Z]/.test(c)){t.push({k:'v',v:c});i++;continue}
+    if(/\d/.test(c)){const m=s.slice(i).match(/^(\d+)(\/(\d+))?/);t.push({k:'n',v:F(+m[1],m[3]?+m[3]:1)});i+=m[0].length;continue}
+    if('()=+-'.includes(c)){t.push({k:c});i++;continue}
+    if(c==="'"){t.push({k:'T'});i++;continue}
+    if(c==='^'){
+      const r=s.slice(i+1);let m=r.match(/^(\{-1\}|\(-1\)|-1)/);
+      if(m){t.push({k:'INV'});i+=1+m[0].length;continue}
+      m=r.match(/^(\{T\}|\(T\)|T)/);
+      if(m){t.push({k:'T'});i+=1+m[0].length;continue}
+      m=r.match(/^\{?([2-9])\}?/);
+      if(m){t.push({k:'POW',v:+m[1]});i+=1+m[0].length;continue}
+      throw new Error('Po „^” wpisz T, -1 albo potęgę (2, 3…).');
+    }
+    throw new Error(`Nieznany znak: „${c}”.`);
+  }
+  return t;
+}
+function parser(tokens){
+  let p=0;const peek=()=>tokens[p],next=()=>tokens[p++];
+  function expr(){
+    const terms=[];let sign=1;
+    if(peek()&&(peek().k==='+'||peek().k==='-'))sign=next().k==='-'?-1:1;
+    terms.push({sign,...term()});
+    while(peek()&&(peek().k==='+'||peek().k==='-')){const s=next().k==='-'?-1:1;terms.push({sign:s,...term()})}
+    return {terms};
+  }
+  function term(){
+    let c=F(1);if(peek()&&peek().k==='n')c=next().v;
+    const a=[];while(peek()&&(peek().k==='v'||peek().k==='('))a.push(atom());
+    if(!a.length)throw new Error('Brakuje macierzy (liczbę pisz razem z macierzą, np. 2X albo 3I).');
+    return {c,atoms:a};
+  }
+  function atom(){
+    const tk=next();let a;
+    if(tk.k==='v')a={type:'var',n:tk.v,post:[]};
+    else{const e=expr();if(!peek()||peek().k!==')')throw new Error('Brakuje nawiasu „)”.');next();a={type:'group',expr:e,post:[]}}
+    while(peek()&&['T','INV','POW'].includes(peek().k))a.post.push(next());
+    return a;
+  }
+  return {expr,peek,next,done:()=>p>=tokens.length};
+}
+function parseEq(src){
+  const P=parser(tokenize(src));const L=P.expr();
+  if(!P.peek()||P.peek().k!=='=')throw new Error('Brakuje znaku „=”.');
+  P.next();const R=P.expr();
+  if(!P.done())throw new Error('Coś nie pasuje na końcu równania.');
+  return {L,R};
+}
+function parseExpr(src){const P=parser(tokenize(src));const e=P.expr();if(!P.done())throw new Error('Coś nie pasuje w odpowiedzi (sprawdź nawiasy / znak „=”).');return e}
+
+// ---------- Rachunek symboliczny ----------
+const ST='<sup>T</sup>',SI='<sup>−1</sup>';
+const cH=c=>c.one?'':c.html();
+function rAtom(a){let b=a.type==='var'?`<i>${a.n}</i>`:`(${rExpr(a.expr)})`,s=false;for(const op of a.post){if(s)b=`(${b})`;b+=op.k==='T'?ST:op.k==='INV'?SI:`<sup>${op.v}</sup>`;s=true}return b}
+function rExpr(e){return e.terms.map((t,k)=>(k===0?(t.sign<0?'−':''):(t.sign<0?' − ':' + '))+cH(t.c)+t.atoms.map(rAtom).join('')).join('')}
+function rFac(f){const b=f.html||`<i>${f.n}</i>`;if(f.t&&f.i)return `(${b}${ST})${SI}`;if(f.t)return b+ST;if(f.i)return b+SI;return b}
+const rProd=fs=>fs.length?fs.map(rFac).join(''):'<i>I</i>';
+const rTerms=ts=>ts.length?ts.map((t,k)=>{const ng=t.c.n<0;return (k===0?(ng?'−':''):(ng?' − ':' + '))+cH(t.c.abs())+rProd(t.fs)}).join(''):'0';
+const rP=P=>rTerms([P]);
+const cPre=c=>c.one?'':(c.n===-1&&c.d===1)?'−':c.html();
+const invL=fs=>fs.slice().reverse().map(f=>({...f,i:!f.i}));
+const trL=fs=>fs.slice().reverse().map(f=>({...f,t:!f.t}));
+function cancel(fs){const st=[];for(const f of fs){const top=st[st.length-1];if(top&&top.n===f.n&&top.t===f.t&&top.i!==f.i&&f.n!=='X')st.pop();else st.push(f)}return st}
+function hasX(e){return e.terms.some(t=>t.atoms.some(a=>a.type==='var'?a.n==='X':hasX(a.expr)))}
+const linErr=m=>Object.assign(new Error(m),{lin:true});
+const blockOf=sum=>{const h='('+rTerms(sum)+')';return {n:h,html:h,sum,t:false,i:false}};
+function expandAtom(a){
+  let c=F(1),fs;
+  if(a.type==='var')fs=a.n==='I'?[]:[{n:a.n,t:false,i:false}];
+  else{
+    const e=a.expr;
+    if(e.terms.length===1){const t=expandTerm(e.terms[0]);c=t.c;fs=t.fs}
+    else{if(hasX(e))throw linErr('X stoi w nawiasie z sumą, np. (X + A)B — taki nawias trzeba najpierw wymnożyć.');fs=[blockOf(e.terms.map(expandTerm))]}
+  }
+  for(const op of a.post){
+    if(op.k==='T')fs=trL(fs);
+    else if(op.k==='INV'){fs=invL(fs);c=F(1).div(c)}
+    else{const k=op.v,b=fs,cb=c;fs=[];for(let q=0;q<k;q++)fs=fs.concat(b);for(let q=1;q<k;q++)c=c.mul(cb)}
+  }
+  return {c,fs};
+}
+function expandTerm(t){let c=F(t.sign).mul(t.c),fs=[];for(const a of t.atoms){const r=expandAtom(a);c=c.mul(r.c);fs=fs.concat(r.fs)}return {c,fs:cancel(fs)}}
+function lettersOf(e,set=new Set()){for(const t of e.terms)for(const a of t.atoms){if(a.type==='var'){if(a.n!=='X'&&a.n!=='I')set.add(a.n)}else lettersOf(a.expr,set)}return set}
+
+function solve(src){
+  const ast=parseEq(src);
+  const orig=rExpr(ast.L)+' = '+rExpr(ast.R);
+  const ex=e=>e.terms.map(expandTerm).filter(t=>!t.c.z);
+  let L=ex(ast.L),R=ex(ast.R);const L0=L,R0=R;
+  const steps=[];const cur=()=>rTerms(L)+' = '+rTerms(R);
+  if(cur()!==orig)steps.push({title:'Rozpisz nawiasy',why:'Transpozycja i odwrotność iloczynu <b>odwracają kolejność</b>: (<i>AB</i>)<sup>T</sup> = <i>B</i><sup>T</sup><i>A</i><sup>T</sup>, (<i>AB</i>)<sup>−1</sup> = <i>B</i><sup>−1</sup><i>A</i><sup>−1</sup>. Do tego (<i>A</i><sup>−1</sup>)<sup>T</sup> = (<i>A</i><sup>T</sup>)<sup>−1</sup> i <i>MM</i><sup>−1</sup> = <i>I</i>.',lines:[cur()]});
+  const nX=t=>t.fs.filter(f=>f.n==='X').length,hx=t=>nX(t)>0,all=[...L,...R];
+  if(!all.some(hx))throw new Error('W równaniu nie ma niewiadomej X.');
+  if(all.some(t=>nX(t)>1))throw new Error('X występuje dwa razy w jednym iloczynie (np. XAX albo X²) — tego nie da się tak rozwiązać.');
+  if(!L.some(hx)){[L,R]=[R,L];steps.push({title:'Zamień strony',why:'Wygodniej, gdy <i>X</i> jest po lewej.',lines:[cur()]})}
+  const mL=L.filter(t=>!hx(t)),mR=R.filter(hx),neg=t=>({c:t.c.neg(),fs:t.fs});
+  if(mL.length||mR.length){
+    L=[...L.filter(hx),...mR.map(neg)];R=[...R.filter(t=>!hx(t)),...mL.map(neg)];
+    steps.push({title:'Przenieś: wyrazy z X na lewo, bez X na prawo',why:'Przenosząc na drugą stronę, zmieniasz znak — jak w zwykłym równaniu.',lines:[cur()]});
+  }
+  if(!R.length)throw linErr('Po przeniesieniu wyrazów z X na lewo po prawej zostaje 0.');
+  if(L.length>1){
+    const xs=L.map(t=>{const k=t.fs.findIndex(f=>f.n==='X');return {c:t.c,l:t.fs.slice(0,k),x:t.fs[k],r:t.fs.slice(k+1)}});
+    if(xs.some(o=>o.x.t!==xs[0].x.t||o.x.i!==xs[0].x.i))throw linErr('X występuje w różnych postaciach (np. X i Xᵀ) — nie da się go wyciągnąć przed nawias.');
+    const Xf=xs[0].x;
+    if(xs.every(o=>!o.r.length)){
+      L=[{c:F(1),fs:[blockOf(xs.map(o=>({c:o.c,fs:o.l}))),Xf]}];
+      steps.push({title:'Wyciągnij X przed nawias — w prawo',why:'We wszystkich wyrazach <i>X</i> stoi <b>na końcu</b>, więc wyciągam go w prawo. Samotne <i>X</i> to <i>IX</i> — dlatego w nawiasie jest <i>I</i>, a nie 1!',lines:[cur()]});
+    }else if(xs.every(o=>!o.l.length)){
+      L=[{c:F(1),fs:[Xf,blockOf(xs.map(o=>({c:o.c,fs:o.r})))]}];
+      steps.push({title:'Wyciągnij X przed nawias — w lewo',why:'We wszystkich wyrazach <i>X</i> stoi <b>na początku</b>, więc wyciągam go w lewo. Samotne <i>X</i> to <i>XI</i> — dlatego w nawiasie jest <i>I</i>, a nie 1!',lines:[cur()]});
+    }else throw linErr('X stoi raz z lewej, raz z prawej strony innych macierzy (np. AX + XB) — takiego X nie da się wyciągnąć przed nawias.');
+  }
+  if(!L[0].c.one){
+    const k=L[0].c,iv=F(1).div(k);L=[{c:F(1),fs:L[0].fs}];R=R.map(t=>({c:t.c.mul(iv),fs:t.fs}));
+    steps.push({title:(k.n===-1&&k.d===1)?'Pomnóż obie strony przez −1':`Podziel obie strony przez ${k.str()}`,why:'Liczbę przy <i>X</i> usuwasz jak w zwykłym równaniu.',lines:[cur()]});
+  }
+  let P=R.length===1?{c:R[0].c,fs:R[0].fs}:{c:F(1),fs:[blockOf(R)]};
+  const fs=L[0].fs,k=fs.findIndex(f=>f.n==='X'),Xf=fs[k];
+  let left=fs.slice(0,k),right=fs.slice(k+1);
+  const line=()=>rProd([...left,Xf,...right])+' = '+rP(P);
+  const hl=fs=>`<span class="hl">${rProd(fs)}</span>`;
+  if(left.length){
+    const ol=left,iv=invL(ol);
+    const lab=ol.length>1?`(${rProd(ol)})${SI} = ${rProd(iv)}`:rProd(iv);
+    const l1=`${hl(iv)}${rProd(ol)}${rProd([Xf,...right])} = ${cPre(P.c)}${hl(iv)}${P.fs.length?rProd(P.fs):''}`;
+    left=[];P={c:P.c,fs:cancel([...iv,...P.fs])};
+    steps.push({title:'Pomnóż obie strony z LEWEJ',why:`Przed <i>X</i> stoi ${rProd(ol)}. Mnożę <b>obie strony z lewej</b> przez ${lab}${ol.length>1?' (kolejność odwrócona!)':''}. Po lewej zostaje <i>I</i>.`,lines:[l1,line()]});
+  }
+  if(right.length){
+    const orr=right,iv=invL(orr);
+    const lab=orr.length>1?`(${rProd(orr)})${SI} = ${rProd(iv)}`:rProd(iv);
+    const l1=`${rProd([Xf,...orr])}${hl(iv)} = ${cPre(P.c)}${P.fs.length?rProd(P.fs):''}${hl(iv)}`;
+    right=[];P={c:P.c,fs:cancel([...P.fs,...iv])};
+    steps.push({title:'Pomnóż obie strony z PRAWEJ',why:`Za <i>X</i> stoi ${rProd(orr)}. Mnożę <b>obie strony z prawej</b> przez ${lab}${orr.length>1?' (kolejność odwrócona!)':''}.`,lines:[l1,line()]});
+  }
+  if(Xf.t||Xf.i){
+    const before=rP(P);let why,op;
+    if(Xf.t&&Xf.i){P={c:F(1).div(P.c),fs:cancel(trL(invL(P.fs)))};op=`((${before})${SI})${ST}`;why='Mamy (<i>X</i><sup>T</sup>)<sup>−1</sup>: odwracam obie strony, potem transponuję. Kolejność się odwraca.'}
+    else if(Xf.i){P={c:F(1).div(P.c),fs:cancel(invL(P.fs))};op=`(${before})${SI}`;why='Odwracam obie strony: (<i>X</i><sup>−1</sup>)<sup>−1</sup> = <i>X</i>. Pamiętaj o odwróceniu kolejności!'}
+    else{P={c:P.c,fs:cancel(trL(P.fs))};op=`(${before})${ST}`;why='Transponuję obie strony: (<i>X</i><sup>T</sup>)<sup>T</sup> = <i>X</i>. Kolejność też się odwraca.'}
+    steps.push({title:Xf.i?'Odwróć obie strony':'Transponuj obie strony',why,lines:[`<i>X</i> = ${op}`,`<i>X</i> = ${rP(P)}`]});
+  }
+  steps.push({title:'Wynik',why:'',lines:['<i>X</i> = '+rP(P)],final:true});
+  return {orig,steps,P,L0,R0,letters:lettersOf(ast.L,lettersOf(ast.R))};
+}
+
+// ---------- Wartości: macierz albo k·I (wymiar I dopasowuje się sam) ----------
+const isS=v=>!Array.isArray(v);
+const S=k=>({sc:k});
+function sqI(A,k){if(A.length!==A[0].length)throw new DimErr(`Do macierzy ${dimS(A)} nie da się dodać wielokrotności I — nie jest kwadratowa.`);return M.scale(k,M.I(A.length))}
+function vMul(a,b){if(isS(a)&&isS(b))return S(a.sc.mul(b.sc));if(isS(a))return M.scale(a.sc,b);if(isS(b))return M.scale(b.sc,a);return M.mul(a,b)}
+function vAdd(a,b){if(isS(a)&&isS(b))return S(a.sc.add(b.sc));if(isS(a))return M.add(sqI(b,a.sc),b);if(isS(b))return M.add(a,sqI(a,b.sc));return M.add(a,b)}
+const vScale=(k,a)=>isS(a)?S(a.sc.mul(k)):M.scale(k,a);
+const vT=a=>isS(a)?a:M.T(a);
+function vInv(a,what){
+  let r=null;
+  if(isS(a)){if(!a.sc.z)r=S(F(1).div(a.sc))}
+  else{try{r=M.inv(a)}catch(e){if(e.inv&&what)e.message=`${what} ma wymiar ${dimS(a)} — nie jest kwadratowa, więc nie ma odwrotnej.`;throw e}}
+  if(!r)throw Object.assign(new Error('singular'),{what});
+  return r;
+}
+const toMat=(v,n)=>isS(v)?M.scale(v.sc,M.I(n)):v;
+
+// ---------- Obliczenia ----------
+function evalF(f,env){let V=f.sum?evalSum(f.sum,env):env[f.n];if(!V)throw new Error('brak '+f.n);if(f.t)V=vT(V);if(f.i)V=vInv(V,rFac({...f,i:false}));return V}
+const evalProd=(fs,env)=>fs.length?fs.map(f=>evalF(f,env)).reduce(vMul):S(F(1));
+const evalSum=(ts,env)=>ts.map(t=>vScale(t.c,evalProd(t.fs,env))).reduce(vAdd);
+const evalP=(P,env)=>vScale(P.c,evalProd(P.fs,env));
+function numeric(sol,extra=[]){
+  for(let at=0;at<60;at++){
+    const env={__n:2};for(const c of [...sol.letters,...extra])env[c]=unimod2();
+    try{const X=toMat(evalP(sol.P,env),2);env.X=X;return {env,X,Lv:toMat(evalSum(sol.L0,env),2),Rv:toMat(evalSum(sol.R0,env),2)}}
+    catch(e){if(e.message!=='singular')throw e}
+  }
+  return null;
+}
+function checkAnswer(sol,text){
+  text=text.replace(/^\s*X\s*=\s*/i,'');
+  if(!text.trim())throw new Error('Wpisz odpowiedź.');
+  const e=parseExpr(text);
+  if(hasX(e))throw new Error('Odpowiedź nie może zawierać X.');
+  const ts=e.terms.map(expandTerm),extra=[...lettersOf(e)];let tested=0;
+  for(let k=0;k<12&&tested<4;k++){
+    const r=numeric(sol,extra);if(!r)continue;
+    let U;try{U=toMat(evalSum(ts,r.env),2)}catch(err){if(err.message==='singular')continue;throw err}
+    tested++;if(!M.eq(U,r.X))return false;
+  }
+  return tested>0;
+}
+
+// ---------- Generator równań literowych ----------
+function genEq(lvl){
+  const Ls=['A','B','C','D'];
+  const f=(pT=.25,pI=.35)=>{const r=Math.random();return pick(Ls)+(r<pT?'^T':r<pT+pI?'^-1':'')};
+  const fs=k=>Array.from({length:k},()=>f()).join('');
+  const grp=()=>{const a=pick(Ls),b=pick(Ls.filter(x=>x!==a));return `(${a}${Math.random()<.3?'^T':''}${b})${pick(['^-1','^-1','^T'])}`};
+  if(lvl===1)return pick([`${fs(1)}X${Math.random()<.5?fs(1):''}=${fs(rnd(1,2))}`,`${f()}X+${f()}=${f()}`,`X${f()}-${f()}=${f()}`]);
+  if(lvl===2)return pick([`${fs(rnd(1,2))}X${fs(rnd(1,2))}=${Math.random()<.5?grp()+f():f()+grp()}`,`${f(0,.3)}X=X+${f()}`,`X${f(0,.3)}-${rnd(2,3)}X=${f()}`]);
+  const v=rnd(0,5),l=fs(rnd(1,2)),r=fs(1);
+  if(v===0)return `${l}X${r}+${f()}${f()}=${grp()}`;
+  if(v===1)return `${l}X${pick(['^-1','^T'])}${r}=${f()}${grp()}`;
+  if(v===2)return `(${f(0,.4)}X)^T${r}=${grp()}`;
+  if(v===3){const a=pick(Ls),b=pick(Ls.filter(x=>x!==a));return `(${a}+${b})X${r}=${f()}${f()}`}
+  if(v===4)return `${f(0,.3)}X+${f()}=${rnd(2,3)}X-${f()}${f()}`;
+  return `${f()}X-${f()}=${rnd(2,3)}X+${grp()}`;
+}
+
+// ---------- Zadania liczbowe z X ----------
+// r: wymiary liter w wersji prostokątnej (n — rozmiar, m — drugi wymiar); lin: równania liczone przez niewiadome
+const NT=[
+  {eq:'AX=B',inv:{A:0},r:{B:'nm'}},
+  {eq:'XA=B',inv:{A:0},r:{B:'mn'}},
+  {eq:'AX+B=C',inv:{A:0},r:{B:'nm',C:'nm'}},
+  {eq:'XA-2B=C',inv:{A:0},r:{B:'mn',C:'mn'}},
+  {eq:'A^TX=B',inv:{A:0},r:{B:'nm'}},
+  {eq:'(XA)^T=B',inv:{A:0},r:{B:'nm'}},
+  {eq:'AXB=C',inv:{A:0,B:0},r:{B:'mm',C:'nm'}},
+  {eq:'AX=X+B',inv:{A:1},r:{B:'nm'}},
+  {eq:'XA=2X+B',inv:{A:2},r:{B:'mn'}},
+  {eq:'AX-B=3X',inv:{A:3},r:{B:'nm'}},
+  {eq:'2X+AX=B^T',inv:{A:-2},r:{B:'mn'}},
+  {eq:'AX+B=2X-C',inv:{A:2},r:{B:'nm',C:'nm'}},
+  {eq:'XA^T+B=X',inv:{A:1},r:{B:'mn'}},
+  {eq:'AX+XB=C',lin:{A:[2,2],B:[2,2]},tg:'C',note:'X stoi raz z lewej, raz z prawej'},
+  {eq:'AX+X^T=B',lin:{A:[2,2]},tg:'B',note:'X występuje razem z Xᵀ'},
+  {eq:'XA=B',lin:{A:[2,3]},tg:'B',note:'A ma wymiar 2×3, więc nie ma A⁻¹'},
+  {eq:'AX=B',lin:{A:[3,2]},tg:'B',note:'A ma wymiar 3×2, więc nie ma A⁻¹'},
+];
+function genNum(n,idx,rect){
+  const tpl=idx>=0?NT[idx]:pick(NT.filter(t=>!t.lin));const sol=solve(tpl.eq);let best=null;const m=n===2?3:2;
+  const dim=c=>{const s=(rect&&tpl.r&&tpl.r[c])||'nn';return [s[0]==='n'?n:m,s[1]==='n'?n:m]};
+  for(let at=0;at<400;at++){
+    const env={__n:n};
+    for(const c of sol.letters){const [r,k]=dim(c);env[c]=c in tpl.inv?M.add(richUni(r),M.scale(F(tpl.inv[c]),M.I(r))):randR(r,k,-4,6)}
+    let X;try{X=toMat(evalP(sol.P,env),n)}catch(e){continue}
+    if(X.flat().some(x=>x.d!==1))continue;
+    const mx=Math.max(...X.flat().map(x=>Math.abs(x.n))),nz=X.flat().filter(x=>x.z).length;
+    const sc=mx+(nz>1?40:0);
+    if(!best||sc<best.sc)best={env,X,sc};
+    if(mx<=(n===2?35:45)&&nz<=1)break;
+  }
+  const e=best.env;e.X=best.X;
+  return {tpl,sol,env:e,X:best.X,n,Lv:toMat(evalSum(sol.L0,e),n),Rv:toMat(evalSum(sol.R0,e),n)};
+}
+function genLin(tpl){
+  const ast=parseEq(tpl.eq);let best=null;
+  for(let at=0;at<120;at++){
+    const env={};
+    for(const [c,[r,k]] of Object.entries(tpl.lin))env[c]=randR(r,k,-3,4);
+    const X=randR(2,2,-3,5);
+    let T;try{T=toMat(evalAst(ast.L,{...env,X}),2)}catch(e){continue}
+    const big=Math.max(...T.flat().map(x=>Math.abs(x.n)));if(big>30)continue;
+    env[tpl.tg]=T;
+    let L;try{L=linSolve(tpl.eq,env)}catch(e){continue}
+    if(L.type!=='one')continue;
+    const sc=L.fr*2+big/10;
+    if(!best||sc<best.sc)best={env,X,L,sc};
+    if(L.fr===0&&at>6)break;
+  }
+  const {env,X,L}=best;env.X=X;
+  return {fr:()=>linFrames(L),orig:L.orig,letters:Object.keys(env).filter(k=>k!=='X').sort(),env,X,solHtml:L.html,
+    hint:`Wzorem się nie da: ${tpl.note}. Zapisz <span class="f"><i>X</i> = </span>${matH([['<i>x</i>','<i>y</i>'],['<i>z</i>','<i>t</i>']])}, wymnóż obie strony, porównaj elementy i rozwiąż układ równań.`};
+}
+function numSolHtml(T){
+  const {sol,env,X}=T;
+  let h='<h3>1. Wyznacz X na literach</h3>';
+  h+=sol.steps.filter(s=>!s.final).map(s=>`<div class="line"><span class="mute">${s.title}:</span><br>${s.lines[s.lines.length-1]}</div>`).join('');
+  h+=`<div class="line"><b><i>X</i> = ${rP(sol.P)}</b></div><h3>2. Podstaw liczby</h3>`;
+  const cache={},vals=[];
+  for(const f of sol.P.fs){
+    const key=rFac(f);if(cache[key]){vals.push(cache[key]);continue}
+    const bname=rFac({...f,i:false});let base;
+    if(f.sum){
+      for(const t of f.sum)if(t.fs.length&&(!t.c.abs().one||t.fs.length>1||t.fs.some(q=>q.t||q.i)))h+=`<div class="line">${rTerms([{c:t.c.abs(),fs:t.fs}])} = ${M.html(toMat(evalP({c:t.c.abs(),fs:t.fs},env),env.__n))}</div>`;
+      base=toMat(evalSum(f.sum,env),env.__n);h+=`<div class="line">${f.html} = ${M.html(base)}</div>`;
+      if(f.t){base=M.T(base);h+=`<div class="line">${bname} = ${M.html(base)}</div>`}
+    }else{base=env[f.n];if(f.t){base=M.T(base);h+=`<div class="line">${bname} = ${M.html(base)}</div>`}}
+    let V=base;
+    if(f.i){V=M.inv(base);h+=`<details open><summary>Liczę ${key} metodą Gaussa</summary>${gaussHtml(bname,key,base)}</details>`}
+    cache[key]=V;vals.push(V);
+  }
+  if(vals.length>1){let run=vals[0];for(let k=1;k<vals.length;k++){run=M.mul(run,vals[k]);h+=`<div class="line">${rProd(sol.P.fs.slice(0,k+1))} = ${M.html(run)}</div>`}}
+  if(!sol.P.c.one)h+=`<div class="line">Mnożę przez ${sol.P.c.str()}:</div>`;
+  h+=`<div class="line"><b><i>X</i> = ${M.html(X)}</b></div>`;
+  h+=`<h3>3. Sprawdzenie</h3><p class="mute">Podstawiam <i>X</i> do równania ${sol.orig}:</p><div class="nums"><span class="gv">lewa = ${M.html(T.Lv)}</span><span class="gv">prawa = ${M.html(T.Rv)}</span></div><p class="mute">${M.eq(T.Lv,T.Rv)?'✓ Zgadza się.':''}</p>`;
+  return h;
+}
+
+// ---------- Działania ----------
+const eqL=(lab,A)=>`<div class="line">${lab} = ${M.html(A)}</div>`;
+const coef=a=>a===1?'':a===-1?'−':String(a).replace('-','−');
+const EXPR=[
+  {lab:'<i>AB</i> − <i>BA</i>',m:'AB',f:(A,B)=>{const x=M.mul(A,B),y=M.mul(B,A);return [['<i>AB</i>',x],['<i>BA</i>',y],['<i>AB</i> − <i>BA</i>',M.sub(x,y)]]}},
+  {lab:'2<i>A</i><sup>T</sup> − 3<i>B</i>',m:'AB',f:(A,B)=>{const x=M.scale(F(2),M.T(A)),y=M.scale(F(3),B);return [['<i>A</i><sup>T</sup>',M.T(A)],['2<i>A</i><sup>T</sup>',x],['3<i>B</i>',y],['2<i>A</i><sup>T</sup> − 3<i>B</i>',M.sub(x,y)]]}},
+  {lab:'(<i>A</i> + <i>B</i>)<i>C</i>',m:'ABC',f:(A,B,C)=>{const s=M.add(A,B);return [['<i>A</i> + <i>B</i>',s],['(<i>A</i> + <i>B</i>)<i>C</i>',M.mul(s,C)]]}},
+  {lab:'<i>A</i><sup>2</sup> − 2<i>B</i>',m:'AB',f:(A,B)=>{const x=M.mul(A,A),y=M.scale(F(2),B);return [['<i>A</i><sup>2</sup> = <i>A</i>·<i>A</i>',x],['2<i>B</i>',y],['<i>A</i><sup>2</sup> − 2<i>B</i>',M.sub(x,y)]]}},
+  {lab:'<i>AB</i><sup>T</sup> + <i>C</i>',m:'ABC',f:(A,B,C)=>{const bt=M.T(B),x=M.mul(A,bt);return [['<i>B</i><sup>T</sup>',bt],['<i>AB</i><sup>T</sup>',x],['<i>AB</i><sup>T</sup> + <i>C</i>',M.add(x,C)]]}},
+  {lab:'(<i>AB</i>)<sup>T</sup> − 2<i>C</i>',m:'ABC',f:(A,B,C)=>{const x=M.mul(A,B),y=M.scale(F(2),C);return [['<i>AB</i>',x],['(<i>AB</i>)<sup>T</sup>',M.T(x)],['2<i>C</i>',y],['(<i>AB</i>)<sup>T</sup> − 2<i>C</i>',M.sub(M.T(x),y)]]}},
+  {lab:'<i>A</i><sup>T</sup><i>B</i> − <i>C</i><sup>T</sup>',m:'ABC',f:(A,B,C)=>{const x=M.mul(M.T(A),B);return [['<i>A</i><sup>T</sup>',M.T(A)],['<i>A</i><sup>T</sup><i>B</i>',x],['<i>C</i><sup>T</sup>',M.T(C)],['<i>A</i><sup>T</sup><i>B</i> − <i>C</i><sup>T</sup>',M.sub(x,M.T(C))]]}},
+];
+function genTask(type){
+  if(type==='add'){
+    const r=rnd(2,3),c=rnd(2,4),A=randR(r,c,-6,9),B=randR(r,c,-6,9),a=pick([2,3,-2,4,1]),b=pick([-1,2,-2,3,-3,-4]);
+    const Aa=M.scale(F(a),A),Bb=M.scale(F(b),B),ans=M.add(Aa,Bb);
+    const lab=`${coef(a)}<i>A</i> ${b<0?'−':'+'} ${coef(Math.abs(b))}<i>B</i>`;
+    return {fr:()=>addFrames(A,B,a,b),q:`Oblicz ${lab}`,given:[['A',A],['B',B]],ans,lab,sol:`<p>Mnożę każdy element przez liczbę, potem dodaję element po elemencie.</p>${eqL(coef(a)+'<i>A</i>',Aa)}${eqL(coef(b)+'<i>B</i>',Bb)}${eqL(lab,ans)}`};
+  }
+  if(type==='mul'){
+    const m=rnd(2,3),n=rnd(2,4),p=rnd(2,3),A=randR(m,n,-4,6),B=randR(n,p,-4,6),ans=M.mul(A,B);
+    let s=`<p>Wymiary: (${m}×${n})·(${n}×${p}) = ${m}×${p}. Wiersz razy kolumna:</p>`;
+    for(let i=0;i<m;i++)for(let j=0;j<p;j++)s+=`<div class="line"><i>c</i><sub>${i+1}${j+1}</sub> = ${A[i].map((x,k)=>`${fmt(x)}·${fmt(B[k][j])}`).join(' + ')} = <b>${ans[i][j].str()}</b></div>`;
+    return {fr:()=>mulFrames(A,B,{a:'<i>A</i>',b:'<i>B</i>',c:'<i>AB</i>'}).frames,q:'Oblicz <i>A</i>·<i>B</i>',given:[['A',A],['B',B]],ans,lab:'<i>AB</i>',sol:s+eqL('<i>AB</i>',ans)};
+  }
+  if(type==='trans'){
+    const r=rnd(2,3),c=r===2?pick([3,4]):pick([2,4]),A=randR(r,c,-9,12),ans=M.T(A);
+    return {fr:()=>transFrames(A,'<i>A</i>','<i>A</i><sup>T</sup>'),q:'Oblicz <i>A</i><sup>T</sup>',given:[['A',A]],ans,lab:'<i>A</i><sup>T</sup>',sol:`<p>Pierwszy wiersz staje się pierwszą kolumną, drugi — drugą itd. Wymiar ${r}×${c} → ${c}×${r}.</p>${eqL('<i>A</i><sup>T</sup>',ans)}`};
+  }
+  if(type==='expr'){
+    const E=pick(EXPR),n=Math.random()<.6?2:3,mats=[...E.m].map(()=>randR(n,n,-4,6)),parts=E.f(...mats);
+    return {fr:()=>EXPR_FR[EXPR.indexOf(E)](...mats),q:'Oblicz '+E.lab,given:[...E.m].map((c,k)=>[c,mats[k]]),ans:parts[parts.length-1][1],lab:E.lab,sol:'<p>Liczę po kolei:</p>'+parts.map(([l,A])=>eqL(l,A)).join('')};
+  }
+  const n=type==='inv2'?2:3,A=n===2?richUni(2,[1,1,2]):richUni(3),ans=M.inv(A);
+  return {fr:()=>invFrames(A,'<i>A</i>','<i>A</i><sup>−1</sup>','Macierz odwrotna').frames,q:`Oblicz <i>A</i><sup>−1</sup> (${n}×${n})`,given:[['A',A]],ans,lab:'<i>A</i><sup>−1</sup>',sol:gaussHtml('<i>A</i>','<i>A</i><sup>−1</sup>',A)+`<p class="mute">Kontrola: <i>A</i>·<i>A</i><sup>−1</sup> = <i>I</i> ✓</p>`};
+}
+// ---------- Układy równań: wspólne ----------
+const ORD='xyztuvwabcdefghijklmnopqrs';
+const nmHtml=s=>{const m=s.match(/^([a-z])(\d*)$/);return `<i>${m[1]}</i>${m[2]?`<sub>${m[2]}</sub>`:''}`};
+const stdNames=n=>n<=4?['x','y','z','t'].slice(0,n):Array.from({length:n},(_,i)=>'x'+(i+1));
+const matNames=(r,c)=>r*c<=4?['x','y','z','t'].slice(0,r*c):M.make(r,c,(i,j)=>'x'+(i+1)+(j+1)).flat();
+const pl=(n,a,b,c)=>n===1?a:(n%10>=2&&n%10<=4&&(n%100<12||n%100>14))?b:c;
+function matH(A,o={}){const c=A[0].length;return `<span class="mat${o.det?' det':''}" style="grid-template-columns:repeat(${c},auto)">${A.flat().map((x,k)=>`<span${o.hl===k%c?' class="hl"':''}>${typeof x==='string'?x:x.html()}</span>`).join('')}</span>`}
+const colH=names=>matH(names.map(v=>[nmHtml(v)]));
+// forma liniowa {c:[współczynniki], k:wyraz wolny}
+function lfHtml(f,names,constFirst){
+  const p=[];
+  if(constFirst&&!f.k.z)p.push([f.k.n<0,f.k.abs().html()]);
+  f.c.forEach((x,j)=>{if(!x.z)p.push([x.n<0,(x.abs().one?'':x.abs().html())+nmHtml(names[j])])});
+  if(!constFirst&&!f.k.z)p.push([f.k.n<0,f.k.abs().html()]);
+  return p.length?p.map(([ng,b],i)=>(i?(ng?' − ':' + '):(ng?'−':''))+b).join(''):'0';
+}
+// układ z klamrą, wyrazy w kolumnach
+function sysHtml(rows,names){
+  const nv=names.length;let h='';
+  for(const r of rows){
+    const cells=[];let first=true;
+    for(let j=0;j<nv;j++){
+      const x=r.c[j];
+      if(j)cells.push(`<span class="sg">${x.z||first?'':x.n<0?'−':'+'}</span>`);
+      let t='';if(!x.z){const a=x.abs();t=(first&&x.n<0?'−':'')+(a.one?'':a.html())+nmHtml(names[j]);first=false}
+      cells.push(`<span>${t}</span>`);
+    }
+    if(first)cells[cells.length-1]='<span>0</span>';
+    h+=cells.join('')+`<span class="sg">=</span><span class="rh">${r.k.html()}</span>`;
+  }
+  return `<span class="sysw"><span class="sys" style="grid-template-columns:repeat(${2*nv+1},auto)">${h}</span></span>`;
+}
+const abRows=(Ab,nv)=>Ab.map(r=>({c:r.slice(0,nv),k:r[nv]}));
+
+// ---------- Eliminacja Gaussa–Jordana dla [A|B] ----------
+const pivScore=x=>x.z?1e9:(x.d===1&&Math.abs(x.n)===1)?0:Math.abs(x.n/x.d)+(x.d!==1?100:0);
+function rref(Ab,nv){
+  const m=Ab.length,A=Ab.map(r=>r.slice()),cp=X=>X.map(r=>r.slice()),steps=[{ops:[],A:cp(A)}],piv=[];let row=0;
+  for(let j=0;j<nv&&row<m;j++){
+    let best=-1;for(let i=row;i<m;i++)if(!A[i][j].z&&(best<0||pivScore(A[i][j])<pivScore(A[best][j])))best=i;
+    if(best<0)continue;
+    const ops=[];
+    if(best!==row){[A[row],A[best]]=[A[best],A[row]];ops.push(`${W(row)} ↔ ${W(best)}`)}
+    const p=A[row][j];
+    if(!p.one){const iv=F(1).div(p);A[row]=A[row].map(x=>x.mul(iv));ops.push(p.n===-1&&p.d===1?`${W(row)} · (−1)`:`${W(row)} : ${fmt(p)}`)}
+    for(let i=0;i<m;i++){
+      if(i===row||A[i][j].z)continue;const k=A[i][j],a=k.abs();
+      A[i]=A[i].map((x,q)=>x.sub(k.mul(A[row][q])));
+      ops.push(`${W(i)} ${k.n>0?'−':'+'} ${a.one?'':a.d===1?a.str():'('+a.str()+')'}${W(row)}`);
+    }
+    piv.push(j);row++;
+    if(ops.length)steps.push({ops,A:cp(A)});
+  }
+  const r=piv.length;let bad=-1;
+  for(let i=r;i<m;i++)if(!A[i][nv].z){bad=i;break}
+  return {A,steps,piv,rank:r,rankAb:r+(bad>=0?1:0),bad,type:bad>=0?'none':r===nv?'one':'inf'};
+}
+function sysSolution(res,nv){
+  if(res.type==='none')return null;
+  const free=[...Array(nv).keys()].filter(j=>!res.piv.includes(j)),forms=Array(nv);
+  const zero=()=>({c:Array.from({length:nv},()=>F(0)),k:F(0)});
+  free.forEach(j=>{const f=zero();f.c[j]=F(1);forms[j]=f});
+  res.piv.forEach((j,i)=>{const f=zero();f.k=res.A[i][nv];free.forEach(q=>{f.c[q]=res.A[i][q].neg()});forms[j]=f});
+  return {free,forms};
+}
+const fracCount=res=>res.steps.reduce((s,st)=>s+st.A.flat().filter(x=>x.d!==1).length,0);
+function genSolHtml(sol,names){
+  const pv=names.map((v,j)=>sol.free.includes(j)?null:`${nmHtml(v)} = ${lfHtml(sol.forms[j],names,true)}`).filter(Boolean);
+  return pv.join(', &nbsp; ')+(pv.length?', &nbsp; ':'')+sol.free.map(j=>nmHtml(names[j])).join(', ')+' ∈ ℝ';
+}
+function gaussSys(Ab,names){
+  const nv=names.length,res=rref(Ab,nv),sp=X=>[X.map(r=>r.slice(0,nv)),X.map(r=>[r[nv]])];
+  let h=`<p class="mute">[<i>A</i> | <i>B</i>] → operacje na wierszach → jedynki na schodkach, zera nad nimi i pod nimi</p>`;
+  res.steps.forEach((st,k)=>{if(k)h+=`<div class="ops">${st.ops.join(', &nbsp;')}</div>`;h+=`<div class="line">${augHtml(...sp(st.A))}</div>`});
+  const rows=abRows(res.A,nv),isZero=r=>r.c.every(x=>x.z)&&r.k.z,zero=rows.filter(isZero).length,keep=rows.filter(r=>!isZero(r));
+  h+=`<h3>Odczytuję wynik</h3>`;
+  if(zero)h+=`<p class="mute">${zero===1?'Wiersz zerowy':'Wiersze zerowe'} (0 = 0) pomijam — nic nie wnosi.</p>`;
+  if(keep.length)h+=`<div class="line">${sysHtml(keep,names)}</div>`;
+  h+=`<p>rz <i>A</i> = ${res.rank}, &nbsp; rz [<i>A</i> | <i>B</i>] = ${res.rankAb}, &nbsp; niewiadomych <i>n</i> = ${nv}.</p>`;
+  const sol=sysSolution(res,nv);
+  if(res.type==='none'){const k=res.A[res.bad][nv].html();h+=`<div class="warn">Wiersz [0 … 0 | ${k}] to równanie 0 = ${k} — sprzeczność. rz <i>A</i> &lt; rz [<i>A</i> | <i>B</i>], więc układ jest <b>sprzeczny</b>: nie ma rozwiązań.</div>`}
+  else if(res.type==='one')h+=`<p>rz <i>A</i> = rz [<i>A</i> | <i>B</i>] = <i>n</i>, więc jest <b>dokładnie jedno rozwiązanie</b>:</p><div class="line res">${names.map((v,j)=>`${nmHtml(v)} = ${sol.forms[j].k.html()}`).join(', &nbsp; ')}</div>`;
+  else{const k=nv-res.rank;h+=`<p>rz <i>A</i> = rz [<i>A</i> | <i>B</i>] = ${res.rank} &lt; <i>n</i> = ${nv}, więc rozwiązań jest <b>nieskończenie wiele</b> — zależą od ${k} ${pl(k,'parametru','parametrów','parametrów')}. ${pl(sol.free.length,'Niewiadoma','Niewiadome','Niewiadome')} bez schodka (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) ${sol.free.length===1?'jest dowolna':'są dowolne'}, resztę przez nie wyrażam:</p><div class="line res">${genSolHtml(sol,names)}</div>`}
+  return {html:h,res,sol};
+}
+function checkSysHtml(Ab,names,vals){
+  const nv=names.length;
+  return `<h3>Sprawdzenie</h3><p class="mute">Podstawiam do każdego równania:</p>`+Ab.map(r=>{let s=F(0);const p=[];r.slice(0,nv).forEach((a,j)=>{if(!a.z){p.push(`${fmt(a)}·${fmt(vals[j])}`);s=s.add(a.mul(vals[j]))}});return `<div class="line">${p.join(' + ')||'0'} = ${s.html()} &nbsp;${s.eq(r[nv])?'✓':'✗'}</div>`}).join('');
+}
+
+// ---------- Wyznaczniki i Cramer ----------
+function detF(A){
+  const n=A.length,B=A.map(r=>r.slice());let d=F(1);
+  for(let j=0;j<n;j++){
+    let p=-1;for(let i=j;i<n;i++)if(!B[i][j].z){p=i;break}
+    if(p<0)return F(0);
+    if(p!==j){[B[p],B[j]]=[B[j],B[p]];d=d.neg()}
+    d=d.mul(B[j][j]);
+    for(let i=j+1;i<n;i++){const k=B[i][j].div(B[j][j]);B[i]=B[i].map((x,q)=>x.sub(k.mul(B[j][q])))}
+  }
+  return d;
+}
+function detLines(A){
+  const n=A.length,v=detF(A),e=(i,j)=>fmt(A[i][j]);
+  if(n===1)return `<div class="line">= <b>${v.html()}</b></div>`;
+  if(n===2){const p=A[0][0].mul(A[1][1]),q=A[0][1].mul(A[1][0]);return `<div class="line">= ${e(0,0)}·${e(1,1)} − ${e(0,1)}·${e(1,0)} = ${fmt(p)} − ${fmt(q)} = <b>${v.html()}</b></div>`}
+  const P=[[[0,0],[1,1],[2,2]],[[0,1],[1,2],[2,0]],[[0,2],[1,0],[2,1]]],N=[[[0,2],[1,1],[2,0]],[[0,0],[1,2],[2,1]],[[0,1],[1,0],[2,2]]];
+  const tx=t=>t.map(([i,j])=>e(i,j)).join('·'),tv=t=>t.reduce((s,[i,j])=>s.mul(A[i][j]),F(1));
+  return `<div class="line">= ${P.map(tx).join(' + ')} − ${N.map(tx).join(' − ')}</div><div class="line">= ${P.map(t=>fmt(tv(t))).join(' + ')} − ${N.map(t=>fmt(tv(t))).join(' − ')} = <b>${v.html()}</b></div>`;
+}
+
+// ---------- Układ: wybrana metoda ----------
+function sysMethodHtml(Ab,names,method){
+  const nv=names.length,m=Ab.length,A=Ab.map(r=>r.slice(0,nv)),b=Ab.map(r=>r[nv]),bc=b.map(x=>[x]);
+  const truth=rref(Ab,nv),tsol=sysSolution(truth,nv);
+  const gaussPart=()=>`<h3>Metoda Gaussa</h3>`+gaussSys(Ab,names).html;
+  let h='';
+  if(method==='mac'){
+    h+=`<h3>1. Zapis macierzowy <i>AX</i> = <i>B</i></h3><div class="line">${matH(A)} · ${colH(names)} = ${matH(bc)}</div>`;
+    if(m!==nv)h+=`<div class="warn">Macierz <i>A</i> ma wymiar ${m}×${nv} — nie jest kwadratowa, więc nie ma <i>A</i><sup>−1</sup>. Metoda macierzowa tu nie działa.</div>`+gaussPart();
+    else{
+      const g=gaussInv(A);
+      if(!g)h+=`<div class="warn">Przy liczeniu <i>A</i><sup>−1</sup> w którejś kolumnie zabraknie niezerowego elementu — <i>A</i> nie jest odwracalna (det <i>A</i> = 0). Metoda macierzowa nie działa: układ jest sprzeczny albo ma nieskończenie wiele rozwiązań.</div>`+gaussPart();
+      else{
+        const X=M.mul(g.inv,bc);
+        h+=`<p>Mnożę obie strony <b>z lewej</b> przez <i>A</i><sup>−1</sup>: &nbsp;<span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>.</p>`;
+        h+=`<h3>2. Macierz odwrotna</h3><details open><summary>Liczę <i>A</i><sup>−1</sup> metodą Gaussa</summary>${gaussHtml('<i>A</i>','<i>A</i><sup>−1</sup>',A)}</details>`;
+        h+=`<h3>3. Mnożę <i>A</i><sup>−1</sup> · <i>B</i></h3><p class="mute">Każda niewiadoma to wiersz <i>A</i><sup>−1</sup> razy kolumna <i>B</i>:</p>`;
+        h+=names.map((v,i)=>`<div class="line">${nmHtml(v)} = ${g.inv[i].map((x,k)=>`${fmt(x)}·${fmt(b[k])}`).join(' + ')} = <b>${X[i][0].html()}</b></div>`).join('');
+        h+=`<div class="line res"><i>X</i> = ${colH(names)} = ${matH(X)}</div>`;
+      }
+    }
+  }else if(method==='cra'){
+    if(m!==nv)h+=`<div class="warn">Wzory Cramera działają tylko wtedy, gdy równań jest tyle, ile niewiadomych. Tu równań jest ${m}, a niewiadomych ${nv}.</div>`+gaussPart();
+    else if(nv>3)h+=`<div class="tip">Wzory Cramera dla układu ${nv}×${nv} wymagają wyznaczników ${nv}×${nv} (rozwinięcie Laplace'a) — to bardzo długie liczenie. Tu wygodniej Gaussem.</div>`+gaussPart();
+    else{
+      const Wd=detF(A);
+      h+=`<h3>1. Wyznacznik główny</h3>${nv===3?'<p class="mute">Sarrus: trzy iloczyny po przekątnych „w prawo w dół” z plusem, trzy „w lewo w dół” z minusem.</p>':''}<div class="line"><i>W</i> = ${matH(A,{det:true})}</div>${detLines(A)}`;
+      if(Wd.z)h+=`<div class="warn"><i>W</i> = 0 — wzory Cramera nie działają. Układ jest sprzeczny albo ma nieskończenie wiele rozwiązań; rozstrzyga metoda Gaussa.</div>`+gaussPart();
+      else{
+        const sub=v=>`<i>W</i><sub>${nmHtml(v)}</sub>`;
+        h+=`<p><i>W</i> ≠ 0, więc układ ma dokładnie jedno rozwiązanie (układ Cramera).</p><h3>2. Wyznaczniki niewiadomych</h3><p class="mute">Kolumnę przy danej niewiadomej zastępuję kolumną wyrazów wolnych.</p>`;
+        const Ws=names.map((v,j)=>{const Aj=A.map((r,i)=>r.map((x,q)=>q===j?b[i]:x));h+=`<div class="line">${sub(v)} = ${matH(Aj,{det:true,hl:j})}</div>${detLines(Aj)}`;return detF(Aj)});
+        h+=`<h3>3. Wzory Cramera</h3>`+names.map((v,j)=>`<div class="line">${nmHtml(v)} = <span class="fr"><span>${sub(v)}</span><span><i>W</i></span></span> = <span class="fr"><span>${Ws[j].str()}</span><span>${Wd.str()}</span></span> = <b>${Ws[j].div(Wd).html()}</b></div>`).join('');
+      }
+    }
+  }else h+=gaussSys(Ab,names).html;
+  const vals=truth.type==='one'?tsol.forms.map(f=>f.k):null;
+  if(vals)h+=checkSysHtml(Ab,names,vals);
+  return {html:h,type:truth.type,vals,res:truth};
+}
+
+// ---------- Generator układów ----------
+const randRow=nv=>Array.from({length:nv},()=>F(rich(-4,5)));
+function genSysOnce(m,nv,want){
+  const r=want==='one'?nv:want==='inf'?Math.min(m,nv-1):Math.min(m-1,nv);
+  if(r<1||r>m)return null;
+  let base=null;
+  for(let t=0;t<50&&!base;t++){const B=Array.from({length:r},()=>randRow(nv));if(rref(B.map(x=>[...x,F(0)]),nv).rank===r)base=B}
+  if(!base)return null;
+  const rows=base.slice();
+  while(rows.length<m){
+    let row=null;
+    for(let t=0;t<40&&!row;t++){
+      const k=base.map(()=>rnd(-2,2));if(k.filter(x=>x).length<Math.min(2,r))continue;
+      const cand=base[0].map((_,j)=>base.reduce((s,bb,i)=>s.add(bb[j].mul(F(k[i]))),F(0)));
+      if(cand.every(x=>Math.abs(x.n)<=9)&&cand.some(x=>!x.z))row=cand;
+    }
+    if(!row)return null;rows.push(row);
+  }
+  const x0=Array.from({length:nv},()=>F(rich(-4,5)));
+  const Ab=rows.map(row=>[...row,row.reduce((s,a,j)=>s.add(a.mul(x0[j])),F(0))]);
+  if(want==='none')Ab[m-1][nv]=Ab[m-1][nv].add(F(pick([-3,-2,-1,1,2,3])));
+  if(Ab.some(r=>Math.abs(r[nv].n)>40))return null;
+  for(let i=Ab.length-1;i>0;i--){const j=rnd(0,i);[Ab[i],Ab[j]]=[Ab[j],Ab[i]]}
+  return Ab;
+}
+function genSys(sz,mode){
+  const [m,nv]=sz==='r'?pick(mode==='one'?[[3,2],[4,3],[4,2]]:[[2,3],[3,2],[3,4],[2,4],[4,3]]):[sz,sz];
+  let want=mode==='one'?'one':pick(['one','one','inf','none']);
+  if(m<nv&&want==='one')want='inf';
+  let best=null,ok=0;
+  for(let at=0;at<400&&ok<25;at++){
+    const Ab=genSysOnce(m,nv,want);if(!Ab)continue;
+    const res=rref(Ab,nv);if(res.type!==want)continue;ok++;
+    const big=Math.max(...res.steps.flatMap(st=>st.A.flat().map(x=>Math.abs(x.n))));
+    const sc=fracCount(res)*2+Math.max(0,big-20);
+    if(!best||sc<best.sc)best={Ab,sc};
+    if(sc===0&&ok>3)break;
+  }
+  return {Ab:best.Ab,names:stdNames(nv)};
+}
+
+// ---------- Parser układu wpisanego tekstem ----------
+function parseLinSide(s,k){
+  s=s.replace(/[\s*·]/g,'').toLowerCase();
+  if(!s)throw new Error(`Równanie ${k+1}: jedna strona „=” jest pusta.`);
+  const re=/([+-]?)(\d+(?:\.\d+)?(?:\/\d+)?)?([a-z]\d*)?/y,v={};let c=F(0),i=0;
+  while(i<s.length){
+    re.lastIndex=i;const m=re.exec(s);
+    if(!m||(!m[2]&&!m[3])||(i>0&&!m[1]))throw new Error(`Równanie ${k+1}: nie rozumiem fragmentu „${s.slice(i)}”. Pisz np. 2x - 3y + z = 4.`);
+    const num=m[2]?parseFr(m[2]):F(1);if(!num)throw new Error(`Równanie ${k+1}: zła liczba „${m[2]}”.`);
+    const val=m[1]==='-'?num.neg():num;
+    if(m[3])v[m[3]]=(v[m[3]]||F(0)).add(val);else c=c.add(val);
+    i=re.lastIndex;
+  }
+  return {v,c};
+}
+function parseSystem(text){
+  text=text.replace(/[−–]/g,'-').replace(/[₀-₉]/g,ch=>'₀₁₂₃₄₅₆₇₈₉'.indexOf(ch)).replace(/_/g,'').replace(/(\d),(\d)/g,'$1.$2');
+  const lines=text.split(/[\n;,]+/).map(s=>s.trim()).filter(Boolean);
+  if(!lines.length)throw new Error('Wpisz co najmniej jedno równanie, np. 2x + y = 5.');
+  if(lines.length>6)throw new Error('Za dużo równań — trener rozwiązuje najwyżej 6.');
+  const eqs=lines.map((ln,k)=>{
+    const sd=ln.split('=');
+    if(sd.length!==2)throw new Error(`Równanie ${k+1}: potrzebny dokładnie jeden znak „=”.`);
+    const L=parseLinSide(sd[0],k),R=parseLinSide(sd[1],k),v={...L.v};
+    for(const [n,c] of Object.entries(R.v))v[n]=(v[n]||F(0)).sub(c);
+    return {v,k:R.c.sub(L.c)};
+  });
+  const set=new Set();eqs.forEach(e=>Object.keys(e.v).forEach(n=>set.add(n)));
+  if(!set.size)throw new Error('Nie widzę żadnej niewiadomej (np. x, y, z).');
+  if(set.size>6)throw new Error('Za dużo niewiadomych — trener rozwiązuje najwyżej 6.');
+  const key=n=>{const m=n.match(/^([a-z])(\d*)$/);return [ORD.indexOf(m[1]),m[2]?+m[2]:-1]};
+  const names=[...set].sort((a,b)=>{const p=key(a),q=key(b);return p[0]-q[0]||p[1]-q[1]});
+  return {Ab:eqs.map(e=>[...names.map(n=>e.v[n]||F(0)),e.k]),names};
+}
+
+// ---------- Równanie macierzowe na liczbach ----------
+function evalAst(e,env){let acc=null;for(const t of e.terms){let v=S(F(t.sign).mul(t.c));for(const a of t.atoms)v=vMul(v,evalAtom(a,env));acc=acc?vAdd(acc,v):v}return acc}
+function evalAtom(a,env){
+  let v;
+  if(a.type==='var'){v=a.n==='I'?S(F(1)):env[a.n];if(!v)throw new Error(`Brakuje macierzy ${a.n}.`)}
+  else v=evalAst(a.expr,env);
+  for(const op of a.post){if(op.k==='T')v=vT(v);else if(op.k==='INV')v=vInv(v,rAtom({...a,post:[]}));else{let r=v;for(let q=1;q<op.v;q++)r=vMul(r,v);v=r}}
+  return v;
+}
+const zeros=(r,c)=>M.make(r,c,()=>F(0));
+const unitM=(r,c,k)=>M.make(r,c,(i,j)=>F(i*c+j===k?1:0));
+function linCheck(e){let any=false;for(const t of e.terms){let k=0;for(const a of t.atoms)k+=atomX(a);if(k>1)throw new Error('X występuje dwa razy w jednym iloczynie — równanie nie jest liniowe względem X, więc nie da się go rozwiązać układem równań liniowych.');if(k)any=true}return any}
+function atomX(a){const h=a.type==='var'?(a.n==='X'?1:0):(linCheck(a.expr)?1:0);if(h&&a.post.some(o=>o.k!=='T'))throw new Error('X jest odwrócone albo w potędze — równanie nie jest liniowe względem X, więc nie da się go rozwiązać układem równań liniowych.');return h}
+function xDims(ast,env){
+  const out=[];
+  for(let r=1;r<=4;r++)for(let c=1;c<=4;c++){
+    const e={...env,X:zeros(r,c)};
+    try{const d=vAdd(evalAst(ast.L,e),vScale(F(-1),evalAst(ast.R,e)));if(!isS(d))out.push([r,c])}
+    catch(er){if(!(er instanceof DimErr))throw er}
+  }
+  return out;
+}
+function linSolve(src,env){
+  const ast=parseEq(src),hl=linCheck(ast.L),hr=linCheck(ast.R);
+  if(!hl&&!hr)throw new Error('W równaniu nie ma niewiadomej X.');
+  let ds;
+  try{ds=xDims(ast,env)}catch(e){if(e.message==='singular')throw new Error(`Macierz ${e.what} nie jest odwracalna, a równanie jej odwrotności wymaga.`);throw e}
+  if(!ds.length)throw new Error('Wymiary macierzy nie pasują do siebie — nie ma takiego wymiaru X, przy którym wszystkie działania w równaniu mają sens.');
+  let [r,c]=ds[0];
+  if(ds.length>1){const sq=Object.values(env).find(v=>Array.isArray(v)&&v.length===v[0].length),n=sq?sq.length:2,f=ds.find(d=>d[0]===n&&d[1]===n)||ds.find(d=>d[0]===d[1]);if(f)[r,c]=f}
+  const nu=r*c;if(nu>9)throw new Error(`X miałaby wymiar ${r}×${c}, czyli ${nu} niewiadomych — za dużo do liczenia ręcznego (trener liczy najwyżej 9).`);
+  const names=matNames(r,c),Z=zeros(r,c),raw=(e,X)=>evalAst(e,{...env,X});
+  const l0=raw(ast.L,Z),ref=isS(l0)?raw(ast.R,Z):l0,p=ref.length,q=ref[0].length;
+  const val=(e,X)=>{const v=raw(e,X);return isS(v)?M.scale(v.sc,M.I(p)):v};
+  const lfm=e=>{const v0=val(e,Z),vs=names.map((_,k)=>val(e,unitM(r,c,k)));return M.make(p,q,(i,j)=>({c:vs.map(v=>v[i][j].sub(v0[i][j])),k:v0[i][j]}))};
+  const lfmH=G=>matH(G.map(row=>row.map(f=>lfHtml(f,names,false))));
+  const LF=lfm(ast.L),RF=lfm(ast.R),orig=rExpr(ast.L)+' = '+rExpr(ast.R);
+  const d={names,r,c,orig,lL:rExpr(ast.L),lR:rExpr(ast.R),LH:LF.map(row=>row.map(f=>lfHtml(f,names,false))),RH:RF.map(row=>row.map(f=>lfHtml(f,names,false))),given:Object.keys(env).filter(k=>k!=='X'&&!k.startsWith('__')).sort().map(k=>[k,env[k]])};
+  const rows=[];
+  d.rows=rows;
+  for(let i=0;i<p;i++)for(let j=0;j<q;j++){const a=LF[i][j],b=RF[i][j],row={c:a.c.map((x,k)=>x.sub(b.c[k])),k:b.k.sub(a.k)};if(row.c.some(x=>!x.z)||!row.k.z)rows.push(row)}
+  let h=`<h3>1. Niewiadoma macierz</h3><p>Do działań w równaniu pasuje tylko wymiar ${r}×${c}. Zapisuję <i>X</i> przez ${nu} ${pl(nu,'niewiadomą','niewiadome','niewiadomych')}:</p><div class="line"><i>X</i> = ${matH(M.make(r,c,(i,j)=>nmHtml(names[i*c+j])))}</div>`;
+  h+=`<h3>2. Wymnażam obie strony</h3>`;
+  const trivial=t=>t.atoms.length===1&&t.atoms[0].type==='var'&&!t.atoms[0].post.length&&t.c.one;
+  for(const [side,G] of [[ast.L,LF],[ast.R,RF]]){
+    if(side.terms.length>1)for(const t of side.terms){if(trivial(t))continue;const tt={terms:[{...t,sign:1}]};h+=`<div class="line">${rExpr(tt)} = ${lfmH(lfm(tt))}</div>`}
+    h+=`<div class="line">${rExpr(side)} = ${lfmH(G)}</div>`;
+  }
+  h+=`<h3>3. Porównuję elementy</h3>`;
+  if(!rows.length)return {html:h+`<p>Po porównaniu zostaje samo 0 = 0 — <b>każda</b> macierz ${r}×${c} spełnia to równanie.</p>`,type:'inf',X:null,fr:0,orig,d};
+  h+=`<p>Macierze są równe, gdy mają równe elementy na tych samych miejscach. Wychodzi układ ${rows.length} ${pl(rows.length,'równania','równań','równań')} z ${nu===1?'jedną niewiadomą':nu+' niewiadomymi'}:</p><div class="sysbox">${sysHtml(rows,names)}</div>`;
+  const Ab=rows.map(o=>[...o.c,o.k]),G=gaussSys(Ab,names);d.Ab=Ab;
+  h+=`<h3>4. Rozwiązuję układ metodą Gaussa</h3>`+G.html+`<h3>5. Wynik</h3>`;
+  let X=null;
+  if(G.res.type==='none')h+=`<div class="line res">Układ jest sprzeczny, więc nie istnieje macierz <i>X</i> spełniająca to równanie.</div>`;
+  else if(G.res.type==='one'){
+    X=M.make(r,c,(i,j)=>G.sol.forms[i*c+j].k);d.chk=[val(ast.L,X),val(ast.R,X)];
+    h+=`<div class="line res"><i>X</i> = ${M.html(X)}</div><h3>Sprawdzenie</h3><p class="mute">Podstawiam <i>X</i> do równania ${orig}:</p><div class="nums"><span class="gv">lewa = ${M.html(val(ast.L,X))}</span><span class="gv">prawa = ${M.html(val(ast.R,X))}</span></div><p class="mute">✓ Zgadza się.</p>`;
+  }else{d.gen=`<i>X</i> = ${matH(M.make(r,c,(i,j)=>lfHtml(G.sol.forms[i*c+j],names,true)))}, &nbsp; ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} ∈ ℝ`;h+=`<div class="line res">${d.gen}</div><p class="mute">Nieskończenie wiele macierzy — każdy wybór ${G.sol.free.length===1?'liczby':'liczb'} ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} daje inne <i>X</i>.</p>`;}
+  return {html:h,type:G.res.type,X,fr:fracCount(G.res),orig,d};
+}
+// ---------- Klatki do odtwarzacza „krok po kroku” ----------
+// klatka: {sec, t (tytuł), x (opis), S (html nad macierzami), B:[plansze], J:[łączniki], C:[linie rachunku], Cb, U:[zdarzenia w czasie]}
+// plansza: {M: html[][], bar, lab, hl:{rows,cols,cells}, det, dimCols}; zdarzenie: {t, b,i,j, v | add | clear | swap | line}
+const PH='<span class="ph">?</span>';
+const hM=X=>X.map(r=>r.map(x=>typeof x==='string'?x:x.html()));
+const bd=(X,o={})=>({M:hM(X),bar:o.bar===undefined?-1:o.bar,lab:o.lab||'',hl:o.hl||{},det:!!o.det,dimCols:o.dimCols||[]});
+const rw=i=>`w<sub>${i+1}</sub>`;
+function gaussFrames(Ab0,nv,o){
+  const m=Ab0.length,w=Ab0[0].length,A=Ab0.map(r=>r.slice()),fr=[],sec=o.sec||'Metoda Gaussa',inv=o.mode==='inv';
+  const B=hl=>bd(A,{bar:nv,hl});
+  const rk=o.mode==='rank';
+  fr.push({sec,t:rk?`Sprowadzam ${o.lab} do postaci schodkowej`:inv?`Zapisuję [${o.lab} | <i>I</i>]`:'Zapisuję macierz rozszerzoną [<i>A</i> | <i>B</i>]',
+    x:rk?`Rząd to liczba niezerowych wierszy w postaci schodkowej. Robię eliminację Gaussa: w każdej kolumnie element główny i zera <b>pod</b> nim. Operacje na wierszach nie zmieniają rzędu.`:inv?`Obok ${o.lab} dopisuję macierz jednostkową <i>I</i>. Robię operacje na <b>całych wierszach</b> — po obu stronach kreski — aż po lewej powstanie <i>I</i>. Wtedy po prawej będzie odwrotność.`
+      :`Każdy wiersz to jedno równanie: przed kreską współczynniki przy ${o.names.map(nmHtml).join(', ')}, za kreską wyraz wolny. Cel: przed kreską jedynki na „schodkach”, a nad nimi i pod nimi zera.`,
+    B:[B()]});
+  let row=0;
+  for(let j=0;j<nv&&row<m;j++){
+    const colHl={};for(let i=row;i<m;i++)colHl[i+','+j]='col';
+    let best=-1;for(let i=row;i<m;i++)if(!A[i][j].z&&(best<0||pivScore(A[i][j])<pivScore(A[best][j])))best=i;
+    if(best<0){
+      if(inv){fr.push({sec,t:`Kolumna ${j+1}: same zera`,x:`Od wiersza ${row+1} w dół w kolumnie ${j+1} są same zera — nie da się tu zrobić jedynki. Macierz <b>nie jest odwracalna</b> (jej wyznacznik to 0).`,B:[B({cells:colHl})]});return {frames:fr,ok:false,A}}
+      fr.push({sec,t:`Kolumna ${j+1}: same zera`,x:`Od wiersza ${row+1} w dół w kolumnie ${j+1} są same zera — tu nie będzie schodka.${rk?'':` Niewiadoma ${nmHtml(o.names[j])} zostanie <b>parametrem</b> (dowolną liczbą).`} Idę do następnej kolumny.`,B:[B({cells:colHl})]});
+      continue;
+    }
+    const p=A[best][j];
+    fr.push({sec,t:`Kolumna ${j+1}: wybieram element główny`,x:`W kolumnie ${j+1}, od wiersza ${row+1} w dół, szukam liczby różnej od 0 — najlepiej 1 albo −1, bo wtedy nie wyjdą ułamki. Biorę <b>${p.html()}</b> z wiersza ${best+1}.`,B:[B({cells:{...colHl,[best+','+j]:'piv'}})]});
+    if(best!==row){
+      const U=[{t:.4,swap:[0,row,best]}];
+      for(let q=0;q<w;q++)U.push({t:1.8,b:0,i:row,j:q,v:A[best][q].html()},{t:1.8,b:0,i:best,j:q,v:A[row][q].html()});
+      fr.push({sec,t:`Zamieniam wiersze ${rw(row)} ↔ ${rw(best)}`,x:`Element główny ma stać w wierszu ${row+1}, więc zamieniam miejscami całe wiersze ${row+1} i ${best+1}.${inv||rk?'':' To tylko zmiana kolejności równań — rozwiązania się nie zmieniają.'}`,B:[B({rows:{[row]:'dst',[best]:'dst'}})],U});
+      [A[row],A[best]]=[A[best],A[row]];
+    }
+    if(!p.one){
+      const iv=F(1).div(p),U=[],C=[];
+      for(let q=0;q<w;q++){const v=A[row][q].mul(iv);C.push(`${fmt(A[row][q])} : ${fmt(p)} = <b>${v.html()}</b>`);U.push({t:.7+q*.6,b:0,i:row,j:q,v:v.html(),line:q})}
+      fr.push({sec,t:`Dzielę ${rw(row)} przez ${fmt(p)}`,x:`Na miejscu elementu głównego chcę mieć 1, więc <b>cały</b> wiersz ${row+1} — po obu stronach kreski — dzielę przez ${p.html()}:`,B:[B({rows:{[row]:'dst'},cells:{[row+','+j]:'piv'}})],C,U});
+      A[row]=A[row].map(x=>x.mul(iv));
+    }
+    for(let i=o.down?row+1:0;i<m;i++){
+      if(i===row||A[i][j].z)continue;
+      const k=A[i][j],a=k.abs(),sg=k.n>0?'−':'+',U=[],C=[];
+      for(let q=0;q<w;q++){const v=A[i][q].sub(k.mul(A[row][q]));C.push(`${fmt(A[i][q])} ${sg} ${a.one?'':fmt(a)+'·'}${fmt(A[row][q])} = <b>${v.html()}</b>`);U.push({t:.7+q*.6,b:0,i,j:q,v:v.html(),line:q})}
+      fr.push({sec,t:`Zeruję: ${rw(i)} ${sg} ${a.one?'':a.d===1?a.str():'('+a.str()+')'}${rw(row)}`,
+        x:`${i<row?'Nad':'Pod'} jedynką, w wierszu ${i+1}, stoi ${k.html()}. ${k.n>0?`Od wiersza ${i+1} odejmuję wiersz ${row+1} pomnożony przez ${k.html()}`:`Do wiersza ${i+1} dodaję wiersz ${row+1} pomnożony przez ${a.html()}`} — wtedy w tym miejscu wyjdzie 0. Liczę element po elemencie:`,
+        B:[B({rows:{[row]:'src',[i]:'dst'},cells:{[i+','+j]:'tgt',[row+','+j]:'piv'}})],C,U});
+      A[i]=A[i].map((x,q)=>x.sub(k.mul(A[row][q])));
+    }
+    row++;
+  }
+  return {frames:fr,A,ok:true};
+}
+function invFrames(A0,lab,resLab,sec){
+  const n=A0.length,I=M.I(n),g=gaussFrames(A0.map((r,i)=>[...r,...I[i]]),n,{mode:'inv',lab,sec});
+  if(!g.ok)return {frames:g.frames,inv:null};
+  const R=g.A.map(r=>r.slice(n)),hl={};for(let i=0;i<n;i++)for(let j=n;j<2*n;j++)hl[i+','+j]='res';
+  g.frames.push({sec,t:`Po lewej jest <i>I</i> — odczytuję ${resLab}`,x:`Przed kreską stoi macierz jednostkowa, więc za kreską jest szukana odwrotność. Kontrola: ${lab}·${resLab} musi dać <i>I</i>.`,B:[bd(g.A,{bar:n,hl:{cells:hl}}),bd(R,{lab:resLab})],J:['→']});
+  return {frames:g.frames,inv:R};
+}
+function mulFrames(A,Bm,lab,sec='Mnożenie'){
+  const m=A.length,n=Bm.length,p=Bm[0].length,R=M.mul(A,Bm),fr=[],Cs=M.make(m,p,()=>PH);
+  const bds=(a,b,c)=>[bd(A,{lab:lab.a,hl:a}),bd(Bm,{lab:lab.b,hl:b}),bd(Cs,{lab:lab.c,hl:c})];
+  fr.push({sec,t:`Mnożę ${lab.a} · ${lab.b}`,x:`Wymiary: (${m}×<b>${n}</b>)·(<b>${n}</b>×${p}) — środkowe liczby się zgadzają, więc wynik ma wymiar ${m}×${p}. Każdy element wyniku to <b>wiersz</b> pierwszej macierzy „razy” <b>kolumna</b> drugiej: mnożę liczby parami i dodaję.`,B:bds(),J:['·','=']});
+  for(let i=0;i<m;i++)for(let j=0;j<p;j++){
+    const U=[],C=[];let sum=F(0);
+    for(let k=0;k<n;k++){const pr=A[i][k].mul(Bm[k][j]),t=.5+k*.9;sum=sum.add(pr);C.push(`${fmt(A[i][k])} · ${fmt(Bm[k][j])} = ${pr.html()}`);U.push({t,b:0,i,j:k,add:'pair'},{t,b:1,i:k,j,add:'pair'},{t,line:k})}
+    const tS=.5+n*.9;
+    C.push({h:`${A[i].map((_,k)=>fmt(A[i][k].mul(Bm[k][j]))).join(' + ')} = <b>${sum.html()}</b>`,full:true});
+    U.push({t:tS,line:n},{t:tS+.3,b:2,i,j,v:sum.html()});
+    fr.push({sec,t:`Element: wiersz ${i+1} · kolumna ${j+1}`,x:`Biorę <b>wiersz ${i+1}</b> macierzy ${lab.a} i <b>kolumnę ${j+1}</b> macierzy ${lab.b}. Mnożę pierwszą liczbę z pierwszą, drugą z drugą… i wszystko dodaję.`,B:bds({rows:{[i]:'src'}},{cols:{[j]:'src'}},{cells:{[i+','+j]:'tgt'}}),J:['·','='],C,U});
+    Cs[i][j]=sum.html();
+  }
+  fr.push({sec,t:'Iloczyn gotowy',x:`Wszystkie ${m*p} ${pl(m*p,'element','elementy','elementów')} policzone.`,B:bds(null,null,{cells:Object.fromEntries(R.flatMap((r,i)=>r.map((_,j)=>[i+','+j,'res'])))}),J:['·','=']});
+  return {frames:fr,R};
+}
+function transFrames(A,la,lt,sec='Transpozycja'){
+  const r=A.length,c=A[0].length,T=M.make(c,r,()=>PH),fr=[];
+  fr.push({sec,t:`Transponuję ${la}`,x:`Wiersze zamieniam na kolumny: wymiar ${r}×${c} → ${c}×${r}. Pierwszy wiersz staje się pierwszą kolumną, drugi — drugą itd.`,B:[bd(A,{lab:la}),bd(T,{lab:lt})],J:['→']});
+  for(let i=0;i<r;i++){
+    const U=[];A[i].forEach((x,j)=>{const t=.5+j*.55;U.push({t,b:0,i,j,add:'pair'},{t:t+.1,b:1,i:j,j:i,v:x.html()})});
+    fr.push({sec,t:`Wiersz ${i+1} → kolumna ${i+1}`,x:`Przepisuję wiersz ${i+1} jako kolumnę ${i+1}: pierwsza liczba idzie na górę, kolejne pod nią.`,B:[bd(A,{lab:la,hl:{rows:{[i]:'src'}}}),bd(T,{lab:lt,hl:{cols:{[i]:'dst'}}})],J:['→'],U});
+    A[i].forEach((x,j)=>{T[j][i]=x.html()});
+  }
+  return fr;
+}
+function scaleFrames(k,A,la,lr,sec='Mnożenie przez liczbę'){
+  const R=M.scale(k,A),n=A.length*A[0].length,dt=n>9?.4:.55,U=[],C=[];let t=.5,q=0;
+  A.forEach((r,i)=>r.forEach((x,j)=>{U.push({t,b:0,i,j,add:'pair'},{t,line:q},{t:t+.1,b:1,i,j,v:R[i][j].html()},{t:t+dt-.05,b:0,clear:true});C.push(`${fmt(k)}·${fmt(x)} = ${R[i][j].html()}`);t+=dt;q++}));
+  return [{sec,t:`Mnożę ${la} przez ${k.html()}`,x:`Mnożenie macierzy przez liczbę: <b>każdy</b> element mnożę przez ${k.html()}.`,B:[bd(A,{lab:la}),bd(A.map(r=>r.map(()=>PH)),{lab:lr})],J:['→'],C,U}];
+}
+function sumFrames(A,Bm,sg,la,lb,lr){
+  const R=sg>0?M.add(A,Bm):M.sub(A,Bm),o=sg>0?'+':'−',n=A.length*A[0].length,dt=n>9?.45:.6,U=[],C=[];let t=.5,q=0;
+  A.forEach((r,i)=>r.forEach((x,j)=>{U.push({t,b:0,i,j,add:'pair'},{t,b:1,i,j,add:'pair'},{t,line:q},{t:t+.15,b:2,i,j,v:R[i][j].html()},{t:t+dt-.05,b:0,clear:true},{t:t+dt-.05,b:1,clear:true});C.push(`${fmt(x)} ${o} ${fmt(Bm[i][j])} = ${R[i][j].html()}`);t+=dt;q++}));
+  return [{sec:sg>0?'Dodawanie':'Odejmowanie',t:lr,x:`${sg>0?'Dodaję':'Odejmuję'} element po elemencie — zawsze liczby z <b>tych samych miejsc</b>. Dlatego obie macierze muszą mieć ten sam wymiar (${A.length}×${A[0].length}).`,B:[bd(A,{lab:la}),bd(Bm,{lab:lb}),bd(A.map(r=>r.map(()=>PH)),{lab:lr})],J:[o,'='],C,U}];
+}
+function addFrames(A,Bm,a,b){
+  const ab=Math.abs(b),la=coef(a)+'<i>A</i>',lb=coef(ab)+'<i>B</i>',fr=[];
+  if(a!==1)fr.push(...scaleFrames(F(a),A,'<i>A</i>',la));
+  if(ab!==1)fr.push(...scaleFrames(F(ab),Bm,'<i>B</i>',lb));
+  return fr.concat(sumFrames(M.scale(F(a),A),M.scale(F(ab),Bm),b<0?-1:1,la,lb,`${la} ${b<0?'−':'+'} ${lb}`));
+}
+const iA='<i>A</i>',iB='<i>B</i>',iC='<i>C</i>',sT='<sup>T</sup>',iAB='<i>AB</i>';
+const EXPR_FR=[
+  (A,B)=>{const x=M.mul(A,B),y=M.mul(B,A);return [...mulFrames(A,B,{a:iA,b:iB,c:iAB}).frames,...mulFrames(B,A,{a:iB,b:iA,c:'<i>BA</i>'}).frames,...sumFrames(x,y,-1,iAB,'<i>BA</i>','<i>AB</i> − <i>BA</i>')]},
+  (A,B)=>{const t=M.T(A),x=M.scale(F(2),t),y=M.scale(F(3),B);return [...transFrames(A,iA,iA+sT),...scaleFrames(F(2),t,iA+sT,'2'+iA+sT),...scaleFrames(F(3),B,iB,'3'+iB),...sumFrames(x,y,-1,'2'+iA+sT,'3'+iB,'2'+iA+sT+' − 3'+iB)]},
+  (A,B,C)=>{const s=M.add(A,B),l='('+iA+' + '+iB+')';return [...sumFrames(A,B,1,iA,iB,iA+' + '+iB),...mulFrames(s,C,{a:l,b:iC,c:l+iC}).frames]},
+  (A,B)=>{const x=M.mul(A,A),y=M.scale(F(2),B),a2=iA+'<sup>2</sup>';return [...mulFrames(A,A,{a:iA,b:iA,c:a2}).frames,...scaleFrames(F(2),B,iB,'2'+iB),...sumFrames(x,y,-1,a2,'2'+iB,a2+' − 2'+iB)]},
+  (A,B,C)=>{const bt=M.T(B),x=M.mul(A,bt);return [...transFrames(B,iB,iB+sT),...mulFrames(A,bt,{a:iA,b:iB+sT,c:iA+iB+sT}).frames,...sumFrames(x,C,1,iA+iB+sT,iC,iA+iB+sT+' + '+iC)]},
+  (A,B,C)=>{const x=M.mul(A,B),t=M.T(x),y=M.scale(F(2),C),l='('+iAB+')'+sT;return [...mulFrames(A,B,{a:iA,b:iB,c:iAB}).frames,...transFrames(x,iAB,l),...scaleFrames(F(2),C,iC,'2'+iC),...sumFrames(t,y,-1,l,'2'+iC,l+' − 2'+iC)]},
+  (A,B,C)=>{const at=M.T(A),x=M.mul(at,B),ct=M.T(C);return [...transFrames(A,iA,iA+sT),...mulFrames(at,B,{a:iA+sT,b:iB,c:iA+sT+iB}).frames,...transFrames(C,iC,iC+sT),...sumFrames(x,ct,-1,iA+sT+iB,iC+sT,iA+sT+iB+' − '+iC+sT)]},
+];
+function detFrames(A,lab,sec,detailed){
+  const n=A.length,v=detF(A);
+  if(n===1)return [{sec,t:`${lab} = ${v.html()}`,x:'Wyznacznik macierzy 1×1 to jej jedyny element.',B:[bd(A,{det:true,lab})]}];
+  if(n===2){
+    const p=A[0][0].mul(A[1][1]),q=A[0][1].mul(A[1][0]);
+    return [{sec,t:`Liczę ${lab}`,x:'Wyznacznik 2×2: iloczyn na przekątnej „w prawo w dół” (zielony) <b>minus</b> iloczyn na drugiej przekątnej (czerwony).',B:[bd(A,{det:true,lab})],
+      C:[`${fmt(A[0][0])} · ${fmt(A[1][1])} = ${p.html()}`,`${fmt(A[0][1])} · ${fmt(A[1][0])} = ${q.html()}`,{h:`${lab} = ${fmt(p)} − ${fmt(q)} = <b>${v.html()}</b>`,full:true}],
+      U:[{t:.4,b:0,i:0,j:0,add:'pos'},{t:.4,b:0,i:1,j:1,add:'pos'},{t:.6,line:0},{t:1.9,b:0,i:0,j:1,add:'neg'},{t:1.9,b:0,i:1,j:0,add:'neg'},{t:2.1,line:1},{t:3.2,line:2}]}];
+  }
+  const E=A.map(r=>[...r,r[0],r[1]]),P=[[[0,0],[1,1],[2,2]],[[0,1],[1,2],[2,3]],[[0,2],[1,3],[2,4]]],N=[[[0,2],[1,1],[2,0]],[[0,3],[1,2],[2,1]],[[0,4],[1,3],[2,2]]];
+  const val=d=>d.reduce((s,[i,j])=>s.mul(E[i][j]),F(1)),txt=d=>d.map(([i,j])=>fmt(E[i][j])).join(' · ');
+  const dg=[...P.map(d=>['pos',d]),...N.map(d=>['neg',d])],lines=dg.map(([c,d])=>`${c==='pos'?'+':'−'} ${txt(d)} = ${fmt(val(d))}`);
+  const fin={h:`${lab} = ${P.map(d=>fmt(val(d))).join(' + ')} − ${N.map(d=>fmt(val(d))).join(' − ')} = <b>${v.html()}</b>`,full:true};
+  const base=hl=>bd(E,{det:true,lab,dimCols:[3,4],hl});
+  if(detailed){
+    const fr=[{sec,t:`Liczę ${lab} metodą Sarrusa`,x:'Dopisuję obok dwie pierwsze kolumny (wyszarzone). Potem mnożę trzy liczby na każdej przekątnej: trzy przekątne „w prawo w dół” biorę z plusem, trzy „w lewo w dół” — z minusem.',B:[base()]}];
+    dg.forEach(([c,d],k)=>fr.push({sec,t:`${c==='pos'?'Przekątna z plusem':'Przekątna z minusem'} ${k%3+1} z 3`,x:c==='pos'?'Mnożę trzy liczby na przekątnej w prawo w dół — ten iloczyn <b>dodam</b>.':'Mnożę trzy liczby na przekątnej w lewo w dół — ten iloczyn <b>odejmę</b>.',
+      B:[base({cells:Object.fromEntries(d.map(([i,j])=>[i+','+j,c]))})],C:lines.slice(0,k+1),U:[{t:.5,line:k}]}));
+    fr.push({sec,t:`${lab} = ${v.html()}`,x:'Dodaję iloczyny z plusem i odejmuję iloczyny z minusem.',B:[base()],C:[...lines,fin],U:[{t:.6,line:6}]});
+    return fr;
+  }
+  const U=[];dg.forEach(([c,d],k)=>{const t=.4+k*1.1;d.forEach(([i,j])=>U.push({t,b:0,i,j,add:c}));U.push({t:t+.2,line:k},{t:t+1,b:0,clear:true})});U.push({t:.4+6*1.1,line:6});
+  return [{sec,t:`Liczę ${lab} (Sarrus)`,x:'Tak samo jak wyznacznik główny: trzy przekątne z plusem, trzy z minusem.',B:[base()],C:[...lines,fin],U}];
+}
+function sysCheckFrame(Ab,names,vals){
+  const nv=names.length,C=[],U=[];
+  Ab.forEach((r,i)=>{let s=F(0);const p=[];r.slice(0,nv).forEach((a,j)=>{if(!a.z){p.push(`${fmt(a)}·${fmt(vals[j])}`);s=s.add(a.mul(vals[j]))}});C.push({h:`${p.join(' + ')||'0'} = ${s.html()} &nbsp;${s.eq(r[nv])?'✓':'✗'}`,full:true});U.push({t:.6+i*.8,line:i})});
+  return {sec:'Sprawdzenie',t:'Sprawdzam — podstawiam do równań',x:`Wynik: ${names.map((v,j)=>`${nmHtml(v)} = ${vals[j].html()}`).join(', ')}. Wstawiam go do każdego równania — lewa strona musi dać wyraz wolny.`,S:sysHtml(abRows(Ab,nv),names),C,U};
+}
+function sysGaussFrames(Ab,names,sec='Metoda Gaussa',noCheck){
+  const nv=names.length,g=gaussFrames(Ab,nv,{mode:'sys',names,sec}),res=rref(Ab,nv),sol=sysSolution(res,nv),fr=g.frames;
+  const rows=abRows(g.A,nv),isZ=r=>r.c.every(x=>x.z)&&r.k.z,hl={rows:{}};
+  rows.forEach((r,i)=>{if(isZ(r))hl.rows[i]='dim';else if(r.c.every(x=>x.z))hl.rows[i]='bad'});
+  const keep=rows.filter(r=>!isZ(r)),nz=rows.length-keep.length;
+  const kc=`rz <i>A</i> = ${res.rank}, rz [<i>A</i> | <i>B</i>] = ${res.rankAb}, niewiadomych ${nv}.`;
+  const zt=nz?(nz===1?'Wiersz zerowy (0 = 0) wyszarzyłem — nic nie wnosi. ':'Wiersze zerowe (0 = 0) wyszarzyłem — nic nie wnoszą. '):'';
+  let t='Odczytuję wynik',x,C=[],U;
+  if(res.type==='none'){const k=res.A[res.bad][nv].html();t='Sprzeczność!';x=`Czerwony wiersz to równanie 0 = ${k} — a to nieprawda. ${kc} Rząd <i>A</i> jest mniejszy niż rząd [<i>A</i> | <i>B</i>], więc układ jest <b>sprzeczny</b>: nie ma rozwiązań.`}
+  else if(res.type==='one'){x=`${zt}Przed kreską jest macierz jednostkowa, więc każdy wiersz mówi wprost, ile wynosi jedna niewiadoma. ${kc} Rzędy są równe liczbie niewiadomych: <b>dokładnie jedno rozwiązanie</b>.`;C=[{h:sysHtml(keep,names),full:true}]}
+  else{x=`${zt}${kc} Rzędy są równe, ale mniejsze od liczby niewiadomych: <b>nieskończenie wiele rozwiązań</b>. Niewiadome bez schodka (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) są dowolne — przenoszę je na prawą stronę.`;C=[{h:sysHtml(keep,names),full:true},{h:genSolHtml(sol,names),full:true}];U=[{t:1.4,line:1}]}
+  fr.push({sec,t,x,B:[bd(g.A,{bar:nv,hl})],C,U});
+  if(res.type==='one'&&!noCheck)fr.push(sysCheckFrame(Ab,names,sol.forms.map(f=>f.k)));
+  return fr;
+}
+function macFrames(Ab,names){
+  const nv=names.length,m=Ab.length,A=Ab.map(r=>r.slice(0,nv)),bc=Ab.map(r=>[r[nv]]),sec='Metoda macierzowa',Xn=names.map(v=>[nmHtml(v)]),fr=[];
+  fr.push({sec,t:'Zapisuję układ jako <i>AX</i> = <i>B</i>',x:'<i>A</i> — współczynniki przy niewiadomych, <i>X</i> — kolumna niewiadomych, <i>B</i> — wyrazy wolne. Pomnóż w myślach wiersz <i>A</i> przez <i>X</i> — wyjdzie lewa strona jednego równania.',S:sysHtml(abRows(Ab,nv),names),B:[bd(A,{lab:'<i>A</i>'}),bd(Xn,{lab:'<i>X</i>'}),bd(bc,{lab:'<i>B</i>'})],J:['·','=']});
+  if(m!==nv){fr.push({sec,t:'<i>A</i> nie jest kwadratowa',x:`<i>A</i> ma wymiar ${m}×${nv}, więc nie ma odwrotnej i metoda macierzowa nie działa. Liczę metodą Gaussa.`});return fr.concat(sysGaussFrames(Ab,names))}
+  fr.push({sec,t:'Wzór: <i>X</i> = <i>A</i><sup>−1</sup><i>B</i>',x:'Mnożę obie strony z <b>lewej</b> przez <i>A</i><sup>−1</sup>. Ponieważ <i>A</i><sup>−1</sup><i>A</i> = <i>I</i> i <i>IX</i> = <i>X</i>, zostaje <i>X</i> = <i>A</i><sup>−1</sup><i>B</i>. Najpierw policzę <i>A</i><sup>−1</sup>, potem pomnożę.',S:'<div class="eq"><i>A</i><sup>−1</sup><i>AX</i> = <i>A</i><sup>−1</sup><i>B</i> &nbsp;⇒&nbsp; <i>X</i> = <i>A</i><sup>−1</sup><i>B</i></div>'});
+  const iv=invFrames(A,'<i>A</i>','<i>A</i><sup>−1</sup>','Macierz odwrotna');fr.push(...iv.frames);
+  if(!iv.inv){fr.push({sec,t:'Metoda macierzowa nie działa',x:'<i>A</i> nie jest odwracalna, więc układ jest sprzeczny albo ma nieskończenie wiele rozwiązań. Rozstrzygam metodą Gaussa.'});return fr.concat(sysGaussFrames(Ab,names))}
+  const mf=mulFrames(iv.inv,bc,{a:'<i>A</i><sup>−1</sup>',b:'<i>B</i>',c:'<i>X</i>'});fr.push(...mf.frames);
+  fr.push({sec,t:'Wynik',x:'Każdy wiersz kolumny <i>X</i> to wartość jednej niewiadomej.',B:[bd(Xn,{lab:'<i>X</i>'}),bd(mf.R,{lab:''})],J:['='],C:[{h:names.map((v,j)=>`${nmHtml(v)} = ${mf.R[j][0].html()}`).join(', &nbsp; '),full:true}]});
+  fr.push(sysCheckFrame(Ab,names,mf.R.map(r=>r[0])));
+  return fr;
+}
+function cramerFrames(Ab,names){
+  const nv=names.length,m=Ab.length,A=Ab.map(r=>r.slice(0,nv)),b=Ab.map(r=>r[nv]),bc=b.map(x=>[x]),sec='Wzory Cramera',fr=[];
+  if(m!==nv||nv>3){fr.push({sec,t:'Tu Cramer się nie przyda',x:m!==nv?`Wzory Cramera działają tylko, gdy równań jest tyle, ile niewiadomych. Tu równań jest ${m}, a niewiadomych ${nv}. Liczę metodą Gaussa.`:`Dla układu ${nv}×${nv} trzeba by liczyć wyznaczniki ${nv}×${nv} (rozwinięcie Laplace'a) — to bardzo długie. Wygodniej metodą Gaussa.`,S:sysHtml(abRows(Ab,nv),names)});return fr.concat(sysGaussFrames(Ab,names))}
+  fr.push({sec,t:'Macierz współczynników i wyrazy wolne',x:'Z układu wypisuję macierz współczynników <i>A</i> i kolumnę wyrazów wolnych <i>B</i>. Najpierw liczę wyznacznik główny <i>W</i> = det <i>A</i>.',S:sysHtml(abRows(Ab,nv),names),B:[bd(A,{lab:'<i>A</i>'}),bd(bc,{lab:'<i>B</i>'})]});
+  fr.push(...detFrames(A,'<i>W</i>',sec,true));
+  const W=detF(A);
+  if(W.z){fr.push({sec,t:'<i>W</i> = 0 — Cramer nie rozstrzyga',x:'Wyznacznik główny jest zerem: układ jest sprzeczny albo ma nieskończenie wiele rozwiązań. Sprawdzam metodą Gaussa.'});return fr.concat(sysGaussFrames(Ab,names))}
+  const Ws=names.map((v,j)=>{
+    const lab=`<i>W</i><sub>${nmHtml(v)}</sub>`,Aj=A.map((r,i)=>r.map((x,q)=>q===j?b[i]:x)),U=[];
+    for(let i=0;i<nv;i++)U.push({t:.8+i*.5,b:0,i,j,v:b[i].html()},{t:.8+i*.5,b:1,i,j:0,add:'pair'});
+    fr.push({sec,t:`${lab}: kolumnę przy ${nmHtml(v)} zastępuję wyrazami wolnymi`,x:`Biorę <i>A</i> i jej kolumnę ${j+1} (współczynniki przy ${nmHtml(v)}) zastępuję kolumną <i>B</i>. Reszta zostaje bez zmian.`,B:[bd(A,{det:true,lab,hl:{cols:{[j]:'dst'}}}),bd(bc,{lab:'<i>B</i>'})],J:['←'],U});
+    fr.push(...detFrames(Aj,lab,sec,false));
+    return detF(Aj);
+  });
+  const C=names.map((v,j)=>({h:`${nmHtml(v)} = <span class="fr"><span><i>W</i><sub>${nmHtml(v)}</sub></span><span><i>W</i></span></span> = <span class="fr"><span>${Ws[j].str()}</span><span>${W.str()}</span></span> = <b>${Ws[j].div(W).html()}</b>`,full:true}));
+  fr.push({sec,t:'Wzory Cramera',x:`<i>W</i> = ${W.html()} ≠ 0, więc jest dokładnie jedno rozwiązanie. Każdą niewiadomą dostaję, dzieląc jej wyznacznik przez wyznacznik główny.`,C,U:C.map((_,k)=>({t:.5+k*.9,line:k}))});
+  fr.push(sysCheckFrame(Ab,names,Ws.map(x=>x.div(W))));
+  return fr;
+}
+const sysFrames=(Ab,names,method)=>method==='mac'?macFrames(Ab,names):method==='cra'?cramerFrames(Ab,names):sysGaussFrames(Ab,names);
+function symFrames(sol,inNum){
+  const fr=[];
+  if(!inNum)fr.push({sec:'Równanie',t:'Wyznaczam <i>X</i>',x:'Przekształcam równanie jak zwykłe równanie. Pilnuję jednego: mnożąc przez macierz, robię to <b>z tej samej strony</b> po obu stronach.',C:[{h:sol.orig,full:true}],Cb:true});
+  sol.steps.forEach(s=>fr.push({sec:'Na literach',t:s.final?'Wzór na <i>X</i>':s.title,x:s.final?(inNum?'Teraz podstawiam liczby: liczę potrzebne macierze i mnożę po kolei od lewej.':'Gotowe — to jest szukane <i>X</i>.'):s.why,
+    C:s.lines.map(l=>({h:l,full:true})),Cb:true,U:s.lines.slice(1).map((_,k)=>({t:1.3+k*1.4,line:k+1}))}));
+  return fr;
+}
+function numFrames(T){
+  const {sol,env,X}=T,fr=[],secN='Podstawiam liczby';
+  fr.push({sec:'Zadanie',t:'Wyznaczam <i>X</i>',x:'Najpierw przekształcam równanie <b>na literach</b> — tak jest mniej liczenia. Liczby podstawię dopiero na końcu.',S:`<div class="eq">${sol.orig}</div>`,B:[...sol.letters].sort().map(c=>bd(env[c],{lab:`<i>${c}</i>`}))});
+  fr.push(...symFrames(sol,true));
+  const vals=[],cache={};
+  for(const f of sol.P.fs){
+    const key=rFac(f);if(cache[key]){vals.push(cache[key]);continue}
+    const bname=rFac({...f,i:false});let base;
+    if(f.sum){base=toMat(evalSum(f.sum,env),env.__n);fr.push({sec:secN,t:`Liczę ${f.html}`,x:'Najpierw nawias. <i>I</i> to macierz jednostkowa, więc liczba przy <i>I</i> trafia tylko na przekątną.',B:[bd(base,{lab:f.html})]});
+      if(f.t){fr.push(...transFrames(base,f.html,bname,secN));base=M.T(base)}}
+    else{base=env[f.n];if(f.t){fr.push(...transFrames(base,`<i>${f.n}</i>`,bname,secN));base=M.T(base)}}
+    let V=base;
+    if(f.i){const iv=invFrames(base,bname,key,'Odwrotność '+key);fr.push(...iv.frames);V=iv.inv}
+    cache[key]=V;vals.push(V);
+  }
+  let run=vals[0];
+  for(let k=1;k<vals.length;k++){const mf=mulFrames(run,vals[k],{a:rProd(sol.P.fs.slice(0,k)),b:rFac(sol.P.fs[k]),c:rProd(sol.P.fs.slice(0,k+1))});fr.push(...mf.frames);run=mf.R}
+  if(run&&!sol.P.c.one)fr.push(...scaleFrames(sol.P.c,run,rProd(sol.P.fs),'<i>X</i>'));
+  fr.push({sec:'Wynik',t:'Mamy <i>X</i>',x:`Wzór <i>X</i> = ${rP(sol.P)} po podstawieniu liczb daje:`,B:[bd(X,{lab:'<i>X</i>'})]});
+  fr.push({sec:'Sprawdzenie',t:'Sprawdzam w równaniu',x:`Podstawiam <i>X</i> do ${sol.orig}. Obie strony muszą wyjść takie same.`,B:[bd(T.Lv,{lab:'lewa strona'}),bd(T.Rv,{lab:'prawa strona'})],J:[M.eq(T.Lv,T.Rv)?'=':'≠']});
+  return fr;
+}
+function linFrames(L){
+  const d=L.d,sec='Przez niewiadome',fr=[],Xn=M.make(d.r,d.c,(i,j)=>nmHtml(d.names[i*d.c+j])),nn=d.names.map(nmHtml).join(', ');
+  fr.push({sec,t:'Zapisuję <i>X</i> przez niewiadome',x:`Do działań w równaniu pasuje tylko wymiar ${d.r}×${d.c}, więc <i>X</i> ma ${d.r*d.c} ${pl(d.r*d.c,'element','elementy','elementów')} — każdy to osobna niewiadoma: ${nn}.`,S:`<div class="eq">${d.orig}</div>`,B:[bd(Xn,{lab:'<i>X</i>'}),...d.given.map(([c,V])=>bd(V,{lab:`<i>${c}</i>`}))]});
+  [[d.lL,d.LH,'lewą'],[d.lR,d.RH,'prawą']].forEach(([lab,H,w])=>{
+    const U=[];let t=.5;H.forEach((r,i)=>r.forEach((v,j)=>{U.push({t,b:0,i,j,v});t+=.6}));
+    fr.push({sec,t:`Wymnażam ${w} stronę: ${lab}`,x:`Liczę ${lab} zwykłymi działaniami na macierzach (wiersz razy kolumna) — tylko zamiast liczb w <i>X</i> stoją niewiadome. Każdy element wyniku to wyrażenie z ${nn}.`,B:[bd(H.map(r=>r.map(()=>PH)),{lab})],U});
+  });
+  const U=[],C=[];let t=.5,k=0;
+  d.LH.forEach((r,i)=>r.forEach((v,j)=>{U.push({t,b:0,i,j,add:'pair'},{t,b:1,i,j,add:'pair'},{t,line:k},{t:t+.85,b:0,clear:true},{t:t+.85,b:1,clear:true});C.push({h:`${v} = ${d.RH[i][j]}`,full:true});t+=.9;k++}));
+  fr.push({sec,t:'Porównuję elementy',x:'Dwie macierze są równe, gdy mają równe elementy na tych samych miejscach. Każda para daje jedno równanie.',B:[bd(d.LH,{lab:d.lL}),bd(d.RH,{lab:d.lR})],J:['='],C,U});
+  if(!d.rows.length){fr.push({sec,t:'Same tożsamości 0 = 0',x:`Każda macierz ${d.r}×${d.c} spełnia to równanie.`});return fr}
+  fr.push({sec,t:'Porządkuję układ',x:'Niewiadome przenoszę na lewo, liczby na prawo. Równania typu 0 = 0 pomijam. Dostaję zwykły układ równań:',S:sysHtml(d.rows,d.names)});
+  fr.push(...sysGaussFrames(d.Ab,d.names,'Rozwiązuję układ',true));
+  if(L.type==='one')fr.push({sec:'Wynik',t:'Składam macierz <i>X</i>',x:'Wstawiam znalezione liczby na miejsca niewiadomych.',B:[bd(Xn,{lab:'<i>X</i>'}),bd(L.X,{lab:''})],J:['=']},
+    {sec:'Sprawdzenie',t:'Sprawdzam w równaniu',x:`Podstawiam <i>X</i> do ${d.orig}. Obie strony muszą wyjść takie same.`,B:[bd(d.chk[0],{lab:'lewa strona'}),bd(d.chk[1],{lab:'prawa strona'})],J:['=']});
+  else if(L.type==='inf')fr.push({sec:'Wynik',t:'Nieskończenie wiele macierzy <i>X</i>',x:'Wstawiam rozwiązanie ogólne na miejsca niewiadomych. Każdy wybór parametrów daje inną macierz spełniającą równanie.',S:`<div class="eq">${d.gen}</div>`});
+  else fr.push({sec:'Wynik',t:'Brak rozwiązań',x:'Układ jest sprzeczny, więc żadna macierz <i>X</i> nie spełnia tego równania.'});
+  return fr;
+}
+// najpierw wzorem na literach; gdy się nie da — przez niewiadome
+function numbersSolve(src,env){
+  let sol=null,why='';
+  try{sol=solve(src)}catch(e){if(!e.lin)throw e;why=e.message+' Wzorem na literach się nie da.'}
+  if(sol){
+    const sq=Object.values(env).find(v=>v.length===v[0].length);env.__n=sq?sq.length:2;
+    try{
+      const X=toMat(evalP(sol.P,env),env.__n);env.X=X;
+      let Lv=evalSum(sol.L0,env),Rv=evalSum(sol.R0,env);
+      if(isS(Lv))Lv=toMat(Lv,Rv.length);if(isS(Rv))Rv=toMat(Rv,Lv.length);
+      sameDim(Lv,Rv,'porównać');
+      const T={sol,env,X,Lv,Rv};return {html:numSolHtml(T),X,fr:()=>numFrames(T)};
+    }catch(e){
+      delete env.X;
+      if(e.message==='singular')why=`Macierz ${e.what} nie jest odwracalna (w eliminacji Gaussa zabraknie niezerowego elementu), więc wzór <span class="f"><i>X</i> = ${rP(sol.P)}</span> tu nie działa.`;
+      else if(e instanceof DimErr&&e.inv)why=`${e.message} Wzór <span class="f"><i>X</i> = ${rP(sol.P)}</span> tu nie działa.`;
+      else if(!(e instanceof DimErr))throw e;
+    }
+  }
+  const L=linSolve(src,env);
+  return {html:(why?`<div class="tip">${why} Liczę <b>przez niewiadome</b> — ta metoda działa zawsze.</div>`:'')+L.html,X:L.X,
+    fr:()=>(why?[{sec:'Dlaczego nie wzorem?',t:'Wzór tu nie zadziała',x:why+' Dlatego liczę <b>przez niewiadome</b> — ta metoda działa zawsze.'}]:[]).concat(linFrames(L))};
+}
+
+// =====================================================================
+//  REJESTR TEMATÓW — tu dopisujesz nowe typy zadań
+// =====================================================================
+//  Żeby dodać nowy temat, dopisz jeden obiekt do tablicy TOPICS (na dole pliku):
+//
+//    { id:'moj-temat', sec:'Dział', name:'Krótka nazwa', gen: () => zadanie }
+//
+//  `id` musi być unikalne i stałe (pod nim zapisuje się postęp ucznia).
+//  `gen()` losuje nowe zadanie i zwraca obiekt:
+//
+//    q     polecenie (HTML), np. 'Oblicz det <i>A</i>'
+//    body  treść zadania: macierze, równanie, układ (HTML)
+//    ans   oczekiwana odpowiedź — jedna z postaci:
+//            {kind:'mat', M:[[Fr]], lab:'<i>X</i>'}                 siatka pól na macierz
+//            {kind:'num', v:Fr, lab:'det <i>A</i>'}                 jedna liczba
+//            {kind:'formula', sol}                                  wzór na X (wynik solve())
+//            {kind:'sys', type:'one'|'inf'|'none', names, vals}     układ równań
+//            {kind:'param', roots:[{a:Fr, type:'inf'|'none'}]}     dyskusja układu z parametrem
+//    sol   pełne rozwiązanie (HTML)
+//    fr    () => klatki animacji „krok po kroku” (opcjonalnie; format opisany w engine.js)
+//    hint  podpowiedź (HTML, opcjonalnie)
+//
+//  Ćwiczenia, Sprawdzian, Postęp i Powtórki biorą tematy stąd automatycznie —
+//  w interfejsie niczego więcej nie trzeba zmieniać.
+//  Liczby to ułamki Fr: F(3), F(-1,2). Macierze: M.ints([[1,2],[3,4]]).
+// =====================================================================
+
+const givenH=g=>`<div class="given">${g.map(([n,A])=>`<span class="gv"><i>${n}</i> = ${M.html(A)}</span>`).join('')}</div>`;
+const eqH=s=>`<div class="eq">${s}</div>`;
+
+// statyczny podgląd klatki (stan końcowy jej plansz) — przydaje się do rozwiązań tekstowych
+function frameStatic(f){
+  const V=(f.B||[]).map(b=>b.M.map(r=>r.slice()));
+  (f.U||[]).forEach(u=>{if(u.v!==undefined)V[u.b][u.i][u.j]=u.v});
+  return (f.B||[]).map((b,bi)=>(bi?` ${(f.J&&f.J[bi-1])||''} `:'')+`<span class="mat${b.det?' det':''}" style="grid-template-columns:repeat(${V[bi][0].length},auto)">${V[bi].flat().map((x,k)=>`<span${k%V[bi][0].length===b.bar?' class="bl"':''}>${x}</span>`).join('')}</span>`).join('');
+}
+
+// ---------- Wyznaczniki ----------
+function genDet(n){
+  for(;;){
+    const A=M.make(n,n,()=>F(rich(n===2?-6:-4,n===2?7:5)));const d=detF(A);
+    if(Math.abs(d.n)<=(n===2?60:90)&&(!d.z||Math.random()<.12))return A;
+  }
+}
+function genDet4(){
+  for(;;){
+    const A=M.make(4,4,()=>F(rich(-3,4,.15))),k=rnd(0,3),row=Math.random()<.6;
+    [0,1,2,3].sort(()=>Math.random()-.5).slice(0,2).forEach(q=>{if(row)A[k][q]=F(0);else A[q][k]=F(0)});
+    if(Math.abs(detF(A).n)<=150)return A;
+  }
+}
+function laplaceLine(A){
+  const n=A.length;let best=null;
+  for(let i=0;i<n;i++){const z=A[i].filter(x=>x.z).length;if(!best||z>best.z)best={row:true,k:i,z}}
+  for(let j=0;j<n;j++){const z=A.filter(r=>r[j].z).length;if(z>best.z)best={row:false,k:j,z}}
+  return best;
+}
+const minorOf=(A,i,j)=>A.filter((_,r)=>r!==i).map(r=>r.filter((_,c)=>c!==j));
+function laplaceTerms(A){
+  const L=laplaceLine(A),n=A.length,t=[];
+  for(let q=0;q<n;q++){
+    const i=L.row?L.k:q,j=L.row?q:L.k,a=A[i][j];if(a.z)continue;
+    const s=(i+j)%2?-1:1,Mi=minorOf(A,i,j),dm=detF(Mi);
+    t.push({i,j,a,s,Mi,dm,v:F(s).mul(a).mul(dm)});
+  }
+  return {L,t};
+}
+const lapTerm=o=>`(−1)<sup>${o.i+1}+${o.j+1}</sup> · ${fmt(o.a)} · ${fmt(o.dm)}`;
+function laplaceHtml(A,lab='det <i>A</i>'){
+  const {L,t}=laplaceTerms(A),v=detF(A);
+  let h=`<p>Rozwijam względem ${L.row?'wiersza':'kolumny'} ${L.k+1} — ma najwięcej zer (${L.z}), więc liczenia jest najmniej. Każdy niezerowy element mnożę przez znak (−1)<sup><i>i</i>+<i>j</i></sup> i wyznacznik minora — macierzy bez wiersza i kolumny tego elementu.</p>`;
+  t.forEach(o=>{
+    h+=`<div class="line">(−1)<sup>${o.i+1}+${o.j+1}</sup> · ${fmt(o.a)} · ${matH(o.Mi,{det:true})}</div>`;
+    h+=`<details><summary>Minor <i>M</i><sub>${o.i+1}${o.j+1}</sub> (Sarrus)</summary>${detLines(o.Mi)}</details>`;
+    h+=`<div class="line">= ${lapTerm(o)} = <b>${o.v.html()}</b></div>`;
+  });
+  return h+`<div class="line res">${lab} = ${t.map(o=>fmt(o.v)).join(' + ')||'0'} = ${v.html()}</div>`;
+}
+function laplaceFrames(A,lab='det <i>A</i>',sec="Rozwinięcie Laplace'a"){
+  const {L,t}=laplaceTerms(A),v=detF(A),fr=[];
+  fr.push({sec,t:`Wybieram ${L.row?'wiersz':'kolumnę'} ${L.k+1}`,x:`Rozwijam względem wiersza albo kolumny z największą liczbą zer — tu ${L.row?'wiersz':'kolumna'} ${L.k+1} ma ${L.z} ${pl(L.z,'zero','zera','zer')}. Składnik z zerem jest zerem, więc liczę tylko ${t.length} ${pl(t.length,'składnik','składniki','składników')}.`,
+    B:[bd(A,{det:true,lab,hl:L.row?{rows:{[L.k]:'src'}}:{cols:{[L.k]:'src'}}})]});
+  t.forEach((o,k)=>{
+    const ml=`<i>M</i><sub>${o.i+1}${o.j+1}</sub>`;
+    fr.push({sec,t:`Składnik ${k+1}: element ${o.a.html()}`,x:`Element stoi w wierszu ${o.i+1} i kolumnie ${o.j+1}. Skreślam ten wiersz i tę kolumnę — zostaje minor ${ml}. Znak: (−1)<sup>${o.i+1}+${o.j+1}</sup> = ${o.s>0?'+1':'−1'}.`,
+      B:[bd(A,{det:true,lab,hl:{rows:{[o.i]:'dim'},cols:{[o.j]:'dim'},cells:{[o.i+','+o.j]:'piv'}}}),bd(o.Mi,{det:true,lab:ml})],J:['→']});
+    fr.push(...detFrames(o.Mi,'det '+ml,sec,false));
+    fr.push({sec,t:`Składnik ${k+1} = ${o.v.html()}`,x:'Znak · element · wyznacznik minora:',C:[{h:`${lapTerm(o)} = <b>${o.v.html()}</b>`,full:true}],U:[{t:.4,line:0}]});
+  });
+  fr.push({sec,t:`${lab} = ${v.html()}`,x:'Dodaję wszystkie składniki.',B:[bd(A,{det:true,lab})],C:[{h:`${lab} = ${t.map(o=>fmt(o.v)).join(' + ')||'0'} = <b>${v.html()}</b>`,full:true}],U:[{t:.5,line:0}]});
+  return fr;
+}
+function genDetProp(){
+  const n=pick([2,3]),a=F(pick([-3,-2,2,3,4,5])),b=F(pick([-2,2,3,4,-4])),k=pick([2,3,-2]),kS=F(k).str(),kn=F(k**n);
+  const T=pick([
+    ()=>({e:`det(${kS}<i>A</i>)`,v:kn.mul(a),w:[`Liczba przed macierzą ${n}×${n} wychodzi w potędze ${n}: det(${kS}<i>A</i>) = (${kS})<sup>${n}</sup>·det <i>A</i> = ${kn.html()}·${fmt(a)}`]}),
+    ()=>({e:'det(<i>AB</i>)',v:a.mul(b),w:['det(<i>AB</i>) = det <i>A</i> · det <i>B</i>']}),
+    ()=>({e:'det(<i>A</i><sup>−1</sup>)',v:F(1).div(a),w:['det(<i>A</i><sup>−1</sup>) = 1 / det <i>A</i>']}),
+    ()=>({e:'det(<i>A</i><sup>T</sup><i>B</i>)',v:a.mul(b),w:['det(<i>A</i><sup>T</sup>) = det <i>A</i>','det(<i>A</i><sup>T</sup><i>B</i>) = det <i>A</i> · det <i>B</i>']}),
+    ()=>({e:'det(<i>A</i><sup>2</sup><i>B</i><sup>−1</sup>)',v:a.mul(a).div(b),w:['det(<i>A</i><sup>2</sup>) = (det <i>A</i>)<sup>2</sup>','det(<i>B</i><sup>−1</sup>) = 1 / det <i>B</i>']}),
+    ()=>({e:`det(${kS}<i>A</i><sup>T</sup><i>B</i><sup>−1</sup>)`,v:kn.mul(a).div(b),w:[`liczba ${kS} przed macierzą ${n}×${n} daje (${kS})<sup>${n}</sup> = ${kn.html()}`,'det(<i>A</i><sup>T</sup>) = det <i>A</i>','det(<i>B</i><sup>−1</sup>) = 1 / det <i>B</i>']}),
+    ()=>({e:'det(<i>A</i><sup>−1</sup><i>B</i><sup>T</sup><i>A</i>)',v:b,w:['det(<i>A</i><sup>−1</sup>) · det <i>A</i> = 1 — skracają się','zostaje det(<i>B</i><sup>T</sup>) = det <i>B</i>']}),
+    ()=>({e:`det((${kS}<i>A</i>)<sup>−1</sup>)`,v:F(1).div(kn.mul(a)),w:[`det(${kS}<i>A</i>) = (${kS})<sup>${n}</sup>·det <i>A</i> = ${kn.mul(a).html()}`,'det(<i>M</i><sup>−1</sup>) = 1 / det <i>M</i>']}),
+  ])();
+  const data=`<p class="f" style="font-size:18px"><i>A</i>, <i>B</i> — macierze ${n}×${n}, &nbsp;det <i>A</i> = ${a.html()}, &nbsp;det <i>B</i> = ${b.html()}.</p>`;
+  return {q:`Oblicz ${T.e}`,body:data,ans:{kind:'num',v:T.v,lab:T.e},
+    sol:`<p>Korzystam z własności wyznacznika:</p><ul class="rules">${T.w.map(x=>`<li>${x}</li>`).join('')}</ul><div class="line res">${T.e} = ${T.v.html()}</div>`,
+    hint:'Własności: det(<i>AB</i>) = det <i>A</i>·det <i>B</i>, det(<i>A</i><sup>T</sup>) = det <i>A</i>, det(<i>A</i><sup>−1</sup>) = 1/det <i>A</i>, det(<i>kA</i>) = <i>k</i><sup><i>n</i></sup>·det <i>A</i>.',
+    fr:()=>[{sec:'Własności wyznacznika',t:`Oblicz ${T.e}`,x:'Niczego nie wymnażam — wystarczą własności wyznacznika.',S:data,C:[...T.w.map(h=>({h,full:true})),{h:`<b>${T.e} = ${T.v.html()}</b>`,full:true}],U:[...T.w.map((_,k)=>({t:.6+k*1.3,line:k})),{t:.6+T.w.length*1.3,line:T.w.length}]}]};
+}
+
+// ---------- Rząd macierzy ----------
+const rankOf=A=>rref(A.map(r=>[...r,F(0)]),A[0].length).rank;
+function genRank(){
+  let best=null;
+  for(let at=0;at<60;at++){
+    const [m,n]=pick([[3,3],[3,4],[4,3],[4,4],[3,5]]),r=rnd(1,Math.min(m,n))===1&&Math.random()<.6?2:rnd(2,Math.min(m,n));
+    const base=Array.from({length:r},()=>Array.from({length:n},()=>F(rich(-3,4))));if(rankOf(base)<r)continue;
+    const rows=base.slice();let fail=false;
+    while(rows.length<m){
+      let row=null;
+      for(let t=0;t<40&&!row;t++){const k=base.map(()=>rnd(-2,2));if(k.filter(x=>x).length<Math.min(2,r))continue;const c=base[0].map((_,j)=>base.reduce((s,bb,i)=>s.add(bb[j].mul(F(k[i]))),F(0)));if(c.every(x=>Math.abs(x.n)<=9)&&c.some(x=>!x.z))row=c}
+      if(!row){fail=true;break}rows.push(row);
+    }
+    if(fail)continue;
+    for(let i=rows.length-1;i>0;i--){const j=rnd(0,i);[rows[i],rows[j]]=[rows[j],rows[i]]}
+    const sc=fracCount(rref(rows.map(x=>[...x,F(0)]),n));
+    if(!best||sc<best.sc)best={A:rows,sc};
+    if(sc<=2)break;
+  }
+  return best.A;
+}
+function rankFrames(A,sec='Rząd macierzy'){
+  const n=A[0].length,g=gaussFrames(A,n,{mode:'rank',down:true,lab:'<i>A</i>',sec}),r=rankOf(A),hl={rows:{}};
+  g.A.forEach((row,i)=>{hl.rows[i]=row.every(x=>x.z)?'dim':'res'});
+  g.frames.push({sec,t:`Rząd = ${r}`,x:`Postać schodkowa gotowa. Niezerowych wierszy (zielone) jest ${r}, więc rz <i>A</i> = ${r}.${r<A.length?' Wiersze zerowe (wyszarzone) się nie liczą.':''}`,B:[bd(g.A,{bar:n,hl})]});
+  return g.frames;
+}
+function rankHtml(A){
+  const fr=rankFrames(A);
+  return fr.filter(f=>f.U&&f.U.some(u=>u.v!==undefined)).map(f=>`<div class="ops">${f.t}</div><div class="line">${frameStatic(f)}</div>`).join('')+
+    `<div class="line res">rz <i>A</i> = ${rankOf(A)}</div><p class="mute">Rząd to liczba niezerowych wierszy w postaci schodkowej.</p>`;
+}
+
+// ---------- Układy z parametrem a ----------
+const LA=(p,q=0)=>({p:F(p),q:F(q)});
+const laAt=(e,t)=>e.p.add(e.q.mul(t));
+const laHtml=e=>e.q.z?e.p.html():lfHtml({c:[e.q],k:e.p},['a'],false);
+const laComp=e=>!e.q.z&&!e.p.z;
+const laFac=e=>{const neg=e.q.z?(e.p.n<0||e.p.d!==1):e.q.n<0;return laComp(e)||neg?`(${laHtml(e)})`:laHtml(e)};
+const polyAt=(c,t)=>c.reduceRight((s,x)=>s.mul(t).add(x),F(0));
+function polyFromDet(E){
+  const n=E.length,pts=[...Array(n+1).keys()];
+  const Ab=pts.map(t=>[...pts.map(k=>F(t**k)),detF(E.map(r=>r.map(e=>laAt(e,F(t)))))]);
+  return rref(Ab,n+1).A.map(r=>r[n+1]);
+}
+function polyHtml(c){
+  const p=[];
+  for(let k=c.length-1;k>=0;k--){const x=c[k];if(x.z)continue;const a=x.abs();p.push([x.n<0,k===0?a.html():(a.one?'':a.html())+'<i>a</i>'+(k>1?`<sup>${k}</sup>`:'')])}
+  return p.length?p.map(([ng,b],i)=>(i?(ng?' − ':' + '):(ng?'−':''))+b).join(''):'0';
+}
+function factorHtml(c,roots){
+  let d=c.length-1;while(c[d].z)d--;const lc=c[d];
+  return (lc.one?'':lc.eq(F(-1))?'−':lc.html())+roots.map(r=>r.z?'<i>a</i>':`(<i>a</i> ${r.n>0?'−':'+'} ${r.abs().html()})`).join('');
+}
+function detFormula(E){
+  const f=(i,j)=>laFac(E[i][j]);
+  if(E.length===2)return `${f(0,0)}·${f(1,1)} − ${f(0,1)}·${f(1,0)}`;
+  const P=[[[0,0],[1,1],[2,2]],[[0,1],[1,2],[2,0]],[[0,2],[1,0],[2,1]]],N=[[[0,2],[1,1],[2,0]],[[0,0],[1,2],[2,1]],[[0,1],[1,0],[2,2]]];
+  const t=d=>d.map(([i,j])=>f(i,j)).join('·');
+  return P.map(t).join(' + ')+' − '+N.map(t).join(' − ');
+}
+function paramSysHtml(E,b,names){
+  const n=names.length;let h='';
+  E.forEach((row,i)=>{
+    let first=true;const cells=[];
+    row.forEach((e,j)=>{
+      let sg='',t='';
+      if(!(e.p.z&&e.q.z)){
+        const comp=laComp(e),neg=!comp&&(e.q.z?e.p.n<0:e.q.n<0);
+        const coef=comp?`(${laHtml(e)})`:e.q.z?(e.p.abs().one?'':e.p.abs().html()):(e.q.abs().one?'':e.q.abs().html())+'<i>a</i>';
+        t=(first&&neg?'−':'')+coef+nmHtml(names[j]);sg=first?'':neg?'−':'+';first=false;
+      }
+      if(j)cells.push(`<span class="sg">${sg}</span>`);
+      cells.push(`<span>${t}</span>`);
+    });
+    if(first)cells[cells.length-1]='<span>0</span>';
+    h+=cells.join('')+`<span class="sg">=</span><span class="rh">${laHtml(b[i])}</span>`;
+  });
+  return `<span class="sysw"><span class="sys" style="grid-template-columns:repeat(${2*n+1},auto)">${h}</span></span>`;
+}
+const paramAt=(P,r)=>P.E.map((row,i)=>[...row.map(e=>laAt(e,r)),laAt(P.b[i],r)]);
+const TYPE_PL={one:'dokładnie jedno rozwiązanie',inf:'nieskończenie wiele rozwiązań',none:'brak rozwiązań (sprzeczny)'};
+function genParam(){
+  let best=null;
+  for(let at=0;at<600&&!(best&&best.sc===0&&at>30);at++){
+    const n=Math.random()<.3?2:3,names=stdNames(n),E=M.make(n,n,()=>LA(rich(-3,4))),pos=[],k=n===2?pick([1,2]):pick([1,2,2]);
+    while(pos.length<k){const q=[rnd(0,n-1),rnd(0,n-1)];if(!pos.some(z=>z[0]===q[0]&&z[1]===q[1]))pos.push(q)}
+    pos.forEach(([i,j])=>{E[i][j]=LA(rnd(-2,2),pick([1,1,1,-1,2]))});
+    const b=Array.from({length:n},()=>LA(rich(-3,5)));if(Math.random()<.35)b[rnd(0,n-1)]=LA(rnd(-1,2),1);
+    const c=polyFromDet(E);let deg=c.length-1;while(deg>=0&&c[deg].z)deg--;
+    if(deg<1||deg>2||c[deg].d!==1||Math.abs(c[deg].n)>4)continue;
+    const roots=[];for(let t=-6;t<=6;t++)if(polyAt(c,F(t)).z)roots.push(F(t));
+    if(roots.length!==deg)continue;
+    const P={E,b,names,c,roots};
+    const types=roots.map(r=>rref(paramAt(P,r),n).type);
+    if(types.includes('one'))continue;
+    P.types=types;P.sc=(deg===2&&types[0]===types[1]?2:0)+(types.every(t=>t==='inf')?1:0)+(deg===1?1:0);
+    if(!best||P.sc<best.sc)best=P;
+  }
+  return best;
+}
+function paramHtml(P){
+  const {E,names,c,roots,types}=P,n=names.length,rs=roots.map(r=>r.html()).join(', ');
+  let h=`<h3>1. Wyznacznik główny (liczę jak zwykle, <i>a</i> traktuję jak liczbę)</h3><div class="line"><i>W</i> = ${matH(E.map(r=>r.map(laHtml)),{det:true})}</div><div class="line">= ${detFormula(E)}</div><div class="line">= ${polyHtml(c)}${roots.length>1?' = '+factorHtml(c,roots):''}</div>`;
+  h+=`<h3>2. Kiedy <i>W</i> = 0?</h3><p><i>W</i> = 0 ⇔ ${roots.map(r=>`<i>a</i> = ${r.html()}`).join(' lub ')}. Dla <i>a</i> ∉ {${rs}} jest <i>W</i> ≠ 0, więc układ ma <b>dokładnie jedno rozwiązanie</b> (układ Cramera).</p>`;
+  roots.forEach((r,k)=>{const Ab=paramAt(P,r);h+=`<h3>${3+k}. Podstawiam <i>a</i> = ${r.html()}</h3><div class="sysbox">${sysHtml(abRows(Ab,n),names)}</div>${gaussSys(Ab,names).html}`});
+  return h+`<h3>Odpowiedź</h3><ul class="rules"><li>dla <i>a</i> ∉ {${rs}} — ${TYPE_PL.one}</li>${roots.map((r,k)=>`<li>dla <i>a</i> = ${r.html()} — ${TYPE_PL[types[k]]}</li>`).join('')}</ul>`;
+}
+function paramFrames(P){
+  const {E,b,names,c,roots,types}=P,n=names.length,sec='Układ z parametrem',rs=roots.map(r=>r.html()).join(', '),fr=[];
+  fr.push({sec,t:'Dyskusja układu z parametrem <i>a</i>',x:'Plan: najpierw wyznacznik główny <i>W</i>. Tam, gdzie <i>W</i> ≠ 0, jest dokładnie jedno rozwiązanie. Wartości <i>a</i>, dla których <i>W</i> = 0, sprawdzam osobno — podstawiam i liczę Gaussem.',S:paramSysHtml(E,b,names)});
+  fr.push({sec,t:'Wyznacznik główny <i>W</i>',x:`Liczę ${n===2?'ze wzoru <i>ad</i> − <i>bc</i>':'metodą Sarrusa'}, traktując <i>a</i> jak zwykłą liczbę, i porządkuję wynik.`,B:[bd(E.map(r=>r.map(laHtml)),{det:true,lab:'<i>W</i>'})],
+    C:[{h:'= '+detFormula(E),full:true},{h:`= <b>${polyHtml(c)}</b>${roots.length>1?' = '+factorHtml(c,roots):''}`,full:true}],U:[{t:.5,line:0},{t:2,line:1}]});
+  fr.push({sec,t:'Kiedy <i>W</i> = 0?',x:`Przyrównuję wyznacznik do zera. Dla każdego innego <i>a</i> jest <i>W</i> ≠ 0 — wtedy układ ma dokładnie jedno rozwiązanie (wzory Cramera).`,
+    C:[{h:`${polyHtml(c)} = 0 &nbsp;⇔&nbsp; ${roots.map(r=>`<i>a</i> = ${r.html()}`).join(' lub ')}`,full:true},{h:`<i>a</i> ∉ {${rs}} &nbsp;→&nbsp; ${TYPE_PL.one}`,full:true}],U:[{t:.5,line:0},{t:1.8,line:1}]});
+  roots.forEach(r=>{
+    const Ab=paramAt(P,r);
+    fr.push({sec,t:`Podstawiam <i>a</i> = ${r.html()}`,x:'Wstawiam tę wartość wszędzie, gdzie jest <i>a</i>. Wyznacznik jest teraz zerem, więc rozstrzygam metodą Gaussa.',S:sysHtml(abRows(Ab,n),names)});
+    fr.push(...sysGaussFrames(Ab,names,`a = ${r.str()}`,true));
+  });
+  fr.push({sec,t:'Odpowiedź',x:'Zbieram wszystkie przypadki:',C:[{h:`<i>a</i> ∉ {${rs}}: ${TYPE_PL.one}`,full:true},...roots.map((r,k)=>({h:`<i>a</i> = ${r.html()}: ${TYPE_PL[types[k]]}`,full:true}))],U:roots.map((_,k)=>({t:.6+k*.9,line:k+1}))});
+  return fr;
+}
+
+// ---------- Znajdź mój błąd: kolejne macierze z eliminacji Gaussa ----------
+const rrefKey=A=>JSON.stringify(rref(A.map(r=>[...r,F(0)]),A[0].length).A.map(r=>r.slice(0,A[0].length).map(x=>x.str())));
+function opText(d){
+  if(d.t==='copy')return `przepisany ${rw(d.i)}`;
+  if(d.t==='scale'){const c=d.c;return c.n===1&&c.d!==1?`${rw(d.i)} : ${c.d}`:c.n===-1&&c.d!==1?`${rw(d.i)} : (−${c.d})`:`${rw(d.i)} · ${fmt(c)}`}
+  const a=d.c.abs();return `${rw(d.i)} ${d.c.n<0?'−':'+'} ${a.one?'':a.d===1?a.str():'('+a.str()+')'}${rw(d.j)}`;
+}
+// zgaduje, jaką operację uczeń chciał zrobić, żeby dostać wiersz R z macierzy old
+function guessRow(old,R){
+  const m=old.length,w=R.length;let best=null;
+  const consider=(exp,d,cost)=>{const ok=exp.map((x,q)=>x.eq(R[q])),n=ok.filter(Boolean).length;if(!best||n>best.n||(n===best.n&&cost<best.cost))best={n,exp,ok,d,cost}};
+  for(let i=0;i<m;i++){
+    consider(old[i],{t:'copy',i},0);
+    for(let j=0;j<m;j++){
+      if(j===i)continue;const cs=new Map();
+      for(let q=0;q<w;q++)if(!old[j][q].z){const c=R[q].sub(old[i][q]).div(old[j][q]);if(!c.z)cs.set(c.str(),c)}
+      for(const c of cs.values())consider(old[i].map((x,q)=>x.add(c.mul(old[j][q]))),{t:'comb',i,j,c},1+Math.abs(c.n)/10+(c.d!==1?.5:0));
+    }
+    const ss=new Map();for(let q=0;q<w;q++)if(!old[i][q].z){const c=R[q].div(old[i][q]);if(!c.z&&!c.one)ss.set(c.str(),c)}
+    for(const c of ss.values())consider(old[i].map(x=>x.mul(c)),{t:'scale',i,c},1.2);
+  }
+  return best&&best.n>=Math.ceil(w/2)&&best.n<w?best:null;
+}
+function checkChain(mats){
+  const steps=[];
+  for(let k=1;k<mats.length;k++){
+    const A=mats[k-1],B=mats[k];
+    if(A.length!==B.length||A[0].length!==B[0].length){steps.push({k,ok:false,dims:true});continue}
+    if(rrefKey(A)===rrefKey(B)){steps.push({k,ok:true});continue}
+    const rA=rankOf(A),bad=[];
+    B.forEach((R,i)=>{if(rankOf([...A,R])>rA)bad.push({i,g:guessRow(A,R)})});
+    steps.push({k,ok:false,bad,lost:!bad.length});
+  }
+  return steps;
+}
+function parseChain(text){
+  const blocks=text.replace(/[−–]/g,'-').split(/\n\s*\n/).map(b=>b.trim()).filter(Boolean);
+  if(blocks.length<2)throw new Error('Wpisz co najmniej dwie macierze (początkową i po pierwszym kroku), oddzielone pustą linią.');
+  let bar=-1;
+  const mats=blocks.map((bl,k)=>{
+    const rows=bl.split('\n').map(r=>r.trim()).filter(Boolean);
+    if(k===0&&rows[0].includes('|'))bar=rows[0].split('|')[0].split(/[\s,;]+/).filter(Boolean).length;
+    const M_=rows.map(r=>r.replace(/\|/g,' ').split(/[\s,;]+/).filter(Boolean).map(t=>{const v=parseFr(t);if(!v)throw new Error(`Macierz ${k+1}: „${t}” to nie liczba.`);return v}));
+    if(M_.some(r=>r.length!==M_[0].length))throw new Error(`Macierz ${k+1}: każdy wiersz musi mieć tyle samo liczb.`);
+    if(M_.length>6||M_[0].length>10)throw new Error(`Macierz ${k+1} jest za duża (najwyżej 6 wierszy i 10 kolumn).`);
+    return M_;
+  });
+  return {mats,bar};
+}
+const EX_CHAIN=`2 1 -1 | 3
+1 -1 2 | 5
+3 2 1 | 10
+
+1 -1 2 | 5
+2 1 -1 | 3
+3 2 1 | 10
+
+1 -1 2 | 5
+0 3 -5 | -7
+0 5 -7 | -5`;
+function matMark(A,bar,marks){ // marks: {'i,j':'bad'|'ok'}
+  const c=A[0].length;
+  return `<span class="mat" style="grid-template-columns:repeat(${c},auto)">${A.flat().map((x,k)=>{const i=Math.floor(k/c),j=k%c,cl=[j===bar&&j>0?'bl':'',marks&&marks[i+','+j]?'mk-'+marks[i+','+j]:''].filter(Boolean).join(' ');return `<span${cl?` class="${cl}"`:''}>${x.html()}</span>`}).join('')}</span>`;
+}
+function chainReport(text){
+  const {mats,bar}=parseChain(text),steps=checkChain(mats);
+  let h=`<div class="card"><h2>Macierz początkowa</h2><div class="line">${matMark(mats[0],bar)}</div></div>`,firstBad=-1;
+  steps.forEach(s=>{
+    const B=mats[s.k];let body='',marks={};
+    if(s.dims)body=`<div class="msg bad" style="display:block">Ta macierz ma inny wymiar niż poprzednia (${dimS(mats[s.k-1])} → ${dimS(B)}). Operacje na wierszach nie zmieniają wymiaru.</div>`;
+    else if(s.ok)body=`<div class="msg ok" style="display:block">✓ Poprawnie — ta macierz powstaje z poprzedniej przez operacje na wierszach.</div>`;
+    else if(s.lost)body=`<div class="msg bad" style="display:block">✗ Każdy wiersz da się otrzymać z poprzednich, ale zgubiłeś informację — rząd spadł. Pewnie któryś wiersz zastąpiłeś kombinacją innych bez niego samego (np. pomnożyłeś przez 0 albo przepisałeś inny wiersz dwa razy).</div>`;
+    else{
+      const items=s.bad.map(o=>{
+        if(!o.g)return `<li>Wiersz ${o.i+1} nie wynika z poprzedniej macierzy — nie umiem odgadnąć, jaką operację chciałeś zrobić. Policz go jeszcze raz.</li>`;
+        const wrong=o.g.ok.map((v,q)=>v?null:q).filter(q=>q!==null);
+        wrong.forEach(q=>{marks[o.i+','+q]='bad'});
+        return `<li>Wiersz ${o.i+1}: wygląda na <b>${opText(o.g.d)}</b>. ${wrong.map(q=>`W kolumnie ${q+1} powinno być <b>${o.g.exp[q].html()}</b>, a jest ${B[o.i][q].html()}.`).join(' ')}</li>`;
+      });
+      body=`<div class="msg bad" style="display:block">✗ Tu jest błąd.<ul class="rules">${items.join('')}</ul></div>`;
+      if(firstBad<0)firstBad=s.k;
+    }
+    h+=`<div class="card"><h2>Krok ${s.k}</h2><div class="line">${matMark(B,bar,marks)}</div>${body}</div>`;
+  });
+  const last=mats[mats.length-1],n=last.length,w=last[0].length,nv=bar>0?bar:w;
+  const red=JSON.stringify(rref(last,nv).A.map(r=>r.map(x=>x.str())))===JSON.stringify(last.map(r=>r.map(x=>x.str())));
+  let fin=red?'✓ Ostatnia macierz jest w postaci schodkowej zredukowanej — eliminacja zakończona.':'Ostatnia macierz nie jest jeszcze w postaci schodkowej zredukowanej — możesz liczyć dalej.';
+  const first=mats[0],isI=(X,off)=>X.every((r,i)=>r.slice(off,off+n).every((x,j)=>x.eq(F(i===j?1:0))));
+  if(firstBad<0&&red&&w===2*n&&isI(first,n)&&isI(last,0)){const inv=M.inv(first.map(r=>r.slice(0,n))),R=last.map(r=>r.slice(n));fin+=inv&&M.eq(inv,R)?' Za kreską masz poprawną odwrotność ✓.':' Za kreską powinna być odwrotność, ale coś się nie zgadza.'}
+  return `<div class="msg ${firstBad<0?'ok':'bad'}" style="display:block">${firstBad<0?'✓ Wszystkie kroki są poprawne.':`Pierwszy błąd jest w kroku ${firstBad}. Kolejne kroki sprawdzam względem tego, co sam napisałeś.`} ${fin}</div>`+h;
+}
+// ---------- Znajdź mój błąd: iloczyn ----------
+function mulReport(A,B,C){
+  if(A[0].length!==B.length)throw new Error(`Nie da się pomnożyć ${dimS(A)} przez ${dimS(B)} — liczba kolumn A musi być równa liczbie wierszy B.`);
+  const R=M.mul(A,B);
+  if(C.length!==R.length||C[0].length!==R[0].length)return `<div class="msg bad" style="display:block">Wynik powinien mieć wymiar ${dimS(R)}, a Twój ma ${dimS(C)}. Wymiar iloczynu: (m×n)·(n×p) = m×p.</div>`;
+  const marks={},lines=[];
+  R.forEach((r,i)=>r.forEach((v,j)=>{if(!v.eq(C[i][j])){marks[i+','+j]='bad';lines.push(`<div class="line"><i>c</i><sub>${i+1}${j+1}</sub> = ${A[i].map((x,k)=>`${fmt(x)}·${fmt(B[k][j])}`).join(' + ')} = <b>${v.html()}</b> &nbsp;<span class="mute">(u Ciebie ${C[i][j].html()})</span></div>`)}else marks[i+','+j]='ok'}));
+  return (lines.length?`<div class="msg bad" style="display:block">✗ Błędnych elementów: ${lines.length} z ${R.length*R[0].length} (zaznaczone na czerwono).</div>`:`<div class="msg ok" style="display:block">✓ Iloczyn jest policzony poprawnie.</div>`)+
+    `<div class="line">Twój wynik: ${matMark(C,-1,marks)}</div>`+(lines.length?`<h3>Jak powinno być</h3>${lines.join('')}`:'');
+}
+
+// ---------- Odpowiedzi: pola, sprawdzanie, podgląd ----------
+const INPA='autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text"';
+function ansHtml(ans,id){
+  if(ans.kind==='mat'){const r=ans.M.length,c=ans.M[0].length;return `<span class="gv"><span>${ans.lab} =</span> <span class="mat gin" style="grid-template-columns:repeat(${c},auto)">${Array.from({length:r*c},(_,k)=>`<input id="${id}-${k}" ${INPA} aria-label="wiersz ${Math.floor(k/c)+1}, kolumna ${k%c+1}">`).join('')}</span></span>`}
+  if(ans.kind==='num')return `<label class="ans-in" for="${id}-0"><span>${ans.lab} =</span><input id="${id}-0" ${INPA}></label>`;
+  if(ans.kind==='formula')return `<div class="row" style="margin-top:0;flex-wrap:nowrap"><span class="m" style="font-size:20px"><i>X</i>&nbsp;=</span><input id="${id}-f" class="code" ${INPA} placeholder="np. A^-1(C-B)"></div>`;
+  if(ans.kind==='sys')return `<p class="mute" style="margin:0 0 6px">Ile rozwiązań ma ten układ?</p><div class="chips" data-gst-box="${id}"><button class="chip on" data-gst="one">jedno</button><button class="chip" data-gst="inf">nieskończenie wiele</button><button class="chip" data-gst="none">brak — sprzeczny</button></div><div class="nums" id="${id}-vals" style="margin-top:10px">${ans.names.map((v,j)=>`<label class="ans-in" for="${id}-v${j}"><span>${nmHtml(v)} =</span><input id="${id}-v${j}" ${INPA}></label>`).join('')}</div>`;
+  if(ans.kind==='param')return `<p class="mute" style="margin:0 0 6px">Dla jakich <i>a</i> układ <b>nie</b> ma dokładnie jednego rozwiązania? Wpisz te wartości i wybierz, co się wtedy dzieje (puste wiersze pomiń).</p>`+
+    [0,1,2].map(k=>`<div class="row" style="margin-top:6px"><label class="ans-in" for="${id}-a${k}"><span><i>a</i> =</span><input id="${id}-a${k}" ${INPA}></label><select id="${id}-t${k}" class="code" style="width:auto;padding:7px 10px"><option value="">— co wtedy? —</option><option value="none">układ sprzeczny</option><option value="inf">nieskończenie wiele rozwiązań</option></select></div>`).join('');
+  return '';
+}
+// inp — odczytane pola (patrz ansRead w ui.js); zwraca {score 0..1, empty, marks:{sufiks id: true/false}, msg}
+function ansCheck(ans,inp){
+  if(ans.kind==='mat'){
+    const exp=ans.M.flat(),marks={};let good=0,empty=0;
+    inp.forEach((s,k)=>{if(!String(s).trim())empty++;const v=parseFr(s),ok=!!(v&&v.eq(exp[k]));marks[k]=ok;if(ok)good++});
+    return {score:good/exp.length,empty:empty===exp.length,partEmpty:empty,marks,msg:good===exp.length?'':`Dobrze: ${good} z ${exp.length}.`};
+  }
+  if(ans.kind==='num'){const s=String(inp).trim(),v=parseFr(s),ok=!!(v&&v.eq(ans.v));return {score:ok?1:0,empty:!s,marks:{0:ok},msg:s&&!v?'To nie jest liczba (ułamki pisz jako 1/2).':''}}
+  if(ans.kind==='formula'){
+    const s=String(inp).trim();if(!s)return {score:0,empty:true,marks:{f:false},msg:''};
+    try{const ok=checkAnswer(ans.sol,s);return {score:ok?1:0,empty:false,marks:{f:ok},msg:ok?'':'Ten wzór daje inne X.'}}catch(e){return {score:0,empty:false,marks:{f:false},msg:e.message}}
+  }
+  if(ans.kind==='sys'){
+    if(inp.type==='one'&&inp.vals.every(x=>!String(x).trim()))return {score:0,empty:true,marks:{},msg:''};
+    if(inp.type!==ans.type)return {score:0,empty:false,marks:{},msg:'Zła liczba rozwiązań — porównaj rz <i>A</i> i rz [<i>A</i> | <i>B</i>] z liczbą niewiadomych.'};
+    if(ans.type!=='one')return {score:1,empty:false,marks:{},msg:''};
+    const marks={};let good=0,empty=0;
+    inp.vals.forEach((s,j)=>{if(!String(s).trim())empty++;const v=parseFr(s),ok=!!(v&&v.eq(ans.vals[j]));marks['v'+j]=ok;if(ok)good++});
+    return {score:good/ans.vals.length,empty:empty===ans.vals.length,partEmpty:empty,marks,msg:good===ans.vals.length?'':`Dobrze: ${good} z ${ans.vals.length}.`};
+  }
+  if(ans.kind==='param'){
+    const marks={};let good=0,extra=0,filled=0;
+    inp.forEach((r,k)=>{
+      if(!String(r.a).trim())return;filled++;
+      const v=parseFr(r.a),hit=v?ans.roots.find(o=>o.a.eq(v)):null;
+      marks['a'+k]=!!hit;marks['t'+k]=!!(hit&&hit.type===r.type);
+      if(!hit)extra++;else if(hit.type===r.type)good++;
+    });
+    const score=Math.max(0,(good-extra)/ans.roots.length);
+    return {score,empty:!filled,marks,msg:score===1?'':`Wartości <i>a</i> z dobrym opisem: ${good} z ${ans.roots.length}${extra?`, zbędnych: ${extra}`:''}.`};
+  }
+  return {score:0,empty:true,marks:{},msg:''};
+}
+function ansShow(ans){
+  if(ans.kind==='mat')return `${ans.lab} = ${M.html(ans.M)}`;
+  if(ans.kind==='num')return `${ans.lab} = ${ans.v.html()}`;
+  if(ans.kind==='formula')return `<i>X</i> = ${rP(ans.sol.P)}`;
+  if(ans.kind==='sys')return ans.type==='one'?ans.names.map((v,j)=>`${nmHtml(v)} = ${ans.vals[j].html()}`).join(', '):TYPE_PL[ans.type];
+  if(ans.kind==='param')return ans.roots.map(o=>`<i>a</i> = ${o.a.html()}: ${TYPE_PL[o.type]}`).join('; ')+'; dla pozostałych — jedno rozwiązanie';
+  return '';
+}
+function inpShow(ans,inp){
+  const e=s=>String(s).trim()?String(s).trim().replace(/</g,'&lt;'):'…';
+  if(ans.kind==='mat'){const c=ans.M[0].length;return `<span class="mat" style="grid-template-columns:repeat(${c},auto)">${inp.map(s=>`<span>${e(s)}</span>`).join('')}</span>`}
+  if(ans.kind==='num'||ans.kind==='formula')return e(inp);
+  if(ans.kind==='sys')return inp.type==='one'?ans.names.map((v,j)=>`${nmHtml(v)} = ${e(inp.vals[j])}`).join(', '):TYPE_PL[inp.type];
+  if(ans.kind==='param')return inp.filter(r=>String(r.a).trim()).map(r=>`<i>a</i> = ${e(r.a)}: ${r.type?TYPE_PL[r.type]:'…'}`).join('; ')||'…';
+  return '';
+}
+
+// ---------- Opakowania istniejących generatorów w format zadania ----------
+const opTopic=type=>()=>{const t=genTask(type);return {q:t.q,body:givenH(t.given),ans:{kind:'mat',M:t.ans,lab:t.lab},sol:t.sol,fr:t.fr}};
+function xnumTopic(n,rect){return ()=>{
+  const T=genNum(n,-1,rect);
+  return {q:'Wyznacz macierz <i>X</i>',body:eqH(T.sol.orig)+givenH([...T.sol.letters].sort().map(c=>[c,T.env[c]])),ans:{kind:'mat',M:T.X,lab:'<i>X</i>'},sol:numSolHtml(T),fr:()=>numFrames(T),
+    hint:`Najpierw na literach: <span class="f"><i>X</i> = ${rP(T.sol.P)}</span>. Potem odwrotność metodą Gaussa i mnożenie.`};
+}}
+function xlinTopic(){
+  const t=genLin(pick(NT.filter(x=>x.lin)));
+  return {q:'Wyznacz macierz <i>X</i>',body:eqH(t.orig)+givenH(t.letters.map(c=>[c,t.env[c]])),ans:{kind:'mat',M:t.X,lab:'<i>X</i>'},sol:t.solHtml,fr:t.fr,hint:t.hint};
+}
+function xsymTopic(){
+  for(;;){const q=genEq(rnd(1,3));let sol;try{sol=solve(q)}catch(e){continue}
+    return {q:'Wyznacz <i>X</i> (na literach)',body:eqH(sol.orig),ans:{kind:'formula',sol},
+      sol:sol.steps.map(s=>`<div class="line"><span class="mute">${s.title}:</span><br>${s.lines[s.lines.length-1]}</div>`).join(''),fr:()=>symFrames(sol),
+      hint:'Rozpisz nawiasy (kolejność się odwraca), przenieś wyrazy z <i>X</i> na lewo, potem mnóż przez odwrotności z właściwej strony.'}}
+}
+const METH_PL={gauss:'',mac:' metodą macierzową',cra:' wzorami Cramera'};
+function sysTopic(sz,mode,method){return ()=>{
+  const g=genSys(sz,mode),out=sysMethodHtml(g.Ab,g.names,method);
+  return {q:'Rozwiąż układ równań'+METH_PL[method],body:`<div class="sysbox">${sysHtml(abRows(g.Ab,g.names.length),g.names)}</div>`,
+    ans:{kind:'sys',type:out.type,names:g.names,vals:out.vals},sol:out.html,fr:()=>sysFrames(g.Ab,g.names,method),
+    hint:{gauss:'Macierz rozszerzona [<i>A</i> | <i>B</i>] i eliminacja kolumna po kolumnie.',mac:'<i>X</i> = <i>A</i><sup>−1</sup><i>B</i> — najpierw odwrotność, potem mnożenie.',cra:'<i>W</i> = det <i>A</i>, potem <i>x</i> = <i>W<sub>x</sub></i>/<i>W</i>.'}[method]};
+}}
+function detTopic(n){return ()=>{
+  const A=n===4?genDet4():genDet(n),v=detF(A);
+  return {q:`Oblicz wyznacznik macierzy ${n}×${n}`,body:givenH([['A',A]]),ans:{kind:'num',v,lab:'det <i>A</i>'},
+    sol:n===4?laplaceHtml(A):`<div class="line">det <i>A</i> = ${matH(A,{det:true})}</div>${detLines(A)}`,
+    fr:()=>n===4?laplaceFrames(A):detFrames(A,'det <i>A</i>','Wyznacznik',true),
+    hint:n===2?'<i>ad</i> − <i>bc</i>.':n===3?'Sarrus: dopisz dwie pierwsze kolumny; trzy przekątne z plusem, trzy z minusem.':"Rozwinięcie Laplace'a względem wiersza lub kolumny z największą liczbą zer."};
+}}
+function rankTopic(){
+  const A=genRank(),r=rankOf(A);
+  return {q:'Wyznacz rząd macierzy',body:givenH([['A',A]]),ans:{kind:'num',v:F(r),lab:'rz <i>A</i>'},sol:rankHtml(A),fr:()=>rankFrames(A),
+    hint:'Sprowadź macierz do postaci schodkowej (zera pod elementami głównymi) i policz niezerowe wiersze.'};
+}
+function paramTopic(){
+  const P=genParam();
+  return {q:'Zbadaj liczbę rozwiązań w zależności od parametru <i>a</i>',body:`<div class="sysbox">${paramSysHtml(P.E,P.b,P.names)}</div>`,
+    ans:{kind:'param',roots:P.roots.map((a,k)=>({a,type:P.types[k]}))},sol:paramHtml(P),fr:()=>paramFrames(P),
+    hint:'Policz wyznacznik główny <i>W</i>(<i>a</i>). Gdzie <i>W</i> ≠ 0 — jedno rozwiązanie. Wartości z <i>W</i> = 0 podstaw i sprawdź Gaussem.'};
+}
+
+// ---------- REJESTR ----------
+const TOPICS=[
+  {id:'mul',sec:'Działania',name:'Mnożenie <i>A</i>·<i>B</i>',gen:opTopic('mul')},
+  {id:'add',sec:'Działania',name:'α<i>A</i> + β<i>B</i>',gen:opTopic('add')},
+  {id:'trans',sec:'Działania',name:'Transpozycja',gen:opTopic('trans')},
+  {id:'expr',sec:'Działania',name:'Wyrażenia',gen:opTopic('expr')},
+  {id:'inv2',sec:'Macierz odwrotna',name:'<i>A</i><sup>−1</sup> 2×2',gen:opTopic('inv2')},
+  {id:'inv3',sec:'Macierz odwrotna',name:'<i>A</i><sup>−1</sup> 3×3',gen:opTopic('inv3')},
+  {id:'xsym',sec:'Równania macierzowe',name:'<i>X</i> na literach',gen:xsymTopic},
+  {id:'xnum2',sec:'Równania macierzowe',name:'<i>X</i> na liczbach 2×2',gen:xnumTopic(2,false)},
+  {id:'xnum3',sec:'Równania macierzowe',name:'<i>X</i> na liczbach 3×3',gen:xnumTopic(3,false)},
+  {id:'xrect',sec:'Równania macierzowe',name:'<i>X</i> prostokątna',gen:xnumTopic(2,true)},
+  {id:'xlin',sec:'Równania macierzowe',name:'Przez niewiadome',gen:xlinTopic},
+  {id:'sys2',sec:'Układy równań',name:'Gauss 2×2',gen:sysTopic(2,'one','gauss')},
+  {id:'sys3',sec:'Układy równań',name:'Gauss 3×3',gen:sysTopic(3,'one','gauss')},
+  {id:'sys4',sec:'Układy równań',name:'Gauss 4×4',gen:sysTopic(4,'one','gauss')},
+  {id:'sysany',sec:'Układy równań',name:'Ile rozwiązań?',gen:sysTopic(3,'any','gauss')},
+  {id:'sysrect',sec:'Układy równań',name:'Nietypowe (m ≠ n)',gen:sysTopic('r','any','gauss')},
+  {id:'sysmac',sec:'Układy równań',name:'Metoda macierzowa',gen:sysTopic(3,'one','mac')},
+  {id:'syscra',sec:'Układy równań',name:'Wzory Cramera',gen:sysTopic(3,'one','cra')},
+  {id:'param',sec:'Układy równań',name:'Z parametrem <i>a</i>',gen:paramTopic},
+  {id:'det2',sec:'Wyznaczniki',name:'det 2×2',gen:detTopic(2)},
+  {id:'det3',sec:'Wyznaczniki',name:'det 3×3 (Sarrus)',gen:detTopic(3)},
+  {id:'det4',sec:'Wyznaczniki',name:"det 4×4 (Laplace)",gen:detTopic(4)},
+  {id:'detprop',sec:'Wyznaczniki',name:'Własności',gen:genDetProp},
+  {id:'rank',sec:'Rząd macierzy',name:'Rząd macierzy',gen:rankTopic},
+];
+const SECTIONS=[...new Set(TOPICS.map(t=>t.sec))];
+const topicById=id=>TOPICS.find(t=>t.id===id);
+
+// ================= UI =================
+const $=s=>document.querySelector(s);
+const show=(el,cls,html)=>{el.className='msg '+cls;el.innerHTML=html};
+const INP='autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text"';
+const grid=(r,c)=>`<span class="mat gin" style="grid-template-columns:repeat(${c},auto)">${Array.from({length:r*c},()=>`<input ${INP}>`).join('')}</span>`;
+function checkGrid(sel,ans){
+  const ins=[...document.querySelectorAll(sel+' input')],exp=ans.flat();let good=0,empty=0;
+  ins.forEach((el,k)=>{const v=parseFr(el.value);if(!el.value.trim())empty++;const ok=v&&v.eq(exp[k]);el.classList.toggle('ok',!!ok);el.classList.toggle('bad',!ok);if(ok)good++});
+  return {good,empty,total:exp.length};
+}
+
+// zakładki
+const TABS=['liczby','rownania','uklady','cwiczenia','sprawdzian','blad','postep','sciaga'];
+function setTab(t){
+  if(t==='dzialania')t='cwiczenia';
+  if(!TABS.includes(t))t='liczby';
+  document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===t));
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  if(location.hash!=='#'+t)history.replaceState(null,'','#'+t);
+  window.scrollTo(0,0);
+}
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setTab(b.dataset.t)});
+window.addEventListener('hashchange',()=>setTab(location.hash.slice(1)));
+
+// ---- X na liczbach ----
+let nSize=2,nShape='sq',nTask=null,nScore={ok:0,all:0},nCounted=false;
+const eqLabel=t=>{const a=parseEq(t.eq);return (rExpr(a.L)+' = '+rExpr(a.R)).replace(/<sup>T<\/sup>/g,'ᵀ').replace(/<sup>−1<\/sup>/g,'⁻¹').replace(/<[^>]+>/g,'')};
+$('#ntSel').innerHTML='<option value="-1">Losowy typ równania (wzorem)</option><optgroup label="Wzorem — X na literach, potem liczby">'+NT.map((t,k)=>t.lin?'':`<option value="${k}">${eqLabel(t)}</option>`).join('')+'</optgroup><optgroup label="Przez niewiadome — układ równań">'+NT.map((t,k)=>t.lin?`<option value="${k}">${eqLabel(t)}  (${Object.entries(t.lin).map(([c,d])=>c+' '+d.join('×')).join(', ')})</option>`:'').join('')+'</optgroup>';
+function newNum(){
+  document.querySelectorAll('[data-n]').forEach(b=>b.classList.toggle('on',+b.dataset.n===nSize));
+  document.querySelectorAll('[data-shape]').forEach(b=>b.classList.toggle('on',b.dataset.shape===nShape));
+  const idx=+$('#ntSel').value,tpl=idx>=0?NT[idx]:null;
+  if(tpl&&tpl.lin){
+    nTask=genLin(tpl);
+    $('#ntNote').innerHTML=`Tego równania nie rozwiążesz wzorem (${tpl.note}). Liczysz przez niewiadome: <i>X</i> = [<i>x y</i>; <i>z t</i>] → układ równań. Rozmiar i kształt nie mają tu znaczenia.`;
+  }else{
+    const T=genNum(nSize,idx,nShape==='rect');
+    nTask={fr:()=>numFrames(T),orig:T.sol.orig,letters:[...T.sol.letters].sort(),env:T.env,X:T.X,solHtml:numSolHtml(T),
+      hint:`Najpierw na literach: <span class="f"><i>X</i> = ${rP(T.sol.P)}</span>. Potem policz odwrotność metodą Gaussa i wymnóż.`};
+    $('#ntNote').innerHTML=nShape==='rect'?`Prostokątna <i>X</i>: wymiar wynika z działań. Odwracasz tylko macierze kwadratowe — te, które stoją przy <i>X</i>.`:'';
+  }
+  nCounted=false;nTask.tid=tpl&&tpl.lin?'xlin':nShape==='rect'?'xrect':'xnum'+nSize;
+  $('#nEq').innerHTML=nTask.orig;
+  $('#nGiven').innerHTML=nTask.letters.map(c=>`<span class="gv"><i>${c}</i> = ${M.html(nTask.env[c])}</span>`).join('');
+  $('#nAns').innerHTML=`<span class="gv"><span><i>X</i> =</span> ${grid(nTask.X.length,nTask.X[0].length)}</span>`;
+  $('#nMsg').className='msg';$('#nSolBox').className='sol';$('#nSolBox').innerHTML=nTask.solHtml;
+}
+document.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{nSize=+b.dataset.n;newNum()});
+document.querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>{nShape=b.dataset.shape;newNum()});
+$('#ntSel').onchange=newNum;$('#nNew').onclick=newNum;
+$('#nHint').onclick=()=>show($('#nMsg'),'info',nTask.hint);
+$('#nSol').onclick=()=>$('#nSolBox').classList.toggle('on');
+$('#nCheck').onclick=()=>{
+  const r=checkGrid('#nAns',nTask.X);
+  if(!nCounted&&!r.empty){nScore.all++;if(r.good===r.total)nScore.ok++;nCounted=true;rec(nTask.tid,r.good/r.total)}
+  $('#nScore').textContent=nScore.all?`wynik: ${nScore.ok}/${nScore.all}`:'';
+  if(r.good===r.total)show($('#nMsg'),'ok','✓ Dobrze! To jest szukana macierz <i>X</i>.');
+  else if(r.empty)show($('#nMsg'),'bad',`Uzupełnij wszystkie pola (${r.empty} pustych).`);
+  else show($('#nMsg'),'bad',`✗ Dobrze: ${r.good} z ${r.total}. Sprawdź wzór (Podpowiedź) albo rachunki.`);
+};
+
+// ---- X na literach ----
+let sol=null,shown=0,lastInput=$('#eqIn');
+['#eqIn','#ansIn'].forEach(s=>$(s).addEventListener('focus',e=>lastInput=e.target));
+$('#keys').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const el=lastInput,ins=b.dataset.i;
+  if(ins==='CLR'){el.value='';return}
+  let s=el.selectionStart??el.value.length,en=el.selectionEnd??s,v=el.value;
+  if(ins==='⌫'){
+    if(s!==en)v=v.slice(0,s)+v.slice(en);
+    else{const before=v.slice(0,s);const m=before.match(/(\^-1|\^T|\^\d)$/);const k=m?m[0].length:1;v=before.slice(0,Math.max(0,s-k))+v.slice(s);s=Math.max(0,s-k)}
+    el.value=v;el.setSelectionRange(s,s);return;
+  }
+  el.value=v.slice(0,s)+ins+v.slice(en);const p=s+ins.length;el.setSelectionRange(p,p);
+});
+function runSolve(){
+  const err=$('#eqErr');err.className='msg';
+  const src=$('#eqIn').value;let linMsg='';
+  try{sol=solve(src)}catch(e){
+    sol=null;
+    if(!e.lin){show(err,'bad',e.message);$('#eqWork').style.display='none';return}
+    try{const a=parseEq(src);linCheck(a.L);linCheck(a.R)}catch(e2){show(err,'bad',e.message+' '+e2.message);$('#eqWork').style.display='none';return}
+    linMsg=e.message;
+  }
+  curSrc=src;const ast=parseEq(src);
+  $('#eqWork').style.display='block';
+  $('#eqTry').hidden=$('#ansCard').hidden=$('#stepsCard').hidden=!sol;
+  buildMx(lettersOf(ast.L,lettersOf(ast.R)));$('#numOut').innerHTML='';$('#numMsg').className='msg';
+  if(!sol){
+    $('#eqShow').innerHTML=rExpr(ast.L)+' = '+rExpr(ast.R);
+    show(err,'info',`${linMsg} Wzorem na literach się nie da. Takie równanie rozwiązuje się <b>na liczbach, przez niewiadome</b> — wpisz macierze w karcie „Policz na liczbach” niżej (na start są przykładowe).`);
+    computeNum();return;
+  }
+  $('#eqShow').innerHTML=sol.orig;
+  $('#steps').innerHTML=sol.steps.map((s,k)=>`<div class="step${s.final?' final':''}"><b class="t">${s.final?'✓ ':(k+1)+'. '}${s.title}</b>${s.why?`<div class="why">${s.why}</div>`:''}${s.lines.map(l=>`<div class="eq">${l}</div>`).join('')}</div>`).join('');
+  shown=0;symCounted=false;$('#nextStep').style.display='';$('#allSteps').style.display='';
+  $('#ansIn').value='';$('#ansMsg').className='msg';
+}
+function reveal(all){
+  const st=[...document.querySelectorAll('#steps .step')];
+  shown=all?st.length:Math.min(shown+1,st.length);
+  st.forEach((s,k)=>s.classList.toggle('on',k<shown));
+  if(shown>=st.length){$('#nextStep').style.display='none';$('#allSteps').style.display='none'}
+}
+$('#solveBtn').onclick=runSolve;
+$('#eqIn').addEventListener('keydown',e=>{if(e.key==='Enter')runSolve()});
+document.querySelectorAll('[data-lvl]').forEach(b=>b.onclick=()=>{$('#eqIn').value=genEq(+b.dataset.lvl);runSolve()});
+$('#nextStep').onclick=()=>reveal(false);
+$('#allSteps').onclick=()=>reveal(true);
+let symCounted=false;
+function checkAns(){
+  const msg=$('#ansMsg');if(!sol)return;
+  try{
+    const ok=checkAnswer(sol,$('#ansIn').value);
+    if(!symCounted){symCounted=true;rec('xsym',ok?1:0)}
+    if(ok)show(msg,'ok','✓ Dobrze! Twój wzór daje to samo <i>X</i> co rozwiązanie.');
+    else show(msg,'bad','✗ Niestety nie. Sprawdź: czy mnożysz z <b>właściwej strony</b>, czy w (<i>AB</i>)<sup>−1</sup> odwróciłeś <b>kolejność</b> i czy przy wyciąganiu <i>X</i> jest <i>I</i>? Możesz odsłonić pierwszy krok.');
+  }catch(e){show(msg,'bad',e.message)}
+}
+$('#ansBtn').onclick=checkAns;
+$('#ansIn').addEventListener('keydown',e=>{if(e.key==='Enter')checkAns()});
+$('#openEx').onclick=()=>{$('#eqIn').value='A^TB^-1XCA=(AD)^-1D';setTab('rownania');runSolve()};
+
+// ---- własne macierze (X na literach → liczby) ----
+const mxVals={};let curSrc='',curLetters=[],lastNum=null;
+const mxStr=A=>A.map(r=>r.map(x=>x.str().replace('−','-')).join(' ')).join('\n');
+function buildMx(set){
+  curLetters=[...set].sort();
+  curLetters.forEach(c=>{if(!(c in mxVals))mxVals[c]=mxStr(unimod2())});
+  $('#mxIns').innerHTML=curLetters.length?curLetters.map(c=>`<label class="mx" for="mx-${c}"><span><i>${c}</i> =</span><textarea id="mx-${c}" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false">${mxVals[c]}</textarea></label>`).join(''):'<p class="mute">W równaniu są tylko <i>X</i> i <i>I</i> — nie ma czego wpisywać.</p>';
+  curLetters.forEach(c=>$('#mx-'+c).addEventListener('input',e=>{mxVals[c]=e.target.value}));
+}
+function parseMat(s,name){
+  const rows=String(s).replace(/[−–]/g,'-').split(/\n|;/).map(r=>r.trim()).filter(Boolean).map(r=>r.split(/[\s,]+/).filter(Boolean));
+  if(!rows.length)throw new Error(`Macierz ${name} jest pusta.`);
+  if(rows.some(r=>r.length!==rows[0].length))throw new Error(`Macierz ${name}: każdy wiersz musi mieć tyle samo liczb.`);
+  if(rows.length>4||rows[0].length>4)throw new Error(`Macierz ${name}: trener liczy macierze najwyżej 4×4.`);
+  return rows.map(r=>r.map(t=>{const v=parseFr(t);if(!v)throw new Error(`Macierz ${name}: „${t}” to nie liczba. Liczby oddzielaj spacjami, ułamki pisz jako 1/2.`);return v}));
+}
+function computeNum(){
+  const msg=$('#numMsg');msg.className='msg';$('#numOut').innerHTML='';lastNum=null;
+  try{const env={};for(const c of curLetters)env[c]=parseMat(mxVals[c],c);lastNum=numbersSolve(curSrc,env);$('#numOut').innerHTML=lastNum.html}
+  catch(e){show(msg,'bad',e.message)}
+}
+$('#numBtn').onclick=computeNum;
+$('#numRnd').onclick=()=>{const had=!sol||$('#numOut').innerHTML;curLetters.forEach(c=>{mxVals[c]=mxStr(unimod2())});buildMx(new Set(curLetters));if(had)computeNum()};
+$('#openEx2').onclick=()=>{$('#eqIn').value='AX=XA';mxVals.A='1 1\n0 1';setTab('rownania');runSolve();$('#numCard').scrollIntoView()};
+
+// ---- układy równań ----
+let sSize=3,sMode='one',sMeth='gauss',sTask=null,sPick='one',sScore={ok:0,all:0},sCounted=false,sysShown=false;
+const chipsOn=(attr,val)=>document.querySelectorAll(`[data-${attr}]`).forEach(b=>b.classList.toggle('on',b.dataset[attr]===String(val)));
+function setPick(t){sPick=t;chipsOn('st',t);$('#sVals').hidden=t!=='one'}
+function renderSysSol(){sTask.out=sysMethodHtml(sTask.Ab,sTask.names,sMeth);$('#sSolBox').innerHTML=sTask.out.html}
+function newSys(){
+  chipsOn('ss',sSize);chipsOn('sm',sMode);chipsOn('me',sMeth);
+  sTask=genSys(sSize,sMode);sCounted=false;
+  $('#sEq').innerHTML=sysHtml(abRows(sTask.Ab,sTask.names.length),sTask.names);
+  $('#sVals').innerHTML=sTask.names.map((v,j)=>`<label class="ans-in" for="sv${j}"><span>${nmHtml(v)} =</span><input id="sv${j}" ${INP}></label>`).join('');
+  setPick('one');$('#sMsg').className='msg';$('#sSolBox').className='sol';renderSysSol();
+}
+document.querySelectorAll('[data-ss]').forEach(b=>b.onclick=()=>{sSize=b.dataset.ss==='r'?'r':+b.dataset.ss;newSys()});
+document.querySelectorAll('[data-sm]').forEach(b=>b.onclick=()=>{sMode=b.dataset.sm;newSys()});
+document.querySelectorAll('[data-me]').forEach(b=>b.onclick=()=>{sMeth=b.dataset.me;chipsOn('me',sMeth);renderSysSol();if(sysShown)runSys()});
+document.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>setPick(b.dataset.st));
+$('#sNew').onclick=newSys;
+$('#sSol').onclick=()=>$('#sSolBox').classList.toggle('on');
+$('#sHint').onclick=()=>{
+  const nv=sTask.names.length,A=sTask.Ab.map(r=>r.slice(0,nv)),bc=sTask.Ab.map(r=>[r[nv]]);
+  show($('#sMsg'),'info',{
+    gauss:`Zapisz macierz rozszerzoną ${augHtml(A,bc)} i zeruj kolumna po kolumnie. Wiersz [0 … 0 | liczba ≠ 0] oznacza sprzeczność, kolumna bez schodka — parametr.`,
+    mac:`Zapisz układ jako <span class="f"><i>AX</i> = <i>B</i></span>: ${matH(A)}·${colH(sTask.names)} = ${matH(bc)}. Jeśli <i>A</i> jest kwadratowa i odwracalna, to <span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>.`,
+    cra:`Policz <span class="f"><i>W</i> = det <i>A</i></span>. Gdy <span class="f"><i>W</i> ≠ 0</span>: <span class="f"><i>x</i> = <i>W<sub>x</sub></i> / <i>W</i></span>, gdzie w <i>W<sub>x</sub></i> kolumnę przy <i>x</i> zastępujesz kolumną wyrazów wolnych. Gdy <span class="f"><i>W</i> = 0</span>, rozstrzyga Gauss.`
+  }[sMeth]);
+};
+$('#sCheck').onclick=()=>{
+  const out=sTask.out,msg=$('#sMsg'),ins=[...document.querySelectorAll('#sVals input')];let ok=false,counted=true;
+  ins.forEach(el=>el.classList.remove('ok','bad'));
+  if(sPick!==out.type)show(msg,'bad',`✗ To nie ten przypadek. Porównaj rz <i>A</i> i rz [<i>A</i> | <i>B</i>] z liczbą niewiadomych (${sTask.names.length}) — pomoże Podpowiedź albo ściąga.`);
+  else if(out.type==='one'){
+    let good=0,empty=0;
+    ins.forEach((el,k)=>{const v=parseFr(el.value);if(!el.value.trim())empty++;const g=v&&v.eq(out.vals[k]);el.classList.toggle('ok',!!g);el.classList.toggle('bad',!g);if(g)good++});
+    if(empty){counted=false;show(msg,'bad',`Uzupełnij wszystkie niewiadome (${empty} pustych).`)}
+    else if(good===ins.length){ok=true;show(msg,'ok','✓ Dobrze! Układ ma dokładnie jedno rozwiązanie i to jest ono.')}
+    else show(msg,'bad',`✗ Dobrze: ${good} z ${ins.length}. Podstaw swoje liczby do równań i sprawdź, które się nie zgadza.`);
+  }else{ok=true;show(msg,'ok',out.type==='inf'?'✓ Tak — nieskończenie wiele rozwiązań. W „Rozwiązaniu” zobaczysz, jak zapisać rozwiązanie ogólne z parametrem.':'✓ Tak — układ jest sprzeczny, nie ma rozwiązań.')}
+  if(counted&&!sCounted){sScore.all++;if(ok)sScore.ok++;sCounted=true;rec(sMode==='any'&&sSize!=='r'?'sysany':{2:'sys2',3:'sys3',4:'sys4',r:'sysrect'}[sSize],ok?1:0)}
+  $('#sScore').textContent=sScore.all?`wynik: ${sScore.ok}/${sScore.all}`:'';
+};
+function runSys(){
+  const err=$('#sysErr');err.className='msg';$('#sysOut').innerHTML='';
+  try{
+    const {Ab,names}=parseSystem($('#sysIn').value),r=sysMethodHtml(Ab,names,sMeth);
+    $('#sysOut').innerHTML=`<div class="sysbox">${sysHtml(abRows(Ab,names.length),names)}</div>`+r.html;sysShown=true;
+  }catch(e){show(err,'bad',e.message)}
+}
+$('#sysBtn').onclick=runSys;
+function fillCheat(){
+  const {Ab,names}=parseSystem('2x + y - z = 3\nx - y + 2z = 5\n3x + 2y + z = 10'),nv=names.length;
+  $('#chSys').innerHTML=`${sysHtml(abRows(Ab,nv),names)} &nbsp;⇔&nbsp; <span class="m">${matH(Ab.map(r=>r.slice(0,nv)))} · ${colH(names)} = ${matH(Ab.map(r=>[r[nv]]))}</span>`;
+}
+
+// ================= Odtwarzacz „krok po kroku” =================
+const PL={fr:[],k:0,tm:[],play:false,busy:false,spd:1,opener:null};
+try{const v=+localStorage.getItem('macierze-tempo');if(v>0)PL.spd=v}catch(e){}
+document.querySelectorAll('#plSpd .chip').forEach(c=>c.classList.toggle('on',+c.dataset.spd===PL.spd));
+const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+const plUnit=()=>520*PL.spd;
+function plClearT(){PL.tm.forEach(clearTimeout);PL.tm=[]}
+function plFinal(f){
+  const V=(f.B||[]).map(b=>b.M.map(r=>r.slice())),D=(f.B||[]).map(b=>b.M.map(r=>r.map(()=>new Set())));
+  [...(f.U||[])].sort((a,b)=>a.t-b.t).forEach(u=>{
+    if(u.v!==undefined)V[u.b][u.i][u.j]=u.v;
+    if(u.add)D[u.b][u.i][u.j].add(u.add);
+    if(u.clear)D[u.b].forEach(r=>r.forEach(z=>z.clear()));
+  });
+  return {V,D};
+}
+function plBoard(b,bi,vals,dyn){
+  const r=vals.length,c=vals[0].length,hl=b.hl||{},dim=new Set(b.dimCols);let h='';
+  for(let i=0;i<r;i++)for(let j=0;j<c;j++){
+    const cl=[];if(j===b.bar)cl.push('bl');if(dim.has(j))cl.push('dim');
+    for(const x of [hl.rows&&hl.rows[i],hl.cols&&hl.cols[j],hl.cells&&hl.cells[i+','+j]])if(x)cl.push(x);
+    const dy=dyn?[...dyn[i][j]]:[];
+    h+=`<span class="${cl.concat(dy).join(' ')}" data-c="${bi}-${i}-${j}" data-r="${bi}-${i}"${dy.length?` data-dyn="${dy.join(' ')}"`:''}>${vals[i][j]}</span>`;
+  }
+  return `<div class="bd"><div class="bd-lab">${b.lab}</div><span class="mat pm${b.det?' det':''}" style="grid-template-columns:repeat(${c},auto)">${h}</span></div>`;
+}
+const plCell=(b,i,j)=>$('#plStage').querySelector(`[data-c="${b}-${i}-${j}"]`);
+function plApply(x){
+  if(x.line!==undefined){const el=$('#plCalc').querySelector(`[data-l="${x.line}"]`);if(el)el.classList.remove('hid')}
+  if(x.swap&&!RM){
+    const [b,i,j]=x.swap,a=plCell(b,i,0),c=plCell(b,j,0);
+    if(a&&c){const dy=c.offsetTop-a.offsetTop,tr=`transform ${Math.round(1.1*plUnit())}ms cubic-bezier(.4,0,.2,1)`;
+      $('#plStage').querySelectorAll(`[data-r="${b}-${i}"]`).forEach(e=>{e.style.transition=tr;e.style.transform=`translateY(${dy}px)`});
+      $('#plStage').querySelectorAll(`[data-r="${b}-${j}"]`).forEach(e=>{e.style.transition=tr;e.style.transform=`translateY(${-dy}px)`})}
+  }
+  if(x.v!==undefined){const el=plCell(x.b,x.i,x.j);if(el){el.style.transition='none';el.style.transform='';void el.offsetWidth;el.style.transition='';el.innerHTML=x.v;el.classList.remove('chg');void el.offsetWidth;el.classList.add('chg')}}
+  if(x.add){const el=plCell(x.b,x.i,x.j);if(el){el.classList.add(x.add);el.dataset.dyn=((el.dataset.dyn||'')+' '+x.add).trim()}}
+  if(x.clear)$('#plStage').querySelectorAll(`[data-c^="${x.b}-"]`).forEach(el=>{(el.dataset.dyn||'').split(' ').filter(Boolean).forEach(c=>el.classList.remove(c));el.dataset.dyn=''});
+}
+function plRender(anim){
+  plClearT();
+  const f=PL.fr[PL.k],N=PL.fr.length,U=f.U||[],live=anim&&U.length>0,fin=plFinal(f);
+  $('#plSec').innerHTML=f.sec||'';$('#plT').innerHTML=f.t||'';$('#plX').innerHTML=f.x||'';$('#plX').hidden=!f.x;
+  $('#plCount').textContent=`Krok ${PL.k+1} z ${N}`;$('#plProg').style.width=(100*(PL.k+1)/N)+'%';
+  let st=f.S?`<div class="pl-s">${f.S}</div>`:'';
+  if(f.B&&f.B.length)st+='<div class="pl-boards">'+f.B.map((b,bi)=>(bi?`<span class="pl-j">${(f.J&&f.J[bi-1])||''}</span>`:'')+plBoard(b,bi,live?b.M:fin.V[bi],live?null:fin.D[bi])).join('')+'</div>';
+  $('#plStage').innerHTML=st;
+  const hid=new Set(live?U.filter(u=>u.line!==undefined).map(u=>u.line):[]),calc=$('#plCalc');
+  calc.className='pl-calc'+(f.Cb?' big':'');
+  calc.innerHTML=(f.C||[]).map((l,k)=>{const o=typeof l==='string'?{h:l}:l;return `<div class="${[o.full?'full':'',hid.has(k)?'hid':''].join(' ').trim()}" data-l="${k}">${o.h}</div>`}).join('');
+  $('#plBody').scrollTop=0;
+  $('#plPrev').disabled=PL.k===0;
+  $('#plNext').textContent=PL.k===N-1?'Zakończ ✓':'Dalej ▶';
+  if(live){
+    const u=plUnit();let mx=0;PL.busy=true;
+    for(const x of U){mx=Math.max(mx,x.t);PL.tm.push(setTimeout(()=>plApply(x),x.t*u))}
+    PL.tm.push(setTimeout(()=>{PL.busy=false;plAfter()},mx*u+120));
+  }else{PL.busy=false;plAfter()}
+}
+function plAfter(){
+  if(!PL.play)return;
+  if(PL.k>=PL.fr.length-1){plSetPlay(false);return}
+  const f=PL.fr[PL.k],len=(f.x||'').replace(/<[^>]+>/g,'').length;
+  PL.tm.push(setTimeout(()=>{PL.k++;plRender(true)},Math.max(1500,Math.min(5500,900+len*26))*PL.spd));
+}
+function plSetPlay(on){PL.play=on;$('#plPlay').textContent=on?'❚❚ Pauza':'▶ Odtwarzaj'}
+function plNext(){if(PL.busy){plRender(false);return}if(PL.k<PL.fr.length-1){PL.k++;plRender(true)}else plClose()}
+function plPrev(){plSetPlay(false);if(PL.k>0){PL.k--;plRender(false)}}
+function plOpen(frames,name){
+  PL.fr=frames;PL.k=0;PL.opener=document.activeElement;plSetPlay(false);
+  $('#plName').innerHTML=name||'';$('#pl').hidden=false;document.body.style.overflow='hidden';
+  plRender(true);$('#plNext').focus();
+}
+function plClose(){plClearT();plSetPlay(false);PL.busy=false;$('#pl').hidden=true;document.body.style.overflow='';if(PL.opener&&PL.opener.focus)PL.opener.focus()}
+$('#plNext').onclick=plNext;$('#plPrev').onclick=plPrev;$('#plClose').onclick=plClose;
+$('#plPlay').onclick=()=>{
+  if(PL.play){plSetPlay(false);if(PL.busy)plRender(false);else plClearT();return}
+  plSetPlay(true);
+  if(PL.k>=PL.fr.length-1){PL.k=0;plRender(true)}else if(!PL.busy){PL.k++;plRender(true)}
+};
+$('#plSpd').addEventListener('click',e=>{const b=e.target.closest('[data-spd]');if(!b)return;PL.spd=+b.dataset.spd;document.querySelectorAll('#plSpd .chip').forEach(c=>c.classList.toggle('on',c===b));try{localStorage.setItem('macierze-tempo',String(PL.spd))}catch(er){}});
+document.addEventListener('keydown',e=>{
+  if($('#pl').hidden)return;
+  if(e.key==='Escape'){plClose();e.preventDefault()}
+  else if(e.key==='ArrowRight'){plNext();e.preventDefault()}
+  else if(e.key==='ArrowLeft'){plPrev();e.preventDefault()}
+  else if(e.key===' '&&!(e.target.closest&&e.target.closest('button'))){$('#plPlay').click();e.preventDefault()}
+});
+function play(make,name,msgEl){
+  let fr;try{fr=make()}catch(e){if(msgEl)show(msgEl,'bad',e.message);return}
+  if(fr&&fr.length)plOpen(fr,name);
+}
+const MN={gauss:'metoda Gaussa',mac:'metoda macierzowa',cra:'wzory Cramera'};
+$('#nPlay').onclick=()=>play(()=>nTask.fr(),'X na liczbach · '+nTask.orig,$('#nMsg'));
+$('#sPlay').onclick=()=>play(()=>sysFrames(sTask.Ab,sTask.names,sMeth),'Układ równań · '+MN[sMeth],$('#sMsg'));
+$('#sysPlay').onclick=()=>{$('#sysErr').className='msg';play(()=>{const {Ab,names}=parseSystem($('#sysIn').value);return sysFrames(Ab,names,sMeth)},'Twój układ · '+MN[sMeth],$('#sysErr'))};
+$('#symPlay').onclick=()=>{if(sol)play(()=>symFrames(sol),'X na literach · '+sol.orig)};
+$('#numPlay').onclick=()=>{computeNum();if(lastNum)play(()=>lastNum.fr(),'Policz na liczbach',$('#numMsg'))};
+
+// ================= Odpowiedzi w ogólnych zadaniach (format z topics.js) =================
+function ansRead(id,ans){
+  const v=s=>{const el=document.getElementById(id+'-'+s);return el?el.value:''};
+  if(ans.kind==='mat')return ans.M.flat().map((_,k)=>v(k));
+  if(ans.kind==='num')return v(0);
+  if(ans.kind==='formula')return v('f');
+  if(ans.kind==='sys'){const box=document.querySelector(`[data-gst-box="${id}"]`),on=box&&box.querySelector('.on');return {type:on?on.dataset.gst:'one',vals:ans.names.map((_,j)=>v('v'+j))}}
+  if(ans.kind==='param')return [0,1,2].map(k=>({a:v('a'+k),type:v('t'+k)}));
+  return null;
+}
+function ansFill(id,ans,inp){
+  if(!inp)return;
+  const set=(s,x)=>{const el=document.getElementById(id+'-'+s);if(el)el.value=x};
+  if(ans.kind==='mat')inp.forEach((x,k)=>set(k,x));
+  else if(ans.kind==='num')set(0,inp);
+  else if(ans.kind==='formula')set('f',inp);
+  else if(ans.kind==='sys'){const box=document.querySelector(`[data-gst-box="${id}"]`);if(box)box.querySelectorAll('[data-gst]').forEach(c=>c.classList.toggle('on',c.dataset.gst===inp.type));const vals=document.getElementById(id+'-vals');if(vals)vals.hidden=inp.type!=='one';inp.vals.forEach((x,j)=>set('v'+j,x))}
+  else if(ans.kind==='param')inp.forEach((r,k)=>{set('a'+k,r.a);set('t'+k,r.type)});
+}
+function ansMark(id,res){for(const [k,ok] of Object.entries(res.marks)){const el=document.getElementById(id+'-'+k);if(el){el.classList.toggle('ok',!!ok);el.classList.toggle('bad',!ok)}}}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-gst]');if(!b)return;
+  const box=b.closest('[data-gst-box]');box.querySelectorAll('[data-gst]').forEach(c=>c.classList.toggle('on',c===b));
+  const vals=document.getElementById(box.dataset.gstBox+'-vals');if(vals)vals.hidden=b.dataset.gst!=='one';
+});
+const plain=h=>String(h).replace(/<[^>]+>/g,'');
+
+// ================= Karta ćwiczenia (Ćwiczenia i Powtórka) =================
+function makePractice(root,o){
+  const id=o.id,$i=s=>document.getElementById(id+s),sc={ok:0,all:0};let topic=null,task=null,counted=false;
+  root.innerHTML=`<div class="card"><div class="row" style="margin-top:0"><span class="q" id="${id}Q"></span><span class="score" id="${id}Score"></span></div><div class="mute" id="${id}Why"></div><div id="${id}Body"></div><div id="${id}Ans" style="margin-top:10px"></div>
+<div class="row"><button class="btn" id="${id}Check">Sprawdź</button><button class="btn ghost" id="${id}Hint">Podpowiedź</button><button class="btn play" id="${id}Play">▶ Krok po kroku</button><button class="btn ghost" id="${id}Sol">Rozwiązanie</button><button class="btn ghost" id="${id}New">Nowe zadanie</button></div>
+<p class="mute" style="margin-top:8px">Ułamki wpisuj jako <code>1/2</code> lub <code>-3/4</code>.</p><div class="msg" id="${id}Msg"></div><div class="sol" id="${id}SolBox"></div></div>`;
+  function next(){
+    topic=topicById(o.pick());task=topic.gen();counted=false;
+    $i('Q').innerHTML=task.q;$i('Why').innerHTML=o.why?o.why(topic):'';$i('Why').hidden=!o.why;
+    $i('Body').innerHTML=task.body;$i('Ans').innerHTML=ansHtml(task.ans,id+'a');
+    $i('Msg').className='msg';$i('SolBox').className='sol';$i('SolBox').innerHTML=task.sol;
+    $i('Hint').hidden=!task.hint;$i('Play').hidden=!task.fr;
+  }
+  $i('Check').onclick=()=>{
+    const r=ansCheck(task.ans,ansRead(id+'a',task.ans));ansMark(id+'a',r);
+    if(r.empty){show($i('Msg'),'bad','Najpierw wpisz odpowiedź.');return}
+    if(!counted){counted=true;sc.all++;if(r.score===1)sc.ok++;rec(topic.id,r.score)}
+    $i('Score').textContent=`wynik: ${sc.ok}/${sc.all}`;
+    if(r.score===1)show($i('Msg'),'ok','✓ Dobrze!');
+    else show($i('Msg'),'bad',`✗ ${r.msg||'Niestety nie.'} Możesz poprawić, wziąć podpowiedź albo obejrzeć rozwiązanie krok po kroku.`);
+  };
+  $i('Hint').onclick=()=>show($i('Msg'),'info',task.hint);
+  $i('Play').onclick=()=>play(task.fr,plain(topic.name),$i('Msg'));
+  $i('Sol').onclick=()=>$i('SolBox').classList.toggle('on');
+  $i('New').onclick=()=>{next();if(o.onNew)o.onNew()};
+  return {next};
+}
+
+// ================= Ćwiczenia =================
+let cwSec=SECTIONS[0],cwTop=TOPICS[0].id;
+function cwRender(){
+  $('#cwSecs').innerHTML=SECTIONS.map(s=>`<button class="chip${s===cwSec?' on':''}" data-cws="${s}">${s}</button>`).join('');
+  $('#cwTopics').innerHTML=TOPICS.filter(t=>t.sec===cwSec).map(t=>`<button class="chip${t.id===cwTop?' on':''}" data-cwt="${t.id}">${t.name}</button>`).join('');
+}
+const CW=makePractice($('#cwBox'),{id:'cw',pick:()=>cwTop});
+$('#cwSecs').addEventListener('click',e=>{const b=e.target.closest('[data-cws]');if(!b)return;cwSec=b.dataset.cws;cwTop=TOPICS.find(t=>t.sec===cwSec).id;cwRender();CW.next()});
+$('#cwTopics').addEventListener('click',e=>{const b=e.target.closest('[data-cwt]');if(!b)return;cwTop=b.dataset.cwt;cwRender();CW.next()});
+function cwOpen(id){cwTop=id;cwSec=topicById(id).sec;cwRender();CW.next();setTab('cwiczenia')}
+
+// ================= Postęp i powtórki =================
+const PR_KEY='algebra-postep-v1';let PR={};
+try{PR=JSON.parse(localStorage.getItem(PR_KEY)||'{}')||{}}catch(e){PR={}}
+function prSave(){try{localStorage.setItem(PR_KEY,JSON.stringify(PR))}catch(e){}}
+function rec(id,score){
+  if(!topicById(id))return;
+  const r=PR[id]||(PR[id]={n:0,h:[],t:0});r.n++;r.h.push(Math.round(score*100)/100);if(r.h.length>10)r.h.shift();r.t=Date.now();
+  prSave();prRender();
+}
+const prAcc=id=>{const r=PR[id];return r&&r.h.length?r.h.reduce((a,b)=>a+b,0)/r.h.length:null};
+function prStatus(id){const a=prAcc(id);return a===null?['new','nowy']:a<.5?['bad','słabo']:a<.8?['mid','średnio']:['good','dobrze']}
+function prWeight(id){const a=prAcc(id);if(a===null)return 1.3;return .2+(1-a)*2.2+Math.min(.6,(Date.now()-PR[id].t)/864e6)}
+let prQueue=[],prLast='';
+function prPick(){
+  if(prQueue.length){const id=prQueue.shift();prLast=id;return id}
+  for(let tries=0;tries<3;tries++){
+    const ws=TOPICS.map(t=>prWeight(t.id)),sum=ws.reduce((a,b)=>a+b,0);let x=Math.random()*sum,id=TOPICS[0].id;
+    for(let k=0;k<TOPICS.length;k++){x-=ws[k];if(x<=0){id=TOPICS[k].id;break}}
+    if(id!==prLast||tries===2){prLast=id;return id}
+  }
+}
+function prWhy(t){
+  const a=prAcc(t.id),[st]=prStatus(t.id),pct=a===null?0:Math.round(a*100);
+  const w=st==='new'?'nowy temat — jeszcze go nie ćwiczyłeś':st==='bad'?`słabo idzie (${pct}% w ostatnich próbach)`:st==='mid'?`średnio (${pct}%) — warto utrwalić`:'utrwalenie tematu, który już umiesz';
+  return `Powtórka · ${t.sec} · ${t.name} — ${w}.`;
+}
+function prRender(){
+  const ids=TOPICS.map(t=>t.id),done=ids.filter(id=>prAcc(id)!==null),n=ids.reduce((s,id)=>s+(PR[id]?PR[id].n:0),0);
+  const avg=done.length?Math.round(100*done.reduce((s,id)=>s+prAcc(id),0)/done.length):0;
+  const cnt=k=>ids.filter(id=>prStatus(id)[0]===k).length;
+  $('#prStats').innerHTML=[[n,'rozwiązanych zadań'],[done.length?avg+'%':'—','średni wynik'],[cnt('bad')+cnt('mid'),'tematów do powtórki'],[cnt('good')+' / '+ids.length,'tematów opanowanych']].map(([b,s])=>`<div class="stat"><b>${b}</b><span>${s}</span></div>`).join('');
+  $('#prList').innerHTML=SECTIONS.map(sec=>`<div class="pr-sec">${sec}</div>`+TOPICS.filter(t=>t.sec===sec).map(t=>{
+    const a=prAcc(t.id),[cl,lab]=prStatus(t.id),pct=a===null?0:Math.round(a*100),col={bad:'var(--bad)',mid:'var(--amb)',good:'var(--ok)',new:'var(--line)'}[cl];
+    return `<div class="pr-row"><button class="pr-name" data-prt="${t.id}" title="Ćwicz ten temat">${t.name}</button><div class="pr-bar"><span style="width:${pct}%;background:${col}"></span></div><span class="pr-pct">${a===null?'—':pct+'%'}</span><span class="pill ${cl}">${lab}</span></div>`;
+  }).join('')).join('');
+}
+$('#prList').addEventListener('click',e=>{const b=e.target.closest('[data-prt]');if(b)cwOpen(b.dataset.prt)});
+let PRP=null;
+function prStart(queue){
+  prQueue=queue||[];
+  if(!PRP)PRP=makePractice($('#prBox'),{id:'pr',pick:prPick,why:prWhy});
+  PRP.next();setTab('postep');$('#prBox').scrollIntoView({block:'start'});
+}
+$('#prGo').onclick=()=>prStart();
+$('#prReset').onclick=()=>{
+  const m=$('#prMsg');show(m,'bad','Na pewno usunąć cały zapisany postęp? Tego nie da się cofnąć. <div class="row"><button class="btn small" id="prYes">Tak, wyczyść</button><button class="btn ghost small" id="prNo">Anuluj</button></div>');
+  $('#prYes').onclick=()=>{PR={};prSave();prRender();show(m,'ok','Postęp wyczyszczony.')};
+  $('#prNo').onclick=()=>{m.className='msg'};
+};
+
+// ================= Sprawdzian =================
+const exSel=new Set(SECTIONS);let exN=8,exT=0,EX=null,exTimer=null;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const mmss=ms=>{const s=Math.max(0,Math.round(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`};
+const pln=x=>String(Math.round(x*10)/10).replace('.',',');
+function exSetup(){$('#exSecs').innerHTML=SECTIONS.map(s=>`<button class="chip${exSel.has(s)?' on':''}" data-exs="${s}">${s}</button>`).join('')}
+$('#exSecs').addEventListener('click',e=>{const b=e.target.closest('[data-exs]');if(!b)return;const s=b.dataset.exs;if(exSel.has(s)){if(exSel.size>1)exSel.delete(s)}else exSel.add(s);exSetup()});
+$('#exN').addEventListener('click',e=>{const b=e.target.closest('[data-exn]');if(!b)return;exN=+b.dataset.exn;$('#exN').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b))});
+$('#exT').addEventListener('click',e=>{const b=e.target.closest('[data-ext]');if(!b)return;exT=+b.dataset.ext;$('#exT').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b))});
+function exStart(){
+  const secs=shuffle(SECTIONS.filter(s=>exSel.has(s))),pools=secs.map(s=>shuffle(TOPICS.filter(t=>t.sec===s))),ids=[];
+  for(let k=0;ids.length<exN;k++){const p=pools[k%pools.length];ids.push((p.length?p.shift():pick(TOPICS.filter(t=>t.sec===secs[k%secs.length]))).id)}
+  EX={items:shuffle(ids).map(id=>{const tp=topicById(id);return {tp,task:tp.gen(),inp:null}}),k:0,t0:Date.now(),end:exT?Date.now()+exT*60000:0,done:false};
+  $('#exAns').innerHTML='';$('#exSetup').hidden=true;$('#exRes').hidden=true;$('#exRun').hidden=false;$('#exConfirm').className='msg';
+  exShow(0);clearInterval(exTimer);exTimer=setInterval(exTick,1000);exTick();
+}
+function exTick(){
+  if(!EX||EX.done){clearInterval(exTimer);return}
+  if(EX.end){const left=EX.end-Date.now();$('#exClock').textContent='zostało '+mmss(left);if(left<=0)exFinish()}
+  else $('#exClock').textContent='czas '+mmss(Date.now()-EX.t0);
+}
+function exSave(){const it=EX.items[EX.k];it.inp=ansRead('exa',it.task.ans)}
+const exAnswered=it=>it.inp&&!ansCheck(it.task.ans,it.inp).empty;
+function exShow(k){
+  if(EX.items[EX.k]&&$('#exAns').innerHTML)exSave();
+  EX.k=k;const it=EX.items[k],N=EX.items.length;
+  $('#exHead').textContent=`Zadanie ${k+1} z ${N}`;$('#exTopic').innerHTML=it.tp.sec+' · '+it.tp.name;
+  $('#exQ').innerHTML=it.task.q;$('#exBody').innerHTML=it.task.body;$('#exAns').innerHTML=ansHtml(it.task.ans,'exa');ansFill('exa',it.task.ans,it.inp);
+  $('#exDots').innerHTML=EX.items.map((x,i)=>`<button class="${i===k?'cur':exAnswered(x)?'done':''}" data-exk="${i}" aria-label="Zadanie ${i+1}">${i+1}</button>`).join('');
+  $('#exPrev').disabled=k===0;$('#exNext').disabled=k===N-1;$('#exConfirm').className='msg';
+}
+$('#exDots').addEventListener('click',e=>{const b=e.target.closest('[data-exk]');if(b)exShow(+b.dataset.exk)});
+$('#exPrev').onclick=()=>{if(EX.k>0)exShow(EX.k-1)};
+$('#exNext').onclick=()=>{if(EX.k<EX.items.length-1)exShow(EX.k+1)};
+$('#exStart').onclick=()=>{const m=$('#exMsg');show(m,'info','Losuję zadania…');setTimeout(()=>{try{exStart();m.className='msg'}catch(err){show(m,'bad','Nie udało się wylosować zestawu: '+err.message)}},20)};
+$('#exEnd').onclick=()=>{
+  exSave();const empty=EX.items.filter(it=>!exAnswered(it)).length,m=$('#exConfirm');
+  if(!empty){exFinish();return}
+  show(m,'bad',`Bez odpowiedzi: ${empty} ${pl(empty,'zadanie','zadania','zadań')}. Zakończyć mimo to? <div class="row"><button class="btn small" id="exYes">Tak, oceń</button><button class="btn ghost small" id="exNo">Wracam do zadań</button></div>`);
+  $('#exYes').onclick=exFinish;$('#exNo').onclick=()=>{m.className='msg'};
+};
+const GRADES=[[90,'5,0'],[80,'4,5'],[70,'4,0'],[60,'3,5'],[50,'3,0'],[0,'2,0']];
+function exFinish(){
+  if(!EX||EX.done)return;
+  if($('#exAns').innerHTML)exSave();
+  EX.done=true;clearInterval(exTimer);
+  const N=EX.items.length;let pts=0;
+  EX.items.forEach(it=>{const inp=it.inp||ansRead('__brak__',it.task.ans);it.inp=inp;it.r=ansCheck(it.task.ans,inp);pts+=it.r.score;rec(it.tp.id,it.r.score)});
+  const pct=Math.round(100*pts/N),grade=GRADES.find(g=>pct>=g[0])[1],weak=[...new Set(EX.items.filter(it=>it.r.score<1).map(it=>it.tp.id))];
+  const comment=pct>=90?'Świetnie — materiał opanowany.':pct>=70?'Dobrze. Przejrzyj zadania z błędami poniżej.':pct>=50?'Zaliczone, ale warto powtórzyć tematy z błędami.':'Na razie za mało — obejrzyj rozwiązania krok po kroku i zrób powtórkę słabych tematów.';
+  let h=`<div class="card"><h2>Wynik sprawdzianu</h2><div class="res-top"><div><div class="grade">${grade}</div><div class="mute">ocena</div></div><div><b style="font-size:22px">${pln(pts)} / ${N} pkt</b><div class="mute">${pct}% · czas ${mmss(Date.now()-EX.t0)}</div></div></div><p>${comment}</p>
+<div class="row"><button class="btn" id="exAgain">Nowy sprawdzian</button>${weak.length?`<button class="btn ghost" id="exRedo">Ćwicz tematy z błędami (${weak.length})</button>`:''}</div></div><div class="card"><h2>Zadania</h2>`;
+  EX.items.forEach((it,i)=>{
+    const s=it.r.score,cl=s===1?'good':s>0?'mid':'bad';
+    h+=`<div class="rev"><div class="rev-head"><b>Zadanie ${i+1}</b><span class="pill ${cl}">${pln(s)} / 1 pkt</span><span class="mute">${it.tp.sec} · ${it.tp.name}</span></div>
+<div class="q" style="margin-top:6px">${it.task.q}</div>${it.task.body}
+<div class="ansline"><span class="mute">Twoja odpowiedź:</span> ${it.r.empty?'<i class="mute">brak</i>':inpShow(it.task.ans,it.inp)}</div>
+<div class="ansline"><span class="mute">Poprawna:</span> ${ansShow(it.task.ans)}</div>
+<div class="row">${it.task.fr?`<button class="btn play small" data-exp="${i}">▶ Krok po kroku</button>`:''}<button class="btn ghost small" data-exs2="${i}">Rozwiązanie</button></div><div class="sol" id="exSol${i}">${it.task.sol}</div></div>`;
+  });
+  $('#exRes').innerHTML=h+'</div>';$('#exRun').hidden=true;$('#exRes').hidden=false;window.scrollTo(0,0);
+  $('#exAgain').onclick=()=>{$('#exRes').hidden=true;$('#exSetup').hidden=false;EX=null};
+  if(weak.length)$('#exRedo').onclick=()=>prStart(weak.slice());
+}
+$('#exRes').addEventListener('click',e=>{
+  const p=e.target.closest('[data-exp]');if(p){const it=EX.items[+p.dataset.exp];play(it.task.fr,plain(it.tp.name));return}
+  const s=e.target.closest('[data-exs2]');if(s)$('#exSol'+s.dataset.exs2).classList.toggle('on');
+});
+
+// ================= Znajdź mój błąd =================
+function fbRun(){const m=$('#fbMsg');m.className='msg';try{$('#fbOut').innerHTML=chainReport($('#fbIn').value)}catch(e){$('#fbOut').innerHTML='';show(m,'bad',e.message)}}
+function fbMulRun(){const m=$('#fbMsg');m.className='msg';try{$('#fbOut').innerHTML=`<div class="card">${mulReport(parseMat($('#fbA').value,'A'),parseMat($('#fbB').value,'B'),parseMat($('#fbC').value,'AB'))}</div>`}catch(e){$('#fbOut').innerHTML='';show(m,'bad',e.message)}}
+$('#fbBtn').onclick=fbRun;$('#fbMulBtn').onclick=fbMulRun;
+$('#fbEx').onclick=()=>{$('#fbIn').value=EX_CHAIN;fbRun()};
+$('#fbClr').onclick=()=>{$('#fbIn').value='';$('#fbOut').innerHTML='';$('#fbMsg').className='msg';$('#fbIn').focus()};
+$('#fbMode').addEventListener('click',e=>{
+  const b=e.target.closest('[data-fb]');if(!b)return;const g=b.dataset.fb==='gauss';
+  $('#fbMode').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));
+  $('#fbGauss').hidden=!g;$('#fbMul').hidden=g;g?fbRun():fbMulRun();
+});
+
+// start
+document.documentElement.lang='pl';
+newNum();runSolve();newSys();runSys();fillCheat();
+cwRender();CW.next();exSetup();prRender();$('#fbIn').value=EX_CHAIN;fbRun();
+setTab(location.hash.slice(1));
+</script>
+</body>
+</html>
