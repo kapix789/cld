@@ -425,10 +425,10 @@ function inpShow(ans,inp){
 }
 
 // ---------- Opakowania istniejących generatorów w format zadania ----------
-const opTopic=type=>()=>{const t=genTask(type);return {q:t.q,body:givenH(t.given),ans:{kind:'mat',M:t.ans,lab:t.lab},sol:t.sol,fr:t.fr}};
+const opTopic=type=>()=>{const t=genTask(type);return {q:t.q,body:givenH(t.given),ans:{kind:'mat',M:t.ans,lab:t.lab},get sol(){return t.sol},fr:t.fr}};
 function xnumTopic(n,rect){return ()=>{
   const T=genNum(n,-1,rect);
-  return {q:$t('Wyznacz macierz <i>X</i>','Find the matrix <i>X</i>'),body:eqH(T.sol.orig)+givenH([...T.sol.letters].sort().map(c=>[c,T.env[c]])),ans:{kind:'mat',M:T.X,lab:'<i>X</i>'},sol:numSolHtml(T),fr:()=>numFrames(T),
+  return {q:$t('Wyznacz macierz <i>X</i>','Find the matrix <i>X</i>'),body:eqH(T.sol.orig)+givenH([...T.sol.letters].sort().map(c=>[c,T.env[c]])),ans:{kind:'mat',M:T.X,lab:'<i>X</i>'},get sol(){return numSolHtml(T)},fr:()=>numFrames(T),
     hint:$t(`Najpierw na literach: <span class="f"><i>X</i> = ${rP(T.sol.P)}</span>. Potem odwrotność metodą Gaussa i mnożenie.`,`First symbolically: <span class="f"><i>X</i> = ${rP(T.sol.P)}</span>. Then the inverse by Gaussian elimination and multiplication.`)};
 }}
 function xlinTopic(){
@@ -486,13 +486,13 @@ function genExamSys(){
 function examTopic(){
   const g=genExamSys(),out=sysMethodHtml(g.Ab,g.names,'gauss');
   return {q:$t('Jeśli to możliwe, rozwiąż układ równań','Solve the system of equations, if possible'),body:`<div class="sysbox">${sysHtml(abRows(g.Ab,4),g.names)}</div>`,
-    ans:sysAns(g.Ab,g.names),sol:out.html,fr:()=>sysFrames(g.Ab,g.names,'gauss'),
+    ans:sysAns(g.Ab,g.names),get sol(){return sysMethodHtml(g.Ab,g.names,'gauss').html},fr:()=>sysFrames(g.Ab,g.names,'gauss'),
     hint:$t('Macierz rozszerzona i Gauss. Sprawdź, czy któreś równanie nie jest kombinacją innych (np. w₃ = 4w₁ − 4w₂) — wtedy porównaj prawe strony: zgodne → parametry, niezgodne → sprzeczność.','Augmented matrix and Gauss. Check whether an equation is a combination of others (e.g. R₃ = 4R₁ − 4R₂) — then compare the right-hand sides: they match → parameters, they don’t → inconsistent.')};
 }
 function sysTopic(sz,mode,method){return ()=>{
   const g=genSys(sz,mode),out=sysMethodHtml(g.Ab,g.names,method);
   return {q:$t('Rozwiąż układ równań','Solve the system of equations')+METH_PL[method],body:`<div class="sysbox">${sysHtml(abRows(g.Ab,g.names.length),g.names)}</div>`,
-    ans:sysAns(g.Ab,g.names),sol:out.html,fr:()=>sysFrames(g.Ab,g.names,method),
+    ans:sysAns(g.Ab,g.names),get sol(){return sysMethodHtml(g.Ab,g.names,method).html},fr:()=>sysFrames(g.Ab,g.names,method),
     hint:{gauss:$t('Macierz rozszerzona [<i>A</i> | <i>B</i>] i eliminacja kolumna po kolumnie.','Augmented matrix [<i>A</i> | <i>B</i>] and elimination column by column.'),mac:$t('<i>X</i> = <i>A</i><sup>−1</sup><i>B</i> — najpierw odwrotność, potem mnożenie.','<i>X</i> = <i>A</i><sup>−1</sup><i>B</i> — first the inverse, then the multiplication.'),cra:$t('<i>W</i> = det <i>A</i>, potem <i>x</i> = <i>W<sub>x</sub></i>/<i>W</i>.','<i>D</i> = det <i>A</i>, then <i>x</i> = <i>D<sub>x</sub></i>/<i>D</i>.')}[method]};
 }}
 function detTopic(n){return ()=>{
@@ -504,13 +504,13 @@ function detTopic(n){return ()=>{
 }}
 function rankTopic(){
   const A=genRank(),r=rankOf(A);
-  return {q:$t('Wyznacz rząd macierzy','Find the rank of the matrix'),body:givenH([['A',A]]),ans:{kind:'num',v:F(r),lab:$t('rz <i>A</i>','rank <i>A</i>')},sol:rankHtml(A),fr:()=>rankFrames(A),
+  return {q:$t('Wyznacz rząd macierzy','Find the rank of the matrix'),body:givenH([['A',A]]),ans:{kind:'num',v:F(r),lab:$t('rz <i>A</i>','rank <i>A</i>')},get sol(){return rankHtml(A)},fr:()=>rankFrames(A),
     hint:$t('Sprowadź macierz do postaci schodkowej (zera pod elementami głównymi) i policz niezerowe wiersze.','Reduce the matrix to row echelon form (zeros below the pivots) and count the nonzero rows.')};
 }
 function paramTopic(){
   const P=genParam();
   return {q:$t('Zbadaj liczbę rozwiązań w zależności od parametru <i>a</i>','Determine the number of solutions depending on the parameter <i>a</i>'),body:`<div class="sysbox">${paramSysHtml(P.E,P.b,P.names)}</div>`,
-    ans:{kind:'param',roots:P.roots.map((a,k)=>({a,type:P.types[k]}))},sol:paramHtml(P),fr:()=>paramFrames(P),
+    ans:{kind:'param',roots:P.roots.map((a,k)=>({a,type:P.types[k]}))},get sol(){return paramHtml(P)},fr:()=>paramFrames(P),
     hint:$t('Policz wyznacznik główny <i>W</i>(<i>a</i>). Gdzie <i>W</i> ≠ 0 — jedno rozwiązanie. Wartości z <i>W</i> = 0 podstaw i sprawdź Gaussem.','Compute the main determinant <i>D</i>(<i>a</i>). Where <i>D</i> ≠ 0 — one solution. Substitute the values with <i>D</i> = 0 and check them with Gaussian elimination.')};
 }
 

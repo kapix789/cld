@@ -2,7 +2,7 @@
 const fs=require('fs'),path=require('path');
 const src=f=>fs.readFileSync(path.join(__dirname,'..','src',f),'utf8');
 const E=new Function(src('engine.js')+'\n'+src('topics.js')+`
-return {elimPlan,planFrac,planGroups,richUni,rnd,gaussFrames,LANG,F,M,rref,sysSolution,genExamSys,sysAns,checkGeneral,genSys,sysFrames,sysMethodHtml,parseSystem,linSolve,numbersSolve,solve,genNum,genLin,NT,numFrames,genTask,genEq,symFrames,
+return {OPT,elimPlan,planFrac,planGroups,richUni,rnd,gaussFrames,LANG,F,M,rref,sysSolution,genExamSys,sysAns,checkGeneral,genSys,sysFrames,sysMethodHtml,parseSystem,linSolve,numbersSolve,solve,genNum,genLin,NT,numFrames,genTask,genEq,symFrames,
   TOPICS,SECTIONS,ansCheck,ansHtml,ansShow,inpShow,checkChain,chainReport,parseChain,mulReport,EX_CHAIN,detF,laplaceTerms,genParam,polyFromDet,polyAt,paramAt,rankOf,genRank,checkAnswer,rP,unimod2};`)();
 const {F,M}=E;let fails=0,checks=0;
 const ok=(c,m)=>{checks++;if(!c){fails++;if(fails<25)console.log('✗',m)}};
@@ -127,6 +127,16 @@ ok(types.none>3&&types.inf>3,'egzamin: za mało układów sprzecznych/nieoznaczo
   const sy=E.parseSystem('3x1 + 2x2 + 5x3 + 4x4 = 3\n2x1 + 3x2 + 6x3 + 8x4 = 5\n4x1 - 4x2 - 4x3 - 16x4 = -8\n4x1 + x2 + 4x3 = 2'),pl=E.elimPlan(sy.Ab,4,{sys:true});
   ok(E.planFrac(pl)===0&&pl.contra,'układ z kartki: ułamki w krokach albo brak sprzeczności');
 }
+// 6d. tryb klasyczny (pole „Licz bez ułamków” odznaczone): ten sam wynik, animacja spójna
+E.OPT.noFrac=false;
+for(let i=0;i<60;i++){
+  const n=E.rnd(2,4),m=n+E.rnd(-1,1),A=M.make(m,n+1,()=>F(E.rnd(-6,8))),res=E.rref(A,n),pl=E.elimPlan(A,n);
+  ok(JSON.stringify(res.A.map(r=>r.slice(0,n).map(x=>x.str())))===JSON.stringify(pl.A.map(r=>r.slice(0,n).map(x=>x.str()))),'klasycznie: inny wynik niż RREF');
+  if(i<15){const fr=E.gaussFrames(A,n,{mode:'sys',names:['x','y','z','t'].slice(0,n)}).frames;frames(fr,'klasycznie');let prev=null;
+    for(const f of fr){if(!f.B||f.B.length!==1)continue;const st=f.B[0].M.map(r=>r.slice());if(prev)ok(JSON.stringify(prev)===JSON.stringify(st),'klasycznie: animacja niespójna');(f.U||[]).filter(u=>u.v!==undefined).sort((a,b)=>a.t-b.t).forEach(u=>{st[u.i][u.j]=u.v});prev=st}}
+}
+for(const t of E.TOPICS){const x=t.gen();ok(typeof x.sol==='string'&&x.sol.length>0,'klasycznie: brak rozwiązania '+t.id);if(x.fr)frames(x.fr(),'klasycznie '+t.id)}
+E.OPT.noFrac=true;
 // 7. tryb angielski: każdy temat działa i nie zostaje w nim polski tekst
 E.LANG.cur='en';
 const PLC=/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ„]/;

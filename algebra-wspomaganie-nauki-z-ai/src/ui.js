@@ -3,6 +3,7 @@ const $=s=>document.querySelector(s);
 // język: zapamiętany wybór (albo polski), ustawiony zanim cokolwiek się wyrenderuje
 try{const v=localStorage.getItem('algebra-lang');if(v==='en'||v==='pl')LANG.cur=v}catch(e){}
 document.documentElement.dataset.lang=LANG.cur;document.documentElement.lang=LANG.cur;
+try{if(localStorage.getItem('algebra-bez-ulamkow')==='0')OPT.noFrac=false}catch(e){}
 const show=(el,cls,html)=>{el.className='msg '+cls;el.innerHTML=html};
 const INP='autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text"';
 const grid=(r,c)=>`<span class="mat gin" style="grid-template-columns:repeat(${c},auto)">${Array.from({length:r*c},()=>`<input ${INP}>`).join('')}</span>`;
@@ -39,7 +40,7 @@ function newNum(){
     $('#ntNote').innerHTML=$t(`Tego równania nie rozwiążesz wzorem (${tpl.note()}). Liczysz przez niewiadome: <i>X</i> = [<i>x y</i>; <i>z t</i>] → układ równań. Rozmiar i kształt nie mają tu znaczenia.`,`This equation can’t be solved with a formula (${tpl.note()}). You solve it using unknowns: <i>X</i> = [<i>x y</i>; <i>z t</i>] → a system of equations. Size and shape do not matter here.`);
   }else{
     const T=genNum(nSize,idx,nShape==='rect');
-    nTask={fr:()=>numFrames(T),orig:T.sol.orig,letters:[...T.sol.letters].sort(),env:T.env,X:T.X,solHtml:numSolHtml(T),
+    nTask={fr:()=>numFrames(T),orig:T.sol.orig,letters:[...T.sol.letters].sort(),env:T.env,X:T.X,get solHtml(){return numSolHtml(T)},
       hint:$t(`Najpierw na literach: <span class="f"><i>X</i> = ${rP(T.sol.P)}</span>. Potem policz odwrotność metodą Gaussa i wymnóż.`,`First symbolically: <span class="f"><i>X</i> = ${rP(T.sol.P)}</span>. Then compute the inverse by Gaussian elimination and multiply.`)};
     $('#ntNote').innerHTML=nShape==='rect'?$t(`Prostokątna <i>X</i>: wymiar wynika z działań. Odwracasz tylko macierze kwadratowe — te, które stoją przy <i>X</i>.`,`Rectangular <i>X</i>: its size follows from the operations. You only invert square matrices — the ones next to <i>X</i>.`):'';
   }
@@ -290,6 +291,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key===' '&&!(e.target.closest&&e.target.closest('button'))){$('#plPlay').click();e.preventDefault()}
 });
 function play(make,name,msgEl){
+  PL.make=make;
   let fr;try{fr=make()}catch(e){if(msgEl)show(msgEl,'bad',e.message);return}
   if(fr&&fr.length)plOpen(fr,name);
 }
@@ -361,7 +363,7 @@ function makePractice(root,o){
   $i('Play').onclick=()=>play(task.fr,plain(tName(topic)),$i('Msg'));
   $i('Sol').onclick=()=>$i('SolBox').classList.toggle('on');
   $i('New').onclick=()=>{next();if(o.onNew)o.onNew()};
-  return {next};
+  return {next,refresh(){if(task)$i('SolBox').innerHTML=task.sol}};
 }
 
 // ================= Ćwiczenia =================
@@ -533,7 +535,22 @@ function setLang(l,rerender){
 }
 document.querySelector('.lang').addEventListener('click',e=>{const b=e.target.closest('[data-lang]');if(b&&b.dataset.lang!==LANG.cur)setLang(b.dataset.lang,true)});
 
+// ================= Liczenie bez ułamków (pole wyboru) =================
+function setNoFrac(v,rerender){
+  OPT.noFrac=!!v;
+  try{localStorage.setItem('algebra-bez-ulamkow',OPT.noFrac?'1':'0')}catch(e){}
+  document.querySelectorAll('[data-nofrac]').forEach(c=>{c.checked=OPT.noFrac});
+  if(!rerender)return;
+  // przeliczam to, co jest na ekranie — zadania zostają te same
+  if(sTask)renderSysSol();if(sysShown)runSys();
+  if(nTask)$('#nSolBox').innerHTML=nTask.solHtml;
+  if(lastNum&&$('#numOut').innerHTML)computeNum();
+  CW.refresh();if(PRP)PRP.refresh();
+  if(!$('#pl').hidden&&PL.make){try{PL.fr=PL.make();PL.k=0;plSetPlay(false);plRender(true)}catch(e){}}
+}
+document.addEventListener('change',e=>{if(e.target.matches&&e.target.matches('[data-nofrac]'))setNoFrac(e.target.checked,true)});
+
 // start
 newNum();runSolve();newSys();runSys();fillCheat();
 cwRender();CW.next();exSetup();prRender();$('#fbIn').value=EX_CHAIN;fbRun();
-setLang(LANG.cur,false);setTab(location.hash.slice(1));
+setLang(LANG.cur,false);setNoFrac(OPT.noFrac,false);setTab(location.hash.slice(1));
