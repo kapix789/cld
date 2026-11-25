@@ -1,9 +1,5 @@
-// ---------- Język ----------
-// $t('tekst po polsku','English text') — zwraca tekst w bieżącym języku (LANG.cur: 'pl' albo 'en').
-const LANG={cur:'pl'};
-// OPT.noFrac — pokazywane kroki liczone bez ułamków (jak na kartce); false = klasycznie, z dzieleniem przez element główny
-const OPT={noFrac:true};
-const $t=(pl,en)=>LANG.cur==='en'?en:pl;
+// Silnik matematyczny: ułamki, macierze, eliminacja Gaussa, równania, układy i klatki animacji. Bez DOM.
+// Język ($t), ustawienia (OPT) i rejestry są w core.js.
 
 // ---------- Ułamki ----------
 const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a};
@@ -36,17 +32,17 @@ const fmt=x=>(x.n<0||x.d!==1)?`(${x.str()})`:x.str();
 // ---------- Macierze ----------
 class DimErr extends Error{}
 const dimS=A=>`${A.length}×${A[0].length}`;
-function sameDim(A,B,w){if(A.length!==B.length||A[0].length!==B[0].length)throw new DimErr($t(`Nie da się ${w} macierzy ${dimS(A)} i ${dimS(B)} — muszą mieć ten sam wymiar.`,`Cannot ${w} a ${dimS(A)} matrix and a ${dimS(B)} matrix — they must be the same size.`))}
+function sameDim(A,B,w){if(A.length!==B.length||A[0].length!==B[0].length)throw new DimErr($t(`Nie da się ${w} macierzy ${dimS(A)} i ${dimS(B)}: muszą mieć ten sam wymiar.`,`Cannot ${w} a ${dimS(A)} matrix and a ${dimS(B)} matrix: they must be the same size.`))}
 const M={
   make:(r,c,f)=>Array.from({length:r},(_,i)=>Array.from({length:c},(_,j)=>f(i,j))),
   ints:a=>a.map(r=>r.map(x=>F(x))),
   add:(A,B)=>{sameDim(A,B,$t('dodać','add'));return M.make(A.length,A[0].length,(i,j)=>A[i][j].add(B[i][j]))},
   sub:(A,B)=>{sameDim(A,B,$t('odjąć','subtract'));return M.make(A.length,A[0].length,(i,j)=>A[i][j].sub(B[i][j]))},
   scale:(k,A)=>A.map(r=>r.map(x=>x.mul(k))),
-  mul:(A,B)=>{if(A[0].length!==B.length)throw new DimErr($t(`Nie da się pomnożyć macierzy ${dimS(A)} przez ${dimS(B)} — liczba kolumn pierwszej musi być równa liczbie wierszy drugiej.`,`Cannot multiply a ${dimS(A)} matrix by a ${dimS(B)} matrix — the number of columns of the first must equal the number of rows of the second.`));return M.make(A.length,B[0].length,(i,j)=>{let s=F(0);for(let k=0;k<B.length;k++)s=s.add(A[i][k].mul(B[k][j]));return s})},
+  mul:(A,B)=>{if(A[0].length!==B.length)throw new DimErr($t(`Nie da się pomnożyć macierzy ${dimS(A)} przez ${dimS(B)}: liczba kolumn pierwszej musi być równa liczbie wierszy drugiej.`,`Cannot multiply a ${dimS(A)} matrix by a ${dimS(B)} matrix: the number of columns of the first must equal the number of rows of the second.`));return M.make(A.length,B[0].length,(i,j)=>{let s=F(0);for(let k=0;k<B.length;k++)s=s.add(A[i][k].mul(B[k][j]));return s})},
   T:A=>M.make(A[0].length,A.length,(i,j)=>A[j][i]),
   I:n=>M.make(n,n,(i,j)=>F(i===j?1:0)),
-  inv(A){if(A.length!==A[0].length)throw Object.assign(new DimErr($t(`Macierz ${dimS(A)} nie jest kwadratowa — nie ma odwrotnej.`,`The ${dimS(A)} matrix is not square — it has no inverse.`)),{inv:true});const g=gaussInv(A);return g?g.inv:null},
+  inv(A){if(A.length!==A[0].length)throw Object.assign(new DimErr($t(`Macierz ${dimS(A)} nie jest kwadratowa, więc nie ma odwrotnej.`,`The ${dimS(A)} matrix is not square, so it has no inverse.`)),{inv:true});const g=gaussInv(A);return g?g.inv:null},
   eq:(A,B)=>A.length===B.length&&A[0].length===B[0].length&&A.every((r,i)=>r.every((x,j)=>x.eq(B[i][j]))),
   html:A=>`<span class="mat" style="grid-template-columns:repeat(${A[0].length},auto)">${A.flat().map(x=>`<span>${x.html()}</span>`).join('')}</span>`
 };
@@ -142,7 +138,7 @@ function elimPlan(Ab0,nv,o={}){
   if(o.norm!==false&&!contra)piv.forEach((j,i)=>{const p=A[i][j];if(!p.one)doit({k:'norm',j,i,c:F(1).div(p),p},()=>{A[i]=A[i].map(x=>x.div(p))})});
   return {ev,A,piv,ok:true,contra};
 }
-// klasycznie: element główny (najlepiej ±1), dzielę jego wiersz, zeruję resztę — ułamki mogą wyjść po drodze
+// klasycznie: element główny (najlepiej ±1), dzielimy jego wiersz, zerujemy resztę; ułamki mogą wyjść po drodze
 function elimPlanClassic(Ab0,nv,o={}){
   const m=Ab0.length,A=Ab0.map(r=>r.slice()),ev=[],cp=X=>X.map(r=>r.slice());
   const doit=(e,f)=>{e.B=cp(A);f();e.A=cp(A);ev.push(e)};
@@ -180,13 +176,13 @@ function planGroups(plan){
 const planVals=plan=>plan.ev.filter(e=>e.k!=='pivot'&&e.k!=='none').flatMap(e=>e.A.flat());
 const planFrac=plan=>planVals(plan).filter(x=>x.d!==1).length;
 const planMax=plan=>Math.max(0,...planVals(plan).map(x=>Math.abs(x.n)));
-const normNote=()=>$t('Schodki gotowe. Na koniec dzielę wiersze przez elementy główne — dopiero tu mogą pojawić się ułamki.','The steps are ready. Finally I divide the rows by their pivots — only here can fractions appear.');
+const normNote=()=>$t('Schodki są gotowe. Na koniec dzielimy wiersze przez elementy główne; dopiero tu mogą pojawić się ułamki.','The steps are ready. Finally we divide the rows by their pivots; only here can fractions appear.');
 function gaussHtml(name,resName,A){
   const n=A.length,I=M.I(n),plan=elimPlan(A.map((r,i)=>[...r,...I[i]]),n,{stop:true}),sp=X=>[X.map(r=>r.slice(0,n)),X.map(r=>r.slice(n))];
-  let s=$t(`<p class="mute">[${name} | <i>I</i>] → operacje na wierszach → [<i>I</i> | ${resName}]${OPT.noFrac?'. Liczę bez ułamków, jeśli się da':''}.</p>`,`<p class="mute">[${name} | <i>I</i>] → row operations → [<i>I</i> | ${resName}]${OPT.noFrac?'. I avoid fractions where possible':''}.</p>`);
+  let s=$t(`<p class="mute">[${name} | <i>I</i>] → operacje na wierszach → [<i>I</i> | ${resName}]${OPT.noFrac?'. Bez ułamków, jeśli się da':''}.</p>`,`<p class="mute">[${name} | <i>I</i>] → row operations → [<i>I</i> | ${resName}]${OPT.noFrac?'. Fractions are avoided where possible':''}.</p>`);
   s+=`<div class="line">${augHtml(A,I)}</div>`;
   planGroups(plan).forEach(gr=>{if(gr.key==='norm')s+=`<p class="mute">${normNote()}</p>`;s+=`<div class="ops">${gr.ops.join(', &nbsp;')}</div><div class="line">${augHtml(...sp(gr.A))}</div>`});
-  if(!plan.ok)return s+`<div class="warn">${$t('W którejś kolumnie zabrakło niezerowego elementu — macierz nie jest odwracalna.','Some column has no nonzero entry left — the matrix is not invertible.')}</div>`;
+  if(!plan.ok)return s+`<div class="warn">${$t('W którejś kolumnie zabrakło niezerowego elementu, więc macierz nie jest odwracalna.','Some column has no nonzero entry left, so the matrix is not invertible.')}</div>`;
   return s+`<div class="line">${resName} = ${M.html(sp(plan.A)[1])}</div>`;
 }
 
@@ -268,7 +264,7 @@ function expandAtom(a){
   else{
     const e=a.expr;
     if(e.terms.length===1){const t=expandTerm(e.terms[0]);c=t.c;fs=t.fs}
-    else{if(hasX(e))throw linErr($t('X stoi w nawiasie z sumą, np. (X + A)B — taki nawias trzeba najpierw wymnożyć.','X is inside a bracket with a sum, e.g. (X + A)B — such a bracket has to be multiplied out first.'));fs=[blockOf(e.terms.map(expandTerm))]}
+    else{if(hasX(e))throw linErr($t('X stoi w nawiasie z sumą, np. (X + A)B; taki nawias trzeba najpierw wymnożyć.','X is inside a bracket with a sum, e.g. (X + A)B; such a bracket has to be multiplied out first.'));fs=[blockOf(e.terms.map(expandTerm))]}
   }
   for(const op of a.post){
     if(op.k==='T')fs=trL(fs);
@@ -286,28 +282,28 @@ function solve(src){
   const ex=e=>e.terms.map(expandTerm).filter(t=>!t.c.z);
   let L=ex(ast.L),R=ex(ast.R);const L0=L,R0=R;
   const steps=[];const cur=()=>rTerms(L)+' = '+rTerms(R);
-  if(cur()!==orig)steps.push({title:$t('Rozpisz nawiasy','Expand the brackets'),why:$t('Transpozycja i odwrotność iloczynu <b>odwracają kolejność</b>: (<i>AB</i>)<sup>T</sup> = <i>B</i><sup>T</sup><i>A</i><sup>T</sup>, (<i>AB</i>)<sup>−1</sup> = <i>B</i><sup>−1</sup><i>A</i><sup>−1</sup>. Do tego (<i>A</i><sup>−1</sup>)<sup>T</sup> = (<i>A</i><sup>T</sup>)<sup>−1</sup> i <i>MM</i><sup>−1</sup> = <i>I</i>.','The transpose and the inverse of a product <b>reverse the order</b>: (<i>AB</i>)<sup>T</sup> = <i>B</i><sup>T</sup><i>A</i><sup>T</sup>, (<i>AB</i>)<sup>−1</sup> = <i>B</i><sup>−1</sup><i>A</i><sup>−1</sup>. Also (<i>A</i><sup>−1</sup>)<sup>T</sup> = (<i>A</i><sup>T</sup>)<sup>−1</sup> and <i>MM</i><sup>−1</sup> = <i>I</i>.'),lines:[cur()]});
+  if(cur()!==orig)steps.push({title:$t('Rozpisujemy nawiasy','Expanding the brackets'),why:$t('Transpozycja i odwrotność iloczynu <b>odwracają kolejność</b>: (<i>AB</i>)<sup>T</sup> = <i>B</i><sup>T</sup><i>A</i><sup>T</sup>, (<i>AB</i>)<sup>−1</sup> = <i>B</i><sup>−1</sup><i>A</i><sup>−1</sup>. Do tego (<i>A</i><sup>−1</sup>)<sup>T</sup> = (<i>A</i><sup>T</sup>)<sup>−1</sup> i <i>MM</i><sup>−1</sup> = <i>I</i>.','The transpose and the inverse of a product <b>reverse the order</b>: (<i>AB</i>)<sup>T</sup> = <i>B</i><sup>T</sup><i>A</i><sup>T</sup>, (<i>AB</i>)<sup>−1</sup> = <i>B</i><sup>−1</sup><i>A</i><sup>−1</sup>. Also (<i>A</i><sup>−1</sup>)<sup>T</sup> = (<i>A</i><sup>T</sup>)<sup>−1</sup> and <i>MM</i><sup>−1</sup> = <i>I</i>.'),lines:[cur()]});
   const nX=t=>t.fs.filter(f=>f.n==='X').length,hx=t=>nX(t)>0,all=[...L,...R];
   if(!all.some(hx))throw new Error($t('W równaniu nie ma niewiadomej X.','There is no unknown X in the equation.'));
-  if(all.some(t=>nX(t)>1))throw new Error($t('X występuje dwa razy w jednym iloczynie (np. XAX albo X²) — tego nie da się tak rozwiązać.','X appears twice in one product (e.g. XAX or X²) — this cannot be solved this way.'));
-  if(!L.some(hx)){[L,R]=[R,L];steps.push({title:$t('Zamień strony','Swap the sides'),why:$t('Wygodniej, gdy <i>X</i> jest po lewej.','It is easier when <i>X</i> is on the left.'),lines:[cur()]})}
+  if(all.some(t=>nX(t)>1))throw new Error($t('X występuje dwa razy w jednym iloczynie (np. XAX albo X²); takiego równania nie da się rozwiązać tą metodą.','X appears twice in one product (e.g. XAX or X²); such an equation cannot be solved this way.'));
+  if(!L.some(hx)){[L,R]=[R,L];steps.push({title:$t('Zamieniamy strony','Swapping the sides'),why:$t('Wygodniej, gdy <i>X</i> jest po lewej.','It is easier when <i>X</i> is on the left.'),lines:[cur()]})}
   const mL=L.filter(t=>!hx(t)),mR=R.filter(hx),neg=t=>({c:t.c.neg(),fs:t.fs});
   if(mL.length||mR.length){
     L=[...L.filter(hx),...mR.map(neg)];R=[...R.filter(t=>!hx(t)),...mL.map(neg)];
-    steps.push({title:$t('Przenieś: wyrazy z X na lewo, bez X na prawo','Move terms: with X to the left, without X to the right'),why:$t('Przenosząc na drugą stronę, zmieniasz znak — jak w zwykłym równaniu.','Moving a term to the other side changes its sign — just like in an ordinary equation.'),lines:[cur()]});
+    steps.push({title:$t('Przenosimy wyrazy: z X na lewo, bez X na prawo','Moving terms: with X to the left, without X to the right'),why:$t('Przy przenoszeniu na drugą stronę zmienia się znak, jak w zwykłym równaniu.','Moving a term to the other side changes its sign, just like in an ordinary equation.'),lines:[cur()]});
   }
   if(!R.length)throw linErr($t('Po przeniesieniu wyrazów z X na lewo po prawej zostaje 0.','After moving the X terms to the left, only 0 is left on the right.'));
   if(L.length>1){
     const xs=L.map(t=>{const k=t.fs.findIndex(f=>f.n==='X');return {c:t.c,l:t.fs.slice(0,k),x:t.fs[k],r:t.fs.slice(k+1)}});
-    if(xs.some(o=>o.x.t!==xs[0].x.t||o.x.i!==xs[0].x.i))throw linErr($t('X występuje w różnych postaciach (np. X i Xᵀ) — nie da się go wyciągnąć przed nawias.','X appears in different forms (e.g. X and Xᵀ) — it cannot be factored out.'));
+    if(xs.some(o=>o.x.t!==xs[0].x.t||o.x.i!==xs[0].x.i))throw linErr($t('X występuje w różnych postaciach (np. X i Xᵀ), więc nie da się go wyciągnąć przed nawias.','X appears in different forms (e.g. X and Xᵀ), so it cannot be factored out.'));
     const Xf=xs[0].x;
     if(xs.every(o=>!o.r.length)){
       L=[{c:F(1),fs:[blockOf(xs.map(o=>({c:o.c,fs:o.l}))),Xf]}];
-      steps.push({title:$t('Wyciągnij X przed nawias — w prawo','Factor X out — to the right'),why:$t('We wszystkich wyrazach <i>X</i> stoi <b>na końcu</b>, więc wyciągam go w prawo. Samotne <i>X</i> to <i>IX</i> — dlatego w nawiasie jest <i>I</i>, a nie 1!','In every term <i>X</i> stands <b>at the end</b>, so I factor it out to the right. A lone <i>X</i> is <i>IX</i> — that is why the bracket contains <i>I</i>, not 1!'),lines:[cur()]});
+      steps.push({title:$t('Wyciągamy X przed nawias (w prawo)','Factoring X out (to the right)'),why:$t('We wszystkich wyrazach <i>X</i> stoi <b>na końcu</b>, więc wyciągamy go w prawo. Samotne <i>X</i> to <i>IX</i>, dlatego w nawiasie jest <i>I</i>, a nie 1.','In every term <i>X</i> stands <b>at the end</b>, so we factor it out to the right. A lone <i>X</i> is <i>IX</i>, which is why the bracket contains <i>I</i>, not 1.'),lines:[cur()]});
     }else if(xs.every(o=>!o.l.length)){
       L=[{c:F(1),fs:[Xf,blockOf(xs.map(o=>({c:o.c,fs:o.r})))]}];
-      steps.push({title:$t('Wyciągnij X przed nawias — w lewo','Factor X out — to the left'),why:$t('We wszystkich wyrazach <i>X</i> stoi <b>na początku</b>, więc wyciągam go w lewo. Samotne <i>X</i> to <i>XI</i> — dlatego w nawiasie jest <i>I</i>, a nie 1!','In every term <i>X</i> stands <b>at the start</b>, so I factor it out to the left. A lone <i>X</i> is <i>XI</i> — that is why the bracket contains <i>I</i>, not 1!'),lines:[cur()]});
-    }else throw linErr($t('X stoi raz z lewej, raz z prawej strony innych macierzy (np. AX + XB) — takiego X nie da się wyciągnąć przed nawias.','X stands once on the left and once on the right of other matrices (e.g. AX + XB) — such an X cannot be factored out.'));
+      steps.push({title:$t('Wyciągamy X przed nawias (w lewo)','Factoring X out (to the left)'),why:$t('We wszystkich wyrazach <i>X</i> stoi <b>na początku</b>, więc wyciągamy go w lewo. Samotne <i>X</i> to <i>XI</i>, dlatego w nawiasie jest <i>I</i>, a nie 1.','In every term <i>X</i> stands <b>at the start</b>, so we factor it out to the left. A lone <i>X</i> is <i>XI</i>, which is why the bracket contains <i>I</i>, not 1.'),lines:[cur()]});
+    }else throw linErr($t('X stoi raz z lewej, raz z prawej strony innych macierzy (np. AX + XB); takiego X nie da się wyciągnąć przed nawias.','X stands once on the left and once on the right of other matrices (e.g. AX + XB); such an X cannot be factored out.'));
   }
   if(!L[0].c.one){
     const k=L[0].c,iv=F(1).div(k);L=[{c:F(1),fs:L[0].fs}];R=R.map(t=>({c:t.c.mul(iv),fs:t.fs}));
@@ -323,20 +319,20 @@ function solve(src){
     const lab=ol.length>1?`(${rProd(ol)})${SI} = ${rProd(iv)}`:rProd(iv);
     const l1=`${hl(iv)}${rProd(ol)}${rProd([Xf,...right])} = ${cPre(P.c)}${hl(iv)}${P.fs.length?rProd(P.fs):''}`;
     left=[];P={c:P.c,fs:cancel([...iv,...P.fs])};
-    steps.push({title:$t('Pomnóż obie strony z LEWEJ','Multiply both sides on the LEFT'),why:$t(`Przed <i>X</i> stoi ${rProd(ol)}. Mnożę <b>obie strony z lewej</b> przez ${lab}${ol.length>1?' (kolejność odwrócona!)':''}. Po lewej zostaje <i>I</i>.`,`${rProd(ol)} stands in front of <i>X</i>. I multiply <b>both sides on the left</b> by ${lab}${ol.length>1?' (order reversed!)':''}. Only <i>I</i> remains on the left.`),lines:[l1,line()]});
+    steps.push({title:$t('Mnożymy obie strony z lewej','Multiplying both sides on the left'),why:$t(`Przed <i>X</i> stoi ${rProd(ol)}. Mnożymy <b>obie strony z lewej</b> przez ${lab}${ol.length>1?' (kolejność odwrócona)':''}. Po lewej zostaje <i>I</i>.`,`${rProd(ol)} stands in front of <i>X</i>. We multiply <b>both sides on the left</b> by ${lab}${ol.length>1?' (order reversed)':''}. Only <i>I</i> remains on the left.`),lines:[l1,line()]});
   }
   if(right.length){
     const orr=right,iv=invL(orr);
     const lab=orr.length>1?`(${rProd(orr)})${SI} = ${rProd(iv)}`:rProd(iv);
     const l1=`${rProd([Xf,...orr])}${hl(iv)} = ${cPre(P.c)}${P.fs.length?rProd(P.fs):''}${hl(iv)}`;
     right=[];P={c:P.c,fs:cancel([...P.fs,...iv])};
-    steps.push({title:$t('Pomnóż obie strony z PRAWEJ','Multiply both sides on the RIGHT'),why:$t(`Za <i>X</i> stoi ${rProd(orr)}. Mnożę <b>obie strony z prawej</b> przez ${lab}${orr.length>1?' (kolejność odwrócona!)':''}.`,`${rProd(orr)} stands after <i>X</i>. I multiply <b>both sides on the right</b> by ${lab}${orr.length>1?' (order reversed!)':''}.`),lines:[l1,line()]});
+    steps.push({title:$t('Mnożymy obie strony z prawej','Multiplying both sides on the right'),why:$t(`Za <i>X</i> stoi ${rProd(orr)}. Mnożymy <b>obie strony z prawej</b> przez ${lab}${orr.length>1?' (kolejność odwrócona)':''}.`,`${rProd(orr)} stands after <i>X</i>. We multiply <b>both sides on the right</b> by ${lab}${orr.length>1?' (order reversed)':''}.`),lines:[l1,line()]});
   }
   if(Xf.t||Xf.i){
     const before=rP(P);let why,op;
-    if(Xf.t&&Xf.i){P={c:F(1).div(P.c),fs:cancel(trL(invL(P.fs)))};op=`((${before})${SI})${ST}`;why=$t('Mamy (<i>X</i><sup>T</sup>)<sup>−1</sup>: odwracam obie strony, potem transponuję. Kolejność się odwraca.','We have (<i>X</i><sup>T</sup>)<sup>−1</sup>: I invert both sides, then transpose. The order reverses.')}
-    else if(Xf.i){P={c:F(1).div(P.c),fs:cancel(invL(P.fs))};op=`(${before})${SI}`;why=$t('Odwracam obie strony: (<i>X</i><sup>−1</sup>)<sup>−1</sup> = <i>X</i>. Pamiętaj o odwróceniu kolejności!','I invert both sides: (<i>X</i><sup>−1</sup>)<sup>−1</sup> = <i>X</i>. Remember to reverse the order!')}
-    else{P={c:P.c,fs:cancel(trL(P.fs))};op=`(${before})${ST}`;why=$t('Transponuję obie strony: (<i>X</i><sup>T</sup>)<sup>T</sup> = <i>X</i>. Kolejność też się odwraca.','I transpose both sides: (<i>X</i><sup>T</sup>)<sup>T</sup> = <i>X</i>. The order reverses here too.')}
+    if(Xf.t&&Xf.i){P={c:F(1).div(P.c),fs:cancel(trL(invL(P.fs)))};op=`((${before})${SI})${ST}`;why=$t('Mamy (<i>X</i><sup>T</sup>)<sup>−1</sup>: odwracamy obie strony, potem transponujemy. Kolejność czynników się odwraca.','We have (<i>X</i><sup>T</sup>)<sup>−1</sup>: we invert both sides, then transpose. The order of the factors reverses.')}
+    else if(Xf.i){P={c:F(1).div(P.c),fs:cancel(invL(P.fs))};op=`(${before})${SI}`;why=$t('Odwracamy obie strony: (<i>X</i><sup>−1</sup>)<sup>−1</sup> = <i>X</i>. Kolejność czynników się odwraca.','We invert both sides: (<i>X</i><sup>−1</sup>)<sup>−1</sup> = <i>X</i>. The order of the factors reverses.')}
+    else{P={c:P.c,fs:cancel(trL(P.fs))};op=`(${before})${ST}`;why=$t('Transponujemy obie strony: (<i>X</i><sup>T</sup>)<sup>T</sup> = <i>X</i>. Tu też kolejność się odwraca.','We transpose both sides: (<i>X</i><sup>T</sup>)<sup>T</sup> = <i>X</i>. The order reverses here too.')}
     steps.push({title:Xf.i?$t('Odwróć obie strony','Invert both sides'):$t('Transponuj obie strony','Transpose both sides'),why,lines:[`<i>X</i> = ${op}`,`<i>X</i> = ${rP(P)}`]});
   }
   steps.push({title:$t('Wynik','Result'),why:'',lines:['<i>X</i> = '+rP(P)],final:true});
@@ -346,7 +342,7 @@ function solve(src){
 // ---------- Wartości: macierz albo k·I (wymiar I dopasowuje się sam) ----------
 const isS=v=>!Array.isArray(v);
 const S=k=>({sc:k});
-function sqI(A,k){if(A.length!==A[0].length)throw new DimErr($t(`Do macierzy ${dimS(A)} nie da się dodać wielokrotności I — nie jest kwadratowa.`,`A multiple of I cannot be added to the ${dimS(A)} matrix — it is not square.`));return M.scale(k,M.I(A.length))}
+function sqI(A,k){if(A.length!==A[0].length)throw new DimErr($t(`Do macierzy ${dimS(A)} nie da się dodać wielokrotności I, bo nie jest kwadratowa.`,`A multiple of I cannot be added to the ${dimS(A)} matrix because it is not square.`));return M.scale(k,M.I(A.length))}
 function vMul(a,b){if(isS(a)&&isS(b))return S(a.sc.mul(b.sc));if(isS(a))return M.scale(a.sc,b);if(isS(b))return M.scale(b.sc,a);return M.mul(a,b)}
 function vAdd(a,b){if(isS(a)&&isS(b))return S(a.sc.add(b.sc));if(isS(a))return M.add(sqI(b,a.sc),b);if(isS(b))return M.add(a,sqI(a,b.sc));return M.add(a,b)}
 const vScale=(k,a)=>isS(a)?S(a.sc.mul(k)):M.scale(k,a);
@@ -354,7 +350,7 @@ const vT=a=>isS(a)?a:M.T(a);
 function vInv(a,what){
   let r=null;
   if(isS(a)){if(!a.sc.z)r=S(F(1).div(a.sc))}
-  else{try{r=M.inv(a)}catch(e){if(e.inv&&what)e.message=$t(`${what} ma wymiar ${dimS(a)} — nie jest kwadratowa, więc nie ma odwrotnej.`,`${what} is ${dimS(a)} — not square, so it has no inverse.`);throw e}}
+  else{try{r=M.inv(a)}catch(e){if(e.inv&&what)e.message=$t(`${what} ma wymiar ${dimS(a)}: nie jest kwadratowa, więc nie ma odwrotnej.`,`${what} is ${dimS(a)}: not square, so it has no inverse.`);throw e}}
   if(!r)throw Object.assign(new Error('singular'),{what});
   return r;
 }
@@ -475,13 +471,13 @@ function numSolHtml(T){
       if(f.t){base=M.T(base);h+=`<div class="line">${bname} = ${M.html(base)}</div>`}
     }else{base=env[f.n];if(f.t){base=M.T(base);h+=`<div class="line">${bname} = ${M.html(base)}</div>`}}
     let V=base;
-    if(f.i){V=M.inv(base);h+=$t(`<details open><summary>Liczę ${key} metodą Gaussa</summary>${gaussHtml(bname,key,base)}</details>`,`<details open><summary>Computing ${key} by Gaussian elimination</summary>${gaussHtml(bname,key,base)}</details>`)}
+    if(f.i){V=M.inv(base);h+=$t(`<details open><summary>${key} metodą Gaussa</summary>${gaussHtml(bname,key,base)}</details>`,`<details open><summary>Computing ${key} by Gaussian elimination</summary>${gaussHtml(bname,key,base)}</details>`)}
     cache[key]=V;vals.push(V);
   }
   if(vals.length>1){let run=vals[0];for(let k=1;k<vals.length;k++){run=M.mul(run,vals[k]);h+=`<div class="line">${rProd(sol.P.fs.slice(0,k+1))} = ${M.html(run)}</div>`}}
-  if(!sol.P.c.one)h+=$t(`<div class="line">Mnożę przez ${sol.P.c.str()}:</div>`,`<div class="line">Multiplying by ${sol.P.c.str()}:</div>`);
+  if(!sol.P.c.one)h+=$t(`<div class="line">Mnożymy przez ${sol.P.c.str()}:</div>`,`<div class="line">Multiplying by ${sol.P.c.str()}:</div>`);
   h+=`<div class="line"><b><i>X</i> = ${M.html(X)}</b></div>`;
-  h+=$t(`<h3>3. Sprawdzenie</h3><p class="mute">Podstawiam <i>X</i> do równania ${sol.orig}:</p><div class="nums"><span class="gv">lewa = ${M.html(T.Lv)}</span><span class="gv">prawa = ${M.html(T.Rv)}</span></div><p class="mute">${M.eq(T.Lv,T.Rv)?'✓ Zgadza się.':''}</p>`,`<h3>3. Check</h3><p class="mute">I substitute <i>X</i> into the equation ${sol.orig}:</p><div class="nums"><span class="gv">left = ${M.html(T.Lv)}</span><span class="gv">right = ${M.html(T.Rv)}</span></div><p class="mute">${M.eq(T.Lv,T.Rv)?'✓ It matches.':''}</p>`);
+  h+=$t(`<h3>3. Sprawdzenie</h3><p class="mute">Podstawiamy <i>X</i> do równania ${sol.orig}:</p><div class="nums"><span class="gv">lewa = ${M.html(T.Lv)}</span><span class="gv">prawa = ${M.html(T.Rv)}</span></div><p class="mute">${M.eq(T.Lv,T.Rv)?'Obie strony są równe.':''}</p>`,`<h3>3. Check</h3><p class="mute">Substitute <i>X</i> into the equation ${sol.orig}:</p><div class="nums"><span class="gv">left = ${M.html(T.Lv)}</span><span class="gv">right = ${M.html(T.Rv)}</span></div><p class="mute">${M.eq(T.Lv,T.Rv)?'Both sides are equal.':''}</p>`);
   return h;
 }
 
@@ -502,7 +498,7 @@ function genTask(type){
     const r=rnd(2,3),c=rnd(2,4),A=randR(r,c,-6,9),B=randR(r,c,-6,9),a=pick([2,3,-2,4,1]),b=pick([-1,2,-2,3,-3,-4]);
     const Aa=M.scale(F(a),A),Bb=M.scale(F(b),B),ans=M.add(Aa,Bb);
     const lab=`${coef(a)}<i>A</i> ${b<0?'−':'+'} ${coef(Math.abs(b))}<i>B</i>`;
-    return {fr:()=>addFrames(A,B,a,b),q:$t(`Oblicz ${lab}`,`Compute ${lab}`),given:[['A',A],['B',B]],ans,lab,sol:$t(`<p>Mnożę każdy element przez liczbę, potem dodaję element po elemencie.</p>${eqL(coef(a)+'<i>A</i>',Aa)}${eqL(coef(b)+'<i>B</i>',Bb)}${eqL(lab,ans)}`,`<p>I multiply every entry by the number, then add entry by entry.</p>${eqL(coef(a)+'<i>A</i>',Aa)}${eqL(coef(b)+'<i>B</i>',Bb)}${eqL(lab,ans)}`)};
+    return {fr:()=>addFrames(A,B,a,b),q:$t(`Oblicz ${lab}`,`Compute ${lab}`),given:[['A',A],['B',B]],ans,lab,sol:$t(`<p>Każdy element mnożymy przez liczbę, potem dodajemy element po elemencie.</p>${eqL(coef(a)+'<i>A</i>',Aa)}${eqL(coef(b)+'<i>B</i>',Bb)}${eqL(lab,ans)}`,`<p>Multiply every entry by the number, then add entry by entry.</p>${eqL(coef(a)+'<i>A</i>',Aa)}${eqL(coef(b)+'<i>B</i>',Bb)}${eqL(lab,ans)}`)};
   }
   if(type==='mul'){
     const m=rnd(2,3),n=rnd(2,4),p=rnd(2,3),A=randR(m,n,-4,6),B=randR(n,p,-4,6),ans=M.mul(A,B);
@@ -512,14 +508,14 @@ function genTask(type){
   }
   if(type==='trans'){
     const r=rnd(2,3),c=r===2?pick([3,4]):pick([2,4]),A=randR(r,c,-9,12),ans=M.T(A);
-    return {fr:()=>transFrames(A,'<i>A</i>','<i>A</i><sup>T</sup>'),q:$t('Oblicz <i>A</i><sup>T</sup>','Compute <i>A</i><sup>T</sup>'),given:[['A',A]],ans,lab:'<i>A</i><sup>T</sup>',sol:$t(`<p>Pierwszy wiersz staje się pierwszą kolumną, drugi — drugą itd. Wymiar ${r}×${c} → ${c}×${r}.</p>${eqL('<i>A</i><sup>T</sup>',ans)}`,`<p>The first row becomes the first column, the second row the second column, and so on. Size ${r}×${c} → ${c}×${r}.</p>${eqL('<i>A</i><sup>T</sup>',ans)}`)};
+    return {fr:()=>transFrames(A,'<i>A</i>','<i>A</i><sup>T</sup>'),q:$t('Oblicz <i>A</i><sup>T</sup>','Compute <i>A</i><sup>T</sup>'),given:[['A',A]],ans,lab:'<i>A</i><sup>T</sup>',sol:$t(`<p>Pierwszy wiersz staje się pierwszą kolumną, drugi drugą i tak dalej. Wymiar ${r}×${c} → ${c}×${r}.</p>${eqL('<i>A</i><sup>T</sup>',ans)}`,`<p>The first row becomes the first column, the second row the second column, and so on. Size ${r}×${c} → ${c}×${r}.</p>${eqL('<i>A</i><sup>T</sup>',ans)}`)};
   }
   if(type==='expr'){
     const E=pick(EXPR),n=Math.random()<.6?2:3,mats=[...E.m].map(()=>randR(n,n,-4,6)),parts=E.f(...mats);
-    return {fr:()=>EXPR_FR[EXPR.indexOf(E)](...mats),q:$t('Oblicz ','Compute ')+E.lab,given:[...E.m].map((c,k)=>[c,mats[k]]),ans:parts[parts.length-1][1],lab:E.lab,sol:$t('<p>Liczę po kolei:</p>','<p>Step by step:</p>')+parts.map(([l,A])=>eqL(l,A)).join('')};
+    return {fr:()=>EXPR_FR[EXPR.indexOf(E)](...mats),q:$t('Oblicz ','Compute ')+E.lab,given:[...E.m].map((c,k)=>[c,mats[k]]),ans:parts[parts.length-1][1],lab:E.lab,sol:$t('<p>Liczymy po kolei:</p>','<p>Step by step:</p>')+parts.map(([l,A])=>eqL(l,A)).join('')};
   }
   const n=type==='inv2'?2:3,A=n===2?richUni(2,[1,1,2]):richUni(3),ans=M.inv(A);
-  return {fr:()=>invFrames(A,'<i>A</i>','<i>A</i><sup>−1</sup>',$t('Macierz odwrotna','Inverse matrix')).frames,q:$t(`Oblicz <i>A</i><sup>−1</sup> (${n}×${n})`,`Compute <i>A</i><sup>−1</sup> (${n}×${n})`),given:[['A',A]],ans,lab:'<i>A</i><sup>−1</sup>',get sol(){return gaussHtml('<i>A</i>','<i>A</i><sup>−1</sup>',A)+$t(`<p class="mute">Kontrola: <i>A</i>·<i>A</i><sup>−1</sup> = <i>I</i> ✓</p>`,`<p class="mute">Check: <i>A</i>·<i>A</i><sup>−1</sup> = <i>I</i> ✓</p>`)}};
+  return {fr:()=>invFrames(A,'<i>A</i>','<i>A</i><sup>−1</sup>',$t('Macierz odwrotna','Inverse matrix')).frames,q:$t(`Oblicz <i>A</i><sup>−1</sup> (${n}×${n})`,`Compute <i>A</i><sup>−1</sup> (${n}×${n})`),given:[['A',A]],ans,lab:'<i>A</i><sup>−1</sup>',get sol(){return gaussHtml('<i>A</i>','<i>A</i><sup>−1</sup>',A)+$t(`<p class="mute">Kontrola: <i>A</i>·<i>A</i><sup>−1</sup> = <i>I</i>.</p>`,`<p class="mute">Check: <i>A</i>·<i>A</i><sup>−1</sup> = <i>I</i>.</p>`)}};
 }
 // ---------- Układy równań: wspólne ----------
 const ORD='xyztuvwabcdefghijklmnopqrs';
@@ -593,23 +589,23 @@ function genSolHtml(sol,names){
 }
 function gaussSys(Ab,names){
   const nv=names.length,res=rref(Ab,nv),plan=elimPlan(Ab,nv,{sys:true}),sp=X=>[X.map(r=>r.slice(0,nv)),X.map(r=>[r[nv]])];
-  let h=$t(`<p class="mute">[<i>A</i> | <i>B</i>] → operacje na wierszach → schodki, zera nad nimi i pod nimi${OPT.noFrac?'. Liczę bez ułamków, jeśli się da':''}.</p>`,`<p class="mute">[<i>A</i> | <i>B</i>] → row operations → steps with zeros above and below them${OPT.noFrac?'. I avoid fractions where possible':''}.</p>`);
+  let h=$t(`<p class="mute">[<i>A</i> | <i>B</i>] → operacje na wierszach → schodki, zera nad nimi i pod nimi${OPT.noFrac?'. Bez ułamków, jeśli się da':''}.</p>`,`<p class="mute">[<i>A</i> | <i>B</i>] → row operations → steps with zeros above and below them${OPT.noFrac?'. Fractions are avoided where possible':''}.</p>`);
   h+=`<div class="line">${augHtml(...sp(Ab))}</div>`;
   planGroups(plan).forEach(gr=>{if(gr.key==='norm')h+=`<p class="mute">${normNote()}</p>`;h+=`<div class="ops">${gr.ops.join(', &nbsp;')}</div><div class="line">${augHtml(...sp(gr.A))}</div>`});
   const rows=abRows(plan.A,nv),isZero=r=>r.c.every(x=>x.z)&&r.k.z,zero=rows.filter(isZero).length,keep=rows.filter(r=>!isZero(r));
-  h+=$t(`<h3>Odczytuję wynik</h3>`,`<h3>Reading the result</h3>`);
-  if(zero)h+=$t(`<p class="mute">${zero===1?'Wiersz zerowy':'Wiersze zerowe'} (0 = 0) pomijam — nic nie wnosi.</p>`,`<p class="mute">I skip ${zero===1?'the zero row':'the zero rows'} (0 = 0) — ${zero===1?'it adds':'they add'} nothing.</p>`);
+  h+=$t(`<h3>Odczytujemy wynik</h3>`,`<h3>Reading the result</h3>`);
+  if(zero)h+=$t(`<p class="mute">${zero===1?'Wiersz zerowy (0 = 0) pomijamy, bo nic nie wnosi.':'Wiersze zerowe (0 = 0) pomijamy, bo nic nie wnoszą.'}</p>`,`<p class="mute">${zero===1?'The zero row (0 = 0) can be skipped: it adds nothing.':'The zero rows (0 = 0) can be skipped: they add nothing.'}</p>`);
   if(keep.length)h+=`<div class="line">${sysHtml(keep,names)}</div>`;
   h+=$t(`<p>rz <i>A</i> = ${res.rank}, &nbsp; rz [<i>A</i> | <i>B</i>] = ${res.rankAb}, &nbsp; niewiadomych <i>n</i> = ${nv}.</p>`,`<p>rank <i>A</i> = ${res.rank}, &nbsp; rank [<i>A</i> | <i>B</i>] = ${res.rankAb}, &nbsp; unknowns <i>n</i> = ${nv}.</p>`);
   const sol=sysSolution(res,nv);
-  if(res.type==='none'){const k=plan.A.find(r=>r.slice(0,nv).every(x=>x.z)&&!r[nv].z)[nv].html();h+=$t(`<div class="warn">Wiersz [0 … 0 | ${k}] to równanie 0 = ${k} — sprzeczność. rz <i>A</i> &lt; rz [<i>A</i> | <i>B</i>], więc układ jest <b>sprzeczny</b>: nie ma rozwiązań.</div>`,`<div class="warn">The row [0 … 0 | ${k}] is the equation 0 = ${k} — a contradiction. rank <i>A</i> &lt; rank [<i>A</i> | <i>B</i>], so the system is <b>inconsistent</b>: it has no solutions.</div>`)}
+  if(res.type==='none'){const k=plan.A.find(r=>r.slice(0,nv).every(x=>x.z)&&!r[nv].z)[nv].html();h+=$t(`<div class="warn">Wiersz [0 … 0 | ${k}] to równanie 0 = ${k}, czyli sprzeczność. rz <i>A</i> &lt; rz [<i>A</i> | <i>B</i>], więc układ jest <b>sprzeczny</b>: nie ma rozwiązań.</div>`,`<div class="warn">The row [0 … 0 | ${k}] is the equation 0 = ${k}, a contradiction. rank <i>A</i> &lt; rank [<i>A</i> | <i>B</i>], so the system is <b>inconsistent</b>: it has no solutions.</div>`)}
   else if(res.type==='one')h+=$t(`<p>rz <i>A</i> = rz [<i>A</i> | <i>B</i>] = <i>n</i>, więc jest <b>dokładnie jedno rozwiązanie</b>:</p><div class="line res">${names.map((v,j)=>`${nmHtml(v)} = ${sol.forms[j].k.html()}`).join(', &nbsp; ')}</div>`,`<p>rank <i>A</i> = rank [<i>A</i> | <i>B</i>] = <i>n</i>, so there is <b>exactly one solution</b>:</p><div class="line res">${names.map((v,j)=>`${nmHtml(v)} = ${sol.forms[j].k.html()}`).join(', &nbsp; ')}</div>`);
-  else{const k=nv-res.rank;h+=$t(`<p>rz <i>A</i> = rz [<i>A</i> | <i>B</i>] = ${res.rank} &lt; <i>n</i> = ${nv}, więc rozwiązań jest <b>nieskończenie wiele</b> — zależą od ${k} ${pl(k,'parametru','parametrów','parametrów')}. ${pl(sol.free.length,'Niewiadoma','Niewiadome','Niewiadome')} bez schodka (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) ${sol.free.length===1?'jest dowolna':'są dowolne'}, resztę przez nie wyrażam:</p><div class="line res">${genSolHtml(sol,names)}</div>`,`<p>rank <i>A</i> = rank [<i>A</i> | <i>B</i>] = ${res.rank} &lt; <i>n</i> = ${nv}, so there are <b>infinitely many solutions</b> — they depend on ${k} ${k===1?'parameter':'parameters'}. The ${sol.free.length===1?'unknown':'unknowns'} without a pivot (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) ${sol.free.length===1?'is free':'are free'}; I express the rest in terms of ${sol.free.length===1?'it':'them'}:</p><div class="line res">${genSolHtml(sol,names)}</div>`)}
+  else{const k=nv-res.rank;h+=$t(`<p>rz <i>A</i> = rz [<i>A</i> | <i>B</i>] = ${res.rank} &lt; <i>n</i> = ${nv}, więc rozwiązań jest <b>nieskończenie wiele</b>; zależą one od ${k} ${pl(k,'parametru','parametrów','parametrów')}. ${pl(sol.free.length,'Niewiadoma','Niewiadome','Niewiadome')} bez schodka (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) ${sol.free.length===1?'jest dowolna':'są dowolne'}, resztę wyrażamy przez nie:</p><div class="line res">${genSolHtml(sol,names)}</div>`,`<p>rank <i>A</i> = rank [<i>A</i> | <i>B</i>] = ${res.rank} &lt; <i>n</i> = ${nv}, so there are <b>infinitely many solutions</b>, depending on ${k} ${k===1?'parameter':'parameters'}. The ${sol.free.length===1?'unknown':'unknowns'} without a pivot (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) ${sol.free.length===1?'is free':'are free'}; the rest are expressed in terms of ${sol.free.length===1?'it':'them'}:</p><div class="line res">${genSolHtml(sol,names)}</div>`)}
   return {html:h,res,sol,plan};
 }
 function checkSysHtml(Ab,names,vals){
   const nv=names.length;
-  return $t(`<h3>Sprawdzenie</h3><p class="mute">Podstawiam do każdego równania:</p>`,`<h3>Check</h3><p class="mute">I substitute into every equation:</p>`)+Ab.map(r=>{let s=F(0);const p=[];r.slice(0,nv).forEach((a,j)=>{if(!a.z){p.push(`${fmt(a)}·${fmt(vals[j])}`);s=s.add(a.mul(vals[j]))}});return `<div class="line">${p.join(' + ')||'0'} = ${s.html()} &nbsp;${s.eq(r[nv])?'✓':'✗'}</div>`}).join('');
+  return $t(`<h3>Sprawdzenie</h3><p class="mute">Podstawiamy do każdego równania:</p>`,`<h3>Check</h3><p class="mute">Substitute into every equation:</p>`)+Ab.map(r=>{let s=F(0);const p=[];r.slice(0,nv).forEach((a,j)=>{if(!a.z){p.push(`${fmt(a)}·${fmt(vals[j])}`);s=s.add(a.mul(vals[j]))}});return `<div class="line">${p.join(' + ')||'0'} = ${s.html()}${s.eq(r[nv])?'':' ≠ '+r[nv].html()}</div>`}).join('');
 }
 
 // ---------- Wyznaczniki i Cramer ----------
@@ -641,29 +637,29 @@ function sysMethodHtml(Ab,names,method){
   let h='';
   if(method==='mac'){
     h+=$t(`<h3>1. Zapis macierzowy <i>AX</i> = <i>B</i></h3><div class="line">${matH(A)} · ${colH(names)} = ${matH(bc)}</div>`,`<h3>1. Matrix form <i>AX</i> = <i>B</i></h3><div class="line">${matH(A)} · ${colH(names)} = ${matH(bc)}</div>`);
-    if(m!==nv)h+=$t(`<div class="warn">Macierz <i>A</i> ma wymiar ${m}×${nv} — nie jest kwadratowa, więc nie ma <i>A</i><sup>−1</sup>. Metoda macierzowa tu nie działa.</div>`,`<div class="warn">The matrix <i>A</i> is ${m}×${nv} — not square, so there is no <i>A</i><sup>−1</sup>. The matrix method does not work here.</div>`)+gaussPart();
+    if(m!==nv)h+=$t(`<div class="warn">Macierz <i>A</i> ma wymiar ${m}×${nv}: nie jest kwadratowa, więc nie ma <i>A</i><sup>−1</sup>. Metoda macierzowa tu nie działa.</div>`,`<div class="warn">The matrix <i>A</i> is ${m}×${nv}: not square, so there is no <i>A</i><sup>−1</sup>. The matrix method does not work here.</div>`)+gaussPart();
     else{
       const g=gaussInv(A);
-      if(!g)h+=$t(`<div class="warn">Przy liczeniu <i>A</i><sup>−1</sup> w którejś kolumnie zabraknie niezerowego elementu — <i>A</i> nie jest odwracalna (det <i>A</i> = 0). Metoda macierzowa nie działa: układ jest sprzeczny albo ma nieskończenie wiele rozwiązań.</div>`,`<div class="warn">While computing <i>A</i><sup>−1</sup>, some column runs out of nonzero entries — <i>A</i> is not invertible (det <i>A</i> = 0). The matrix method does not work: the system is inconsistent or has infinitely many solutions.</div>`)+gaussPart();
+      if(!g)h+=$t(`<div class="warn">Przy liczeniu <i>A</i><sup>−1</sup> w którejś kolumnie zabraknie niezerowego elementu, czyli <i>A</i> nie jest odwracalna (det <i>A</i> = 0). Metoda macierzowa nie działa: układ jest sprzeczny albo ma nieskończenie wiele rozwiązań.</div>`,`<div class="warn">While computing <i>A</i><sup>−1</sup>, some column runs out of nonzero entries, so <i>A</i> is not invertible (det <i>A</i> = 0). The matrix method does not work: the system is inconsistent or has infinitely many solutions.</div>`)+gaussPart();
       else{
         const X=M.mul(g.inv,bc);
-        h+=$t(`<p>Mnożę obie strony <b>z lewej</b> przez <i>A</i><sup>−1</sup>: &nbsp;<span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>.</p>`,`<p>I multiply both sides <b>on the left</b> by <i>A</i><sup>−1</sup>: &nbsp;<span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>.</p>`);
-        h+=$t(`<h3>2. Macierz odwrotna</h3><details open><summary>Liczę <i>A</i><sup>−1</sup> metodą Gaussa</summary>${gaussHtml('<i>A</i>','<i>A</i><sup>−1</sup>',A)}</details>`,`<h3>2. Inverse matrix</h3><details open><summary>Computing <i>A</i><sup>−1</sup> by Gaussian elimination</summary>${gaussHtml('<i>A</i>','<i>A</i><sup>−1</sup>',A)}</details>`);
-        h+=$t(`<h3>3. Mnożę <i>A</i><sup>−1</sup> · <i>B</i></h3><p class="mute">Każda niewiadoma to wiersz <i>A</i><sup>−1</sup> razy kolumna <i>B</i>:</p>`,`<h3>3. Multiplying <i>A</i><sup>−1</sup> · <i>B</i></h3><p class="mute">Each unknown is a row of <i>A</i><sup>−1</sup> times the column <i>B</i>:</p>`);
+        h+=$t(`<p>Mnożymy obie strony <b>z lewej</b> przez <i>A</i><sup>−1</sup>: &nbsp;<span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>.</p>`,`<p>Multiply both sides <b>on the left</b> by <i>A</i><sup>−1</sup>: &nbsp;<span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>.</p>`);
+        h+=$t(`<h3>2. Macierz odwrotna</h3><details open><summary><i>A</i><sup>−1</sup> metodą Gaussa</summary>${gaussHtml('<i>A</i>','<i>A</i><sup>−1</sup>',A)}</details>`,`<h3>2. Inverse matrix</h3><details open><summary>Computing <i>A</i><sup>−1</sup> by Gaussian elimination</summary>${gaussHtml('<i>A</i>','<i>A</i><sup>−1</sup>',A)}</details>`);
+        h+=$t(`<h3>3. Iloczyn <i>A</i><sup>−1</sup> · <i>B</i></h3><p class="mute">Każda niewiadoma to wiersz <i>A</i><sup>−1</sup> razy kolumna <i>B</i>:</p>`,`<h3>3. The product <i>A</i><sup>−1</sup> · <i>B</i></h3><p class="mute">Each unknown is a row of <i>A</i><sup>−1</sup> times the column <i>B</i>:</p>`);
         h+=names.map((v,i)=>`<div class="line">${nmHtml(v)} = ${g.inv[i].map((x,k)=>`${fmt(x)}·${fmt(b[k])}`).join(' + ')} = <b>${X[i][0].html()}</b></div>`).join('');
         h+=`<div class="line res"><i>X</i> = ${colH(names)} = ${matH(X)}</div>`;
       }
     }
   }else if(method==='cra'){
     if(m!==nv)h+=$t(`<div class="warn">Wzory Cramera działają tylko wtedy, gdy równań jest tyle, ile niewiadomych. Tu równań jest ${m}, a niewiadomych ${nv}.</div>`,`<div class="warn">Cramer’s rule only works when there are as many equations as unknowns. Here there are ${m} equations and ${nv} unknowns.</div>`)+gaussPart();
-    else if(nv>3)h+=$t(`<div class="tip">Wzory Cramera dla układu ${nv}×${nv} wymagają wyznaczników ${nv}×${nv} (rozwinięcie Laplace'a) — to bardzo długie liczenie. Tu wygodniej Gaussem.</div>`,`<div class="tip">Cramer’s rule for a ${nv}×${nv} system needs ${nv}×${nv} determinants (Laplace expansion) — a very long computation. Gaussian elimination is easier here.</div>`)+gaussPart();
+    else if(nv>3)h+=$t(`<div class="tip">Wzory Cramera dla układu ${nv}×${nv} wymagają wyznaczników ${nv}×${nv} (rozwinięcie Laplace’a), a to bardzo długie liczenie. Tu wygodniej metodą Gaussa.</div>`,`<div class="tip">Cramer’s rule for a ${nv}×${nv} system needs ${nv}×${nv} determinants (Laplace expansion), a very long computation. Gaussian elimination is easier here.</div>`)+gaussPart();
     else{
       const Wd=detF(A);
       h+=$t(`<h3>1. Wyznacznik główny</h3>${nv===3?'<p class="mute">Sarrus: trzy iloczyny po przekątnych „w prawo w dół” z plusem, trzy „w lewo w dół” z minusem.</p>':''}<div class="line"><i>W</i> = ${matH(A,{det:true})}</div>${detLines(A)}`,`<h3>1. The main determinant</h3>${nv===3?'<p class="mute">Sarrus: three diagonal products going “down to the right” with a plus, three going “down to the left” with a minus.</p>':''}<div class="line"><i>D</i> = ${matH(A,{det:true})}</div>${detLines(A)}`);
-      if(Wd.z)h+=$t(`<div class="warn"><i>W</i> = 0 — wzory Cramera nie działają. Układ jest sprzeczny albo ma nieskończenie wiele rozwiązań; rozstrzyga metoda Gaussa.</div>`,`<div class="warn"><i>D</i> = 0 — Cramer’s rule does not work. The system is inconsistent or has infinitely many solutions; Gaussian elimination decides.</div>`)+gaussPart();
+      if(Wd.z)h+=$t(`<div class="warn"><i>W</i> = 0, więc wzory Cramera nie działają. Układ jest sprzeczny albo ma nieskończenie wiele rozwiązań; rozstrzyga metoda Gaussa.</div>`,`<div class="warn"><i>D</i> = 0, so Cramer’s rule does not work. The system is inconsistent or has infinitely many solutions; Gaussian elimination decides.</div>`)+gaussPart();
       else{
         const sub=v=>`<i>${$t('W','D')}</i><sub>${nmHtml(v)}</sub>`;
-        h+=$t(`<p><i>W</i> ≠ 0, więc układ ma dokładnie jedno rozwiązanie (układ Cramera).</p><h3>2. Wyznaczniki niewiadomych</h3><p class="mute">Kolumnę przy danej niewiadomej zastępuję kolumną wyrazów wolnych.</p>`,`<p><i>D</i> ≠ 0, so the system has exactly one solution (a Cramer system).</p><h3>2. Determinants of the unknowns</h3><p class="mute">I replace the column of the given unknown with the column of constants.</p>`);
+        h+=$t(`<p><i>W</i> ≠ 0, więc układ ma dokładnie jedno rozwiązanie (układ Cramera).</p><h3>2. Wyznaczniki niewiadomych</h3><p class="mute">Kolumnę przy danej niewiadomej zastępujemy kolumną wyrazów wolnych.</p>`,`<p><i>D</i> ≠ 0, so the system has exactly one solution (a Cramer system).</p><h3>2. Determinants of the unknowns</h3><p class="mute">The column of the given unknown is replaced with the column of constants.</p>`);
         const Ws=names.map((v,j)=>{const Aj=A.map((r,i)=>r.map((x,q)=>q===j?b[i]:x));h+=`<div class="line">${sub(v)} = ${matH(Aj,{det:true,hl:j})}</div>${detLines(Aj)}`;return detF(Aj)});
         h+=$t(`<h3>3. Wzory Cramera</h3>`,`<h3>3. Cramer’s rule</h3>`)+names.map((v,j)=>$t(`<div class="line">${nmHtml(v)} = <span class="fr"><span>${sub(v)}</span><span><i>W</i></span></span> = <span class="fr"><span>${Ws[j].str()}</span><span>${Wd.str()}</span></span> = <b>${Ws[j].div(Wd).html()}</b></div>`,`<div class="line">${nmHtml(v)} = <span class="fr"><span>${sub(v)}</span><span><i>D</i></span></span> = <span class="fr"><span>${Ws[j].str()}</span><span>${Wd.str()}</span></span> = <b>${Ws[j].div(Wd).html()}</b></div>`)).join('');
       }
@@ -734,7 +730,7 @@ function parseLinSide(s,k){
   const re=/([+-]?)(\d+(?:\.\d+)?(?:\/\d+)?)?([a-z]\d*)?/y,v={};let c=F(0),i=0;
   while(i<s.length){
     re.lastIndex=i;const m=re.exec(s);
-    if(!m||(!m[2]&&!m[3])||(i>0&&!m[1]))throw new Error($t(`Równanie ${k+1}: nie rozumiem fragmentu „${s.slice(i)}”. Pisz np. 2x - 3y + z = 4.`,`Equation ${k+1}: I don’t understand “${s.slice(i)}”. Write e.g. 2x - 3y + z = 4.`));
+    if(!m||(!m[2]&&!m[3])||(i>0&&!m[1]))throw new Error($t(`Równanie ${k+1}: nie da się odczytać fragmentu „${s.slice(i)}”. Przykład zapisu: 2x - 3y + z = 4.`,`Equation ${k+1}: “${s.slice(i)}” cannot be read. An example of the expected form: 2x - 3y + z = 4.`));
     const num=m[2]?parseFr(m[2]):F(1);if(!num)throw new Error($t(`Równanie ${k+1}: zła liczba „${m[2]}”.`,`Equation ${k+1}: invalid number “${m[2]}”.`));
     const val=m[1]==='-'?num.neg():num;
     if(m[3])v[m[3]]=(v[m[3]]||F(0)).add(val);else c=c.add(val);
@@ -746,7 +742,7 @@ function parseSystem(text){
   text=text.replace(/[−–]/g,'-').replace(/[₀-₉]/g,ch=>'₀₁₂₃₄₅₆₇₈₉'.indexOf(ch)).replace(/_/g,'').replace(/(\d),(\d)/g,'$1.$2');
   const lines=text.split(/[\n;,]+/).map(s=>s.trim()).filter(Boolean);
   if(!lines.length)throw new Error($t('Wpisz co najmniej jedno równanie, np. 2x + y = 5.','Type at least one equation, e.g. 2x + y = 5.'));
-  if(lines.length>6)throw new Error($t('Za dużo równań — trener rozwiązuje najwyżej 6.','Too many equations — the trainer solves at most 6.'));
+  if(lines.length>6)throw new Error($t('Za dużo równań: obsługiwanych jest najwyżej 6.','Too many equations: at most 6 are supported.'));
   const eqs=lines.map((ln,k)=>{
     const sd=ln.split('=');
     if(sd.length!==2)throw new Error($t(`Równanie ${k+1}: potrzebny dokładnie jeden znak „=”.`,`Equation ${k+1}: exactly one “=” sign is needed.`));
@@ -755,8 +751,8 @@ function parseSystem(text){
     return {v,k:R.c.sub(L.c)};
   });
   const set=new Set();eqs.forEach(e=>Object.keys(e.v).forEach(n=>set.add(n)));
-  if(!set.size)throw new Error($t('Nie widzę żadnej niewiadomej (np. x, y, z).','I can’t see any unknown (e.g. x, y, z).'));
-  if(set.size>6)throw new Error($t('Za dużo niewiadomych — trener rozwiązuje najwyżej 6.','Too many unknowns — the trainer solves at most 6.'));
+  if(!set.size)throw new Error($t('Brak niewiadomych (np. x, y, z).','No unknowns found (e.g. x, y, z).'));
+  if(set.size>6)throw new Error($t('Za dużo niewiadomych: obsługiwanych jest najwyżej 6.','Too many unknowns: at most 6 are supported.'));
   const key=n=>{const m=n.match(/^([a-z])(\d*)$/);return [ORD.indexOf(m[1]),m[2]?+m[2]:-1]};
   const names=[...set].sort((a,b)=>{const p=key(a),q=key(b);return p[0]-q[0]||p[1]-q[1]});
   return {Ab:eqs.map(e=>[...names.map(n=>e.v[n]||F(0)),e.k]),names};
@@ -773,8 +769,8 @@ function evalAtom(a,env){
 }
 const zeros=(r,c)=>M.make(r,c,()=>F(0));
 const unitM=(r,c,k)=>M.make(r,c,(i,j)=>F(i*c+j===k?1:0));
-function linCheck(e){let any=false;for(const t of e.terms){let k=0;for(const a of t.atoms)k+=atomX(a);if(k>1)throw new Error($t('X występuje dwa razy w jednym iloczynie — równanie nie jest liniowe względem X, więc nie da się go rozwiązać układem równań liniowych.','X appears twice in one product — the equation is not linear in X, so it cannot be solved as a system of linear equations.'));if(k)any=true}return any}
-function atomX(a){const h=a.type==='var'?(a.n==='X'?1:0):(linCheck(a.expr)?1:0);if(h&&a.post.some(o=>o.k!=='T'))throw new Error($t('X jest odwrócone albo w potędze — równanie nie jest liniowe względem X, więc nie da się go rozwiązać układem równań liniowych.','X is inverted or raised to a power — the equation is not linear in X, so it cannot be solved as a system of linear equations.'));return h}
+function linCheck(e){let any=false;for(const t of e.terms){let k=0;for(const a of t.atoms)k+=atomX(a);if(k>1)throw new Error($t('X występuje dwa razy w jednym iloczynie. Równanie nie jest liniowe względem X, więc nie da się go rozwiązać układem równań liniowych.','X appears twice in one product. The equation is not linear in X, so it cannot be solved as a system of linear equations.'));if(k)any=true}return any}
+function atomX(a){const h=a.type==='var'?(a.n==='X'?1:0):(linCheck(a.expr)?1:0);if(h&&a.post.some(o=>o.k!=='T'))throw new Error($t('X jest odwrócone albo w potędze. Równanie nie jest liniowe względem X, więc nie da się go rozwiązać układem równań liniowych.','X is inverted or raised to a power. The equation is not linear in X, so it cannot be solved as a system of linear equations.'));return h}
 function xDims(ast,env){
   const out=[];
   for(let r=1;r<=4;r++)for(let c=1;c<=4;c++){
@@ -789,10 +785,10 @@ function linSolve(src,env){
   if(!hl&&!hr)throw new Error($t('W równaniu nie ma niewiadomej X.','There is no unknown X in the equation.'));
   let ds;
   try{ds=xDims(ast,env)}catch(e){if(e.message==='singular')throw new Error($t(`Macierz ${e.what} nie jest odwracalna, a równanie jej odwrotności wymaga.`,`The matrix ${e.what} is not invertible, but the equation needs its inverse.`));throw e}
-  if(!ds.length)throw new Error($t('Wymiary macierzy nie pasują do siebie — nie ma takiego wymiaru X, przy którym wszystkie działania w równaniu mają sens.','The matrix sizes do not fit together — there is no size of X for which every operation in the equation makes sense.'));
+  if(!ds.length)throw new Error($t('Wymiary macierzy nie pasują do siebie: nie ma takiego wymiaru X, przy którym wszystkie działania w równaniu mają sens.','The matrix sizes do not fit together: there is no size of X for which every operation in the equation makes sense.'));
   let [r,c]=ds[0];
   if(ds.length>1){const sq=Object.values(env).find(v=>Array.isArray(v)&&v.length===v[0].length),n=sq?sq.length:2,f=ds.find(d=>d[0]===n&&d[1]===n)||ds.find(d=>d[0]===d[1]);if(f)[r,c]=f}
-  const nu=r*c;if(nu>9)throw new Error($t(`X miałaby wymiar ${r}×${c}, czyli ${nu} niewiadomych — za dużo do liczenia ręcznego (trener liczy najwyżej 9).`,`X would be ${r}×${c}, i.e. ${nu} unknowns — too many to compute by hand (the trainer handles at most 9).`));
+  const nu=r*c;if(nu>9)throw new Error($t(`X miałaby wymiar ${r}×${c}, czyli ${nu} niewiadomych. To za dużo do liczenia ręcznego (obsługiwanych jest najwyżej 9).`,`X would be ${r}×${c}, i.e. ${nu} unknowns. That is too many to compute by hand (at most 9 are supported).`));
   const names=matNames(r,c),Z=zeros(r,c),raw=(e,X)=>evalAst(e,{...env,X});
   const l0=raw(ast.L,Z),ref=isS(l0)?raw(ast.R,Z):l0,p=ref.length,q=ref[0].length;
   const val=(e,X)=>{const v=raw(e,X);return isS(v)?M.scale(v.sc,M.I(p)):v};
@@ -803,24 +799,24 @@ function linSolve(src,env){
   const rows=[];
   d.rows=rows;
   for(let i=0;i<p;i++)for(let j=0;j<q;j++){const a=LF[i][j],b=RF[i][j],row={c:a.c.map((x,k)=>x.sub(b.c[k])),k:b.k.sub(a.k)};if(row.c.some(x=>!x.z)||!row.k.z)rows.push(row)}
-  let h=$t(`<h3>1. Niewiadoma macierz</h3><p>Do działań w równaniu pasuje tylko wymiar ${r}×${c}. Zapisuję <i>X</i> przez ${nu} ${pl(nu,'niewiadomą','niewiadome','niewiadomych')}:</p><div class="line"><i>X</i> = ${matH(M.make(r,c,(i,j)=>nmHtml(names[i*c+j])))}</div>`,`<h3>1. The unknown matrix</h3><p>Only the size ${r}×${c} fits the operations in the equation. I write <i>X</i> with ${nu} ${nu===1?'unknown':'unknowns'}:</p><div class="line"><i>X</i> = ${matH(M.make(r,c,(i,j)=>nmHtml(names[i*c+j])))}</div>`);
-  h+=$t(`<h3>2. Wymnażam obie strony</h3>`,`<h3>2. Multiplying out both sides</h3>`);
+  let h=$t(`<h3>1. Niewiadoma macierz</h3><p>Do działań w równaniu pasuje tylko wymiar ${r}×${c}. Zapisujemy <i>X</i> przez ${nu} ${pl(nu,'niewiadomą','niewiadome','niewiadomych')}:</p><div class="line"><i>X</i> = ${matH(M.make(r,c,(i,j)=>nmHtml(names[i*c+j])))}</div>`,`<h3>1. The unknown matrix</h3><p>Only the size ${r}×${c} fits the operations in the equation. We write <i>X</i> with ${nu} ${nu===1?'unknown':'unknowns'}:</p><div class="line"><i>X</i> = ${matH(M.make(r,c,(i,j)=>nmHtml(names[i*c+j])))}</div>`);
+  h+=$t(`<h3>2. Wymnażamy obie strony</h3>`,`<h3>2. Multiplying out both sides</h3>`);
   const trivial=t=>t.atoms.length===1&&t.atoms[0].type==='var'&&!t.atoms[0].post.length&&t.c.one;
   for(const [side,G] of [[ast.L,LF],[ast.R,RF]]){
     if(side.terms.length>1)for(const t of side.terms){if(trivial(t))continue;const tt={terms:[{...t,sign:1}]};h+=`<div class="line">${rExpr(tt)} = ${lfmH(lfm(tt))}</div>`}
     h+=`<div class="line">${rExpr(side)} = ${lfmH(G)}</div>`;
   }
-  h+=$t(`<h3>3. Porównuję elementy</h3>`,`<h3>3. Comparing entries</h3>`);
-  if(!rows.length)return {html:h+$t(`<p>Po porównaniu zostaje samo 0 = 0 — <b>każda</b> macierz ${r}×${c} spełnia to równanie.</p>`,`<p>After comparing, only 0 = 0 is left — <b>every</b> ${r}×${c} matrix satisfies the equation.</p>`),type:'inf',X:null,fr:0,orig,d};
+  h+=$t(`<h3>3. Porównujemy elementy</h3>`,`<h3>3. Comparing entries</h3>`);
+  if(!rows.length)return {html:h+$t(`<p>Po porównaniu zostaje samo 0 = 0, więc <b>każda</b> macierz ${r}×${c} spełnia to równanie.</p>`,`<p>After comparing, only 0 = 0 is left, so <b>every</b> ${r}×${c} matrix satisfies the equation.</p>`),type:'inf',X:null,fr:0,orig,d};
   h+=$t(`<p>Macierze są równe, gdy mają równe elementy na tych samych miejscach. Wychodzi układ ${rows.length} ${pl(rows.length,'równania','równań','równań')} z ${nu===1?'jedną niewiadomą':nu+' niewiadomymi'}:</p><div class="sysbox">${sysHtml(rows,names)}</div>`,`<p>Two matrices are equal when their entries in the same positions are equal. This gives a system of ${rows.length} ${rows.length===1?'equation':'equations'} in ${nu} ${nu===1?'unknown':'unknowns'}:</p><div class="sysbox">${sysHtml(rows,names)}</div>`);
   const Ab=rows.map(o=>[...o.c,o.k]),G=gaussSys(Ab,names);d.Ab=Ab;
-  h+=$t(`<h3>4. Rozwiązuję układ metodą Gaussa</h3>`,`<h3>4. Solving the system by Gaussian elimination</h3>`)+G.html+$t(`<h3>5. Wynik</h3>`,`<h3>5. Result</h3>`);
+  h+=$t(`<h3>4. Rozwiązujemy układ metodą Gaussa</h3>`,`<h3>4. Solving the system by Gaussian elimination</h3>`)+G.html+$t(`<h3>5. Wynik</h3>`,`<h3>5. Result</h3>`);
   let X=null;
   if(G.res.type==='none')h+=$t(`<div class="line res">Układ jest sprzeczny, więc nie istnieje macierz <i>X</i> spełniająca to równanie.</div>`,`<div class="line res">The system is inconsistent, so no matrix <i>X</i> satisfies the equation.</div>`);
   else if(G.res.type==='one'){
     X=M.make(r,c,(i,j)=>G.sol.forms[i*c+j].k);d.chk=[val(ast.L,X),val(ast.R,X)];
-    h+=$t(`<div class="line res"><i>X</i> = ${M.html(X)}</div><h3>Sprawdzenie</h3><p class="mute">Podstawiam <i>X</i> do równania ${orig}:</p><div class="nums"><span class="gv">lewa = ${M.html(val(ast.L,X))}</span><span class="gv">prawa = ${M.html(val(ast.R,X))}</span></div><p class="mute">✓ Zgadza się.</p>`,`<div class="line res"><i>X</i> = ${M.html(X)}</div><h3>Check</h3><p class="mute">I substitute <i>X</i> into the equation ${orig}:</p><div class="nums"><span class="gv">left = ${M.html(val(ast.L,X))}</span><span class="gv">right = ${M.html(val(ast.R,X))}</span></div><p class="mute">✓ It matches.</p>`);
-  }else{d.gen=`<i>X</i> = ${matH(M.make(r,c,(i,j)=>lfHtml(G.sol.forms[i*c+j],names,true)))}, &nbsp; ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} ∈ ℝ`;h+=$t(`<div class="line res">${d.gen}</div><p class="mute">Nieskończenie wiele macierzy — każdy wybór ${G.sol.free.length===1?'liczby':'liczb'} ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} daje inne <i>X</i>.</p>`,`<div class="line res">${d.gen}</div><p class="mute">Infinitely many matrices — every choice of ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} gives a different <i>X</i>.</p>`);}
+    h+=$t(`<div class="line res"><i>X</i> = ${M.html(X)}</div><h3>Sprawdzenie</h3><p class="mute">Podstawiamy <i>X</i> do równania ${orig}:</p><div class="nums"><span class="gv">lewa = ${M.html(val(ast.L,X))}</span><span class="gv">prawa = ${M.html(val(ast.R,X))}</span></div><p class="mute">Obie strony są równe.</p>`,`<div class="line res"><i>X</i> = ${M.html(X)}</div><h3>Check</h3><p class="mute">Substitute <i>X</i> into the equation ${orig}:</p><div class="nums"><span class="gv">left = ${M.html(val(ast.L,X))}</span><span class="gv">right = ${M.html(val(ast.R,X))}</span></div><p class="mute">Both sides are equal.</p>`);
+  }else{d.gen=`<i>X</i> = ${matH(M.make(r,c,(i,j)=>lfHtml(G.sol.forms[i*c+j],names,true)))}, &nbsp; ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} ∈ ℝ`;h+=$t(`<div class="line res">${d.gen}</div><p class="mute">Nieskończenie wiele macierzy: każdy wybór ${G.sol.free.length===1?'liczby':'liczb'} ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} daje inne <i>X</i>.</p>`,`<div class="line res">${d.gen}</div><p class="mute">Infinitely many matrices: every choice of ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} gives a different <i>X</i>.</p>`);}
   return {html:h,type:G.res.type,X,fr:planFrac(G.plan),orig,d};
 }
 // ---------- Klatki do odtwarzacza „krok po kroku” ----------
@@ -833,9 +829,9 @@ const rw=i=>`${$t('w','R')}<sub>${i+1}</sub>`;
 function gaussFrames(Ab0,nv,o){
   const inv=o.mode==='inv',rk=o.mode==='rank',sec=o.sec||$t('Metoda Gaussa','Gaussian elimination'),fr=[],w=Ab0[0].length,m=Ab0.length;
   const plan=elimPlan(Ab0,nv,{down:o.down,norm:!rk,stop:inv,sys:!inv&&!rk});
-  const tip=$t(' Gdzie się da, liczę bez ułamków: jedynkę robię kombinacją wierszy, a dzielę dopiero na końcu.',' Where possible I avoid fractions: I make a 1 by combining rows and divide only at the end.');
-  fr.push({sec,t:rk?$t(`Sprowadzam ${o.lab} do postaci schodkowej`,`Reducing ${o.lab} to row echelon form`):inv?$t(`Zapisuję [${o.lab} | <i>I</i>]`,`Writing [${o.lab} | <i>I</i>]`):$t('Zapisuję macierz rozszerzoną [<i>A</i> | <i>B</i>]','Writing the augmented matrix [<i>A</i> | <i>B</i>]'),
-    x:(rk?$t(`Rząd to liczba niezerowych wierszy w postaci schodkowej. Robię eliminację Gaussa: w każdej kolumnie element główny i zera <b>pod</b> nim. Operacje na wierszach nie zmieniają rzędu.`,`The rank is the number of nonzero rows in row echelon form. I do Gaussian elimination: in each column a pivot and zeros <b>below</b> it. Row operations do not change the rank.`):inv?$t(`Obok ${o.lab} dopisuję macierz jednostkową <i>I</i>. Robię operacje na <b>całych wierszach</b> — po obu stronach kreski — aż po lewej powstanie <i>I</i>. Wtedy po prawej będzie odwrotność.`,`Next to ${o.lab} I write the identity matrix <i>I</i>. I do operations on <b>whole rows</b> — on both sides of the bar — until <i>I</i> appears on the left. Then the inverse is on the right.`)
+  const tip=$t(' Gdzie się da, liczymy bez ułamków: jedynkę robimy kombinacją wierszy, a dzielimy dopiero na końcu.',' Where possible we avoid fractions: a 1 is made by combining rows, and we divide only at the end.');
+  fr.push({sec,t:rk?$t(`Sprowadzamy ${o.lab} do postaci schodkowej`,`Reducing ${o.lab} to row echelon form`):inv?$t(`Zapisujemy [${o.lab} | <i>I</i>]`,`Writing [${o.lab} | <i>I</i>]`):$t('Zapisujemy macierz rozszerzoną [<i>A</i> | <i>B</i>]','Writing the augmented matrix [<i>A</i> | <i>B</i>]'),
+    x:(rk?$t(`Rząd to liczba niezerowych wierszy w postaci schodkowej. Stosujemy eliminację Gaussa: w każdej kolumnie element główny i zera <b>pod</b> nim. Operacje na wierszach nie zmieniają rzędu.`,`The rank is the number of nonzero rows in row echelon form. We use Gaussian elimination: in each column a pivot and zeros <b>below</b> it. Row operations do not change the rank.`):inv?$t(`Obok ${o.lab} dopisujemy macierz jednostkową <i>I</i>. Operacje wykonujemy na <b>całych wierszach</b>, po obu stronach kreski, aż po lewej powstanie <i>I</i>. Wtedy po prawej stoi odwrotność.`,`Next to ${o.lab} we write the identity matrix <i>I</i>. Operations act on <b>whole rows</b>, on both sides of the bar, until <i>I</i> appears on the left. Then the inverse stands on the right.`)
       :$t(`Każdy wiersz to jedno równanie: przed kreską współczynniki przy ${o.names.map(nmHtml).join(', ')}, za kreską wyraz wolny. Cel: przed kreską schodki, a nad nimi i pod nimi zera.`,`Each row is one equation: before the bar the coefficients of ${o.names.map(nmHtml).join(', ')}, after the bar the constant. Goal: steps before the bar, with zeros above and below them.`))+(rk||!OPT.noFrac?'':tip),
     B:[bd(Ab0,{bar:nv})]});
   const calc=(e,q)=>{const o_=e.B[e.i][q],n_=`<b>${e.A[e.i][q].html()}</b>`;
@@ -848,39 +844,39 @@ function gaussFrames(Ab0,nv,o){
   for(const e of plan.ev){
     const op=opLabel(e),colHl={};if(e.j>=0)for(let i=(e.row??0);i<m;i++)colHl[i+','+e.j]='col';
     if(e.k==='none'){
-      if(inv){fr.push({sec,t:$t(`Kolumna ${e.j+1}: same zera`,`Column ${e.j+1}: all zeros`),x:$t(`Od wiersza ${e.row+1} w dół w kolumnie ${e.j+1} są same zera — nie da się tu zrobić schodka. Macierz <b>nie jest odwracalna</b> (jej wyznacznik to 0).`,`From row ${e.row+1} down, column ${e.j+1} has only zeros — no step can be made here. The matrix is <b>not invertible</b> (its determinant is 0).`),B:[bd(e.B,{bar:nv,hl:{cells:colHl}})]});return {frames:fr,ok:false,A:plan.A}}
-      fr.push({sec,t:$t(`Kolumna ${e.j+1}: same zera`,`Column ${e.j+1}: all zeros`),x:$t(`Od wiersza ${e.row+1} w dół w kolumnie ${e.j+1} są same zera — tu nie będzie schodka.${rk?'':` Niewiadoma ${nmHtml(o.names[e.j])} zostanie <b>parametrem</b> (dowolną liczbą).`} Idę do następnej kolumny.`,`From row ${e.row+1} down, column ${e.j+1} has only zeros — there will be no step here.${rk?'':` The unknown ${nmHtml(o.names[e.j])} becomes a <b>parameter</b> (any number).`} On to the next column.`),B:[bd(e.B,{bar:nv,hl:{cells:colHl}})]});
+      if(inv){fr.push({sec,t:$t(`Kolumna ${e.j+1}: same zera`,`Column ${e.j+1}: all zeros`),x:$t(`Od wiersza ${e.row+1} w dół w kolumnie ${e.j+1} są same zera, więc nie da się tu zrobić schodka. Macierz <b>nie jest odwracalna</b> (jej wyznacznik to 0).`,`From row ${e.row+1} down, column ${e.j+1} has only zeros, so no step can be made here. The matrix is <b>not invertible</b> (its determinant is 0).`),B:[bd(e.B,{bar:nv,hl:{cells:colHl}})]});return {frames:fr,ok:false,A:plan.A}}
+      fr.push({sec,t:$t(`Kolumna ${e.j+1}: same zera`,`Column ${e.j+1}: all zeros`),x:$t(`Od wiersza ${e.row+1} w dół w kolumnie ${e.j+1} są same zera, więc tu nie będzie schodka.${rk?'':` Niewiadoma ${nmHtml(o.names[e.j])} zostanie <b>parametrem</b> (dowolną liczbą).`} Idę do następnej kolumny.`,`From row ${e.row+1} down, column ${e.j+1} has only zeros, so there will be no step here.${rk?'':` The unknown ${nmHtml(o.names[e.j])} becomes a <b>parameter</b> (any number).`} On to the next column.`),B:[bd(e.B,{bar:nv,hl:{cells:colHl}})]});
     }else if(e.k==='pivot'){
       const p=e.B[e.i][e.j];
       fr.push({sec,t:$t(`Kolumna ${e.j+1}: element główny`,`Column ${e.j+1}: the pivot`),
-        x:p.abs().one?$t(`W kolumnie ${e.j+1}, od wiersza ${e.row+1} w dół, biorę <b>${p.html()}</b> z wiersza ${e.i+1}${e.made?' — tę jedynkę właśnie zrobiłem':''}. Z jedynką zerowanie idzie bez ułamków.`,`In column ${e.j+1}, from row ${e.row+1} down, I take <b>${p.html()}</b> from row ${e.i+1}${e.made?' — the 1 I have just made':''}. With a 1, making zeros needs no fractions.`)
-          :!OPT.noFrac?$t(`W kolumnie ${e.j+1}, od wiersza ${e.row+1} w dół, szukam liczby różnej od 0 — najlepiej 1 albo −1, bo wtedy nie wyjdą ułamki. Biorę <b>${p.html()}</b> z wiersza ${e.i+1}.`,`In column ${e.j+1}, from row ${e.row+1} down, I look for a nonzero number — ideally 1 or −1, so that no fractions appear. I take <b>${p.html()}</b> from row ${e.i+1}.`)
-          :$t(`W kolumnie ${e.j+1} nie ma 1 ani −1 i nie da się jej zrobić prostą kombinacją wierszy. Biorę <b>${p.html()}</b> z wiersza ${e.i+1}. Żeby nie dzielić, pozostałe wiersze będę najpierw mnożyć.`,`Column ${e.j+1} has no 1 or −1 and one cannot be made by a simple combination of rows. I take <b>${p.html()}</b> from row ${e.i+1}. To avoid dividing, I will multiply the other rows first.`),
+        x:p.abs().one?$t(`W kolumnie ${e.j+1}, od wiersza ${e.row+1} w dół, bierzemy <b>${p.html()}</b> z wiersza ${e.i+1}${e.made?' (tę jedynkę zrobiliśmy przed chwilą)':''}. Z jedynką zerowanie idzie bez ułamków.`,`In column ${e.j+1}, from row ${e.row+1} down, we take <b>${p.html()}</b> from row ${e.i+1}${e.made?' (the 1 we have just made)':''}. With a 1, making zeros needs no fractions.`)
+          :!OPT.noFrac?$t(`W kolumnie ${e.j+1}, od wiersza ${e.row+1} w dół, szukamy liczby różnej od 0, najlepiej 1 albo −1, bo wtedy nie wyjdą ułamki. Bierzemy <b>${p.html()}</b> z wiersza ${e.i+1}.`,`In column ${e.j+1}, from row ${e.row+1} down, we look for a nonzero number, ideally 1 or −1, so that no fractions appear. We take <b>${p.html()}</b> from row ${e.i+1}.`)
+          :$t(`W kolumnie ${e.j+1} nie ma 1 ani −1 i nie da się jej zrobić prostą kombinacją wierszy. Bierzemy <b>${p.html()}</b> z wiersza ${e.i+1}. Żeby nie dzielić, pozostałe wiersze najpierw mnożymy.`,`Column ${e.j+1} has no 1 or −1 and one cannot be made by a simple combination of rows. We take <b>${p.html()}</b> from row ${e.i+1}. To avoid dividing, the other rows are multiplied first.`),
         B:[bd(e.B,{bar:nv,hl:{cells:{...colHl,[e.i+','+e.j]:'piv'}}})]});
     }else if(e.k==='swap'){
       const U=[{t:.4,swap:[0,e.i,e.i2]}];
       for(let q=0;q<w;q++)U.push({t:1.8,b:0,i:e.i,j:q,v:e.A[e.i][q].html()},{t:1.8,b:0,i:e.i2,j:q,v:e.A[e.i2][q].html()});
-      fr.push({sec,t:$t(`Zamieniam wiersze ${op}`,`Swapping rows ${op}`),x:$t(`Element główny ma stać w wierszu ${e.i+1}, więc zamieniam miejscami całe wiersze ${e.i+1} i ${e.i2+1}.${inv||rk?'':' To tylko zmiana kolejności równań — rozwiązania się nie zmieniają.'}`,`The pivot should be in row ${e.i+1}, so I swap the whole rows ${e.i+1} and ${e.i2+1}.${inv||rk?'':' This only changes the order of the equations — the solutions stay the same.'}`),B:[bd(e.B,{bar:nv,hl:{rows:{[e.i]:'dst',[e.i2]:'dst'}}})],U});
+      fr.push({sec,t:$t(`Zamiana wierszy ${op}`,`Swapping rows ${op}`),x:$t(`Element główny ma stać w wierszu ${e.i+1}, więc zamieniamy miejscami całe wiersze ${e.i+1} i ${e.i2+1}.${inv||rk?'':' To tylko zmiana kolejności równań, rozwiązania się nie zmieniają.'}`,`The pivot should be in row ${e.i+1}, so we swap the whole rows ${e.i+1} and ${e.i2+1}.${inv||rk?'':' This only changes the order of the equations; the solutions stay the same.'}`),B:[bd(e.B,{bar:nv,hl:{rows:{[e.i]:'dst',[e.i2]:'dst'}}})],U});
     }else if(e.k==='comb'){
       const c=e.c.abs(),v=e.A[e.i][e.j];
-      rowOp(e,$t(`Kolumna ${e.j+1}: robię jedynkę — ${op}`,`Column ${e.j+1}: making a 1 — ${op}`),
-        $t(`W kolumnie ${e.j+1} nie ma 1 ani −1. Zamiast dzielić (wyszłyby ułamki), do wiersza ${e.i+1} ${e.c.n>0?'dodaję':'odejmuję'} wiersz ${e.from+1}${c.one?'':` pomnożony przez ${c.html()}`} — w tym miejscu wyjdzie ${v.html()}:`,`Column ${e.j+1} has no 1 or −1. Instead of dividing (which would give fractions), I ${e.c.n>0?'add':'subtract'} row ${e.from+1}${c.one?'':` multiplied by ${c.html()}`} ${e.c.n>0?'to':'from'} row ${e.i+1} — this position becomes ${v.html()}:`),
+      rowOp(e,$t(`Kolumna ${e.j+1}: jedynka z kombinacji wierszy, ${op}`,`Column ${e.j+1}: a 1 from a combination of rows, ${op}`),
+        $t(`W kolumnie ${e.j+1} nie ma 1 ani −1. Zamiast dzielić (wyszłyby ułamki), ${e.c.n>0?'do wiersza '+(e.i+1)+' dodajemy':'od wiersza '+(e.i+1)+' odejmujemy'} wiersz ${e.from+1}${c.one?'':` pomnożony przez ${c.html()}`}; w tym miejscu wyjdzie ${v.html()}:`,`Column ${e.j+1} has no 1 or −1. Instead of dividing (which would give fractions), we ${e.c.n>0?'add':'subtract'} row ${e.from+1}${c.one?'':` multiplied by ${c.html()}`} ${e.c.n>0?'to':'from'} row ${e.i+1}; this position becomes ${v.html()}:`),
         {rows:{[e.from]:'src',[e.i]:'dst'},cells:{[e.i+','+e.j]:'tgt'}});
     }else if(e.k==='scale'){
       const hl={rows:{[e.i]:'dst'}};
-      if(e.why==='clear')rowOp(e,$t(`Pozbywam się ułamków: ${op}`,`Clearing fractions: ${op}`),$t(`W wierszu ${e.i+1} są ułamki. Mnożę cały wiersz przez ${e.c.html()}, żeby liczyć na liczbach całkowitych:`,`Row ${e.i+1} contains fractions. I multiply the whole row by ${e.c.html()} to work with whole numbers:`),hl);
-      else if(e.why==='reduce'){const g=F(1).div(e.c).html();rowOp(e,$t(`Skracam: ${op}`,`Simplifying: ${op}`),$t(`Wszystkie liczby w wierszu ${e.i+1} dzielą się przez ${g} — dzielę cały wiersz, żeby liczby były mniejsze:`,`All numbers in row ${e.i+1} are divisible by ${g} — I divide the whole row to keep the numbers small:`),hl)}
-      else if(e.why==='sign')rowOp(e,$t(`Zmieniam znak: ${op}`,`Changing the sign: ${op}`),$t(`Element główny to −1. Mnożę cały wiersz ${e.i+1} przez −1 i mam 1:`,`The pivot is −1. I multiply the whole row ${e.i+1} by −1 to get 1:`),{rows:{[e.i]:'dst'},cells:{[e.i+','+e.j]:'piv'}});
-      else if(e.why==='divf'){const p=F(1).div(e.c).html();rowOp(e,$t(`Dzielę: ${op}`,`Dividing: ${op}`),$t(`Na miejscu elementu głównego chcę mieć 1, więc <b>cały</b> wiersz ${e.i+1} — po obu stronach kreski — dzielę przez ${p}:`,`I want a 1 in the pivot position, so I divide the <b>whole</b> row ${e.i+1} — on both sides of the bar — by ${p}:`),{rows:{[e.i]:'dst'},cells:{[e.i+','+e.j]:'piv'}})}
-      else{const p=F(1).div(e.c).html();rowOp(e,$t(`Dzielę: ${op}`,`Dividing: ${op}`),$t(`Cały wiersz ${e.i+1} dzieli się przez ${p} bez reszty, więc dzielę — na elemencie głównym będzie 1, a ułamki nie wyjdą:`,`The whole row ${e.i+1} is divisible by ${p}, so I divide — the pivot becomes 1 and no fractions appear:`),{rows:{[e.i]:'dst'},cells:{[e.i+','+e.j]:'piv'}})}
+      if(e.why==='clear')rowOp(e,$t(`Usuwamy ułamki: ${op}`,`Clearing fractions: ${op}`),$t(`W wierszu ${e.i+1} są ułamki. Mnożymy cały wiersz przez ${e.c.html()}, żeby liczyć na liczbach całkowitych:`,`Row ${e.i+1} contains fractions. We multiply the whole row by ${e.c.html()} to work with whole numbers:`),hl);
+      else if(e.why==='reduce'){const g=F(1).div(e.c).html();rowOp(e,$t(`Skracamy: ${op}`,`Simplifying: ${op}`),$t(`Wszystkie liczby w wierszu ${e.i+1} dzielą się przez ${g}, więc dzielimy cały wiersz, żeby liczby były mniejsze:`,`All numbers in row ${e.i+1} are divisible by ${g}, so we divide the whole row to keep the numbers small:`),hl)}
+      else if(e.why==='sign')rowOp(e,$t(`Zmiana znaku: ${op}`,`Changing the sign: ${op}`),$t(`Element główny to −1. Mnożymy cały wiersz ${e.i+1} przez −1 i dostajemy 1:`,`The pivot is −1. We multiply the whole row ${e.i+1} by −1 to get 1:`),{rows:{[e.i]:'dst'},cells:{[e.i+','+e.j]:'piv'}});
+      else if(e.why==='divf'){const p=F(1).div(e.c).html();rowOp(e,$t(`Dzielenie: ${op}`,`Dividing: ${op}`),$t(`Na miejscu elementu głównego potrzebna jest 1, więc <b>cały</b> wiersz ${e.i+1}, po obu stronach kreski, dzielimy przez ${p}:`,`The pivot position needs a 1, so we divide the <b>whole</b> row ${e.i+1}, on both sides of the bar, by ${p}:`),{rows:{[e.i]:'dst'},cells:{[e.i+','+e.j]:'piv'}})}
+      else{const p=F(1).div(e.c).html();rowOp(e,$t(`Dzielenie: ${op}`,`Dividing: ${op}`),$t(`Cały wiersz ${e.i+1} dzieli się przez ${p} bez reszty, więc dzielimy: na elemencie głównym będzie 1, a ułamki nie wyjdą:`,`The whole row ${e.i+1} is divisible by ${p}, so we divide: the pivot becomes 1 and no fractions appear:`),{rows:{[e.i]:'dst'},cells:{[e.i+','+e.j]:'piv'}})}
     }else if(e.k==='elim'){
       const p=e.B[e.r][e.j],k=e.B[e.i][e.j],b=e.b.abs(),pos=e.i<e.r?$t('Nad','Above'):$t('Pod','Below'),pv=p.one?$t('jedynką','the 1'):$t(`elementem głównym ${p.html()}`,`the pivot ${p.html()}`);
-      const x=e.a.one?$t(`${pos} ${pv}, w wierszu ${e.i+1}, stoi ${k.html()}. ${e.b.n>0?`Od wiersza ${e.i+1} odejmuję wiersz ${e.r+1}${b.one?'':` pomnożony przez ${b.html()}`}`:`Do wiersza ${e.i+1} dodaję wiersz ${e.r+1}${b.one?'':` pomnożony przez ${b.html()}`}`} — wtedy w tym miejscu wyjdzie 0. Liczę element po elemencie:`,`${pos} ${pv}, in row ${e.i+1}, there is ${k.html()}. ${e.b.n>0?`I subtract row ${e.r+1}${b.one?'':` multiplied by ${b.html()}`} from row ${e.i+1}`:`I add row ${e.r+1}${b.one?'':` multiplied by ${b.html()}`} to row ${e.i+1}`} — then this position becomes 0. Entry by entry:`)
-        :$t(`${pos} ${pv}, w wierszu ${e.i+1}, stoi ${k.html()}. Żeby nie dzielić, mnożę wiersz ${e.i+1} przez ${e.a.html()} i ${e.b.n>0?'odejmuję':'dodaję'} wiersz ${e.r+1}${b.one?'':` pomnożony przez ${b.html()}`}: ${e.a.html()}·${fmt(k)} ${e.b.n>0?'−':'+'} ${b.one?'':b.html()+'·'}${fmt(p)} = 0. Liczę element po elemencie:`,`${pos} ${pv}, in row ${e.i+1}, there is ${k.html()}. To avoid dividing, I multiply row ${e.i+1} by ${e.a.html()} and ${e.b.n>0?'subtract':'add'} row ${e.r+1}${b.one?'':` multiplied by ${b.html()}`}: ${e.a.html()}·${fmt(k)} ${e.b.n>0?'−':'+'} ${b.one?'':b.html()+'·'}${fmt(p)} = 0. Entry by entry:`);
-      rowOp(e,$t(`Zeruję: ${op}`,`Making a zero: ${op}`),x,{rows:{[e.r]:'src',[e.i]:'dst'},cells:{[e.i+','+e.j]:'tgt',[e.r+','+e.j]:'piv'}});
+      const x=e.a.one?$t(`${pos} ${pv}, w wierszu ${e.i+1}, stoi ${k.html()}. ${e.b.n>0?`Od wiersza ${e.i+1} odejmujemy wiersz ${e.r+1}${b.one?'':` pomnożony przez ${b.html()}`}`:`Do wiersza ${e.i+1} dodajemy wiersz ${e.r+1}${b.one?'':` pomnożony przez ${b.html()}`}`}; wtedy w tym miejscu wyjdzie 0. Liczymy element po elemencie:`,`${pos} ${pv}, in row ${e.i+1}, there is ${k.html()}. ${e.b.n>0?`We subtract row ${e.r+1}${b.one?'':` multiplied by ${b.html()}`} from row ${e.i+1}`:`We add row ${e.r+1}${b.one?'':` multiplied by ${b.html()}`} to row ${e.i+1}`}; then this position becomes 0. Entry by entry:`)
+        :$t(`${pos} ${pv}, w wierszu ${e.i+1}, stoi ${k.html()}. Żeby nie dzielić, mnożymy wiersz ${e.i+1} przez ${e.a.html()} i ${e.b.n>0?'odejmujemy':'dodajemy'} wiersz ${e.r+1}${b.one?'':` pomnożony przez ${b.html()}`}: ${e.a.html()}·${fmt(k)} ${e.b.n>0?'−':'+'} ${b.one?'':b.html()+'·'}${fmt(p)} = 0. Liczymy element po elemencie:`,`${pos} ${pv}, in row ${e.i+1}, there is ${k.html()}. To avoid dividing, we multiply row ${e.i+1} by ${e.a.html()} and ${e.b.n>0?'subtract':'add'} row ${e.r+1}${b.one?'':` multiplied by ${b.html()}`}: ${e.a.html()}·${fmt(k)} ${e.b.n>0?'−':'+'} ${b.one?'':b.html()+'·'}${fmt(p)} = 0. Entry by entry:`);
+      rowOp(e,$t(`Zerowanie: ${op}`,`Making a zero: ${op}`),x,{rows:{[e.r]:'src',[e.i]:'dst'},cells:{[e.i+','+e.j]:'tgt',[e.r+','+e.j]:'piv'}});
     }else if(e.k==='norm'){
       const p=e.B[e.i][e.j],frac=e.A[e.i].some(x=>x.d!==1);
-      rowOp(e,$t(`Na koniec: ${op}`,`Finally: ${op}`),(normed?'':normNote()+' ')+$t(`Dzielę wiersz ${e.i+1} przez ${p.html()}, żeby na schodku była 1.${frac?' Tu wychodzą ułamki — wynik po prostu jest ułamkowy.':''}`,`I divide row ${e.i+1} by ${p.html()} to get a 1 on the step.${frac?' Fractions appear here — the result simply is fractional.':''}`),{rows:{[e.i]:'dst'},cells:{[e.i+','+e.j]:'piv'}});
+      rowOp(e,$t(`Na koniec: ${op}`,`Finally: ${op}`),(normed?'':normNote()+' ')+$t(`Dzielimy wiersz ${e.i+1} przez ${p.html()}, żeby na schodku była 1.${frac?' Tu wychodzą ułamki, bo wynik jest ułamkowy.':''}`,`We divide row ${e.i+1} by ${p.html()} to get a 1 on the step.${frac?' Fractions appear here because the result is fractional.':''}`),{rows:{[e.i]:'dst'},cells:{[e.i+','+e.j]:'piv'}});
       normed=true;
     }
   }
@@ -890,20 +886,20 @@ function invFrames(A0,lab,resLab,sec){
   const n=A0.length,I=M.I(n),g=gaussFrames(A0.map((r,i)=>[...r,...I[i]]),n,{mode:'inv',lab,sec});
   if(!g.ok)return {frames:g.frames,inv:null};
   const R=g.A.map(r=>r.slice(n)),hl={};for(let i=0;i<n;i++)for(let j=n;j<2*n;j++)hl[i+','+j]='res';
-  g.frames.push({sec,t:$t(`Po lewej jest <i>I</i> — odczytuję ${resLab}`,`<i>I</i> on the left — reading off ${resLab}`),x:$t(`Przed kreską stoi macierz jednostkowa, więc za kreską jest szukana odwrotność. Kontrola: ${lab}·${resLab} musi dać <i>I</i>.`,`The identity matrix stands before the bar, so the inverse is after the bar. Check: ${lab}·${resLab} must give <i>I</i>.`),B:[bd(g.A,{bar:n,hl:{cells:hl}}),bd(R,{lab:resLab})],J:['→']});
+  g.frames.push({sec,t:$t(`Po lewej jest <i>I</i>, po prawej ${resLab}`,`<i>I</i> on the left, ${resLab} on the right`),x:$t(`Przed kreską stoi macierz jednostkowa, więc za kreską jest szukana odwrotność. Kontrola: ${lab}·${resLab} musi dać <i>I</i>.`,`The identity matrix stands before the bar, so the inverse is after the bar. Check: ${lab}·${resLab} must give <i>I</i>.`),B:[bd(g.A,{bar:n,hl:{cells:hl}}),bd(R,{lab:resLab})],J:['→']});
   return {frames:g.frames,inv:R};
 }
 function mulFrames(A,Bm,lab,sec=$t('Mnożenie','Multiplication')){
   const m=A.length,n=Bm.length,p=Bm[0].length,R=M.mul(A,Bm),fr=[],Cs=M.make(m,p,()=>PH);
   const bds=(a,b,c)=>[bd(A,{lab:lab.a,hl:a}),bd(Bm,{lab:lab.b,hl:b}),bd(Cs,{lab:lab.c,hl:c})];
-  fr.push({sec,t:$t(`Mnożę ${lab.a} · ${lab.b}`,`Multiplying ${lab.a} · ${lab.b}`),x:$t(`Wymiary: (${m}×<b>${n}</b>)·(<b>${n}</b>×${p}) — środkowe liczby się zgadzają, więc wynik ma wymiar ${m}×${p}. Każdy element wyniku to <b>wiersz</b> pierwszej macierzy „razy” <b>kolumna</b> drugiej: mnożę liczby parami i dodaję.`,`Sizes: (${m}×<b>${n}</b>)·(<b>${n}</b>×${p}) — the middle numbers match, so the result is ${m}×${p}. Each entry of the result is a <b>row</b> of the first matrix “times” a <b>column</b> of the second: multiply the numbers in pairs and add.`),B:bds(),J:['·','=']});
+  fr.push({sec,t:$t(`Iloczyn ${lab.a} · ${lab.b}`,`Multiplying ${lab.a} · ${lab.b}`),x:$t(`Wymiary: (${m}×<b>${n}</b>)·(<b>${n}</b>×${p}). Środkowe liczby się zgadzają, więc wynik ma wymiar ${m}×${p}. Każdy element wyniku to <b>wiersz</b> pierwszej macierzy razy <b>kolumna</b> drugiej: mnożymy liczby parami i dodajemy.`,`Sizes: (${m}×<b>${n}</b>)·(<b>${n}</b>×${p}). The middle numbers match, so the result is ${m}×${p}. Each entry of the result is a <b>row</b> of the first matrix times a <b>column</b> of the second: multiply the numbers in pairs and add.`),B:bds(),J:['·','=']});
   for(let i=0;i<m;i++)for(let j=0;j<p;j++){
     const U=[],C=[];let sum=F(0);
     for(let k=0;k<n;k++){const pr=A[i][k].mul(Bm[k][j]),t=.5+k*.9;sum=sum.add(pr);C.push(`${fmt(A[i][k])} · ${fmt(Bm[k][j])} = ${pr.html()}`);U.push({t,b:0,i,j:k,add:'pair'},{t,b:1,i:k,j,add:'pair'},{t,line:k})}
     const tS=.5+n*.9;
     C.push({h:`${A[i].map((_,k)=>fmt(A[i][k].mul(Bm[k][j]))).join(' + ')} = <b>${sum.html()}</b>`,full:true});
     U.push({t:tS,line:n},{t:tS+.3,b:2,i,j,v:sum.html()});
-    fr.push({sec,t:$t(`Element: wiersz ${i+1} · kolumna ${j+1}`,`Entry: row ${i+1} · column ${j+1}`),x:$t(`Biorę <b>wiersz ${i+1}</b> macierzy ${lab.a} i <b>kolumnę ${j+1}</b> macierzy ${lab.b}. Mnożę pierwszą liczbę z pierwszą, drugą z drugą… i wszystko dodaję.`,`I take <b>row ${i+1}</b> of ${lab.a} and <b>column ${j+1}</b> of ${lab.b}. I multiply the first number by the first, the second by the second… and add everything up.`),B:bds({rows:{[i]:'src'}},{cols:{[j]:'src'}},{cells:{[i+','+j]:'tgt'}}),J:['·','='],C,U});
+    fr.push({sec,t:$t(`Element: wiersz ${i+1} · kolumna ${j+1}`,`Entry: row ${i+1} · column ${j+1}`),x:$t(`Bierzemy <b>wiersz ${i+1}</b> macierzy ${lab.a} i <b>kolumnę ${j+1}</b> macierzy ${lab.b}. Mnożymy pierwszą liczbę przez pierwszą, drugą przez drugą i tak dalej, a potem wszystko dodajemy.`,`Take <b>row ${i+1}</b> of ${lab.a} and <b>column ${j+1}</b> of ${lab.b}. Multiply the first number by the first, the second by the second and so on, then add everything up.`),B:bds({rows:{[i]:'src'}},{cols:{[j]:'src'}},{cells:{[i+','+j]:'tgt'}}),J:['·','='],C,U});
     Cs[i][j]=sum.html();
   }
   fr.push({sec,t:$t('Iloczyn gotowy','Product ready'),x:$t(`Wszystkie ${m*p} ${pl(m*p,'element','elementy','elementów')} policzone.`,`All ${m*p} ${m*p===1?'entry':'entries'} computed.`),B:bds(null,null,{cells:Object.fromEntries(R.flatMap((r,i)=>r.map((_,j)=>[i+','+j,'res'])))}),J:['·','=']});
@@ -911,10 +907,10 @@ function mulFrames(A,Bm,lab,sec=$t('Mnożenie','Multiplication')){
 }
 function transFrames(A,la,lt,sec=$t('Transpozycja','Transpose')){
   const r=A.length,c=A[0].length,T=M.make(c,r,()=>PH),fr=[];
-  fr.push({sec,t:$t(`Transponuję ${la}`,`Transposing ${la}`),x:$t(`Wiersze zamieniam na kolumny: wymiar ${r}×${c} → ${c}×${r}. Pierwszy wiersz staje się pierwszą kolumną, drugi — drugą itd.`,`Rows become columns: size ${r}×${c} → ${c}×${r}. The first row becomes the first column, the second row the second column, and so on.`),B:[bd(A,{lab:la}),bd(T,{lab:lt})],J:['→']});
+  fr.push({sec,t:$t(`Transpozycja ${la}`,`Transposing ${la}`),x:$t(`Wiersze stają się kolumnami: wymiar ${r}×${c} → ${c}×${r}. Pierwszy wiersz staje się pierwszą kolumną, drugi drugą i tak dalej.`,`Rows become columns: size ${r}×${c} → ${c}×${r}. The first row becomes the first column, the second row the second column, and so on.`),B:[bd(A,{lab:la}),bd(T,{lab:lt})],J:['→']});
   for(let i=0;i<r;i++){
     const U=[];A[i].forEach((x,j)=>{const t=.5+j*.55;U.push({t,b:0,i,j,add:'pair'},{t:t+.1,b:1,i:j,j:i,v:x.html()})});
-    fr.push({sec,t:$t(`Wiersz ${i+1} → kolumna ${i+1}`,`Row ${i+1} → column ${i+1}`),x:$t(`Przepisuję wiersz ${i+1} jako kolumnę ${i+1}: pierwsza liczba idzie na górę, kolejne pod nią.`,`I copy row ${i+1} as column ${i+1}: the first number goes to the top, the rest below it.`),B:[bd(A,{lab:la,hl:{rows:{[i]:'src'}}}),bd(T,{lab:lt,hl:{cols:{[i]:'dst'}}})],J:['→'],U});
+    fr.push({sec,t:$t(`Wiersz ${i+1} → kolumna ${i+1}`,`Row ${i+1} → column ${i+1}`),x:$t(`Wiersz ${i+1} przepisujemy jako kolumnę ${i+1}: pierwsza liczba idzie na górę, kolejne pod nią.`,`Row ${i+1} is copied as column ${i+1}: the first number goes to the top, the rest below it.`),B:[bd(A,{lab:la,hl:{rows:{[i]:'src'}}}),bd(T,{lab:lt,hl:{cols:{[i]:'dst'}}})],J:['→'],U});
     A[i].forEach((x,j)=>{T[j][i]=x.html()});
   }
   return fr;
@@ -922,12 +918,12 @@ function transFrames(A,la,lt,sec=$t('Transpozycja','Transpose')){
 function scaleFrames(k,A,la,lr,sec=$t('Mnożenie przez liczbę','Multiplying by a number')){
   const R=M.scale(k,A),n=A.length*A[0].length,dt=n>9?.4:.55,U=[],C=[];let t=.5,q=0;
   A.forEach((r,i)=>r.forEach((x,j)=>{U.push({t,b:0,i,j,add:'pair'},{t,line:q},{t:t+.1,b:1,i,j,v:R[i][j].html()},{t:t+dt-.05,b:0,clear:true});C.push(`${fmt(k)}·${fmt(x)} = ${R[i][j].html()}`);t+=dt;q++}));
-  return [{sec,t:$t(`Mnożę ${la} przez ${k.html()}`,`Multiplying ${la} by ${k.html()}`),x:$t(`Mnożenie macierzy przez liczbę: <b>każdy</b> element mnożę przez ${k.html()}.`,`Multiplying a matrix by a number: I multiply <b>every</b> entry by ${k.html()}.`),B:[bd(A,{lab:la}),bd(A.map(r=>r.map(()=>PH)),{lab:lr})],J:['→'],C,U}];
+  return [{sec,t:$t(`${la} razy ${k.html()}`,`Multiplying ${la} by ${k.html()}`),x:$t(`Mnożenie macierzy przez liczbę: <b>każdy</b> element mnożymy przez ${k.html()}.`,`Multiplying a matrix by a number: <b>every</b> entry is multiplied by ${k.html()}.`),B:[bd(A,{lab:la}),bd(A.map(r=>r.map(()=>PH)),{lab:lr})],J:['→'],C,U}];
 }
 function sumFrames(A,Bm,sg,la,lb,lr){
   const R=sg>0?M.add(A,Bm):M.sub(A,Bm),o=sg>0?'+':'−',n=A.length*A[0].length,dt=n>9?.45:.6,U=[],C=[];let t=.5,q=0;
   A.forEach((r,i)=>r.forEach((x,j)=>{U.push({t,b:0,i,j,add:'pair'},{t,b:1,i,j,add:'pair'},{t,line:q},{t:t+.15,b:2,i,j,v:R[i][j].html()},{t:t+dt-.05,b:0,clear:true},{t:t+dt-.05,b:1,clear:true});C.push(`${fmt(x)} ${o} ${fmt(Bm[i][j])} = ${R[i][j].html()}`);t+=dt;q++}));
-  return [{sec:sg>0?$t('Dodawanie','Addition'):$t('Odejmowanie','Subtraction'),t:lr,x:$t(`${sg>0?'Dodaję':'Odejmuję'} element po elemencie — zawsze liczby z <b>tych samych miejsc</b>. Dlatego obie macierze muszą mieć ten sam wymiar (${A.length}×${A[0].length}).`,`${sg>0?'I add':'I subtract'} entry by entry — always the numbers in <b>the same positions</b>. That is why both matrices must have the same size (${A.length}×${A[0].length}).`),B:[bd(A,{lab:la}),bd(Bm,{lab:lb}),bd(A.map(r=>r.map(()=>PH)),{lab:lr})],J:[o,'='],C,U}];
+  return [{sec:sg>0?$t('Dodawanie','Addition'):$t('Odejmowanie','Subtraction'),t:lr,x:$t(`${sg>0?'Dodajemy':'Odejmujemy'} element po elemencie, zawsze liczby z <b>tych samych miejsc</b>. Dlatego obie macierze muszą mieć ten sam wymiar (${A.length}×${A[0].length}).`,`${sg>0?'Add':'Subtract'} entry by entry, always the numbers in <b>the same positions</b>. That is why both matrices must have the same size (${A.length}×${A[0].length}).`),B:[bd(A,{lab:la}),bd(Bm,{lab:lb}),bd(A.map(r=>r.map(()=>PH)),{lab:lr})],J:[o,'='],C,U}];
 }
 function addFrames(A,Bm,a,b){
   const ab=Math.abs(b),la=coef(a)+'<i>A</i>',lb=coef(ab)+'<i>B</i>',fr=[];
@@ -950,7 +946,7 @@ function detFrames(A,lab,sec,detailed){
   if(n===1)return [{sec,t:`${lab} = ${v.html()}`,x:$t('Wyznacznik macierzy 1×1 to jej jedyny element.','The determinant of a 1×1 matrix is its only entry.'),B:[bd(A,{det:true,lab})]}];
   if(n===2){
     const p=A[0][0].mul(A[1][1]),q=A[0][1].mul(A[1][0]);
-    return [{sec,t:$t(`Liczę ${lab}`,`Computing ${lab}`),x:$t('Wyznacznik 2×2: iloczyn na przekątnej „w prawo w dół” (zielony) <b>minus</b> iloczyn na drugiej przekątnej (czerwony).','A 2×2 determinant: the product on the diagonal going “down to the right” (green) <b>minus</b> the product on the other diagonal (red).'),B:[bd(A,{det:true,lab})],
+    return [{sec,t:$t(`Liczymy ${lab}`,`Computing ${lab}`),x:$t('Wyznacznik 2×2: iloczyn na przekątnej w prawo w dół (zielony) <b>minus</b> iloczyn na drugiej przekątnej (czerwony).','A 2×2 determinant: the product on the diagonal going down to the right (green) <b>minus</b> the product on the other diagonal (red).'),B:[bd(A,{det:true,lab})],
       C:[`${fmt(A[0][0])} · ${fmt(A[1][1])} = ${p.html()}`,`${fmt(A[0][1])} · ${fmt(A[1][0])} = ${q.html()}`,{h:`${lab} = ${fmt(p)} − ${fmt(q)} = <b>${v.html()}</b>`,full:true}],
       U:[{t:.4,b:0,i:0,j:0,add:'pos'},{t:.4,b:0,i:1,j:1,add:'pos'},{t:.6,line:0},{t:1.9,b:0,i:0,j:1,add:'neg'},{t:1.9,b:0,i:1,j:0,add:'neg'},{t:2.1,line:1},{t:3.2,line:2}]}];
   }
@@ -960,19 +956,19 @@ function detFrames(A,lab,sec,detailed){
   const fin={h:`${lab} = ${P.map(d=>fmt(val(d))).join(' + ')} − ${N.map(d=>fmt(val(d))).join(' − ')} = <b>${v.html()}</b>`,full:true};
   const base=hl=>bd(E,{det:true,lab,dimCols:[3,4],hl});
   if(detailed){
-    const fr=[{sec,t:$t(`Liczę ${lab} metodą Sarrusa`,`Computing ${lab} by Sarrus’ rule`),x:$t('Dopisuję obok dwie pierwsze kolumny (wyszarzone). Potem mnożę trzy liczby na każdej przekątnej: trzy przekątne „w prawo w dół” biorę z plusem, trzy „w lewo w dół” — z minusem.','I copy the first two columns next to the matrix (greyed out). Then I multiply the three numbers on each diagonal: the three diagonals going “down to the right” get a plus, the three going “down to the left” a minus.'),B:[base()]}];
-    dg.forEach(([c,d],k)=>fr.push({sec,t:$t(`${c==='pos'?'Przekątna z plusem':'Przekątna z minusem'} ${k%3+1} z 3`,`${c==='pos'?'Plus diagonal':'Minus diagonal'} ${k%3+1} of 3`),x:c==='pos'?$t('Mnożę trzy liczby na przekątnej w prawo w dół — ten iloczyn <b>dodam</b>.','I multiply the three numbers on the diagonal going down to the right — I will <b>add</b> this product.'):$t('Mnożę trzy liczby na przekątnej w lewo w dół — ten iloczyn <b>odejmę</b>.','I multiply the three numbers on the diagonal going down to the left — I will <b>subtract</b> this product.'),
+    const fr=[{sec,t:$t(`${lab} metodą Sarrusa`,`Computing ${lab} by Sarrus’ rule`),x:$t('Obok dopisujemy dwie pierwsze kolumny (wyszarzone). Potem mnożymy trzy liczby na każdej przekątnej: trzy przekątne w prawo w dół bierzemy z plusem, trzy w lewo w dół z minusem.','Copy the first two columns next to the matrix (greyed out). Then multiply the three numbers on each diagonal: the three diagonals going down to the right get a plus, the three going down to the left a minus.'),B:[base()]}];
+    dg.forEach(([c,d],k)=>fr.push({sec,t:$t(`${c==='pos'?'Przekątna z plusem':'Przekątna z minusem'} ${k%3+1} z 3`,`${c==='pos'?'Plus diagonal':'Minus diagonal'} ${k%3+1} of 3`),x:c==='pos'?$t('Mnożymy trzy liczby na przekątnej w prawo w dół; ten iloczyn <b>dodajemy</b>.','Multiply the three numbers on the diagonal going down to the right; this product is <b>added</b>.'):$t('Mnożymy trzy liczby na przekątnej w lewo w dół; ten iloczyn <b>odejmujemy</b>.','Multiply the three numbers on the diagonal going down to the left; this product is <b>subtracted</b>.'),
       B:[base({cells:Object.fromEntries(d.map(([i,j])=>[i+','+j,c]))})],C:lines.slice(0,k+1),U:[{t:.5,line:k}]}));
-    fr.push({sec,t:`${lab} = ${v.html()}`,x:$t('Dodaję iloczyny z plusem i odejmuję iloczyny z minusem.','I add the plus products and subtract the minus products.'),B:[base()],C:[...lines,fin],U:[{t:.6,line:6}]});
+    fr.push({sec,t:`${lab} = ${v.html()}`,x:$t('Dodajemy iloczyny z plusem i odejmujemy iloczyny z minusem.','Add the plus products and subtract the minus products.'),B:[base()],C:[...lines,fin],U:[{t:.6,line:6}]});
     return fr;
   }
   const U=[];dg.forEach(([c,d],k)=>{const t=.4+k*1.1;d.forEach(([i,j])=>U.push({t,b:0,i,j,add:c}));U.push({t:t+.2,line:k},{t:t+1,b:0,clear:true})});U.push({t:.4+6*1.1,line:6});
-  return [{sec,t:$t(`Liczę ${lab} (Sarrus)`,`Computing ${lab} (Sarrus)`),x:$t('Tak samo jak wyznacznik główny: trzy przekątne z plusem, trzy z minusem.','Same as the main determinant: three diagonals with a plus, three with a minus.'),B:[base()],C:[...lines,fin],U}];
+  return [{sec,t:$t(`${lab} (Sarrus)`,`Computing ${lab} (Sarrus)`),x:$t('Tak samo jak wyznacznik główny: trzy przekątne z plusem, trzy z minusem.','Same as the main determinant: three diagonals with a plus, three with a minus.'),B:[base()],C:[...lines,fin],U}];
 }
 function sysCheckFrame(Ab,names,vals){
   const nv=names.length,C=[],U=[];
-  Ab.forEach((r,i)=>{let s=F(0);const p=[];r.slice(0,nv).forEach((a,j)=>{if(!a.z){p.push(`${fmt(a)}·${fmt(vals[j])}`);s=s.add(a.mul(vals[j]))}});C.push({h:`${p.join(' + ')||'0'} = ${s.html()} &nbsp;${s.eq(r[nv])?'✓':'✗'}`,full:true});U.push({t:.6+i*.8,line:i})});
-  return {sec:$t('Sprawdzenie','Check'),t:$t('Sprawdzam — podstawiam do równań','Checking — substituting into the equations'),x:$t(`Wynik: ${names.map((v,j)=>`${nmHtml(v)} = ${vals[j].html()}`).join(', ')}. Wstawiam go do każdego równania — lewa strona musi dać wyraz wolny.`,`Result: ${names.map((v,j)=>`${nmHtml(v)} = ${vals[j].html()}`).join(', ')}. I put it into every equation — the left side must give the constant.`),S:sysHtml(abRows(Ab,nv),names),C,U};
+  Ab.forEach((r,i)=>{let s=F(0);const p=[];r.slice(0,nv).forEach((a,j)=>{if(!a.z){p.push(`${fmt(a)}·${fmt(vals[j])}`);s=s.add(a.mul(vals[j]))}});C.push({h:`${p.join(' + ')||'0'} = ${s.html()}${s.eq(r[nv])?'':' ≠ '+r[nv].html()}`,full:true});U.push({t:.6+i*.8,line:i})});
+  return {sec:$t('Sprawdzenie','Check'),t:$t('Sprawdzenie w równaniach','Checking in the equations'),x:$t(`Wynik: ${names.map((v,j)=>`${nmHtml(v)} = ${vals[j].html()}`).join(', ')}. Wstawiamy go do każdego równania; lewa strona musi dać wyraz wolny.`,`Result: ${names.map((v,j)=>`${nmHtml(v)} = ${vals[j].html()}`).join(', ')}. Put it into every equation; the left side must give the constant.`),S:sysHtml(abRows(Ab,nv),names),C,U};
 }
 function sysGaussFrames(Ab,names,sec=$t('Metoda Gaussa','Gaussian elimination'),noCheck){
   const nv=names.length,g=gaussFrames(Ab,nv,{mode:'sys',names,sec}),res=rref(Ab,nv),sol=sysSolution(res,nv),fr=g.frames;
@@ -980,22 +976,22 @@ function sysGaussFrames(Ab,names,sec=$t('Metoda Gaussa','Gaussian elimination'),
   rows.forEach((r,i)=>{if(isZ(r))hl.rows[i]='dim';else if(r.c.every(x=>x.z))hl.rows[i]='bad'});
   const keep=rows.filter(r=>!isZ(r)),nz=rows.length-keep.length;
   const kc=$t(`rz <i>A</i> = ${res.rank}, rz [<i>A</i> | <i>B</i>] = ${res.rankAb}, niewiadomych ${nv}.`,`rank <i>A</i> = ${res.rank}, rank [<i>A</i> | <i>B</i>] = ${res.rankAb}, unknowns: ${nv}.`);
-  const zt=nz?(nz===1?$t('Wiersz zerowy (0 = 0) wyszarzyłem — nic nie wnosi. ','I greyed out the zero row (0 = 0) — it adds nothing. '):$t('Wiersze zerowe (0 = 0) wyszarzyłem — nic nie wnoszą. ','I greyed out the zero rows (0 = 0) — they add nothing. ')):'';
-  let t=$t('Odczytuję wynik','Reading the result'),x,C=[],U;
-  if(res.type==='none'){const k=g.A.find(r=>r.slice(0,nv).every(x=>x.z)&&!r[nv].z)[nv].html();t=$t('Sprzeczność!','Contradiction!');x=$t(`Czerwony wiersz to równanie 0 = ${k} — a to nieprawda. ${kc} Rząd <i>A</i> jest mniejszy niż rząd [<i>A</i> | <i>B</i>], więc układ jest <b>sprzeczny</b>: nie ma rozwiązań.`,`The red row is the equation 0 = ${k} — which is false. ${kc} The rank of <i>A</i> is smaller than the rank of [<i>A</i> | <i>B</i>], so the system is <b>inconsistent</b>: it has no solutions.`)}
+  const zt=nz?(nz===1?$t('Wiersz zerowy (0 = 0) jest wyszarzony, bo nic nie wnosi. ','The zero row (0 = 0) is greyed out: it adds nothing. '):$t('Wiersze zerowe (0 = 0) są wyszarzone, bo nic nie wnoszą. ','The zero rows (0 = 0) are greyed out: they add nothing. ')):'';
+  let t=$t('Odczytujemy wynik','Reading the result'),x,C=[],U;
+  if(res.type==='none'){const k=g.A.find(r=>r.slice(0,nv).every(x=>x.z)&&!r[nv].z)[nv].html();t=$t('Sprzeczność','A contradiction');x=$t(`Czerwony wiersz to równanie 0 = ${k}, a to nieprawda. ${kc} Rząd <i>A</i> jest mniejszy niż rząd [<i>A</i> | <i>B</i>], więc układ jest <b>sprzeczny</b>: nie ma rozwiązań.`,`The red row is the equation 0 = ${k}, which is false. ${kc} The rank of <i>A</i> is smaller than the rank of [<i>A</i> | <i>B</i>], so the system is <b>inconsistent</b>: it has no solutions.`)}
   else if(res.type==='one'){x=$t(`${zt}Przed kreską jest macierz jednostkowa, więc każdy wiersz mówi wprost, ile wynosi jedna niewiadoma. ${kc} Rzędy są równe liczbie niewiadomych: <b>dokładnie jedno rozwiązanie</b>.`,`${zt}The identity matrix stands before the bar, so each row says directly what one unknown equals. ${kc} The ranks equal the number of unknowns: <b>exactly one solution</b>.`);C=[{h:sysHtml(keep,names),full:true}]}
-  else{x=$t(`${zt}${kc} Rzędy są równe, ale mniejsze od liczby niewiadomych: <b>nieskończenie wiele rozwiązań</b>. Niewiadome bez schodka (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) są dowolne — przenoszę je na prawą stronę.`,`${zt}${kc} The ranks are equal but smaller than the number of unknowns: <b>infinitely many solutions</b>. The unknowns without a pivot (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) are free — I move them to the right side.`);C=[{h:sysHtml(keep,names),full:true},{h:genSolHtml(sol,names),full:true}];U=[{t:1.4,line:1}]}
+  else{x=$t(`${zt}${kc} Rzędy są równe, ale mniejsze od liczby niewiadomych: <b>nieskończenie wiele rozwiązań</b>. Niewiadome bez schodka (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) są dowolne; przenosimy je na prawą stronę.`,`${zt}${kc} The ranks are equal but smaller than the number of unknowns: <b>infinitely many solutions</b>. The unknowns without a pivot (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) are free; we move them to the right side.`);C=[{h:sysHtml(keep,names),full:true},{h:genSolHtml(sol,names),full:true}];U=[{t:1.4,line:1}]}
   fr.push({sec,t,x,B:[bd(g.A,{bar:nv,hl})],C,U});
   if(res.type==='one'&&!noCheck)fr.push(sysCheckFrame(Ab,names,sol.forms.map(f=>f.k)));
   return fr;
 }
 function macFrames(Ab,names){
   const nv=names.length,m=Ab.length,A=Ab.map(r=>r.slice(0,nv)),bc=Ab.map(r=>[r[nv]]),sec=$t('Metoda macierzowa','Matrix method'),Xn=names.map(v=>[nmHtml(v)]),fr=[];
-  fr.push({sec,t:$t('Zapisuję układ jako <i>AX</i> = <i>B</i>','Writing the system as <i>AX</i> = <i>B</i>'),x:$t('<i>A</i> — współczynniki przy niewiadomych, <i>X</i> — kolumna niewiadomych, <i>B</i> — wyrazy wolne. Pomnóż w myślach wiersz <i>A</i> przez <i>X</i> — wyjdzie lewa strona jednego równania.','<i>A</i> — the coefficients of the unknowns, <i>X</i> — the column of unknowns, <i>B</i> — the constants. Multiply a row of <i>A</i> by <i>X</i> in your head — you get the left side of one equation.'),S:sysHtml(abRows(Ab,nv),names),B:[bd(A,{lab:'<i>A</i>'}),bd(Xn,{lab:'<i>X</i>'}),bd(bc,{lab:'<i>B</i>'})],J:['·','=']});
-  if(m!==nv){fr.push({sec,t:$t('<i>A</i> nie jest kwadratowa','<i>A</i> is not square'),x:$t(`<i>A</i> ma wymiar ${m}×${nv}, więc nie ma odwrotnej i metoda macierzowa nie działa. Liczę metodą Gaussa.`,`<i>A</i> is ${m}×${nv}, so it has no inverse and the matrix method does not work. I use Gaussian elimination.`)});return fr.concat(sysGaussFrames(Ab,names))}
-  fr.push({sec,t:$t('Wzór: <i>X</i> = <i>A</i><sup>−1</sup><i>B</i>','Formula: <i>X</i> = <i>A</i><sup>−1</sup><i>B</i>'),x:$t('Mnożę obie strony z <b>lewej</b> przez <i>A</i><sup>−1</sup>. Ponieważ <i>A</i><sup>−1</sup><i>A</i> = <i>I</i> i <i>IX</i> = <i>X</i>, zostaje <i>X</i> = <i>A</i><sup>−1</sup><i>B</i>. Najpierw policzę <i>A</i><sup>−1</sup>, potem pomnożę.','I multiply both sides on the <b>left</b> by <i>A</i><sup>−1</sup>. Since <i>A</i><sup>−1</sup><i>A</i> = <i>I</i> and <i>IX</i> = <i>X</i>, what remains is <i>X</i> = <i>A</i><sup>−1</sup><i>B</i>. First I compute <i>A</i><sup>−1</sup>, then I multiply.'),S:'<div class="eq"><i>A</i><sup>−1</sup><i>AX</i> = <i>A</i><sup>−1</sup><i>B</i> &nbsp;⇒&nbsp; <i>X</i> = <i>A</i><sup>−1</sup><i>B</i></div>'});
+  fr.push({sec,t:$t('Układ jako <i>AX</i> = <i>B</i>','The system as <i>AX</i> = <i>B</i>'),x:$t('<i>A</i> to współczynniki przy niewiadomych, <i>X</i> kolumna niewiadomych, a <i>B</i> wyrazy wolne. Wiersz <i>A</i> pomnożony przez <i>X</i> daje lewą stronę jednego równania.','<i>A</i> holds the coefficients of the unknowns, <i>X</i> is the column of unknowns and <i>B</i> the constants. A row of <i>A</i> times <i>X</i> gives the left side of one equation.'),S:sysHtml(abRows(Ab,nv),names),B:[bd(A,{lab:'<i>A</i>'}),bd(Xn,{lab:'<i>X</i>'}),bd(bc,{lab:'<i>B</i>'})],J:['·','=']});
+  if(m!==nv){fr.push({sec,t:$t('<i>A</i> nie jest kwadratowa','<i>A</i> is not square'),x:$t(`<i>A</i> ma wymiar ${m}×${nv}, więc nie ma odwrotnej i metoda macierzowa nie działa. Liczymy metodą Gaussa.`,`<i>A</i> is ${m}×${nv}, so it has no inverse and the matrix method does not work. We use Gaussian elimination.`)});return fr.concat(sysGaussFrames(Ab,names))}
+  fr.push({sec,t:$t('Wzór: <i>X</i> = <i>A</i><sup>−1</sup><i>B</i>','Formula: <i>X</i> = <i>A</i><sup>−1</sup><i>B</i>'),x:$t('Mnożymy obie strony z <b>lewej</b> przez <i>A</i><sup>−1</sup>. Ponieważ <i>A</i><sup>−1</sup><i>A</i> = <i>I</i> i <i>IX</i> = <i>X</i>, zostaje <i>X</i> = <i>A</i><sup>−1</sup><i>B</i>. Najpierw liczymy <i>A</i><sup>−1</sup>, potem mnożymy.','Multiply both sides on the <b>left</b> by <i>A</i><sup>−1</sup>. Since <i>A</i><sup>−1</sup><i>A</i> = <i>I</i> and <i>IX</i> = <i>X</i>, what remains is <i>X</i> = <i>A</i><sup>−1</sup><i>B</i>. First compute <i>A</i><sup>−1</sup>, then multiply.'),S:'<div class="eq"><i>A</i><sup>−1</sup><i>AX</i> = <i>A</i><sup>−1</sup><i>B</i> &nbsp;⇒&nbsp; <i>X</i> = <i>A</i><sup>−1</sup><i>B</i></div>'});
   const iv=invFrames(A,'<i>A</i>','<i>A</i><sup>−1</sup>',$t('Macierz odwrotna','Inverse matrix'));fr.push(...iv.frames);
-  if(!iv.inv){fr.push({sec,t:$t('Metoda macierzowa nie działa','The matrix method does not work'),x:$t('<i>A</i> nie jest odwracalna, więc układ jest sprzeczny albo ma nieskończenie wiele rozwiązań. Rozstrzygam metodą Gaussa.','<i>A</i> is not invertible, so the system is inconsistent or has infinitely many solutions. I decide with Gaussian elimination.')});return fr.concat(sysGaussFrames(Ab,names))}
+  if(!iv.inv){fr.push({sec,t:$t('Metoda macierzowa nie działa','The matrix method does not work'),x:$t('<i>A</i> nie jest odwracalna, więc układ jest sprzeczny albo ma nieskończenie wiele rozwiązań. Rozstrzyga metoda Gaussa.','<i>A</i> is not invertible, so the system is inconsistent or has infinitely many solutions. Gaussian elimination decides.')});return fr.concat(sysGaussFrames(Ab,names))}
   const mf=mulFrames(iv.inv,bc,{a:'<i>A</i><sup>−1</sup>',b:'<i>B</i>',c:'<i>X</i>'});fr.push(...mf.frames);
   fr.push({sec,t:$t('Wynik','Result'),x:$t('Każdy wiersz kolumny <i>X</i> to wartość jednej niewiadomej.','Each row of the column <i>X</i> is the value of one unknown.'),B:[bd(Xn,{lab:'<i>X</i>'}),bd(mf.R,{lab:''})],J:['='],C:[{h:names.map((v,j)=>`${nmHtml(v)} = ${mf.R[j][0].html()}`).join(', &nbsp; '),full:true}]});
   fr.push(sysCheckFrame(Ab,names,mf.R.map(r=>r[0])));
@@ -1003,40 +999,40 @@ function macFrames(Ab,names){
 }
 function cramerFrames(Ab,names){
   const nv=names.length,m=Ab.length,A=Ab.map(r=>r.slice(0,nv)),b=Ab.map(r=>r[nv]),bc=b.map(x=>[x]),sec=$t('Wzory Cramera','Cramer’s rule'),fr=[];
-  if(m!==nv||nv>3){fr.push({sec,t:$t('Tu Cramer się nie przyda','Cramer’s rule won’t help here'),x:m!==nv?$t(`Wzory Cramera działają tylko, gdy równań jest tyle, ile niewiadomych. Tu równań jest ${m}, a niewiadomych ${nv}. Liczę metodą Gaussa.`,`Cramer’s rule only works when there are as many equations as unknowns. Here there are ${m} equations and ${nv} unknowns. I use Gaussian elimination.`):$t(`Dla układu ${nv}×${nv} trzeba by liczyć wyznaczniki ${nv}×${nv} (rozwinięcie Laplace'a) — to bardzo długie. Wygodniej metodą Gaussa.`,`A ${nv}×${nv} system would need ${nv}×${nv} determinants (Laplace expansion) — very long. Gaussian elimination is easier.`),S:sysHtml(abRows(Ab,nv),names)});return fr.concat(sysGaussFrames(Ab,names))}
-  fr.push({sec,t:$t('Macierz współczynników i wyrazy wolne','Coefficient matrix and constants'),x:$t('Z układu wypisuję macierz współczynników <i>A</i> i kolumnę wyrazów wolnych <i>B</i>. Najpierw liczę wyznacznik główny <i>W</i> = det <i>A</i>.','From the system I write the coefficient matrix <i>A</i> and the column of constants <i>B</i>. First I compute the main determinant <i>D</i> = det <i>A</i>.'),S:sysHtml(abRows(Ab,nv),names),B:[bd(A,{lab:'<i>A</i>'}),bd(bc,{lab:'<i>B</i>'})]});
+  if(m!==nv||nv>3){fr.push({sec,t:$t('Tu Cramer się nie przyda','Cramer’s rule won’t help here'),x:m!==nv?$t(`Wzory Cramera działają tylko, gdy równań jest tyle, ile niewiadomych. Tu równań jest ${m}, a niewiadomych ${nv}. Liczymy metodą Gaussa.`,`Cramer’s rule only works when there are as many equations as unknowns. Here there are ${m} equations and ${nv} unknowns. We use Gaussian elimination.`):$t(`Dla układu ${nv}×${nv} trzeba by liczyć wyznaczniki ${nv}×${nv} (rozwinięcie Laplace’a), a to bardzo długie liczenie. Wygodniej metodą Gaussa.`,`A ${nv}×${nv} system would need ${nv}×${nv} determinants (Laplace expansion), which takes very long. Gaussian elimination is easier.`),S:sysHtml(abRows(Ab,nv),names)});return fr.concat(sysGaussFrames(Ab,names))}
+  fr.push({sec,t:$t('Macierz współczynników i wyrazy wolne','Coefficient matrix and constants'),x:$t('Z układu wypisujemy macierz współczynników <i>A</i> i kolumnę wyrazów wolnych <i>B</i>. Najpierw liczymy wyznacznik główny <i>W</i> = det <i>A</i>.','From the system we write the coefficient matrix <i>A</i> and the column of constants <i>B</i>. First we compute the main determinant <i>D</i> = det <i>A</i>.'),S:sysHtml(abRows(Ab,nv),names),B:[bd(A,{lab:'<i>A</i>'}),bd(bc,{lab:'<i>B</i>'})]});
   fr.push(...detFrames(A,$t('<i>W</i>','<i>D</i>'),sec,true));
   const W=detF(A);
-  if(W.z){fr.push({sec,t:$t('<i>W</i> = 0 — Cramer nie rozstrzyga','<i>D</i> = 0 — Cramer’s rule cannot decide'),x:$t('Wyznacznik główny jest zerem: układ jest sprzeczny albo ma nieskończenie wiele rozwiązań. Sprawdzam metodą Gaussa.','The main determinant is zero: the system is inconsistent or has infinitely many solutions. I check with Gaussian elimination.')});return fr.concat(sysGaussFrames(Ab,names))}
+  if(W.z){fr.push({sec,t:$t('<i>W</i> = 0, wzory Cramera nie rozstrzygają','<i>D</i> = 0: Cramer’s rule cannot decide'),x:$t('Wyznacznik główny jest zerem: układ jest sprzeczny albo ma nieskończenie wiele rozwiązań. Rozstrzyga metoda Gaussa.','The main determinant is zero: the system is inconsistent or has infinitely many solutions. Gaussian elimination decides.')});return fr.concat(sysGaussFrames(Ab,names))}
   const Ws=names.map((v,j)=>{
     const lab=`<i>${$t('W','D')}</i><sub>${nmHtml(v)}</sub>`,Aj=A.map((r,i)=>r.map((x,q)=>q===j?b[i]:x)),U=[];
     for(let i=0;i<nv;i++)U.push({t:.8+i*.5,b:0,i,j,v:b[i].html()},{t:.8+i*.5,b:1,i,j:0,add:'pair'});
-    fr.push({sec,t:$t(`${lab}: kolumnę przy ${nmHtml(v)} zastępuję wyrazami wolnymi`,`${lab}: replacing the column of ${nmHtml(v)} with the constants`),x:$t(`Biorę <i>A</i> i jej kolumnę ${j+1} (współczynniki przy ${nmHtml(v)}) zastępuję kolumną <i>B</i>. Reszta zostaje bez zmian.`,`I take <i>A</i> and replace its column ${j+1} (the coefficients of ${nmHtml(v)}) with the column <i>B</i>. The rest stays the same.`),B:[bd(A,{det:true,lab,hl:{cols:{[j]:'dst'}}}),bd(bc,{lab:'<i>B</i>'})],J:['←'],U});
+    fr.push({sec,t:$t(`${lab}: kolumna przy ${nmHtml(v)} zastąpiona wyrazami wolnymi`,`${lab}: replacing the column of ${nmHtml(v)} with the constants`),x:$t(`W macierzy <i>A</i> kolumnę ${j+1} (współczynniki przy ${nmHtml(v)}) zastępujemy kolumną <i>B</i>. Reszta zostaje bez zmian.`,`In <i>A</i>, column ${j+1} (the coefficients of ${nmHtml(v)}) is replaced with the column <i>B</i>. The rest stays the same.`),B:[bd(A,{det:true,lab,hl:{cols:{[j]:'dst'}}}),bd(bc,{lab:'<i>B</i>'})],J:['←'],U});
     fr.push(...detFrames(Aj,lab,sec,false));
     return detF(Aj);
   });
   const C=names.map((v,j)=>({h:$t(`${nmHtml(v)} = <span class="fr"><span><i>W</i><sub>${nmHtml(v)}</sub></span><span><i>W</i></span></span> = <span class="fr"><span>${Ws[j].str()}</span><span>${W.str()}</span></span> = <b>${Ws[j].div(W).html()}</b>`,`${nmHtml(v)} = <span class="fr"><span><i>D</i><sub>${nmHtml(v)}</sub></span><span><i>D</i></span></span> = <span class="fr"><span>${Ws[j].str()}</span><span>${W.str()}</span></span> = <b>${Ws[j].div(W).html()}</b>`),full:true}));
-  fr.push({sec,t:$t('Wzory Cramera','Cramer’s rule'),x:$t(`<i>W</i> = ${W.html()} ≠ 0, więc jest dokładnie jedno rozwiązanie. Każdą niewiadomą dostaję, dzieląc jej wyznacznik przez wyznacznik główny.`,`<i>D</i> = ${W.html()} ≠ 0, so there is exactly one solution. I get each unknown by dividing its determinant by the main determinant.`),C,U:C.map((_,k)=>({t:.5+k*.9,line:k}))});
+  fr.push({sec,t:$t('Wzory Cramera','Cramer’s rule'),x:$t(`<i>W</i> = ${W.html()} ≠ 0, więc jest dokładnie jedno rozwiązanie. Każdą niewiadomą dostajemy, dzieląc jej wyznacznik przez wyznacznik główny.`,`<i>D</i> = ${W.html()} ≠ 0, so there is exactly one solution. Each unknown is its determinant divided by the main determinant.`),C,U:C.map((_,k)=>({t:.5+k*.9,line:k}))});
   fr.push(sysCheckFrame(Ab,names,Ws.map(x=>x.div(W))));
   return fr;
 }
 const sysFrames=(Ab,names,method)=>method==='mac'?macFrames(Ab,names):method==='cra'?cramerFrames(Ab,names):sysGaussFrames(Ab,names);
 function symFrames(sol,inNum){
   const fr=[];
-  if(!inNum)fr.push({sec:$t('Równanie','Equation'),t:$t('Wyznaczam <i>X</i>','Finding <i>X</i>'),x:$t('Przekształcam równanie jak zwykłe równanie. Pilnuję jednego: mnożąc przez macierz, robię to <b>z tej samej strony</b> po obu stronach.','I transform it like an ordinary equation. One thing to watch: when multiplying by a matrix, I multiply both sides <b>from the same side</b>.'),C:[{h:sol.orig,full:true}],Cb:true});
-  sol.steps.forEach(s=>fr.push({sec:$t('Na literach','Symbolically'),t:s.final?$t('Wzór na <i>X</i>','Formula for <i>X</i>'):s.title,x:s.final?(inNum?$t('Teraz podstawiam liczby: liczę potrzebne macierze i mnożę po kolei od lewej.','Now I substitute the numbers: I compute the matrices I need and multiply from left to right.'):$t('Gotowe — to jest szukane <i>X</i>.','Done — this is the <i>X</i> we were looking for.')):s.why,
+  if(!inNum)fr.push({sec:$t('Równanie','Equation'),t:$t('Wyznaczamy <i>X</i>','Finding <i>X</i>'),x:$t('Przekształcamy je jak zwykłe równanie, pilnując jednego: mnożąc przez macierz, mnożymy obie strony <b>z tej samej strony</b>.','We transform it like an ordinary equation, with one rule: when multiplying by a matrix, both sides are multiplied <b>from the same side</b>.'),C:[{h:sol.orig,full:true}],Cb:true});
+  sol.steps.forEach(s=>fr.push({sec:$t('Na literach','Symbolically'),t:s.final?$t('Wzór na <i>X</i>','Formula for <i>X</i>'):s.title,x:s.final?(inNum?$t('Teraz podstawiamy liczby: liczymy potrzebne macierze i mnożymy po kolei od lewej.','Now substitute the numbers: compute the matrices needed and multiply from left to right.'):$t('To jest szukane <i>X</i>.','This is the <i>X</i> we were looking for.')):s.why,
     C:s.lines.map(l=>({h:l,full:true})),Cb:true,U:s.lines.slice(1).map((_,k)=>({t:1.3+k*1.4,line:k+1}))}));
   return fr;
 }
 function numFrames(T){
-  const {sol,env,X}=T,fr=[],secN=$t('Podstawiam liczby','Substituting numbers');
-  fr.push({sec:$t('Zadanie','Task'),t:$t('Wyznaczam <i>X</i>','Finding <i>X</i>'),x:$t('Najpierw przekształcam równanie <b>na literach</b> — tak jest mniej liczenia. Liczby podstawię dopiero na końcu.','First I transform the equation <b>symbolically</b> — it means less computing. I substitute the numbers only at the end.'),S:`<div class="eq">${sol.orig}</div>`,B:[...sol.letters].sort().map(c=>bd(env[c],{lab:`<i>${c}</i>`}))});
+  const {sol,env,X}=T,fr=[],secN=$t('Podstawiamy liczby','Substituting numbers');
+  fr.push({sec:$t('Zadanie','Task'),t:$t('Wyznaczamy <i>X</i>','Finding <i>X</i>'),x:$t('Najpierw przekształcamy równanie <b>na literach</b>, bo tak jest mniej liczenia. Liczby podstawiamy dopiero na końcu.','First we transform the equation <b>symbolically</b>, which means less computing. The numbers are substituted only at the end.'),S:`<div class="eq">${sol.orig}</div>`,B:[...sol.letters].sort().map(c=>bd(env[c],{lab:`<i>${c}</i>`}))});
   fr.push(...symFrames(sol,true));
   const vals=[],cache={};
   for(const f of sol.P.fs){
     const key=rFac(f);if(cache[key]){vals.push(cache[key]);continue}
     const bname=rFac({...f,i:false});let base;
-    if(f.sum){base=toMat(evalSum(f.sum,env),env.__n);fr.push({sec:secN,t:$t(`Liczę ${f.html}`,`Computing ${f.html}`),x:$t('Najpierw nawias. <i>I</i> to macierz jednostkowa, więc liczba przy <i>I</i> trafia tylko na przekątną.','First the bracket. <i>I</i> is the identity matrix, so a number next to <i>I</i> only goes onto the diagonal.'),B:[bd(base,{lab:f.html})]});
+    if(f.sum){base=toMat(evalSum(f.sum,env),env.__n);fr.push({sec:secN,t:$t(`Liczymy ${f.html}`,`Computing ${f.html}`),x:$t('Najpierw nawias. <i>I</i> to macierz jednostkowa, więc liczba przy <i>I</i> trafia tylko na przekątną.','First the bracket. <i>I</i> is the identity matrix, so a number next to <i>I</i> only goes onto the diagonal.'),B:[bd(base,{lab:f.html})]});
       if(f.t){fr.push(...transFrames(base,f.html,bname,secN));base=M.T(base)}}
     else{base=env[f.n];if(f.t){fr.push(...transFrames(base,`<i>${f.n}</i>`,bname,secN));base=M.T(base)}}
     let V=base;
@@ -1047,25 +1043,25 @@ function numFrames(T){
   for(let k=1;k<vals.length;k++){const mf=mulFrames(run,vals[k],{a:rProd(sol.P.fs.slice(0,k)),b:rFac(sol.P.fs[k]),c:rProd(sol.P.fs.slice(0,k+1))});fr.push(...mf.frames);run=mf.R}
   if(run&&!sol.P.c.one)fr.push(...scaleFrames(sol.P.c,run,rProd(sol.P.fs),'<i>X</i>'));
   fr.push({sec:$t('Wynik','Result'),t:$t('Mamy <i>X</i>','We have <i>X</i>'),x:$t(`Wzór <i>X</i> = ${rP(sol.P)} po podstawieniu liczb daje:`,`The formula <i>X</i> = ${rP(sol.P)} with the numbers substituted gives:`),B:[bd(X,{lab:'<i>X</i>'})]});
-  fr.push({sec:$t('Sprawdzenie','Check'),t:$t('Sprawdzam w równaniu','Checking in the equation'),x:$t(`Podstawiam <i>X</i> do ${sol.orig}. Obie strony muszą wyjść takie same.`,`I substitute <i>X</i> into ${sol.orig}. Both sides must come out the same.`),B:[bd(T.Lv,{lab:$t('lewa strona','left side')}),bd(T.Rv,{lab:$t('prawa strona','right side')})],J:[M.eq(T.Lv,T.Rv)?'=':'≠']});
+  fr.push({sec:$t('Sprawdzenie','Check'),t:$t('Sprawdzenie w równaniu','Checking in the equation'),x:$t(`Podstawiamy <i>X</i> do ${sol.orig}. Obie strony muszą wyjść takie same.`,`Substitute <i>X</i> into ${sol.orig}. Both sides must come out the same.`),B:[bd(T.Lv,{lab:$t('lewa strona','left side')}),bd(T.Rv,{lab:$t('prawa strona','right side')})],J:[M.eq(T.Lv,T.Rv)?'=':'≠']});
   return fr;
 }
 function linFrames(L){
   const d=L.d,sec=$t('Przez niewiadome','Using unknowns'),fr=[],Xn=M.make(d.r,d.c,(i,j)=>nmHtml(d.names[i*d.c+j])),nn=d.names.map(nmHtml).join(', ');
-  fr.push({sec,t:$t('Zapisuję <i>X</i> przez niewiadome','Writing <i>X</i> with unknowns'),x:$t(`Do działań w równaniu pasuje tylko wymiar ${d.r}×${d.c}, więc <i>X</i> ma ${d.r*d.c} ${pl(d.r*d.c,'element','elementy','elementów')} — każdy to osobna niewiadoma: ${nn}.`,`Only the size ${d.r}×${d.c} fits the operations in the equation, so <i>X</i> has ${d.r*d.c} ${d.r*d.c===1?'entry':'entries'} — each one is a separate unknown: ${nn}.`),S:`<div class="eq">${d.orig}</div>`,B:[bd(Xn,{lab:'<i>X</i>'}),...d.given.map(([c,V])=>bd(V,{lab:`<i>${c}</i>`}))]});
+  fr.push({sec,t:$t('Zapisujemy <i>X</i> przez niewiadome','Writing <i>X</i> with unknowns'),x:$t(`Do działań w równaniu pasuje tylko wymiar ${d.r}×${d.c}, więc <i>X</i> ma ${d.r*d.c} ${pl(d.r*d.c,'element','elementy','elementów')}; każdy to osobna niewiadoma: ${nn}.`,`Only the size ${d.r}×${d.c} fits the operations in the equation, so <i>X</i> has ${d.r*d.c} ${d.r*d.c===1?'entry':'entries'}; each one is a separate unknown: ${nn}.`),S:`<div class="eq">${d.orig}</div>`,B:[bd(Xn,{lab:'<i>X</i>'}),...d.given.map(([c,V])=>bd(V,{lab:`<i>${c}</i>`}))]});
   [[d.lL,d.LH,$t('lewą','left')],[d.lR,d.RH,$t('prawą','right')]].forEach(([lab,H,w])=>{
     const U=[];let t=.5;H.forEach((r,i)=>r.forEach((v,j)=>{U.push({t,b:0,i,j,v});t+=.6}));
-    fr.push({sec,t:$t(`Wymnażam ${w} stronę: ${lab}`,`Multiplying out the ${w} side: ${lab}`),x:$t(`Liczę ${lab} zwykłymi działaniami na macierzach (wiersz razy kolumna) — tylko zamiast liczb w <i>X</i> stoją niewiadome. Każdy element wyniku to wyrażenie z ${nn}.`,`I compute ${lab} with ordinary matrix operations (row times column) — only <i>X</i> contains unknowns instead of numbers. Each entry of the result is an expression in ${nn}.`),B:[bd(H.map(r=>r.map(()=>PH)),{lab})],U});
+    fr.push({sec,t:$t(`Wymnażamy ${w} stronę: ${lab}`,`Multiplying out the ${w} side: ${lab}`),x:$t(`Liczymy ${lab} zwykłymi działaniami na macierzach (wiersz razy kolumna), tylko zamiast liczb w <i>X</i> stoją niewiadome. Każdy element wyniku to wyrażenie z ${nn}.`,`We compute ${lab} with ordinary matrix operations (row times column); only <i>X</i> contains unknowns instead of numbers. Each entry of the result is an expression in ${nn}.`),B:[bd(H.map(r=>r.map(()=>PH)),{lab})],U});
   });
   const U=[],C=[];let t=.5,k=0;
   d.LH.forEach((r,i)=>r.forEach((v,j)=>{U.push({t,b:0,i,j,add:'pair'},{t,b:1,i,j,add:'pair'},{t,line:k},{t:t+.85,b:0,clear:true},{t:t+.85,b:1,clear:true});C.push({h:`${v} = ${d.RH[i][j]}`,full:true});t+=.9;k++}));
-  fr.push({sec,t:$t('Porównuję elementy','Comparing entries'),x:$t('Dwie macierze są równe, gdy mają równe elementy na tych samych miejscach. Każda para daje jedno równanie.','Two matrices are equal when their entries in the same positions are equal. Each pair gives one equation.'),B:[bd(d.LH,{lab:d.lL}),bd(d.RH,{lab:d.lR})],J:['='],C,U});
+  fr.push({sec,t:$t('Porównujemy elementy','Comparing entries'),x:$t('Dwie macierze są równe, gdy mają równe elementy na tych samych miejscach. Każda para daje jedno równanie.','Two matrices are equal when their entries in the same positions are equal. Each pair gives one equation.'),B:[bd(d.LH,{lab:d.lL}),bd(d.RH,{lab:d.lR})],J:['='],C,U});
   if(!d.rows.length){fr.push({sec,t:$t('Same tożsamości 0 = 0','Only identities 0 = 0'),x:$t(`Każda macierz ${d.r}×${d.c} spełnia to równanie.`,`Every ${d.r}×${d.c} matrix satisfies this equation.`)});return fr}
-  fr.push({sec,t:$t('Porządkuję układ','Tidying up the system'),x:$t('Niewiadome przenoszę na lewo, liczby na prawo. Równania typu 0 = 0 pomijam. Dostaję zwykły układ równań:','I move the unknowns to the left and the numbers to the right, and skip equations of the form 0 = 0. This gives an ordinary system of equations:'),S:sysHtml(d.rows,d.names)});
-  fr.push(...sysGaussFrames(d.Ab,d.names,$t('Rozwiązuję układ','Solving the system'),true));
-  if(L.type==='one')fr.push({sec:$t('Wynik','Result'),t:$t('Składam macierz <i>X</i>','Assembling the matrix <i>X</i>'),x:$t('Wstawiam znalezione liczby na miejsca niewiadomych.','I put the numbers found into the places of the unknowns.'),B:[bd(Xn,{lab:'<i>X</i>'}),bd(L.X,{lab:''})],J:['=']},
-    {sec:$t('Sprawdzenie','Check'),t:$t('Sprawdzam w równaniu','Checking in the equation'),x:$t(`Podstawiam <i>X</i> do ${d.orig}. Obie strony muszą wyjść takie same.`,`I substitute <i>X</i> into ${d.orig}. Both sides must come out the same.`),B:[bd(d.chk[0],{lab:$t('lewa strona','left side')}),bd(d.chk[1],{lab:$t('prawa strona','right side')})],J:['=']});
-  else if(L.type==='inf')fr.push({sec:$t('Wynik','Result'),t:$t('Nieskończenie wiele macierzy <i>X</i>','Infinitely many matrices <i>X</i>'),x:$t('Wstawiam rozwiązanie ogólne na miejsca niewiadomych. Każdy wybór parametrów daje inną macierz spełniającą równanie.','I put the general solution into the places of the unknowns. Every choice of the parameters gives a different matrix satisfying the equation.'),S:`<div class="eq">${d.gen}</div>`});
+  fr.push({sec,t:$t('Porządkujemy układ','Tidying up the system'),x:$t('Niewiadome przenosimy na lewo, liczby na prawo, a równania typu 0 = 0 pomijamy. Dostajemy zwykły układ równań:','Move the unknowns to the left and the numbers to the right, and skip equations of the form 0 = 0. This gives an ordinary system of equations:'),S:sysHtml(d.rows,d.names)});
+  fr.push(...sysGaussFrames(d.Ab,d.names,$t('Rozwiązujemy układ','Solving the system'),true));
+  if(L.type==='one')fr.push({sec:$t('Wynik','Result'),t:$t('Składamy macierz <i>X</i>','Assembling the matrix <i>X</i>'),x:$t('Wstawiamy znalezione liczby na miejsca niewiadomych.','Put the numbers found into the places of the unknowns.'),B:[bd(Xn,{lab:'<i>X</i>'}),bd(L.X,{lab:''})],J:['=']},
+    {sec:$t('Sprawdzenie','Check'),t:$t('Sprawdzenie w równaniu','Checking in the equation'),x:$t(`Podstawiamy <i>X</i> do ${d.orig}. Obie strony muszą wyjść takie same.`,`Substitute <i>X</i> into ${d.orig}. Both sides must come out the same.`),B:[bd(d.chk[0],{lab:$t('lewa strona','left side')}),bd(d.chk[1],{lab:$t('prawa strona','right side')})],J:['=']});
+  else if(L.type==='inf')fr.push({sec:$t('Wynik','Result'),t:$t('Nieskończenie wiele macierzy <i>X</i>','Infinitely many matrices <i>X</i>'),x:$t('Wstawiamy rozwiązanie ogólne na miejsca niewiadomych. Każdy wybór parametrów daje inną macierz spełniającą równanie.','Put the general solution into the places of the unknowns. Every choice of the parameters gives a different matrix satisfying the equation.'),S:`<div class="eq">${d.gen}</div>`});
   else fr.push({sec:$t('Wynik','Result'),t:$t('Brak rozwiązań','No solutions'),x:$t('Układ jest sprzeczny, więc żadna macierz <i>X</i> nie spełnia tego równania.','The system is inconsistent, so no matrix <i>X</i> satisfies this equation.')});
   return fr;
 }
@@ -1089,6 +1085,6 @@ function numbersSolve(src,env){
     }
   }
   const L=linSolve(src,env);
-  return {html:(why?$t(`<div class="tip">${why} Liczę <b>przez niewiadome</b> — ta metoda działa zawsze.</div>`,`<div class="tip">${why} I compute <b>using unknowns</b> — this method always works.</div>`):'')+L.html,X:L.X,
-    fr:()=>(why?[{sec:$t('Dlaczego nie wzorem?','Why not a formula?'),t:$t('Wzór tu nie zadziała','The formula will not work here'),x:why+$t(' Dlatego liczę <b>przez niewiadome</b> — ta metoda działa zawsze.',' So I compute <b>using unknowns</b> — this method always works.')}]:[]).concat(linFrames(L))};
+  return {html:(why?$t(`<div class="tip">${why} Liczymy <b>przez niewiadome</b>; ta metoda działa zawsze.</div>`,`<div class="tip">${why} We compute <b>using unknowns</b>; this method always works.</div>`):'')+L.html,X:L.X,
+    fr:()=>(why?[{sec:$t('Dlaczego nie wzorem?','Why not a formula?'),t:$t('Wzór tu nie zadziała','The formula will not work here'),x:why+$t(' Dlatego liczymy <b>przez niewiadome</b>; ta metoda działa zawsze.',' So we compute <b>using unknowns</b>; this method always works.')}]:[]).concat(linFrames(L))};
 }
