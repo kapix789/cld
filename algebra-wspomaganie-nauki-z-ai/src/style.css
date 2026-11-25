@@ -186,3 +186,9 @@ select.bad{border-color:var(--bad);background:var(--bad-soft)}
 .mat>.mk-bad{background:var(--bad-soft);color:var(--bad);border-radius:5px;font-weight:700}
 .mat>.mk-ok{color:var(--ok)}
 .msg .rules{margin:6px 0 0}
+/* język: html[data-lang] wybiera, które wersje tekstu są widoczne */
+html[data-lang="en"] [data-ln="pl"],html:not([data-lang="en"]) [data-ln="en"]{display:none!important}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.lang{display:flex;flex:none;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card)}
+.lang button{border:0;background:none;color:var(--mute);font:600 12.5px Inter,sans-serif;letter-spacing:.04em;padding:6px 11px;cursor:pointer}
+.lang button.on{background:var(--acc);color:var(--on-acc)}

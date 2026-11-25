@@ -5,7 +5,9 @@ Trener algebry liniowej w przeglądarce: macierze, równania macierzowe, układy
 **Otwórz:** https://kapix789.github.io/cld/algebra-wspomaganie-nauki-z-ai/ (po scaleniu z gałęzią `main`)
 albo pobierz [`index.html`](index.html) i otwórz go z dysku — działa offline (poza czcionkami).
 
-Zbudowane z pomocą AI (Claude).
+Zbudowane z pomocą AI (Claude). Przełącznik **PL / EN** w nagłówku zmienia język całego trenera — interfejsu, poleceń, rozwiązań i animacji (wybór zapamiętuje przeglądarka).
+
+> **English:** a linear-algebra trainer (matrices, matrix equations, systems of equations, determinants, rank) with animated step-by-step solutions, a test mode, progress tracking and a checker that finds the mistake in your own Gaussian elimination. Switch to English with the **PL / EN** toggle in the header.
 
 ## Co jest w środku
 
@@ -27,19 +29,22 @@ Przy każdym zadaniu jest przycisk **▶ Krok po kroku** — animacja pokazuje n
 Wszystkie tematy są w jednym rejestrze — [`src/topics.js`](src/topics.js), tablica `TOPICS`. Ćwiczenia, Sprawdzian, Postęp i Powtórki biorą je stamtąd automatycznie, w interfejsie nic więcej nie trzeba zmieniać.
 
 ```js
-{ id:'slad', sec:'Działania', name:'Ślad macierzy', gen: () => {
+{ id:'slad', sec:'Działania', name:'Ślad macierzy', en:'Trace of a matrix', gen: () => {
     const A = M.make(3, 3, () => F(rnd(-5, 9)));           // losowa macierz 3×3 (ułamki Fr)
     const tr = A.reduce((s, r, i) => s.add(r[i]), F(0));  // suma przekątnej
     return {
-      q: 'Oblicz ślad macierzy <i>A</i>',                  // polecenie
+      q: $t('Oblicz ślad macierzy <i>A</i>', 'Compute the trace of <i>A</i>'),  // polecenie w obu językach
       body: givenH([['A', A]]),                           // treść zadania
       ans: { kind: 'num', v: tr, lab: 'tr <i>A</i>' },    // oczekiwana odpowiedź
-      sol: `<p>Ślad to suma liczb na przekątnej.</p><div class="line res">tr <i>A</i> = ${tr.html()}</div>`,
-      hint: 'Dodaj liczby na przekątnej.',                // opcjonalnie
+      sol: $t('<p>Ślad to suma liczb na przekątnej.</p>', '<p>The trace is the sum of the diagonal.</p>')
+           + `<div class="line res">tr <i>A</i> = ${tr.html()}</div>`,
+      hint: $t('Dodaj liczby na przekątnej.', 'Add up the diagonal.'),  // opcjonalnie
       // fr: () => [...klatki animacji...]               // opcjonalnie, format w engine.js
     };
 }},
 ```
+
+Teksty widoczne dla ucznia pisz w obu językach przez `$t('po polsku', 'in English')` — funkcja zwraca wersję w bieżącym języku. Pole `en` to angielska nazwa tematu; nowy dział dopisz też do `SEC_EN` w `topics.js`. Statyczne teksty w `src/page.html` mają postać `⟪po polsku⫽in English⟫` (a całe bloki `⟦…⫽…⟧`) — `build.py` zamienia je na dwie wersje.
 
 Rodzaje odpowiedzi (`ans.kind`): `mat` (siatka pól), `num` (liczba), `formula` (wzór na *X*), `sys` (układ: ile rozwiązań + wartości), `param` (dyskusja układu z parametrem). Opis pól jest na początku `topics.js`. `id` musi być stałe — pod nim zapisuje się postęp.
 
@@ -63,4 +68,4 @@ python3 build.py              # po każdej zmianie w src/ — odświeża index.h
 node tests/engine.test.js     # losuje zadania z każdego tematu i sprawdza je (wymaga Node 18+)
 ```
 
-Test sprawdza m.in., że każdy temat poprawną odpowiedź ocenia na 100%, że klatki animacji są spójne, że rozwinięcie Laplace'a zgadza się z eliminacją i że „Znajdź błąd” wskazuje właściwą komórkę.
+Test sprawdza m.in. (w obu językach), że każdy temat poprawną odpowiedź ocenia na 100%, że w trybie angielskim nie zostaje polski tekst, że klatki animacji są spójne, że rozwinięcie Laplace'a zgadza się z eliminacją i że „Znajdź błąd” wskazuje właściwą komórkę.
