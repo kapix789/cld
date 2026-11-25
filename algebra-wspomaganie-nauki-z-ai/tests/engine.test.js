@@ -2,7 +2,7 @@
 const fs=require('fs'),path=require('path');
 const src=f=>fs.readFileSync(path.join(__dirname,'..','src',f),'utf8');
 const E=new Function(src('engine.js')+'\n'+src('topics.js')+`
-return {LANG,F,M,rref,genSys,sysFrames,sysMethodHtml,parseSystem,linSolve,numbersSolve,solve,genNum,genLin,NT,numFrames,genTask,genEq,symFrames,
+return {LANG,F,M,rref,sysSolution,genExamSys,sysAns,checkGeneral,genSys,sysFrames,sysMethodHtml,parseSystem,linSolve,numbersSolve,solve,genNum,genLin,NT,numFrames,genTask,genEq,symFrames,
   TOPICS,SECTIONS,ansCheck,ansHtml,ansShow,inpShow,checkChain,chainReport,parseChain,mulReport,EX_CHAIN,detF,laplaceTerms,genParam,polyFromDet,polyAt,paramAt,rankOf,genRank,checkAnswer,rP,unimod2};`)();
 const {F,M}=E;let fails=0,checks=0;
 const ok=(c,m)=>{checks++;if(!c){fails++;if(fails<25)console.log('✗',m)}};
@@ -29,10 +29,20 @@ function goodInput(ans){
   if(ans.kind==='mat')return ans.M.flat().map(s);
   if(ans.kind==='num')return s(ans.v);
   if(ans.kind==='formula')return E.rP(ans.sol.P).replace(/<sup>T<\/sup>/g,'^T').replace(/<sup>−1<\/sup>/g,'^-1').replace(/<sup>(\d)<\/sup>/g,'^$1').replace(/<span class="fr"><span>(\d+)<\/span><span>(\d+)<\/span><\/span>/g,'$1/$2').replace(/<[^>]+>/g,'').replace(/−/g,'-').replace(/\s/g,'');
-  if(ans.kind==='sys')return {type:ans.type,vals:ans.type==='one'?ans.vals.map(s):ans.names.map(()=> '')};
+  if(ans.kind==='sys')return {type:ans.type,vals:ans.type==='one'?ans.vals.map(s):ans.type==='inf'?genText(ans):ans.names.map(()=> '')};
   if(ans.kind==='param')return [0,1,2].map(k=>ans.roots[k]?{a:s(ans.roots[k].a),type:ans.roots[k].type}:{a:'',type:''});
 }
 
+// rozwiązanie ogólne jako tekst wpisany przez ucznia (zmienne swobodne zostają puste)
+function genText(ans,keepFree){
+  const nv=ans.names.length,sol=E.sysSolution(E.rref(ans.Ab,nv),nv);
+  return ans.names.map((v,j)=>{
+    if(sol.free.includes(j))return keepFree?v:'';
+    const f=sol.forms[j];let t=f.k.z?'':s(f.k);
+    sol.free.forEach(q=>{const c=f.c[q];if(c.z)return;const a=c.abs();t+=(c.n<0?'-':(t?'+':''))+(a.one?'':a.str())+ans.names[q]});
+    return t||'0';
+  });
+}
 // 1. każdy temat z rejestru: generuje, sprawdza poprawną odpowiedź na 100%, ma rozwiązanie i klatki
 const ids=new Set();
 for(const t of E.TOPICS){
@@ -72,6 +82,34 @@ ok(/Błędnych elementów: 1/.test(E.mulReport(mat([[2,1],[-1,3]]),mat([[1,4],[2
 for(let k=0;k<E.NT.length;k++){const t=E.NT[k];if(t.lin){frames(E.genLin(t).fr(),'lin '+t.eq);continue}for(const n of [2,3])for(const rect of [false,true]){const T=E.genNum(n,k,rect);ok(M.eq(T.Lv,T.Rv),`X nie spełnia ${t.eq}`)}}
 for(const sz of [2,3,4,'r'])for(const mode of ['one','any']){const G=E.genSys(sz,mode);for(const me of ['gauss','mac','cra'])frames(E.sysFrames(G.Ab,G.names,me),`układ ${sz} ${mode} ${me}`)}
 for(let i=0;i<20;i++){const q=E.genEq(1+i%3);try{const so=E.solve(q);ok(E.checkAnswer(so,goodInput({kind:'formula',sol:so})),'wzór z rozwiązania nie przechodzi: '+q)}catch(e){if(!e.lin)ok(false,q+' '+e.message)}}
+// 6b. układy jak na sprawdzianie i rozwiązanie ogólne
+const types={};
+for(let i=0;i<40;i++){
+  const g=E.genExamSys(),a=E.sysAns(g.Ab,g.names);types[a.type]=(types[a.type]||0)+1;
+  ok(g.names.join()==='x1,x2,x3,x4'&&g.Ab.length===4,'egzamin: zły kształt układu');
+  ok(g.Ab.flat().every(x=>Math.abs(x.n)<=24&&x.d===1),'egzamin: zbyt duże albo ułamkowe liczby');
+  if(a.type==='inf'){
+    ok(E.checkGeneral(a,genText(a)).score===1,'egzamin: poprawne rozwiązanie ogólne odrzucone');
+    ok(E.checkGeneral(a,genText(a,true)).score===1,'egzamin: rozwiązanie z wpisanymi parametrami odrzucone');
+    const bad=genText(a);const j=bad.findIndex(x=>x);bad[j]=bad[j]+'+1';ok(E.checkGeneral(a,bad).score<1,'egzamin: błędne rozwiązanie ogólne zaliczone');
+    ok(E.checkGeneral(a,a.names.map(()=> '')).score===.5,'egzamin: puste rozwiązanie ogólne nie daje połowy punktu');
+  }
+}
+ok(types.none>3&&types.inf>3,'egzamin: za mało układów sprzecznych/nieoznaczonych '+JSON.stringify(types));
+{ // ten sam zbiór rozwiązań przy innym wyborze parametrów: x+y+z=1, x-y=0 → z swobodne albo x swobodne
+  const sy=E.parseSystem('x + y + z = 1\nx - y = 0'),a=E.sysAns(sy.Ab,sy.names);
+  ok(E.checkGeneral(a,['','x','1-2x']).score===1,'rozwiązanie ogólne z x jako parametrem odrzucone');
+  ok(E.checkGeneral(a,['1/2-1/2z','1/2-1/2z','']).score===1,'rozwiązanie ogólne z z jako parametrem odrzucone');
+  ok(E.checkGeneral(a,['','','']).score===.5,'puste pola: zła punktacja');
+  ok(E.checkGeneral(a,['1/2-1/2z','','']).score<1,'dwa parametry zamiast jednego zaliczone');
+  ok(/nieznana zmienna/.test(E.checkGeneral(a,['1-2w','x','']).msg),'nieznana zmienna nie wykryta');
+}
+{ // układ z kartki (Spr. nr 6) — sprzeczny
+  const sy=E.parseSystem('3x1 + 2x2 + 5x3 + 4x4 = 3\n2x1 + 3x2 + 6x3 + 8x4 = 5\n4x1 - 4x2 - 4x3 - 16x4 = -8\n4x1 + x2 + 4x3 = 2'),a=E.sysAns(sy.Ab,sy.names);
+  ok(a.type==='none'&&a.rank===2,'układ ze sprawdzianu: oczekiwano sprzecznego, rz A = 2');
+  const sy2=E.parseSystem('3x1 + 2x2 + 5x3 + 4x4 = 3\n2x1 + 3x2 + 6x3 + 8x4 = 5\n4x1 - 4x2 - 4x3 - 16x4 = -8\n4x1 + x2 + 4x3 = 1'),a2=E.sysAns(sy2.Ab,sy2.names);
+  ok(a2.type==='inf'&&E.checkGeneral(a2,genText(a2)).score===1,'wersja nieoznaczona układu ze sprawdzianu');
+}
 // 7. tryb angielski: każdy temat działa i nie zostaje w nim polski tekst
 E.LANG.cur='en';
 const PLC=/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ„]/;

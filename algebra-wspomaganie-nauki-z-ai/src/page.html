@@ -103,17 +103,15 @@
 <div class="row" style="margin-top:0"><span class="lbl">⟪Rozmiar⫽Size⟫</span>
 <button class="chip" data-ss="2">2×2</button><button class="chip" data-ss="3">3×3</button><button class="chip" data-ss="4">4×4</button><button class="chip" data-ss="r">⟪nietypowy⫽non-square⟫ (m ≠ n)</button></div>
 <div class="row"><span class="lbl">⟪Rodzaj⫽Type⟫</span>
-<button class="chip" data-sm="one">⟪zawsze jedno rozwiązanie⫽always one solution⟫</button><button class="chip" data-sm="any">⟪losowy (też sprzeczne i nieoznaczone)⫽random (also inconsistent and underdetermined)⟫</button></div>
+<button class="chip" data-sm="one">⟪zawsze jedno rozwiązanie⫽always one solution⟫</button><button class="chip" data-sm="any">⟪losowy (też sprzeczne i nieoznaczone)⫽random (also inconsistent and underdetermined)⟫</button><button class="chip" data-sm="exam">⟪jak na sprawdzianie: 4×4, „jeśli to możliwe”⫽exam style: 4×4, “if possible”⟫</button></div>
 <div class="row"><span class="lbl">⟪Metoda⫽Method⟫</span>
 <button class="chip" data-me="gauss">Gauss</button><button class="chip" data-me="mac">⟪macierzowa⫽matrix⟫ <span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span></button><button class="chip" data-me="cra">Cramer</button></div>
 </div>
 
 <div class="card">
-<div class="row" style="margin-top:0"><span class="q">⟪Rozwiąż układ równań⫽Solve the system of equations⟫</span><span class="score" id="sScore"></span></div>
+<div class="row" style="margin-top:0"><span class="q" id="sQ"></span><span class="score" id="sScore"></span></div>
 <div class="sysbox" id="sEq"></div>
-<p class="mute" style="margin:6px 0">⟪Ile rozwiązań ma ten układ?⫽How many solutions does this system have?⟫</p>
-<div class="chips" id="sType"><button class="chip" data-st="one">⟪jedno⫽one⟫</button><button class="chip" data-st="inf">⟪nieskończenie wiele⫽infinitely many⟫</button><button class="chip" data-st="none">⟪brak — układ sprzeczny⫽none — inconsistent⟫</button></div>
-<div class="nums" id="sVals" style="margin-top:12px"></div>
+<div id="sAns" style="margin-top:6px"></div>
 <div class="row">
 <button class="btn" id="sCheck">⟪Sprawdź⫽Check⟫</button>
 <button class="btn ghost" id="sHint">⟪Podpowiedź⫽Hint⟫</button>
