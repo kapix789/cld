@@ -3,6 +3,7 @@ const $=s=>document.querySelector(s);
 // język: zapamiętany wybór (albo polski), ustawiony zanim cokolwiek się wyrenderuje
 try{const v=localStorage.getItem('algebra-lang');if(v==='en'||v==='pl')LANG.cur=v}catch(e){}
 document.documentElement.dataset.lang=LANG.cur;document.documentElement.lang=LANG.cur;
+try{if(localStorage.getItem('algebra-bez-ulamkow')==='0')OPT.noFrac=false}catch(e){}
 const show=(el,cls,html)=>{el.className='msg '+cls;el.innerHTML=html};
 const INP='autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text"';
 const grid=(r,c)=>`<span class="mat gin" style="grid-template-columns:repeat(${c},auto)">${Array.from({length:r*c},()=>`<input ${INP}>`).join('')}</span>`;
@@ -39,7 +40,7 @@ function newNum(){
     $('#ntNote').innerHTML=$t(`Tego równania nie rozwiążesz wzorem (${tpl.note()}). Liczysz przez niewiadome: <i>X</i> = [<i>x y</i>; <i>z t</i>] → układ równań. Rozmiar i kształt nie mają tu znaczenia.`,`This equation can’t be solved with a formula (${tpl.note()}). You solve it using unknowns: <i>X</i> = [<i>x y</i>; <i>z t</i>] → a system of equations. Size and shape do not matter here.`);
   }else{
     const T=genNum(nSize,idx,nShape==='rect');
-    nTask={fr:()=>numFrames(T),orig:T.sol.orig,letters:[...T.sol.letters].sort(),env:T.env,X:T.X,solHtml:numSolHtml(T),
+    nTask={fr:()=>numFrames(T),orig:T.sol.orig,letters:[...T.sol.letters].sort(),env:T.env,X:T.X,get solHtml(){return numSolHtml(T)},
       hint:$t(`Najpierw na literach: <span class="f"><i>X</i> = ${rP(T.sol.P)}</span>. Potem policz odwrotność metodą Gaussa i wymnóż.`,`First symbolically: <span class="f"><i>X</i> = ${rP(T.sol.P)}</span>. Then compute the inverse by Gaussian elimination and multiply.`)};
     $('#ntNote').innerHTML=nShape==='rect'?$t(`Prostokątna <i>X</i>: wymiar wynika z działań. Odwracasz tylko macierze kwadratowe — te, które stoją przy <i>X</i>.`,`Rectangular <i>X</i>: its size follows from the operations. You only invert square matrices — the ones next to <i>X</i>.`):'';
   }
@@ -152,21 +153,23 @@ $('#numRnd').onclick=()=>{const had=!sol||$('#numOut').innerHTML;curLetters.forE
 $('#openEx2').onclick=()=>{$('#eqIn').value='AX=XA';mxVals.A='1 1\n0 1';setTab('rownania');runSolve();$('#numCard').scrollIntoView()};
 
 // ---- układy równań ----
-let sSize=3,sMode='one',sMeth='gauss',sTask=null,sPick='one',sScore={ok:0,all:0},sCounted=false,sysShown=false;
+let sSize=3,sMode='one',sMeth='gauss',sTask=null,sScore={ok:0,all:0},sCounted=false,sysShown=false;
 const chipsOn=(attr,val)=>document.querySelectorAll(`[data-${attr}]`).forEach(b=>b.classList.toggle('on',b.dataset[attr]===String(val)));
-function setPick(t){sPick=t;chipsOn('st',t);$('#sVals').hidden=t!=='one'}
+const sysTid=()=>sMode==='exam'?'sysexam':sMode==='any'&&sSize!=='r'?'sysany':{2:'sys2',3:'sys3',4:'sys4',r:'sysrect'}[sSize];
 function renderSysSol(){sTask.out=sysMethodHtml(sTask.Ab,sTask.names,sMeth);$('#sSolBox').innerHTML=sTask.out.html}
 function newSys(){
   chipsOn('ss',sSize);chipsOn('sm',sMode);chipsOn('me',sMeth);
-  sTask=genSys(sSize,sMode);sCounted=false;
+  document.querySelectorAll('[data-ss]').forEach(b=>{b.disabled=sMode==='exam'});
+  sTask=sMode==='exam'?genExamSys():genSys(sSize,sMode);sCounted=false;
+  sTask.ans=sysAns(sTask.Ab,sTask.names);
+  $('#sQ').innerHTML=sMode==='exam'?$t('Jeśli to możliwe, rozwiąż układ równań','Solve the system of equations, if possible'):$t('Rozwiąż układ równań','Solve the system of equations');
   $('#sEq').innerHTML=sysHtml(abRows(sTask.Ab,sTask.names.length),sTask.names);
-  $('#sVals').innerHTML=sTask.names.map((v,j)=>`<label class="ans-in" for="sv${j}"><span>${nmHtml(v)} =</span><input id="sv${j}" ${INP}></label>`).join('');
-  setPick('one');$('#sMsg').className='msg';$('#sSolBox').className='sol';renderSysSol();
+  $('#sAns').innerHTML=ansHtml(sTask.ans,'sa');
+  $('#sMsg').className='msg';$('#sSolBox').className='sol';renderSysSol();
 }
 document.querySelectorAll('[data-ss]').forEach(b=>b.onclick=()=>{sSize=b.dataset.ss==='r'?'r':+b.dataset.ss;newSys()});
 document.querySelectorAll('[data-sm]').forEach(b=>b.onclick=()=>{sMode=b.dataset.sm;newSys()});
 document.querySelectorAll('[data-me]').forEach(b=>b.onclick=()=>{sMeth=b.dataset.me;chipsOn('me',sMeth);renderSysSol();if(sysShown)runSys()});
-document.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>setPick(b.dataset.st));
 $('#sNew').onclick=newSys;
 $('#sSol').onclick=()=>$('#sSolBox').classList.toggle('on');
 $('#sHint').onclick=()=>{
@@ -175,21 +178,16 @@ $('#sHint').onclick=()=>{
     gauss:$t(`Zapisz macierz rozszerzoną ${augHtml(A,bc)} i zeruj kolumna po kolumnie. Wiersz [0 … 0 | liczba ≠ 0] oznacza sprzeczność, kolumna bez schodka — parametr.`,`Write the augmented matrix ${augHtml(A,bc)} and make zeros column by column. A row [0 … 0 | number ≠ 0] means a contradiction, a column without a pivot means a parameter.`),
     mac:$t(`Zapisz układ jako <span class="f"><i>AX</i> = <i>B</i></span>: ${matH(A)}·${colH(sTask.names)} = ${matH(bc)}. Jeśli <i>A</i> jest kwadratowa i odwracalna, to <span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>.`,`Write the system as <span class="f"><i>AX</i> = <i>B</i></span>: ${matH(A)}·${colH(sTask.names)} = ${matH(bc)}. If <i>A</i> is square and invertible, then <span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>.`),
     cra:$t(`Policz <span class="f"><i>W</i> = det <i>A</i></span>. Gdy <span class="f"><i>W</i> ≠ 0</span>: <span class="f"><i>x</i> = <i>W<sub>x</sub></i> / <i>W</i></span>, gdzie w <i>W<sub>x</sub></i> kolumnę przy <i>x</i> zastępujesz kolumną wyrazów wolnych. Gdy <span class="f"><i>W</i> = 0</span>, rozstrzyga Gauss.`,`Compute <span class="f"><i>D</i> = det <i>A</i></span>. If <span class="f"><i>D</i> ≠ 0</span>: <span class="f"><i>x</i> = <i>D<sub>x</sub></i> / <i>D</i></span>, where in <i>D<sub>x</sub></i> the column of <i>x</i> is replaced by the column of constants. If <span class="f"><i>D</i> = 0</span>, Gaussian elimination decides.`)
-  }[sMeth]);
+  }[sMeth]+(sMode==='exam'?$t(' Na sprawdzianie często któreś równanie jest kombinacją innych — porównaj wtedy prawe strony.',' In tests one equation is often a combination of others — then compare the right-hand sides.'):''));
 };
 $('#sCheck').onclick=()=>{
-  const out=sTask.out,msg=$('#sMsg'),ins=[...document.querySelectorAll('#sVals input')];let ok=false,counted=true;
-  ins.forEach(el=>el.classList.remove('ok','bad'));
-  if(sPick!==out.type)show(msg,'bad',$t(`✗ To nie ten przypadek. Porównaj rz <i>A</i> i rz [<i>A</i> | <i>B</i>] z liczbą niewiadomych (${sTask.names.length}) — pomoże Podpowiedź albo ściąga.`,`✗ That is not the right case. Compare rank <i>A</i> and rank [<i>A</i> | <i>B</i>] with the number of unknowns (${sTask.names.length}) — the Hint or the cheat sheet will help.`));
-  else if(out.type==='one'){
-    let good=0,empty=0;
-    ins.forEach((el,k)=>{const v=parseFr(el.value);if(!el.value.trim())empty++;const g=v&&v.eq(out.vals[k]);el.classList.toggle('ok',!!g);el.classList.toggle('bad',!g);if(g)good++});
-    if(empty){counted=false;show(msg,'bad',$t(`Uzupełnij wszystkie niewiadome (${empty} pustych).`,`Fill in all unknowns (${empty} empty).`))}
-    else if(good===ins.length){ok=true;show(msg,'ok',$t('✓ Dobrze! Układ ma dokładnie jedno rozwiązanie i to jest ono.','✓ Correct! The system has exactly one solution and this is it.'))}
-    else show(msg,'bad',$t(`✗ Dobrze: ${good} z ${ins.length}. Podstaw swoje liczby do równań i sprawdź, które się nie zgadza.`,`✗ Correct: ${good} of ${ins.length}. Substitute your numbers into the equations and see which one fails.`));
-  }else{ok=true;show(msg,'ok',out.type==='inf'?$t('✓ Tak — nieskończenie wiele rozwiązań. W „Rozwiązaniu” zobaczysz, jak zapisać rozwiązanie ogólne z parametrem.','✓ Yes — infinitely many solutions. The “Solution” shows how to write the general solution with a parameter.'):$t('✓ Tak — układ jest sprzeczny, nie ma rozwiązań.','✓ Yes — the system is inconsistent, it has no solutions.'))}
-  if(counted&&!sCounted){sScore.all++;if(ok)sScore.ok++;sCounted=true;rec(sMode==='any'&&sSize!=='r'?'sysany':{2:'sys2',3:'sys3',4:'sys4',r:'sysrect'}[sSize],ok?1:0)}
-  $('#sScore').textContent=sScore.all?$t(`wynik: ${sScore.ok}/${sScore.all}`,`score: ${sScore.ok}/${sScore.all}`):'';
+  const msg=$('#sMsg'),r=ansCheck(sTask.ans,ansRead('sa',sTask.ans));ansMark('sa',r);
+  if(r.empty){show(msg,'bad',$t('Najpierw wybierz liczbę rozwiązań i wpisz wartości niewiadomych.','First choose the number of solutions and type the values of the unknowns.'));return}
+  const ok=r.score===1;
+  if(ok)show(msg,'ok',{one:$t('✓ Dobrze! Układ ma dokładnie jedno rozwiązanie i to jest ono.','✓ Correct! The system has exactly one solution and this is it.'),inf:$t('✓ Dobrze! Nieskończenie wiele rozwiązań i Twoje rozwiązanie ogólne jest poprawne.','✓ Correct! Infinitely many solutions, and your general solution is right.'),none:$t('✓ Tak — układ jest sprzeczny, nie ma rozwiązań.','✓ Yes — the system is inconsistent, it has no solutions.')}[sTask.ans.type]);
+  else show(msg,'bad','✗ '+(r.msg||$t('Niestety nie.','Not quite.')));
+  if(!sCounted){sScore.all++;if(ok)sScore.ok++;sCounted=true;rec(sysTid(),r.score)}
+  $('#sScore').textContent=$t(`wynik: ${sScore.ok}/${sScore.all}`,`score: ${sScore.ok}/${sScore.all}`);
 };
 function runSys(){
   const err=$('#sysErr');err.className='msg';$('#sysOut').innerHTML='';
@@ -293,6 +291,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key===' '&&!(e.target.closest&&e.target.closest('button'))){$('#plPlay').click();e.preventDefault()}
 });
 function play(make,name,msgEl){
+  PL.make=make;
   let fr;try{fr=make()}catch(e){if(msgEl)show(msgEl,'bad',e.message);return}
   if(fr&&fr.length)plOpen(fr,name);
 }
@@ -319,15 +318,21 @@ function ansFill(id,ans,inp){
   if(ans.kind==='mat')inp.forEach((x,k)=>set(k,x));
   else if(ans.kind==='num')set(0,inp);
   else if(ans.kind==='formula')set('f',inp);
-  else if(ans.kind==='sys'){const box=document.querySelector(`[data-gst-box="${id}"]`);if(box)box.querySelectorAll('[data-gst]').forEach(c=>c.classList.toggle('on',c.dataset.gst===inp.type));const vals=document.getElementById(id+'-vals');if(vals)vals.hidden=inp.type!=='one';inp.vals.forEach((x,j)=>set('v'+j,x))}
+  else if(ans.kind==='sys'){const box=document.querySelector(`[data-gst-box="${id}"]`);if(box)box.querySelectorAll('[data-gst]').forEach(c=>c.classList.toggle('on',c.dataset.gst===inp.type));sysMode(id,inp.type);inp.vals.forEach((x,j)=>set('v'+j,x))}
   else if(ans.kind==='param')inp.forEach((r,k)=>{set('a'+k,r.a);set('t'+k,r.type)});
 }
 function ansMark(id,res){for(const [k,ok] of Object.entries(res.marks)){const el=document.getElementById(id+'-'+k);if(el){el.classList.toggle('ok',!!ok);el.classList.toggle('bad',!ok)}}}
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-gst]');if(!b)return;
   const box=b.closest('[data-gst-box]');box.querySelectorAll('[data-gst]').forEach(c=>c.classList.toggle('on',c===b));
-  const vals=document.getElementById(box.dataset.gstBox+'-vals');if(vals)vals.hidden=b.dataset.gst!=='one';
+  sysMode(box.dataset.gstBox,b.dataset.gst);
 });
+// pola wartości: przy „jedno” liczby, przy „nieskończenie wiele” rozwiązanie ogólne, przy „brak” nic
+function sysMode(id,type){
+  const vals=document.getElementById(id+'-vals'),hint=document.getElementById(id+'-genhint');
+  if(vals){vals.hidden=type==='none';vals.classList.toggle('gen',type==='inf')}
+  if(hint)hint.hidden=type!=='inf';
+}
 const plain=h=>String(h).replace(/<[^>]+>/g,'');
 // oba języki naraz — CSS pokazuje bieżący (do elementów budowanych raz, np. przycisków)
 const bi=(pl,en)=>`<span data-ln="pl">${pl}</span><span data-ln="en">${en}</span>`;
@@ -358,7 +363,7 @@ function makePractice(root,o){
   $i('Play').onclick=()=>play(task.fr,plain(tName(topic)),$i('Msg'));
   $i('Sol').onclick=()=>$i('SolBox').classList.toggle('on');
   $i('New').onclick=()=>{next();if(o.onNew)o.onNew()};
-  return {next};
+  return {next,refresh(){if(task)$i('SolBox').innerHTML=task.sol}};
 }
 
 // ================= Ćwiczenia =================
@@ -530,7 +535,22 @@ function setLang(l,rerender){
 }
 document.querySelector('.lang').addEventListener('click',e=>{const b=e.target.closest('[data-lang]');if(b&&b.dataset.lang!==LANG.cur)setLang(b.dataset.lang,true)});
 
+// ================= Liczenie bez ułamków (pole wyboru) =================
+function setNoFrac(v,rerender){
+  OPT.noFrac=!!v;
+  try{localStorage.setItem('algebra-bez-ulamkow',OPT.noFrac?'1':'0')}catch(e){}
+  document.querySelectorAll('[data-nofrac]').forEach(c=>{c.checked=OPT.noFrac});
+  if(!rerender)return;
+  // przeliczam to, co jest na ekranie — zadania zostają te same
+  if(sTask)renderSysSol();if(sysShown)runSys();
+  if(nTask)$('#nSolBox').innerHTML=nTask.solHtml;
+  if(lastNum&&$('#numOut').innerHTML)computeNum();
+  CW.refresh();if(PRP)PRP.refresh();
+  if(!$('#pl').hidden&&PL.make){try{PL.fr=PL.make();PL.k=0;plSetPlay(false);plRender(true)}catch(e){}}
+}
+document.addEventListener('change',e=>{if(e.target.matches&&e.target.matches('[data-nofrac]'))setNoFrac(e.target.checked,true)});
+
 // start
 newNum();runSolve();newSys();runSys();fillCheat();
 cwRender();CW.next();exSetup();prRender();$('#fbIn').value=EX_CHAIN;fbRun();
-setLang(LANG.cur,false);setTab(location.hash.slice(1));
+setLang(LANG.cur,false);setNoFrac(OPT.noFrac,false);setTab(location.hash.slice(1));

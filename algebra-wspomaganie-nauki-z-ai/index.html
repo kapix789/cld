@@ -201,6 +201,13 @@ html[data-lang="en"] [data-ln="pl"],html:not([data-lang="en"]) [data-ln="en"]{di
 .lang{display:flex;flex:none;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card)}
 .lang button{border:0;background:none;color:var(--mute);font:600 12.5px Inter,sans-serif;letter-spacing:.04em;padding:6px 11px;cursor:pointer}
 .lang button.on{background:var(--acc);color:var(--on-acc)}
+.chip:disabled{opacity:.4;cursor:default}
+.nums.gen .ans-in input{width:min(190px,62vw);text-align:left;padding:0 10px}
+.chk{display:inline-flex;align-items:flex-start;gap:8px;font-size:14px;line-height:1.45;cursor:pointer}
+.chk input{flex:none;width:18px;height:18px;margin:1px 0 0;accent-color:var(--acc);cursor:pointer}
+.pl-ctl .sp{flex-wrap:wrap;align-items:center}
+.pl-ctl .chk{font-size:12.5px;align-items:center;margin-right:6px}
+.pl-ctl .chk input{margin:0}
 </style>
 </head>
 <body>
@@ -236,6 +243,7 @@ html[data-lang="en"] [data-ln="pl"],html:not([data-lang="en"]) [data-ln="en"]{di
 <button class="chip" data-shape="rect"><span data-ln="pl">prostokątna</span><span data-ln="en">rectangular</span></button>
 </div>
 <div class="row"><select id="ntSel" class="code"></select></div>
+<div class="row"><label class="chk" for="nfLi"><input type="checkbox" id="nfLi" data-nofrac checked> <span><span data-ln="pl">Odwrotność licz bez ułamków (jeśli się da)</span><span data-ln="en">Compute the inverse without fractions (where possible)</span></span></label></div>
 <p class="mute" id="ntNote" style="margin-top:8px"></p>
 </div>
 <div class="card">
@@ -309,17 +317,16 @@ html[data-lang="en"] [data-ln="pl"],html:not([data-lang="en"]) [data-ln="en"]{di
 <div class="row" style="margin-top:0"><span class="lbl"><span data-ln="pl">Rozmiar</span><span data-ln="en">Size</span></span>
 <button class="chip" data-ss="2">2×2</button><button class="chip" data-ss="3">3×3</button><button class="chip" data-ss="4">4×4</button><button class="chip" data-ss="r"><span data-ln="pl">nietypowy</span><span data-ln="en">non-square</span> (m ≠ n)</button></div>
 <div class="row"><span class="lbl"><span data-ln="pl">Rodzaj</span><span data-ln="en">Type</span></span>
-<button class="chip" data-sm="one"><span data-ln="pl">zawsze jedno rozwiązanie</span><span data-ln="en">always one solution</span></button><button class="chip" data-sm="any"><span data-ln="pl">losowy (też sprzeczne i nieoznaczone)</span><span data-ln="en">random (also inconsistent and underdetermined)</span></button></div>
+<button class="chip" data-sm="one"><span data-ln="pl">zawsze jedno rozwiązanie</span><span data-ln="en">always one solution</span></button><button class="chip" data-sm="any"><span data-ln="pl">losowy (też sprzeczne i nieoznaczone)</span><span data-ln="en">random (also inconsistent and underdetermined)</span></button><button class="chip" data-sm="exam"><span data-ln="pl">jak na sprawdzianie: 4×4, „jeśli to możliwe”</span><span data-ln="en">exam style: 4×4, “if possible”</span></button></div>
 <div class="row"><span class="lbl"><span data-ln="pl">Metoda</span><span data-ln="en">Method</span></span>
 <button class="chip" data-me="gauss">Gauss</button><button class="chip" data-me="mac"><span data-ln="pl">macierzowa</span><span data-ln="en">matrix</span> <span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span></button><button class="chip" data-me="cra">Cramer</button></div>
+<div class="row"><label class="chk" for="nfUk"><input type="checkbox" id="nfUk" data-nofrac checked> <span><span data-ln="pl"><b>Licz bez ułamków</b> (jak na kartce): jedynkę robię kombinacją wierszy, zamiast dzielić mnożę wiersz zerowany, a dzielę dopiero na końcu</span><span data-ln="en"><b>Avoid fractions</b> (like on paper): make a 1 by combining rows, multiply the row being cleared instead of dividing, divide only at the end</span></span></label></div>
 </div>
 
 <div class="card">
-<div class="row" style="margin-top:0"><span class="q"><span data-ln="pl">Rozwiąż układ równań</span><span data-ln="en">Solve the system of equations</span></span><span class="score" id="sScore"></span></div>
+<div class="row" style="margin-top:0"><span class="q" id="sQ"></span><span class="score" id="sScore"></span></div>
 <div class="sysbox" id="sEq"></div>
-<p class="mute" style="margin:6px 0"><span data-ln="pl">Ile rozwiązań ma ten układ?</span><span data-ln="en">How many solutions does this system have?</span></p>
-<div class="chips" id="sType"><button class="chip" data-st="one"><span data-ln="pl">jedno</span><span data-ln="en">one</span></button><button class="chip" data-st="inf"><span data-ln="pl">nieskończenie wiele</span><span data-ln="en">infinitely many</span></button><button class="chip" data-st="none"><span data-ln="pl">brak — układ sprzeczny</span><span data-ln="en">none — inconsistent</span></button></div>
-<div class="nums" id="sVals" style="margin-top:12px"></div>
+<div id="sAns" style="margin-top:6px"></div>
 <div class="row">
 <button class="btn" id="sCheck"><span data-ln="pl">Sprawdź</span><span data-ln="en">Check</span></button>
 <button class="btn ghost" id="sHint"><span data-ln="pl">Podpowiedź</span><span data-ln="en">Hint</span></button>
@@ -349,6 +356,7 @@ x - y + 2z = 5
 <div class="card">
 <div class="row" style="margin-top:0"><span class="lbl"><span data-ln="pl">Dział</span><span data-ln="en">Section</span></span><div class="chips" id="cwSecs"></div></div>
 <div class="row"><span class="lbl"><span data-ln="pl">Temat</span><span data-ln="en">Topic</span></span><div class="chips" id="cwTopics"></div></div>
+<div class="row"><label class="chk" for="nfCw"><input type="checkbox" id="nfCw" data-nofrac checked> <span><span data-ln="pl">Rozwiązania licz bez ułamków (jeśli się da)</span><span data-ln="en">Solutions without fractions (where possible)</span></span></label></div>
 </div>
 <div id="cwBox"></div>
 </section>
@@ -713,7 +721,7 @@ x - y + 2z = 5
 <button class="btn ghost" id="plPrev">◀ <span data-ln="pl">Wstecz</span><span data-ln="en">Back</span></button>
 <button class="btn ghost" id="plPlay">▶ Odtwarzaj</button>
 <button class="btn" id="plNext">Dalej ▶</button>
-<div class="sp" id="plSpd"><button class="chip" data-spd="1.7"><span data-ln="pl">wolno</span><span data-ln="en">slow</span></button><button class="chip on" data-spd="1"><span data-ln="pl">normalnie</span><span data-ln="en">normal</span></button><button class="chip" data-spd="0.55"><span data-ln="pl">szybko</span><span data-ln="en">fast</span></button></div>
+<div class="sp" id="plSpd"><label class="chk" for="nfPl"><input type="checkbox" id="nfPl" data-nofrac checked> <span><span data-ln="pl">bez ułamków</span><span data-ln="en">no fractions</span></span></label><button class="chip" data-spd="1.7"><span data-ln="pl">wolno</span><span data-ln="en">slow</span></button><button class="chip on" data-spd="1"><span data-ln="pl">normalnie</span><span data-ln="en">normal</span></button><button class="chip" data-spd="0.55"><span data-ln="pl">szybko</span><span data-ln="en">fast</span></button></div>
 </div>
 </div>
 </div>
@@ -721,6 +729,8 @@ x - y + 2z = 5
 // ---------- Język ----------
 // $t('tekst po polsku','English text') — zwraca tekst w bieżącym języku (LANG.cur: 'pl' albo 'en').
 const LANG={cur:'pl'};
+// OPT.noFrac — pokazywane kroki liczone bez ułamków (jak na kartce); false = klasycznie, z dzieleniem przez element główny
+const OPT={noFrac:true};
 const $t=(pl,en)=>LANG.cur==='en'?en:pl;
 
 // ---------- Ułamki ----------
@@ -809,11 +819,103 @@ function gaussInv(A0){
   return {inv:R,steps};
 }
 function augHtml(A,B){let c='';for(let i=0;i<A.length;i++)c+=A[i].map(x=>`<span>${x.html()}</span>`).join('')+B[i].map((x,j)=>`<span${j?'':' class="bl"'}>${x.html()}</span>`).join('');return `<span class="mat aug" style="grid-template-columns:repeat(${A[0].length+B[0].length},auto)">${c}</span>`}
+// ---------- Eliminacja bez ułamków (tak jak na kartce) ----------
+// Plan pokazywanych kroków. Ułamków unika: robi ±1 kombinacją dwóch wierszy, zamiast dzielić mnoży wiersz
+// zerowany (np. 3w₂ − 2w₁), skraca wiersze przez wspólny dzielnik, a przez element główny dzieli dopiero na końcu.
+// Zdarzenia ev: {k:'scale'|'comb'|'pivot'|'none'|'swap'|'elim'|'norm', j (kolumna), i (wiersz), …, B: przed, A: po}
+// Opcje: down — zera tylko pod schodkami (rząd), norm:false — bez końcowego dzielenia, stop — przerwij przy braku schodka
+// (odwrotność), sys — układ: przy sprzeczności nie dziel na końcu.
+const lcmN=(a,b)=>a/gcd(a,b)*b;
+function elimPlan(Ab0,nv,o={}){
+  if(!OPT.noFrac)return elimPlanClassic(Ab0,nv,o);
+  const m=Ab0.length,A=Ab0.map(r=>r.slice()),ev=[],cp=X=>X.map(r=>r.slice());
+  const doit=(e,f)=>{e.B=cp(A);f();e.A=cp(A);ev.push(e)};
+  const mark=e=>{e.B=cp(A);e.A=e.B;ev.push(e)};
+  const scaleRow=(i,c,why,j)=>doit({k:'scale',i,c,why,j},()=>{A[i]=A[i].map(x=>x.mul(c))});
+  for(let i=0;i<m;i++){
+    const L=A[i].reduce((l,x)=>lcmN(l,x.d),1);if(L>1)scaleRow(i,F(L),'clear',-1);
+    const g=A[i].reduce((g,x)=>gcd(g,x.n),0);if(g>1)scaleRow(i,F(1,g),'reduce',-1);
+  }
+  let row=0;const piv=[];
+  for(let j=0;j<nv&&row<m;j++){
+    const cand=[];for(let i=row;i<m;i++)if(!A[i][j].z)cand.push(i);
+    if(!cand.length){mark({k:'none',j,row});if(o.stop)return {ev,A,piv,ok:false};continue}
+    let best=cand.find(i=>A[i][j].abs().one),made=false;
+    if(best===undefined){
+      let opt=null;
+      for(const i of cand)for(const k of cand){if(k===i)continue;for(const c of [1,-1,2,-2,3,-3]){
+        if(!A[i][j].add(A[k][j].mul(F(c))).abs().one)continue;
+        const sc=Math.max(...A[i].map((x,q)=>Math.abs(x.add(A[k][q].mul(F(c))).n)))+Math.abs(c);
+        if(!opt||sc<opt.sc)opt={i,k,c,sc};
+      }}
+      if(opt&&opt.sc<=60){doit({k:'comb',j,i:opt.i,from:opt.k,c:F(opt.c)},()=>{A[opt.i]=A[opt.i].map((x,q)=>x.add(A[opt.k][q].mul(F(opt.c))))});best=opt.i;made=true}
+      else best=cand.reduce((b,i)=>{const sc=t=>Math.abs(A[t][j].n)*10-(cand.every(q=>A[q][j].div(A[t][j]).d===1)?5:0);return b===undefined||sc(i)<sc(b)?i:b},undefined);
+    }
+    mark({k:'pivot',j,i:best,row,made});
+    if(best!==row)doit({k:'swap',j,i:row,i2:best},()=>{[A[row],A[best]]=[A[best],A[row]]});
+    let p=A[row][j];
+    if(p.n===-1&&p.d===1)scaleRow(row,F(-1),'sign',j);
+    else if(!p.one&&A[row].every(x=>x.div(p).d===1))scaleRow(row,F(1).div(p),'div',j);
+    p=A[row][j];
+    for(let i=o.down?row+1:0;i<m;i++){
+      if(i===row||A[i][j].z)continue;
+      const a=A[i][j],q=a.div(p);
+      if(q.d===1)doit({k:'elim',j,i,r:row,a:F(1),b:q},()=>{A[i]=A[i].map((x,t)=>x.sub(q.mul(A[row][t])))});
+      else{const g=gcd(p.n,a.n),ma=F(Math.abs(p.n)/g),mb=F(Math.sign(p.n)*a.n/g);doit({k:'elim',j,i,r:row,a:ma,b:mb},()=>{A[i]=A[i].map((x,t)=>x.mul(ma).sub(mb.mul(A[row][t])))})}
+      const g=A[i].reduce((g,x)=>gcd(g,x.n),0);if(g>1)scaleRow(i,F(1,g),'reduce',j);
+    }
+    piv.push(j);row++;
+  }
+  const contra=o.sys&&A.some(r=>r.slice(0,nv).every(x=>x.z)&&!r[nv].z);
+  if(o.norm!==false&&!contra)piv.forEach((j,i)=>{const p=A[i][j];if(!p.one)doit({k:'norm',j,i,c:F(1).div(p),p},()=>{A[i]=A[i].map(x=>x.div(p))})});
+  return {ev,A,piv,ok:true,contra};
+}
+// klasycznie: element główny (najlepiej ±1), dzielę jego wiersz, zeruję resztę — ułamki mogą wyjść po drodze
+function elimPlanClassic(Ab0,nv,o={}){
+  const m=Ab0.length,A=Ab0.map(r=>r.slice()),ev=[],cp=X=>X.map(r=>r.slice());
+  const doit=(e,f)=>{e.B=cp(A);f();e.A=cp(A);ev.push(e)};
+  const mark=e=>{e.B=cp(A);e.A=e.B;ev.push(e)};
+  let row=0;const piv=[];
+  for(let j=0;j<nv&&row<m;j++){
+    let best=-1;for(let i=row;i<m;i++)if(!A[i][j].z&&(best<0||pivScore(A[i][j])<pivScore(A[best][j])))best=i;
+    if(best<0){mark({k:'none',j,row});if(o.stop)return {ev,A,piv,ok:false};continue}
+    mark({k:'pivot',j,i:best,row,made:false});
+    if(best!==row)doit({k:'swap',j,i:row,i2:best},()=>{[A[row],A[best]]=[A[best],A[row]]});
+    const p=A[row][j];
+    if(!p.one)doit({k:'scale',j,i:row,c:F(1).div(p),why:p.n===-1&&p.d===1?'sign':'divf'},()=>{A[row]=A[row].map(x=>x.div(p))});
+    for(let i=o.down?row+1:0;i<m;i++){
+      if(i===row||A[i][j].z)continue;const q=A[i][j];
+      doit({k:'elim',j,i,r:row,a:F(1),b:q},()=>{A[i]=A[i].map((x,t)=>x.sub(q.mul(A[row][t])))});
+    }
+    piv.push(j);row++;
+  }
+  return {ev,A,piv,ok:true,contra:!!o.sys&&A.some(r=>r.slice(0,nv).every(x=>x.z)&&!r[nv].z)};
+}
+function opLabel(e){
+  const num=x=>x.d===1?x.str():'('+x.str()+')';
+  if(e.k==='swap')return `${W(e.i)} ↔ ${W(e.i2)}`;
+  if(e.k==='scale'||e.k==='norm')return e.c.d!==1?`${W(e.i)} : ${fmt(F(1).div(e.c))}`:`${W(e.i)} · ${fmt(e.c)}`;
+  if(e.k==='comb'){const a=e.c.abs();return `${W(e.i)} ${e.c.n>0?'+':'−'} ${a.one?'':num(a)}${W(e.from)}`}
+  if(e.k==='elim'){const b=e.b.abs();return `${e.a.one?'':num(e.a)}${W(e.i)} ${e.b.n>0?'−':'+'} ${b.one?'':num(b)}${W(e.r)}`}
+  return '';
+}
+// kroki zgrupowane po kolumnach (do rozwiązań tekstowych); końcowe dzielenie osobno
+function planGroups(plan){
+  const g=[];let cur=null;
+  for(const e of plan.ev){if(e.k==='pivot'||e.k==='none')continue;const key=e.k==='norm'?'norm':e.j;if(!cur||cur.key!==key){cur={key,ops:[],A:null};g.push(cur)}cur.ops.push(opLabel(e));cur.A=e.A}
+  return g;
+}
+const planVals=plan=>plan.ev.filter(e=>e.k!=='pivot'&&e.k!=='none').flatMap(e=>e.A.flat());
+const planFrac=plan=>planVals(plan).filter(x=>x.d!==1).length;
+const planMax=plan=>Math.max(0,...planVals(plan).map(x=>Math.abs(x.n)));
+const normNote=()=>$t('Schodki gotowe. Na koniec dzielę wiersze przez elementy główne — dopiero tu mogą pojawić się ułamki.','The steps are ready. Finally I divide the rows by their pivots — only here can fractions appear.');
 function gaussHtml(name,resName,A){
-  const g=gaussInv(A);
-  let s=$t(`<p class="mute">[${name} | <i>I</i>] → operacje na wierszach → [<i>I</i> | ${resName}]</p>`,`<p class="mute">[${name} | <i>I</i>] → row operations → [<i>I</i> | ${resName}]</p>`);
-  g.steps.forEach((st,k)=>{if(k)s+=`<div class="ops">${st.ops.join(', &nbsp;')}</div>`;s+=`<div class="line">${augHtml(st.L,st.R)}</div>`});
-  return s+`<div class="line">${resName} = ${M.html(g.inv)}</div>`;
+  const n=A.length,I=M.I(n),plan=elimPlan(A.map((r,i)=>[...r,...I[i]]),n,{stop:true}),sp=X=>[X.map(r=>r.slice(0,n)),X.map(r=>r.slice(n))];
+  let s=$t(`<p class="mute">[${name} | <i>I</i>] → operacje na wierszach → [<i>I</i> | ${resName}]${OPT.noFrac?'. Liczę bez ułamków, jeśli się da':''}.</p>`,`<p class="mute">[${name} | <i>I</i>] → row operations → [<i>I</i> | ${resName}]${OPT.noFrac?'. I avoid fractions where possible':''}.</p>`);
+  s+=`<div class="line">${augHtml(A,I)}</div>`;
+  planGroups(plan).forEach(gr=>{if(gr.key==='norm')s+=`<p class="mute">${normNote()}</p>`;s+=`<div class="ops">${gr.ops.join(', &nbsp;')}</div><div class="line">${augHtml(...sp(gr.A))}</div>`});
+  if(!plan.ok)return s+`<div class="warn">${$t('W którejś kolumnie zabrakło niezerowego elementu — macierz nie jest odwracalna.','Some column has no nonzero entry left — the matrix is not invertible.')}</div>`;
+  return s+`<div class="line">${resName} = ${M.html(sp(plan.A)[1])}</div>`;
 }
 
 // ---------- Parser ----------
@@ -1145,7 +1247,7 @@ function genTask(type){
     return {fr:()=>EXPR_FR[EXPR.indexOf(E)](...mats),q:$t('Oblicz ','Compute ')+E.lab,given:[...E.m].map((c,k)=>[c,mats[k]]),ans:parts[parts.length-1][1],lab:E.lab,sol:$t('<p>Liczę po kolei:</p>','<p>Step by step:</p>')+parts.map(([l,A])=>eqL(l,A)).join('')};
   }
   const n=type==='inv2'?2:3,A=n===2?richUni(2,[1,1,2]):richUni(3),ans=M.inv(A);
-  return {fr:()=>invFrames(A,'<i>A</i>','<i>A</i><sup>−1</sup>',$t('Macierz odwrotna','Inverse matrix')).frames,q:$t(`Oblicz <i>A</i><sup>−1</sup> (${n}×${n})`,`Compute <i>A</i><sup>−1</sup> (${n}×${n})`),given:[['A',A]],ans,lab:'<i>A</i><sup>−1</sup>',sol:gaussHtml('<i>A</i>','<i>A</i><sup>−1</sup>',A)+$t(`<p class="mute">Kontrola: <i>A</i>·<i>A</i><sup>−1</sup> = <i>I</i> ✓</p>`,`<p class="mute">Check: <i>A</i>·<i>A</i><sup>−1</sup> = <i>I</i> ✓</p>`)};
+  return {fr:()=>invFrames(A,'<i>A</i>','<i>A</i><sup>−1</sup>',$t('Macierz odwrotna','Inverse matrix')).frames,q:$t(`Oblicz <i>A</i><sup>−1</sup> (${n}×${n})`,`Compute <i>A</i><sup>−1</sup> (${n}×${n})`),given:[['A',A]],ans,lab:'<i>A</i><sup>−1</sup>',get sol(){return gaussHtml('<i>A</i>','<i>A</i><sup>−1</sup>',A)+$t(`<p class="mute">Kontrola: <i>A</i>·<i>A</i><sup>−1</sup> = <i>I</i> ✓</p>`,`<p class="mute">Check: <i>A</i>·<i>A</i><sup>−1</sup> = <i>I</i> ✓</p>`)}};
 }
 // ---------- Układy równań: wspólne ----------
 const ORD='xyztuvwabcdefghijklmnopqrs';
@@ -1218,19 +1320,20 @@ function genSolHtml(sol,names){
   return pv.join(', &nbsp; ')+(pv.length?', &nbsp; ':'')+sol.free.map(j=>nmHtml(names[j])).join(', ')+' ∈ ℝ';
 }
 function gaussSys(Ab,names){
-  const nv=names.length,res=rref(Ab,nv),sp=X=>[X.map(r=>r.slice(0,nv)),X.map(r=>[r[nv]])];
-  let h=$t(`<p class="mute">[<i>A</i> | <i>B</i>] → operacje na wierszach → jedynki na schodkach, zera nad nimi i pod nimi</p>`,`<p class="mute">[<i>A</i> | <i>B</i>] → row operations → ones on the steps, zeros above and below them</p>`);
-  res.steps.forEach((st,k)=>{if(k)h+=`<div class="ops">${st.ops.join(', &nbsp;')}</div>`;h+=`<div class="line">${augHtml(...sp(st.A))}</div>`});
-  const rows=abRows(res.A,nv),isZero=r=>r.c.every(x=>x.z)&&r.k.z,zero=rows.filter(isZero).length,keep=rows.filter(r=>!isZero(r));
+  const nv=names.length,res=rref(Ab,nv),plan=elimPlan(Ab,nv,{sys:true}),sp=X=>[X.map(r=>r.slice(0,nv)),X.map(r=>[r[nv]])];
+  let h=$t(`<p class="mute">[<i>A</i> | <i>B</i>] → operacje na wierszach → schodki, zera nad nimi i pod nimi${OPT.noFrac?'. Liczę bez ułamków, jeśli się da':''}.</p>`,`<p class="mute">[<i>A</i> | <i>B</i>] → row operations → steps with zeros above and below them${OPT.noFrac?'. I avoid fractions where possible':''}.</p>`);
+  h+=`<div class="line">${augHtml(...sp(Ab))}</div>`;
+  planGroups(plan).forEach(gr=>{if(gr.key==='norm')h+=`<p class="mute">${normNote()}</p>`;h+=`<div class="ops">${gr.ops.join(', &nbsp;')}</div><div class="line">${augHtml(...sp(gr.A))}</div>`});
+  const rows=abRows(plan.A,nv),isZero=r=>r.c.every(x=>x.z)&&r.k.z,zero=rows.filter(isZero).length,keep=rows.filter(r=>!isZero(r));
   h+=$t(`<h3>Odczytuję wynik</h3>`,`<h3>Reading the result</h3>`);
   if(zero)h+=$t(`<p class="mute">${zero===1?'Wiersz zerowy':'Wiersze zerowe'} (0 = 0) pomijam — nic nie wnosi.</p>`,`<p class="mute">I skip ${zero===1?'the zero row':'the zero rows'} (0 = 0) — ${zero===1?'it adds':'they add'} nothing.</p>`);
   if(keep.length)h+=`<div class="line">${sysHtml(keep,names)}</div>`;
   h+=$t(`<p>rz <i>A</i> = ${res.rank}, &nbsp; rz [<i>A</i> | <i>B</i>] = ${res.rankAb}, &nbsp; niewiadomych <i>n</i> = ${nv}.</p>`,`<p>rank <i>A</i> = ${res.rank}, &nbsp; rank [<i>A</i> | <i>B</i>] = ${res.rankAb}, &nbsp; unknowns <i>n</i> = ${nv}.</p>`);
   const sol=sysSolution(res,nv);
-  if(res.type==='none'){const k=res.A[res.bad][nv].html();h+=$t(`<div class="warn">Wiersz [0 … 0 | ${k}] to równanie 0 = ${k} — sprzeczność. rz <i>A</i> &lt; rz [<i>A</i> | <i>B</i>], więc układ jest <b>sprzeczny</b>: nie ma rozwiązań.</div>`,`<div class="warn">The row [0 … 0 | ${k}] is the equation 0 = ${k} — a contradiction. rank <i>A</i> &lt; rank [<i>A</i> | <i>B</i>], so the system is <b>inconsistent</b>: it has no solutions.</div>`)}
+  if(res.type==='none'){const k=plan.A.find(r=>r.slice(0,nv).every(x=>x.z)&&!r[nv].z)[nv].html();h+=$t(`<div class="warn">Wiersz [0 … 0 | ${k}] to równanie 0 = ${k} — sprzeczność. rz <i>A</i> &lt; rz [<i>A</i> | <i>B</i>], więc układ jest <b>sprzeczny</b>: nie ma rozwiązań.</div>`,`<div class="warn">The row [0 … 0 | ${k}] is the equation 0 = ${k} — a contradiction. rank <i>A</i> &lt; rank [<i>A</i> | <i>B</i>], so the system is <b>inconsistent</b>: it has no solutions.</div>`)}
   else if(res.type==='one')h+=$t(`<p>rz <i>A</i> = rz [<i>A</i> | <i>B</i>] = <i>n</i>, więc jest <b>dokładnie jedno rozwiązanie</b>:</p><div class="line res">${names.map((v,j)=>`${nmHtml(v)} = ${sol.forms[j].k.html()}`).join(', &nbsp; ')}</div>`,`<p>rank <i>A</i> = rank [<i>A</i> | <i>B</i>] = <i>n</i>, so there is <b>exactly one solution</b>:</p><div class="line res">${names.map((v,j)=>`${nmHtml(v)} = ${sol.forms[j].k.html()}`).join(', &nbsp; ')}</div>`);
   else{const k=nv-res.rank;h+=$t(`<p>rz <i>A</i> = rz [<i>A</i> | <i>B</i>] = ${res.rank} &lt; <i>n</i> = ${nv}, więc rozwiązań jest <b>nieskończenie wiele</b> — zależą od ${k} ${pl(k,'parametru','parametrów','parametrów')}. ${pl(sol.free.length,'Niewiadoma','Niewiadome','Niewiadome')} bez schodka (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) ${sol.free.length===1?'jest dowolna':'są dowolne'}, resztę przez nie wyrażam:</p><div class="line res">${genSolHtml(sol,names)}</div>`,`<p>rank <i>A</i> = rank [<i>A</i> | <i>B</i>] = ${res.rank} &lt; <i>n</i> = ${nv}, so there are <b>infinitely many solutions</b> — they depend on ${k} ${k===1?'parameter':'parameters'}. The ${sol.free.length===1?'unknown':'unknowns'} without a pivot (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) ${sol.free.length===1?'is free':'are free'}; I express the rest in terms of ${sol.free.length===1?'it':'them'}:</p><div class="line res">${genSolHtml(sol,names)}</div>`)}
-  return {html:h,res,sol};
+  return {html:h,res,sol,plan};
 }
 function checkSysHtml(Ab,names,vals){
   const nv=names.length;
@@ -1332,8 +1435,7 @@ function genSys(sz,mode){
   for(let at=0;at<400&&ok<25;at++){
     const Ab=genSysOnce(m,nv,want);if(!Ab)continue;
     const res=rref(Ab,nv);if(res.type!==want)continue;ok++;
-    const big=Math.max(...res.steps.flatMap(st=>st.A.flat().map(x=>Math.abs(x.n))));
-    const sc=fracCount(res)*2+Math.max(0,big-20);
+    const plan=elimPlan(Ab,nv,{sys:true}),sc=planFrac(plan)*3+Math.max(0,planMax(plan)-20);
     if(!best||sc<best.sc)best={Ab,sc};
     if(sc===0&&ok>3)break;
   }
@@ -1434,7 +1536,7 @@ function linSolve(src,env){
     X=M.make(r,c,(i,j)=>G.sol.forms[i*c+j].k);d.chk=[val(ast.L,X),val(ast.R,X)];
     h+=$t(`<div class="line res"><i>X</i> = ${M.html(X)}</div><h3>Sprawdzenie</h3><p class="mute">Podstawiam <i>X</i> do równania ${orig}:</p><div class="nums"><span class="gv">lewa = ${M.html(val(ast.L,X))}</span><span class="gv">prawa = ${M.html(val(ast.R,X))}</span></div><p class="mute">✓ Zgadza się.</p>`,`<div class="line res"><i>X</i> = ${M.html(X)}</div><h3>Check</h3><p class="mute">I substitute <i>X</i> into the equation ${orig}:</p><div class="nums"><span class="gv">left = ${M.html(val(ast.L,X))}</span><span class="gv">right = ${M.html(val(ast.R,X))}</span></div><p class="mute">✓ It matches.</p>`);
   }else{d.gen=`<i>X</i> = ${matH(M.make(r,c,(i,j)=>lfHtml(G.sol.forms[i*c+j],names,true)))}, &nbsp; ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} ∈ ℝ`;h+=$t(`<div class="line res">${d.gen}</div><p class="mute">Nieskończenie wiele macierzy — każdy wybór ${G.sol.free.length===1?'liczby':'liczb'} ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} daje inne <i>X</i>.</p>`,`<div class="line res">${d.gen}</div><p class="mute">Infinitely many matrices — every choice of ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} gives a different <i>X</i>.</p>`);}
-  return {html:h,type:G.res.type,X,fr:fracCount(G.res),orig,d};
+  return {html:h,type:G.res.type,X,fr:planFrac(G.plan),orig,d};
 }
 // ---------- Klatki do odtwarzacza „krok po kroku” ----------
 // klatka: {sec, t (tytuł), x (opis), S (html nad macierzami), B:[plansze], J:[łączniki], C:[linie rachunku], Cb, U:[zdarzenia w czasie]}
@@ -1444,48 +1546,60 @@ const hM=X=>X.map(r=>r.map(x=>typeof x==='string'?x:x.html()));
 const bd=(X,o={})=>({M:hM(X),bar:o.bar===undefined?-1:o.bar,lab:o.lab||'',hl:o.hl||{},det:!!o.det,dimCols:o.dimCols||[]});
 const rw=i=>`${$t('w','R')}<sub>${i+1}</sub>`;
 function gaussFrames(Ab0,nv,o){
-  const m=Ab0.length,w=Ab0[0].length,A=Ab0.map(r=>r.slice()),fr=[],sec=o.sec||$t('Metoda Gaussa','Gaussian elimination'),inv=o.mode==='inv';
-  const B=hl=>bd(A,{bar:nv,hl});
-  const rk=o.mode==='rank';
+  const inv=o.mode==='inv',rk=o.mode==='rank',sec=o.sec||$t('Metoda Gaussa','Gaussian elimination'),fr=[],w=Ab0[0].length,m=Ab0.length;
+  const plan=elimPlan(Ab0,nv,{down:o.down,norm:!rk,stop:inv,sys:!inv&&!rk});
+  const tip=$t(' Gdzie się da, liczę bez ułamków: jedynkę robię kombinacją wierszy, a dzielę dopiero na końcu.',' Where possible I avoid fractions: I make a 1 by combining rows and divide only at the end.');
   fr.push({sec,t:rk?$t(`Sprowadzam ${o.lab} do postaci schodkowej`,`Reducing ${o.lab} to row echelon form`):inv?$t(`Zapisuję [${o.lab} | <i>I</i>]`,`Writing [${o.lab} | <i>I</i>]`):$t('Zapisuję macierz rozszerzoną [<i>A</i> | <i>B</i>]','Writing the augmented matrix [<i>A</i> | <i>B</i>]'),
-    x:rk?$t(`Rząd to liczba niezerowych wierszy w postaci schodkowej. Robię eliminację Gaussa: w każdej kolumnie element główny i zera <b>pod</b> nim. Operacje na wierszach nie zmieniają rzędu.`,`The rank is the number of nonzero rows in row echelon form. I do Gaussian elimination: in each column a pivot and zeros <b>below</b> it. Row operations do not change the rank.`):inv?$t(`Obok ${o.lab} dopisuję macierz jednostkową <i>I</i>. Robię operacje na <b>całych wierszach</b> — po obu stronach kreski — aż po lewej powstanie <i>I</i>. Wtedy po prawej będzie odwrotność.`,`Next to ${o.lab} I write the identity matrix <i>I</i>. I do operations on <b>whole rows</b> — on both sides of the bar — until <i>I</i> appears on the left. Then the inverse is on the right.`)
-      :$t(`Każdy wiersz to jedno równanie: przed kreską współczynniki przy ${o.names.map(nmHtml).join(', ')}, za kreską wyraz wolny. Cel: przed kreską jedynki na „schodkach”, a nad nimi i pod nimi zera.`,`Each row is one equation: before the bar the coefficients of ${o.names.map(nmHtml).join(', ')}, after the bar the constant. Goal: ones on the “steps” before the bar, with zeros above and below them.`),
-    B:[B()]});
-  let row=0;
-  for(let j=0;j<nv&&row<m;j++){
-    const colHl={};for(let i=row;i<m;i++)colHl[i+','+j]='col';
-    let best=-1;for(let i=row;i<m;i++)if(!A[i][j].z&&(best<0||pivScore(A[i][j])<pivScore(A[best][j])))best=i;
-    if(best<0){
-      if(inv){fr.push({sec,t:$t(`Kolumna ${j+1}: same zera`,`Column ${j+1}: all zeros`),x:$t(`Od wiersza ${row+1} w dół w kolumnie ${j+1} są same zera — nie da się tu zrobić jedynki. Macierz <b>nie jest odwracalna</b> (jej wyznacznik to 0).`,`From row ${row+1} down, column ${j+1} has only zeros — no 1 can be made here. The matrix is <b>not invertible</b> (its determinant is 0).`),B:[B({cells:colHl})]});return {frames:fr,ok:false,A}}
-      fr.push({sec,t:$t(`Kolumna ${j+1}: same zera`,`Column ${j+1}: all zeros`),x:$t(`Od wiersza ${row+1} w dół w kolumnie ${j+1} są same zera — tu nie będzie schodka.${rk?'':` Niewiadoma ${nmHtml(o.names[j])} zostanie <b>parametrem</b> (dowolną liczbą).`} Idę do następnej kolumny.`,`From row ${row+1} down, column ${j+1} has only zeros — there will be no step here.${rk?'':` The unknown ${nmHtml(o.names[j])} becomes a <b>parameter</b> (any number).`} On to the next column.`),B:[B({cells:colHl})]});
-      continue;
+    x:(rk?$t(`Rząd to liczba niezerowych wierszy w postaci schodkowej. Robię eliminację Gaussa: w każdej kolumnie element główny i zera <b>pod</b> nim. Operacje na wierszach nie zmieniają rzędu.`,`The rank is the number of nonzero rows in row echelon form. I do Gaussian elimination: in each column a pivot and zeros <b>below</b> it. Row operations do not change the rank.`):inv?$t(`Obok ${o.lab} dopisuję macierz jednostkową <i>I</i>. Robię operacje na <b>całych wierszach</b> — po obu stronach kreski — aż po lewej powstanie <i>I</i>. Wtedy po prawej będzie odwrotność.`,`Next to ${o.lab} I write the identity matrix <i>I</i>. I do operations on <b>whole rows</b> — on both sides of the bar — until <i>I</i> appears on the left. Then the inverse is on the right.`)
+      :$t(`Każdy wiersz to jedno równanie: przed kreską współczynniki przy ${o.names.map(nmHtml).join(', ')}, za kreską wyraz wolny. Cel: przed kreską schodki, a nad nimi i pod nimi zera.`,`Each row is one equation: before the bar the coefficients of ${o.names.map(nmHtml).join(', ')}, after the bar the constant. Goal: steps before the bar, with zeros above and below them.`))+(rk||!OPT.noFrac?'':tip),
+    B:[bd(Ab0,{bar:nv})]});
+  const calc=(e,q)=>{const o_=e.B[e.i][q],n_=`<b>${e.A[e.i][q].html()}</b>`;
+    if(e.k==='scale'||e.k==='norm')return e.c.d!==1?`${fmt(o_)} : ${fmt(F(1).div(e.c))} = ${n_}`:`${fmt(o_)} · ${fmt(e.c)} = ${n_}`;
+    if(e.k==='comb'){const a=e.c.abs();return `${fmt(o_)} ${e.c.n>0?'+':'−'} ${a.one?'':fmt(a)+'·'}${fmt(e.B[e.from][q])} = ${n_}`}
+    const b=e.b.abs();return `${e.a.one?'':fmt(e.a)+'·'}${fmt(o_)} ${e.b.n>0?'−':'+'} ${b.one?'':fmt(b)+'·'}${fmt(e.B[e.r][q])} = ${n_}`;
+  };
+  const rowOp=(e,t,x,hl)=>{const C=[],U=[];for(let q=0;q<w;q++){C.push(calc(e,q));U.push({t:.7+q*.6,b:0,i:e.i,j:q,v:e.A[e.i][q].html(),line:q})}fr.push({sec,t,x,B:[bd(e.B,{bar:nv,hl})],C,U})};
+  let normed=false;
+  for(const e of plan.ev){
+    const op=opLabel(e),colHl={};if(e.j>=0)for(let i=(e.row??0);i<m;i++)colHl[i+','+e.j]='col';
+    if(e.k==='none'){
+      if(inv){fr.push({sec,t:$t(`Kolumna ${e.j+1}: same zera`,`Column ${e.j+1}: all zeros`),x:$t(`Od wiersza ${e.row+1} w dół w kolumnie ${e.j+1} są same zera — nie da się tu zrobić schodka. Macierz <b>nie jest odwracalna</b> (jej wyznacznik to 0).`,`From row ${e.row+1} down, column ${e.j+1} has only zeros — no step can be made here. The matrix is <b>not invertible</b> (its determinant is 0).`),B:[bd(e.B,{bar:nv,hl:{cells:colHl}})]});return {frames:fr,ok:false,A:plan.A}}
+      fr.push({sec,t:$t(`Kolumna ${e.j+1}: same zera`,`Column ${e.j+1}: all zeros`),x:$t(`Od wiersza ${e.row+1} w dół w kolumnie ${e.j+1} są same zera — tu nie będzie schodka.${rk?'':` Niewiadoma ${nmHtml(o.names[e.j])} zostanie <b>parametrem</b> (dowolną liczbą).`} Idę do następnej kolumny.`,`From row ${e.row+1} down, column ${e.j+1} has only zeros — there will be no step here.${rk?'':` The unknown ${nmHtml(o.names[e.j])} becomes a <b>parameter</b> (any number).`} On to the next column.`),B:[bd(e.B,{bar:nv,hl:{cells:colHl}})]});
+    }else if(e.k==='pivot'){
+      const p=e.B[e.i][e.j];
+      fr.push({sec,t:$t(`Kolumna ${e.j+1}: element główny`,`Column ${e.j+1}: the pivot`),
+        x:p.abs().one?$t(`W kolumnie ${e.j+1}, od wiersza ${e.row+1} w dół, biorę <b>${p.html()}</b> z wiersza ${e.i+1}${e.made?' — tę jedynkę właśnie zrobiłem':''}. Z jedynką zerowanie idzie bez ułamków.`,`In column ${e.j+1}, from row ${e.row+1} down, I take <b>${p.html()}</b> from row ${e.i+1}${e.made?' — the 1 I have just made':''}. With a 1, making zeros needs no fractions.`)
+          :!OPT.noFrac?$t(`W kolumnie ${e.j+1}, od wiersza ${e.row+1} w dół, szukam liczby różnej od 0 — najlepiej 1 albo −1, bo wtedy nie wyjdą ułamki. Biorę <b>${p.html()}</b> z wiersza ${e.i+1}.`,`In column ${e.j+1}, from row ${e.row+1} down, I look for a nonzero number — ideally 1 or −1, so that no fractions appear. I take <b>${p.html()}</b> from row ${e.i+1}.`)
+          :$t(`W kolumnie ${e.j+1} nie ma 1 ani −1 i nie da się jej zrobić prostą kombinacją wierszy. Biorę <b>${p.html()}</b> z wiersza ${e.i+1}. Żeby nie dzielić, pozostałe wiersze będę najpierw mnożyć.`,`Column ${e.j+1} has no 1 or −1 and one cannot be made by a simple combination of rows. I take <b>${p.html()}</b> from row ${e.i+1}. To avoid dividing, I will multiply the other rows first.`),
+        B:[bd(e.B,{bar:nv,hl:{cells:{...colHl,[e.i+','+e.j]:'piv'}}})]});
+    }else if(e.k==='swap'){
+      const U=[{t:.4,swap:[0,e.i,e.i2]}];
+      for(let q=0;q<w;q++)U.push({t:1.8,b:0,i:e.i,j:q,v:e.A[e.i][q].html()},{t:1.8,b:0,i:e.i2,j:q,v:e.A[e.i2][q].html()});
+      fr.push({sec,t:$t(`Zamieniam wiersze ${op}`,`Swapping rows ${op}`),x:$t(`Element główny ma stać w wierszu ${e.i+1}, więc zamieniam miejscami całe wiersze ${e.i+1} i ${e.i2+1}.${inv||rk?'':' To tylko zmiana kolejności równań — rozwiązania się nie zmieniają.'}`,`The pivot should be in row ${e.i+1}, so I swap the whole rows ${e.i+1} and ${e.i2+1}.${inv||rk?'':' This only changes the order of the equations — the solutions stay the same.'}`),B:[bd(e.B,{bar:nv,hl:{rows:{[e.i]:'dst',[e.i2]:'dst'}}})],U});
+    }else if(e.k==='comb'){
+      const c=e.c.abs(),v=e.A[e.i][e.j];
+      rowOp(e,$t(`Kolumna ${e.j+1}: robię jedynkę — ${op}`,`Column ${e.j+1}: making a 1 — ${op}`),
+        $t(`W kolumnie ${e.j+1} nie ma 1 ani −1. Zamiast dzielić (wyszłyby ułamki), do wiersza ${e.i+1} ${e.c.n>0?'dodaję':'odejmuję'} wiersz ${e.from+1}${c.one?'':` pomnożony przez ${c.html()}`} — w tym miejscu wyjdzie ${v.html()}:`,`Column ${e.j+1} has no 1 or −1. Instead of dividing (which would give fractions), I ${e.c.n>0?'add':'subtract'} row ${e.from+1}${c.one?'':` multiplied by ${c.html()}`} ${e.c.n>0?'to':'from'} row ${e.i+1} — this position becomes ${v.html()}:`),
+        {rows:{[e.from]:'src',[e.i]:'dst'},cells:{[e.i+','+e.j]:'tgt'}});
+    }else if(e.k==='scale'){
+      const hl={rows:{[e.i]:'dst'}};
+      if(e.why==='clear')rowOp(e,$t(`Pozbywam się ułamków: ${op}`,`Clearing fractions: ${op}`),$t(`W wierszu ${e.i+1} są ułamki. Mnożę cały wiersz przez ${e.c.html()}, żeby liczyć na liczbach całkowitych:`,`Row ${e.i+1} contains fractions. I multiply the whole row by ${e.c.html()} to work with whole numbers:`),hl);
+      else if(e.why==='reduce'){const g=F(1).div(e.c).html();rowOp(e,$t(`Skracam: ${op}`,`Simplifying: ${op}`),$t(`Wszystkie liczby w wierszu ${e.i+1} dzielą się przez ${g} — dzielę cały wiersz, żeby liczby były mniejsze:`,`All numbers in row ${e.i+1} are divisible by ${g} — I divide the whole row to keep the numbers small:`),hl)}
+      else if(e.why==='sign')rowOp(e,$t(`Zmieniam znak: ${op}`,`Changing the sign: ${op}`),$t(`Element główny to −1. Mnożę cały wiersz ${e.i+1} przez −1 i mam 1:`,`The pivot is −1. I multiply the whole row ${e.i+1} by −1 to get 1:`),{rows:{[e.i]:'dst'},cells:{[e.i+','+e.j]:'piv'}});
+      else if(e.why==='divf'){const p=F(1).div(e.c).html();rowOp(e,$t(`Dzielę: ${op}`,`Dividing: ${op}`),$t(`Na miejscu elementu głównego chcę mieć 1, więc <b>cały</b> wiersz ${e.i+1} — po obu stronach kreski — dzielę przez ${p}:`,`I want a 1 in the pivot position, so I divide the <b>whole</b> row ${e.i+1} — on both sides of the bar — by ${p}:`),{rows:{[e.i]:'dst'},cells:{[e.i+','+e.j]:'piv'}})}
+      else{const p=F(1).div(e.c).html();rowOp(e,$t(`Dzielę: ${op}`,`Dividing: ${op}`),$t(`Cały wiersz ${e.i+1} dzieli się przez ${p} bez reszty, więc dzielę — na elemencie głównym będzie 1, a ułamki nie wyjdą:`,`The whole row ${e.i+1} is divisible by ${p}, so I divide — the pivot becomes 1 and no fractions appear:`),{rows:{[e.i]:'dst'},cells:{[e.i+','+e.j]:'piv'}})}
+    }else if(e.k==='elim'){
+      const p=e.B[e.r][e.j],k=e.B[e.i][e.j],b=e.b.abs(),pos=e.i<e.r?$t('Nad','Above'):$t('Pod','Below'),pv=p.one?$t('jedynką','the 1'):$t(`elementem głównym ${p.html()}`,`the pivot ${p.html()}`);
+      const x=e.a.one?$t(`${pos} ${pv}, w wierszu ${e.i+1}, stoi ${k.html()}. ${e.b.n>0?`Od wiersza ${e.i+1} odejmuję wiersz ${e.r+1}${b.one?'':` pomnożony przez ${b.html()}`}`:`Do wiersza ${e.i+1} dodaję wiersz ${e.r+1}${b.one?'':` pomnożony przez ${b.html()}`}`} — wtedy w tym miejscu wyjdzie 0. Liczę element po elemencie:`,`${pos} ${pv}, in row ${e.i+1}, there is ${k.html()}. ${e.b.n>0?`I subtract row ${e.r+1}${b.one?'':` multiplied by ${b.html()}`} from row ${e.i+1}`:`I add row ${e.r+1}${b.one?'':` multiplied by ${b.html()}`} to row ${e.i+1}`} — then this position becomes 0. Entry by entry:`)
+        :$t(`${pos} ${pv}, w wierszu ${e.i+1}, stoi ${k.html()}. Żeby nie dzielić, mnożę wiersz ${e.i+1} przez ${e.a.html()} i ${e.b.n>0?'odejmuję':'dodaję'} wiersz ${e.r+1}${b.one?'':` pomnożony przez ${b.html()}`}: ${e.a.html()}·${fmt(k)} ${e.b.n>0?'−':'+'} ${b.one?'':b.html()+'·'}${fmt(p)} = 0. Liczę element po elemencie:`,`${pos} ${pv}, in row ${e.i+1}, there is ${k.html()}. To avoid dividing, I multiply row ${e.i+1} by ${e.a.html()} and ${e.b.n>0?'subtract':'add'} row ${e.r+1}${b.one?'':` multiplied by ${b.html()}`}: ${e.a.html()}·${fmt(k)} ${e.b.n>0?'−':'+'} ${b.one?'':b.html()+'·'}${fmt(p)} = 0. Entry by entry:`);
+      rowOp(e,$t(`Zeruję: ${op}`,`Making a zero: ${op}`),x,{rows:{[e.r]:'src',[e.i]:'dst'},cells:{[e.i+','+e.j]:'tgt',[e.r+','+e.j]:'piv'}});
+    }else if(e.k==='norm'){
+      const p=e.B[e.i][e.j],frac=e.A[e.i].some(x=>x.d!==1);
+      rowOp(e,$t(`Na koniec: ${op}`,`Finally: ${op}`),(normed?'':normNote()+' ')+$t(`Dzielę wiersz ${e.i+1} przez ${p.html()}, żeby na schodku była 1.${frac?' Tu wychodzą ułamki — wynik po prostu jest ułamkowy.':''}`,`I divide row ${e.i+1} by ${p.html()} to get a 1 on the step.${frac?' Fractions appear here — the result simply is fractional.':''}`),{rows:{[e.i]:'dst'},cells:{[e.i+','+e.j]:'piv'}});
+      normed=true;
     }
-    const p=A[best][j];
-    fr.push({sec,t:$t(`Kolumna ${j+1}: wybieram element główny`,`Column ${j+1}: choosing the pivot`),x:$t(`W kolumnie ${j+1}, od wiersza ${row+1} w dół, szukam liczby różnej od 0 — najlepiej 1 albo −1, bo wtedy nie wyjdą ułamki. Biorę <b>${p.html()}</b> z wiersza ${best+1}.`,`In column ${j+1}, from row ${row+1} down, I look for a nonzero number — ideally 1 or −1, so that no fractions appear. I take <b>${p.html()}</b> from row ${best+1}.`),B:[B({cells:{...colHl,[best+','+j]:'piv'}})]});
-    if(best!==row){
-      const U=[{t:.4,swap:[0,row,best]}];
-      for(let q=0;q<w;q++)U.push({t:1.8,b:0,i:row,j:q,v:A[best][q].html()},{t:1.8,b:0,i:best,j:q,v:A[row][q].html()});
-      fr.push({sec,t:$t(`Zamieniam wiersze ${rw(row)} ↔ ${rw(best)}`,`Swapping rows ${rw(row)} ↔ ${rw(best)}`),x:$t(`Element główny ma stać w wierszu ${row+1}, więc zamieniam miejscami całe wiersze ${row+1} i ${best+1}.${inv||rk?'':' To tylko zmiana kolejności równań — rozwiązania się nie zmieniają.'}`,`The pivot should be in row ${row+1}, so I swap the whole rows ${row+1} and ${best+1}.${inv||rk?'':' This only changes the order of the equations — the solutions stay the same.'}`),B:[B({rows:{[row]:'dst',[best]:'dst'}})],U});
-      [A[row],A[best]]=[A[best],A[row]];
-    }
-    if(!p.one){
-      const iv=F(1).div(p),U=[],C=[];
-      for(let q=0;q<w;q++){const v=A[row][q].mul(iv);C.push(`${fmt(A[row][q])} : ${fmt(p)} = <b>${v.html()}</b>`);U.push({t:.7+q*.6,b:0,i:row,j:q,v:v.html(),line:q})}
-      fr.push({sec,t:$t(`Dzielę ${rw(row)} przez ${fmt(p)}`,`Dividing ${rw(row)} by ${fmt(p)}`),x:$t(`Na miejscu elementu głównego chcę mieć 1, więc <b>cały</b> wiersz ${row+1} — po obu stronach kreski — dzielę przez ${p.html()}:`,`I want a 1 in the pivot position, so I divide the <b>whole</b> row ${row+1} — on both sides of the bar — by ${p.html()}:`),B:[B({rows:{[row]:'dst'},cells:{[row+','+j]:'piv'}})],C,U});
-      A[row]=A[row].map(x=>x.mul(iv));
-    }
-    for(let i=o.down?row+1:0;i<m;i++){
-      if(i===row||A[i][j].z)continue;
-      const k=A[i][j],a=k.abs(),sg=k.n>0?'−':'+',U=[],C=[];
-      for(let q=0;q<w;q++){const v=A[i][q].sub(k.mul(A[row][q]));C.push(`${fmt(A[i][q])} ${sg} ${a.one?'':fmt(a)+'·'}${fmt(A[row][q])} = <b>${v.html()}</b>`);U.push({t:.7+q*.6,b:0,i,j:q,v:v.html(),line:q})}
-      fr.push({sec,t:$t(`Zeruję: ${rw(i)} ${sg} ${a.one?'':a.d===1?a.str():'('+a.str()+')'}${rw(row)}`,`Making a zero: ${rw(i)} ${sg} ${a.one?'':a.d===1?a.str():'('+a.str()+')'}${rw(row)}`),
-        x:$t(`${i<row?'Nad':'Pod'} jedynką, w wierszu ${i+1}, stoi ${k.html()}. ${k.n>0?`Od wiersza ${i+1} odejmuję wiersz ${row+1} pomnożony przez ${k.html()}`:`Do wiersza ${i+1} dodaję wiersz ${row+1} pomnożony przez ${a.html()}`} — wtedy w tym miejscu wyjdzie 0. Liczę element po elemencie:`,`${i<row?'Above':'Below'} the 1, in row ${i+1}, there is ${k.html()}. ${k.n>0?`I subtract row ${row+1} multiplied by ${k.html()} from row ${i+1}`:`I add row ${row+1} multiplied by ${a.html()} to row ${i+1}`} — then this position becomes 0. Entry by entry:`),
-        B:[B({rows:{[row]:'src',[i]:'dst'},cells:{[i+','+j]:'tgt',[row+','+j]:'piv'}})],C,U});
-      A[i]=A[i].map((x,q)=>x.sub(k.mul(A[row][q])));
-    }
-    row++;
   }
-  return {frames:fr,A,ok:true};
+  return {frames:fr,A:plan.A,ok:plan.ok};
 }
 function invFrames(A0,lab,resLab,sec){
   const n=A0.length,I=M.I(n),g=gaussFrames(A0.map((r,i)=>[...r,...I[i]]),n,{mode:'inv',lab,sec});
@@ -1583,7 +1697,7 @@ function sysGaussFrames(Ab,names,sec=$t('Metoda Gaussa','Gaussian elimination'),
   const kc=$t(`rz <i>A</i> = ${res.rank}, rz [<i>A</i> | <i>B</i>] = ${res.rankAb}, niewiadomych ${nv}.`,`rank <i>A</i> = ${res.rank}, rank [<i>A</i> | <i>B</i>] = ${res.rankAb}, unknowns: ${nv}.`);
   const zt=nz?(nz===1?$t('Wiersz zerowy (0 = 0) wyszarzyłem — nic nie wnosi. ','I greyed out the zero row (0 = 0) — it adds nothing. '):$t('Wiersze zerowe (0 = 0) wyszarzyłem — nic nie wnoszą. ','I greyed out the zero rows (0 = 0) — they add nothing. ')):'';
   let t=$t('Odczytuję wynik','Reading the result'),x,C=[],U;
-  if(res.type==='none'){const k=res.A[res.bad][nv].html();t=$t('Sprzeczność!','Contradiction!');x=$t(`Czerwony wiersz to równanie 0 = ${k} — a to nieprawda. ${kc} Rząd <i>A</i> jest mniejszy niż rząd [<i>A</i> | <i>B</i>], więc układ jest <b>sprzeczny</b>: nie ma rozwiązań.`,`The red row is the equation 0 = ${k} — which is false. ${kc} The rank of <i>A</i> is smaller than the rank of [<i>A</i> | <i>B</i>], so the system is <b>inconsistent</b>: it has no solutions.`)}
+  if(res.type==='none'){const k=g.A.find(r=>r.slice(0,nv).every(x=>x.z)&&!r[nv].z)[nv].html();t=$t('Sprzeczność!','Contradiction!');x=$t(`Czerwony wiersz to równanie 0 = ${k} — a to nieprawda. ${kc} Rząd <i>A</i> jest mniejszy niż rząd [<i>A</i> | <i>B</i>], więc układ jest <b>sprzeczny</b>: nie ma rozwiązań.`,`The red row is the equation 0 = ${k} — which is false. ${kc} The rank of <i>A</i> is smaller than the rank of [<i>A</i> | <i>B</i>], so the system is <b>inconsistent</b>: it has no solutions.`)}
   else if(res.type==='one'){x=$t(`${zt}Przed kreską jest macierz jednostkowa, więc każdy wiersz mówi wprost, ile wynosi jedna niewiadoma. ${kc} Rzędy są równe liczbie niewiadomych: <b>dokładnie jedno rozwiązanie</b>.`,`${zt}The identity matrix stands before the bar, so each row says directly what one unknown equals. ${kc} The ranks equal the number of unknowns: <b>exactly one solution</b>.`);C=[{h:sysHtml(keep,names),full:true}]}
   else{x=$t(`${zt}${kc} Rzędy są równe, ale mniejsze od liczby niewiadomych: <b>nieskończenie wiele rozwiązań</b>. Niewiadome bez schodka (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) są dowolne — przenoszę je na prawą stronę.`,`${zt}${kc} The ranks are equal but smaller than the number of unknowns: <b>infinitely many solutions</b>. The unknowns without a pivot (${sol.free.map(j=>nmHtml(names[j])).join(', ')}) are free — I move them to the right side.`);C=[{h:sysHtml(keep,names),full:true},{h:genSolHtml(sol,names),full:true}];U=[{t:1.4,line:1}]}
   fr.push({sec,t,x,B:[bd(g.A,{bar:nv,hl})],C,U});
@@ -1822,9 +1936,9 @@ function genRank(){
     }
     if(fail)continue;
     for(let i=rows.length-1;i>0;i--){const j=rnd(0,i);[rows[i],rows[j]]=[rows[j],rows[i]]}
-    const sc=fracCount(rref(rows.map(x=>[...x,F(0)]),n));
+    const sc=planMax(elimPlan(rows,n,{down:true,norm:false}));
     if(!best||sc<best.sc)best={A:rows,sc};
-    if(sc<=2)break;
+    if(sc<=12)break;
   }
   return best.A;
 }
@@ -2038,8 +2152,13 @@ const INPA='autocomplete="off" autocapitalize="off" spellcheck="false" inputmode
 function ansHtml(ans,id){
   if(ans.kind==='mat'){const r=ans.M.length,c=ans.M[0].length;return $t(`<span class="gv"><span>${ans.lab} =</span> <span class="mat gin" style="grid-template-columns:repeat(${c},auto)">${Array.from({length:r*c},(_,k)=>`<input id="${id}-${k}" ${INPA} aria-label="wiersz ${Math.floor(k/c)+1}, kolumna ${k%c+1}">`).join('')}</span></span>`,`<span class="gv"><span>${ans.lab} =</span> <span class="mat gin" style="grid-template-columns:repeat(${c},auto)">${Array.from({length:r*c},(_,k)=>`<input id="${id}-${k}" ${INPA} aria-label="row ${Math.floor(k/c)+1}, column ${k%c+1}">`).join('')}</span></span>`)}
   if(ans.kind==='num')return `<label class="ans-in" for="${id}-0"><span>${ans.lab} =</span><input id="${id}-0" ${INPA}></label>`;
-  if(ans.kind==='formula')return `<div class="row" style="margin-top:0;flex-wrap:nowrap"><span class="m" style="font-size:20px"><i>X</i>&nbsp;=</span><input id="${id}-f" class="code" ${INPA} placeholder="np. A^-1(C-B)"></div>`;
-  if(ans.kind==='sys')return $t(`<p class="mute" style="margin:0 0 6px">Ile rozwiązań ma ten układ?</p><div class="chips" data-gst-box="${id}"><button class="chip on" data-gst="one">jedno</button><button class="chip" data-gst="inf">nieskończenie wiele</button><button class="chip" data-gst="none">brak — sprzeczny</button></div><div class="nums" id="${id}-vals" style="margin-top:10px">${ans.names.map((v,j)=>`<label class="ans-in" for="${id}-v${j}"><span>${nmHtml(v)} =</span><input id="${id}-v${j}" ${INPA}></label>`).join('')}</div>`,`<p class="mute" style="margin:0 0 6px">How many solutions does this system have?</p><div class="chips" data-gst-box="${id}"><button class="chip on" data-gst="one">one</button><button class="chip" data-gst="inf">infinitely many</button><button class="chip" data-gst="none">none — inconsistent</button></div><div class="nums" id="${id}-vals" style="margin-top:10px">${ans.names.map((v,j)=>`<label class="ans-in" for="${id}-v${j}"><span>${nmHtml(v)} =</span><input id="${id}-v${j}" ${INPA}></label>`).join('')}</div>`);
+  if(ans.kind==='formula')return `<div class="row" style="margin-top:0;flex-wrap:nowrap"><span class="m" style="font-size:20px"><i>X</i>&nbsp;=</span><input id="${id}-f" class="code" ${INPA} placeholder="${$t('np.','e.g.')} A^-1(C-B)"></div>`;
+  if(ans.kind==='sys'){
+    const last=ans.names[ans.names.length-1],ex=`1/2 - 3${last}`;
+    return `<p class="mute" style="margin:0 0 6px">${$t('Ile rozwiązań ma ten układ?','How many solutions does this system have?')}</p><div class="chips" data-gst-box="${id}"><button class="chip on" data-gst="one">${$t('jedno','one')}</button><button class="chip" data-gst="inf">${$t('nieskończenie wiele','infinitely many')}</button><button class="chip" data-gst="none">${$t('brak — sprzeczny','none — inconsistent')}</button></div>`+
+      `<p class="mute" id="${id}-genhint" hidden style="margin:10px 0 0">${$t(`Wpisz rozwiązanie ogólne: przy niewiadomych swobodnych (parametrach) zostaw puste pole albo wpisz samą nazwę, pozostałe wyraź przez nie, np. <code>${ex}</code>.`,`Type the general solution: for the free unknowns (parameters) leave the field empty or type just the name; express the others in terms of them, e.g. <code>${ex}</code>.`)}</p>`+
+      `<div class="nums" id="${id}-vals" style="margin-top:10px">${ans.names.map((v,j)=>`<label class="ans-in" for="${id}-v${j}"><span>${nmHtml(v)} =</span><input id="${id}-v${j}" ${INPA}></label>`).join('')}</div>`;
+  }
   if(ans.kind==='param')return $t(`<p class="mute" style="margin:0 0 6px">Dla jakich <i>a</i> układ <b>nie</b> ma dokładnie jednego rozwiązania? Wpisz te wartości i wybierz, co się wtedy dzieje (puste wiersze pomiń).</p>`,`<p class="mute" style="margin:0 0 6px">For which <i>a</i> does the system <b>not</b> have exactly one solution? Type these values and choose what happens then (leave unused rows empty).</p>`)+
     [0,1,2].map(k=>$t(`<div class="row" style="margin-top:6px"><label class="ans-in" for="${id}-a${k}"><span><i>a</i> =</span><input id="${id}-a${k}" ${INPA}></label><select id="${id}-t${k}" class="code" style="width:auto;padding:7px 10px"><option value="">— co wtedy? —</option><option value="none">układ sprzeczny</option><option value="inf">nieskończenie wiele rozwiązań</option></select></div>`,`<div class="row" style="margin-top:6px"><label class="ans-in" for="${id}-a${k}"><span><i>a</i> =</span><input id="${id}-a${k}" ${INPA}></label><select id="${id}-t${k}" class="code" style="width:auto;padding:7px 10px"><option value="">— what then? —</option><option value="none">inconsistent system</option><option value="inf">infinitely many solutions</option></select></div>`)).join('');
   return '';
@@ -2059,7 +2178,8 @@ function ansCheck(ans,inp){
   if(ans.kind==='sys'){
     if(inp.type==='one'&&inp.vals.every(x=>!String(x).trim()))return {score:0,empty:true,marks:{},msg:''};
     if(inp.type!==ans.type)return {score:0,empty:false,marks:{},msg:$t('Zła liczba rozwiązań — porównaj rz <i>A</i> i rz [<i>A</i> | <i>B</i>] z liczbą niewiadomych.','Wrong number of solutions — compare rank <i>A</i> and rank [<i>A</i> | <i>B</i>] with the number of unknowns.')};
-    if(ans.type!=='one')return {score:1,empty:false,marks:{},msg:''};
+    if(ans.type==='none')return {score:1,empty:false,marks:{},msg:''};
+    if(ans.type==='inf')return checkGeneral(ans,inp.vals);
     const marks={};let good=0,empty=0;
     inp.vals.forEach((s,j)=>{if(!String(s).trim())empty++;const v=parseFr(s),ok=!!(v&&v.eq(ans.vals[j]));marks['v'+j]=ok;if(ok)good++});
     return {score:good/ans.vals.length,empty:empty===ans.vals.length,partEmpty:empty,marks,msg:good===ans.vals.length?'':$t(`Dobrze: ${good} z ${ans.vals.length}.`,`Correct: ${good} of ${ans.vals.length}.`)};
@@ -2077,11 +2197,31 @@ function ansCheck(ans,inp){
   }
   return {score:0,empty:true,marks:{},msg:''};
 }
+// rozwiązanie ogólne ucznia: dowolny wybór zmiennych swobodnych; każde równanie musi być spełnione tożsamościowo
+function checkGeneral(ans,vals){
+  const nv=ans.names.length,idx=Object.fromEntries(ans.names.map((v,j)=>[v,j])),forms=[],marks={};
+  if(vals.every(x=>!String(x).trim()))return {score:.5,empty:false,marks,msg:$t('Liczba rozwiązań się zgadza — dopisz jeszcze rozwiązanie ogólne.','The number of solutions is right — now also write the general solution.')};
+  for(let j=0;j<nv;j++){
+    const s=String(vals[j]).trim().replace(/[−–]/g,'-').replace(/(\d),(\d)/g,'$1.$2')||ans.names[j];
+    let p;try{p=parseLinSide(s,j)}catch(e){marks['v'+j]=false;return {score:.5,empty:false,marks,msg:$t(`Nie rozumiem wyrażenia przy ${nmHtml(ans.names[j])}. Pisz np. 2 - 3${ans.names[nv-1]}.`,`I can’t read the expression for ${nmHtml(ans.names[j])}. Write e.g. 2 - 3${ans.names[nv-1]}.`)}}
+    const c=ans.names.map(()=>F(0));
+    for(const [k,v] of Object.entries(p.v)){if(!(k in idx)){marks['v'+j]=false;return {score:.5,empty:false,marks,msg:$t(`Przy ${nmHtml(ans.names[j])} jest nieznana zmienna „${k}”. Używaj tylko niewiadomych z układu.`,`The expression for ${nmHtml(ans.names[j])} uses an unknown variable “${k}”. Use only the unknowns of the system.`)}}c[idx[k]]=c[idx[k]].add(v)}
+    forms.push({c,k:p.c});
+  }
+  const free=forms.map((f,j)=>f.k.z&&f.c.every((x,q)=>q===j?x.one:x.z)?j:-1).filter(j=>j>=0),need=nv-ans.rank;
+  if(free.length!==need){free.forEach(j=>{marks['v'+j]=false});return {score:.5,empty:false,marks,msg:$t(`Parametrów (niewiadomych swobodnych) powinno być ${need}, a u Ciebie jest ${free.length}.`,`There should be ${need} ${need===1?'parameter':'parameters'} (free unknowns), but you have ${free.length}.`)}}
+  for(let j=0;j<nv;j++)if(!free.includes(j)&&forms[j].c.some((x,q)=>!x.z&&!free.includes(q))){marks['v'+j]=false;return {score:.5,empty:false,marks,msg:$t(`Wyraź ${nmHtml(ans.names[j])} tylko przez niewiadome swobodne (${free.map(q=>nmHtml(ans.names[q])).join(', ')}).`,`Express ${nmHtml(ans.names[j])} only in terms of the free unknowns (${free.map(q=>nmHtml(ans.names[q])).join(', ')}).`)}}
+  const bad=[];
+  ans.Ab.forEach((row,i)=>{const cc=ans.names.map(()=>F(0));let k=F(0);row.slice(0,nv).forEach((a,j)=>{if(a.z)return;forms[j].c.forEach((x,q)=>{cc[q]=cc[q].add(a.mul(x))});k=k.add(a.mul(forms[j].k))});if(!k.eq(row[nv])||cc.some(x=>!x.z))bad.push(i+1)});
+  ans.names.forEach((_,j)=>{marks['v'+j]=!bad.length});
+  if(bad.length)return {score:.5,empty:false,marks,msg:$t(`Liczba rozwiązań się zgadza, ale Twoje rozwiązanie ogólne nie spełnia ${bad.length===1?'równania':'równań'} ${bad.join(', ')}.`,`The number of solutions is right, but your general solution does not satisfy equation${bad.length===1?'':'s'} ${bad.join(', ')}.`)};
+  return {score:1,empty:false,marks,msg:''};
+}
 function ansShow(ans){
   if(ans.kind==='mat')return `${ans.lab} = ${M.html(ans.M)}`;
   if(ans.kind==='num')return `${ans.lab} = ${ans.v.html()}`;
   if(ans.kind==='formula')return `<i>X</i> = ${rP(ans.sol.P)}`;
-  if(ans.kind==='sys')return ans.type==='one'?ans.names.map((v,j)=>`${nmHtml(v)} = ${ans.vals[j].html()}`).join(', '):TYPE_PL[ans.type];
+  if(ans.kind==='sys')return ans.type==='one'?ans.names.map((v,j)=>`${nmHtml(v)} = ${ans.vals[j].html()}`).join(', '):ans.type==='inf'?`${TYPE_PL.inf}: ${ans.gen}`:TYPE_PL[ans.type];
   if(ans.kind==='param')return ans.roots.map(o=>`<i>a</i> = ${o.a.html()}: ${TYPE_PL[o.type]}`).join('; ')+$t('; dla pozostałych — jedno rozwiązanie','; for all other values — one solution');
   return '';
 }
@@ -2089,16 +2229,16 @@ function inpShow(ans,inp){
   const e=s=>String(s).trim()?String(s).trim().replace(/</g,'&lt;'):'…';
   if(ans.kind==='mat'){const c=ans.M[0].length;return `<span class="mat" style="grid-template-columns:repeat(${c},auto)">${inp.map(s=>`<span>${e(s)}</span>`).join('')}</span>`}
   if(ans.kind==='num'||ans.kind==='formula')return e(inp);
-  if(ans.kind==='sys')return inp.type==='one'?ans.names.map((v,j)=>`${nmHtml(v)} = ${e(inp.vals[j])}`).join(', '):TYPE_PL[inp.type];
+  if(ans.kind==='sys')return inp.type==='one'?ans.names.map((v,j)=>`${nmHtml(v)} = ${e(inp.vals[j])}`).join(', '):inp.type==='inf'?`${TYPE_PL.inf}: `+ans.names.map((v,j)=>`${nmHtml(v)} = ${String(inp.vals[j]).trim()?e(inp.vals[j]):v}`).join(', '):TYPE_PL[inp.type];
   if(ans.kind==='param')return inp.filter(r=>String(r.a).trim()).map(r=>`<i>a</i> = ${e(r.a)}: ${r.type?TYPE_PL[r.type]:'…'}`).join('; ')||'…';
   return '';
 }
 
 // ---------- Opakowania istniejących generatorów w format zadania ----------
-const opTopic=type=>()=>{const t=genTask(type);return {q:t.q,body:givenH(t.given),ans:{kind:'mat',M:t.ans,lab:t.lab},sol:t.sol,fr:t.fr}};
+const opTopic=type=>()=>{const t=genTask(type);return {q:t.q,body:givenH(t.given),ans:{kind:'mat',M:t.ans,lab:t.lab},get sol(){return t.sol},fr:t.fr}};
 function xnumTopic(n,rect){return ()=>{
   const T=genNum(n,-1,rect);
-  return {q:$t('Wyznacz macierz <i>X</i>','Find the matrix <i>X</i>'),body:eqH(T.sol.orig)+givenH([...T.sol.letters].sort().map(c=>[c,T.env[c]])),ans:{kind:'mat',M:T.X,lab:'<i>X</i>'},sol:numSolHtml(T),fr:()=>numFrames(T),
+  return {q:$t('Wyznacz macierz <i>X</i>','Find the matrix <i>X</i>'),body:eqH(T.sol.orig)+givenH([...T.sol.letters].sort().map(c=>[c,T.env[c]])),ans:{kind:'mat',M:T.X,lab:'<i>X</i>'},get sol(){return numSolHtml(T)},fr:()=>numFrames(T),
     hint:$t(`Najpierw na literach: <span class="f"><i>X</i> = ${rP(T.sol.P)}</span>. Potem odwrotność metodą Gaussa i mnożenie.`,`First symbolically: <span class="f"><i>X</i> = ${rP(T.sol.P)}</span>. Then the inverse by Gaussian elimination and multiplication.`)};
 }}
 function xlinTopic(){
@@ -2112,10 +2252,57 @@ function xsymTopic(){
       hint:$t('Rozpisz nawiasy (kolejność się odwraca), przenieś wyrazy z <i>X</i> na lewo, potem mnóż przez odwrotności z właściwej strony.','Expand the brackets (the order reverses), move the <i>X</i> terms to the left, then multiply by inverses from the correct side.')}}
 }
 const METH_PL={gauss:'',get mac(){return $t(' metodą macierzową',' by the matrix method')},get cra(){return $t(' wzorami Cramera',' by Cramer’s rule')}};
+// oczekiwana odpowiedź dla układu: liczba rozwiązań, wartości albo rozwiązanie ogólne
+function sysAns(Ab,names){
+  const nv=names.length,res=rref(Ab,nv),sol=sysSolution(res,nv);
+  return {kind:'sys',type:res.type,names,Ab,rank:res.rank,vals:res.type==='one'?sol.forms.map(f=>f.k):null,gen:res.type==='inf'?genSolHtml(sol,names):''};
+}
+// układ 4×4 jak na kolokwium: 2–3 równania bazowe, reszta to ich kombinacje (większe liczby, znikające wyrazy),
+// zwykle sprzeczny albo nieoznaczony — stąd „jeśli to możliwe”
+function genExamSys(){
+  const nv=4,m=4,names=['x1','x2','x3','x4'],want=pick(['none','none','none','inf','inf','inf','one']),r=want==='one'?4:pick([2,2,3]);
+  let best=null,found=0;
+  for(let at=0;at<1500&&found<(want==='inf'?90:45);at++){
+    const base=[];
+    for(let t=0;t<40&&base.length<r;t++){const row=Array.from({length:nv},()=>F(rnd(1,8)*(Math.random()<.15?-1:1)));if(rankOf([...base,row])===base.length+1)base.push(row)}
+    if(base.length<r)continue;
+    const rows=base.map(x=>x.slice()),dep=[];let fail=false;
+    while(rows.length<m){
+      let row=null;
+      for(let t=0;t<80&&!row;t++){
+        const k=base.map(()=>pick([-4,-3,-2,-1,1,2,3,4,0,0]));if(k.filter(x=>x).length<Math.min(2,r))continue;
+        const c=base[0].map((_,j)=>base.reduce((s,bb,i)=>s.add(bb[j].mul(F(k[i]))),F(0)));
+        if(c.every(x=>Math.abs(x.n)<=20)&&c.filter(x=>!x.z).length>=2&&!rows.some(o=>o.every((x,j)=>x.eq(c[j]))))row=c;
+      }
+      if(!row){fail=true;break}
+      dep.push(rows.length);rows.push(row);
+    }
+    if(fail)continue;
+    const x0=Array.from({length:nv},()=>F(rnd(-2,3))),Ab=rows.map(row=>[...row,row.reduce((s,a,j)=>s.add(a.mul(x0[j])),F(0))]);
+    if(want==='none'){const i=pick(dep);Ab[i][nv]=Ab[i][nv].add(F(pick([-3,-2,-1,1,2,3])))}
+    if(Ab.some(row=>Math.abs(row[nv].n)>24))continue;
+    const res=rref(Ab,nv);if(res.type!==want)continue;found++;
+    const dr=dep.map(i=>Ab[i]),zeros=dr.reduce((s,row)=>s+row.slice(0,nv).filter(x=>x.z).length,0),big=Math.max(0,...dr.flatMap(row=>row.slice(0,nv).map(x=>Math.abs(x.n))));
+    // ładny wynik: małe liczby i mało ułamków w końcowej postaci (jak w zadaniach z kolokwium)
+    const fin=res.A.flat(),finMax=Math.max(...fin.map(x=>Math.max(Math.abs(x.n),x.d))),finFr=fin.filter(x=>x.d!==1).length;
+    const sc=planFrac(elimPlan(Ab,nv,{sys:true}))*1.5+finFr*10+Math.max(0,finMax-6)*1.5+(zeros>=1&&zeros<=2?-4:zeros>2?2:0)+(big>=8?-3:0)+Math.max(...Ab.map(row=>Math.abs(row[nv].n)))/6;
+    if(!best||sc<best.sc)best={Ab,sc};
+  }
+  if(!best)return genExamSys();
+  const Ab=best.Ab;
+  if(Math.random()<.35)for(let i=Ab.length-1;i>0;i--){const j=rnd(0,i);[Ab[i],Ab[j]]=[Ab[j],Ab[i]]}
+  return {Ab,names};
+}
+function examTopic(){
+  const g=genExamSys(),out=sysMethodHtml(g.Ab,g.names,'gauss');
+  return {q:$t('Jeśli to możliwe, rozwiąż układ równań','Solve the system of equations, if possible'),body:`<div class="sysbox">${sysHtml(abRows(g.Ab,4),g.names)}</div>`,
+    ans:sysAns(g.Ab,g.names),get sol(){return sysMethodHtml(g.Ab,g.names,'gauss').html},fr:()=>sysFrames(g.Ab,g.names,'gauss'),
+    hint:$t('Macierz rozszerzona i Gauss. Sprawdź, czy któreś równanie nie jest kombinacją innych (np. w₃ = 4w₁ − 4w₂) — wtedy porównaj prawe strony: zgodne → parametry, niezgodne → sprzeczność.','Augmented matrix and Gauss. Check whether an equation is a combination of others (e.g. R₃ = 4R₁ − 4R₂) — then compare the right-hand sides: they match → parameters, they don’t → inconsistent.')};
+}
 function sysTopic(sz,mode,method){return ()=>{
   const g=genSys(sz,mode),out=sysMethodHtml(g.Ab,g.names,method);
   return {q:$t('Rozwiąż układ równań','Solve the system of equations')+METH_PL[method],body:`<div class="sysbox">${sysHtml(abRows(g.Ab,g.names.length),g.names)}</div>`,
-    ans:{kind:'sys',type:out.type,names:g.names,vals:out.vals},sol:out.html,fr:()=>sysFrames(g.Ab,g.names,method),
+    ans:sysAns(g.Ab,g.names),get sol(){return sysMethodHtml(g.Ab,g.names,method).html},fr:()=>sysFrames(g.Ab,g.names,method),
     hint:{gauss:$t('Macierz rozszerzona [<i>A</i> | <i>B</i>] i eliminacja kolumna po kolumnie.','Augmented matrix [<i>A</i> | <i>B</i>] and elimination column by column.'),mac:$t('<i>X</i> = <i>A</i><sup>−1</sup><i>B</i> — najpierw odwrotność, potem mnożenie.','<i>X</i> = <i>A</i><sup>−1</sup><i>B</i> — first the inverse, then the multiplication.'),cra:$t('<i>W</i> = det <i>A</i>, potem <i>x</i> = <i>W<sub>x</sub></i>/<i>W</i>.','<i>D</i> = det <i>A</i>, then <i>x</i> = <i>D<sub>x</sub></i>/<i>D</i>.')}[method]};
 }}
 function detTopic(n){return ()=>{
@@ -2127,13 +2314,13 @@ function detTopic(n){return ()=>{
 }}
 function rankTopic(){
   const A=genRank(),r=rankOf(A);
-  return {q:$t('Wyznacz rząd macierzy','Find the rank of the matrix'),body:givenH([['A',A]]),ans:{kind:'num',v:F(r),lab:$t('rz <i>A</i>','rank <i>A</i>')},sol:rankHtml(A),fr:()=>rankFrames(A),
+  return {q:$t('Wyznacz rząd macierzy','Find the rank of the matrix'),body:givenH([['A',A]]),ans:{kind:'num',v:F(r),lab:$t('rz <i>A</i>','rank <i>A</i>')},get sol(){return rankHtml(A)},fr:()=>rankFrames(A),
     hint:$t('Sprowadź macierz do postaci schodkowej (zera pod elementami głównymi) i policz niezerowe wiersze.','Reduce the matrix to row echelon form (zeros below the pivots) and count the nonzero rows.')};
 }
 function paramTopic(){
   const P=genParam();
   return {q:$t('Zbadaj liczbę rozwiązań w zależności od parametru <i>a</i>','Determine the number of solutions depending on the parameter <i>a</i>'),body:`<div class="sysbox">${paramSysHtml(P.E,P.b,P.names)}</div>`,
-    ans:{kind:'param',roots:P.roots.map((a,k)=>({a,type:P.types[k]}))},sol:paramHtml(P),fr:()=>paramFrames(P),
+    ans:{kind:'param',roots:P.roots.map((a,k)=>({a,type:P.types[k]}))},get sol(){return paramHtml(P)},fr:()=>paramFrames(P),
     hint:$t('Policz wyznacznik główny <i>W</i>(<i>a</i>). Gdzie <i>W</i> ≠ 0 — jedno rozwiązanie. Wartości z <i>W</i> = 0 podstaw i sprawdź Gaussem.','Compute the main determinant <i>D</i>(<i>a</i>). Where <i>D</i> ≠ 0 — one solution. Substitute the values with <i>D</i> = 0 and check them with Gaussian elimination.')};
 }
 
@@ -2157,6 +2344,7 @@ const TOPICS=[
   {id:'sysrect',en:'Non-square (m ≠ n)',sec:'Układy równań',name:'Nietypowe (m ≠ n)',gen:sysTopic('r','any','gauss')},
   {id:'sysmac',en:'Matrix method',sec:'Układy równań',name:'Metoda macierzowa',gen:sysTopic(3,'one','mac')},
   {id:'syscra',en:'Cramer’s rule',sec:'Układy równań',name:'Wzory Cramera',gen:sysTopic(3,'one','cra')},
+  {id:'sysexam',en:'Exam style 4×4',sec:'Układy równań',name:'Jak na sprawdzianie 4×4',gen:examTopic},
   {id:'param',en:'With parameter <i>a</i>',sec:'Układy równań',name:'Z parametrem <i>a</i>',gen:paramTopic},
   {id:'det2',en:'det 2×2',sec:'Wyznaczniki',name:'det 2×2',gen:detTopic(2)},
   {id:'det3',en:'det 3×3 (Sarrus)',sec:'Wyznaczniki',name:'det 3×3 (Sarrus)',gen:detTopic(3)},
@@ -2176,6 +2364,7 @@ const $=s=>document.querySelector(s);
 // język: zapamiętany wybór (albo polski), ustawiony zanim cokolwiek się wyrenderuje
 try{const v=localStorage.getItem('algebra-lang');if(v==='en'||v==='pl')LANG.cur=v}catch(e){}
 document.documentElement.dataset.lang=LANG.cur;document.documentElement.lang=LANG.cur;
+try{if(localStorage.getItem('algebra-bez-ulamkow')==='0')OPT.noFrac=false}catch(e){}
 const show=(el,cls,html)=>{el.className='msg '+cls;el.innerHTML=html};
 const INP='autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text"';
 const grid=(r,c)=>`<span class="mat gin" style="grid-template-columns:repeat(${c},auto)">${Array.from({length:r*c},()=>`<input ${INP}>`).join('')}</span>`;
@@ -2212,7 +2401,7 @@ function newNum(){
     $('#ntNote').innerHTML=$t(`Tego równania nie rozwiążesz wzorem (${tpl.note()}). Liczysz przez niewiadome: <i>X</i> = [<i>x y</i>; <i>z t</i>] → układ równań. Rozmiar i kształt nie mają tu znaczenia.`,`This equation can’t be solved with a formula (${tpl.note()}). You solve it using unknowns: <i>X</i> = [<i>x y</i>; <i>z t</i>] → a system of equations. Size and shape do not matter here.`);
   }else{
     const T=genNum(nSize,idx,nShape==='rect');
-    nTask={fr:()=>numFrames(T),orig:T.sol.orig,letters:[...T.sol.letters].sort(),env:T.env,X:T.X,solHtml:numSolHtml(T),
+    nTask={fr:()=>numFrames(T),orig:T.sol.orig,letters:[...T.sol.letters].sort(),env:T.env,X:T.X,get solHtml(){return numSolHtml(T)},
       hint:$t(`Najpierw na literach: <span class="f"><i>X</i> = ${rP(T.sol.P)}</span>. Potem policz odwrotność metodą Gaussa i wymnóż.`,`First symbolically: <span class="f"><i>X</i> = ${rP(T.sol.P)}</span>. Then compute the inverse by Gaussian elimination and multiply.`)};
     $('#ntNote').innerHTML=nShape==='rect'?$t(`Prostokątna <i>X</i>: wymiar wynika z działań. Odwracasz tylko macierze kwadratowe — te, które stoją przy <i>X</i>.`,`Rectangular <i>X</i>: its size follows from the operations. You only invert square matrices — the ones next to <i>X</i>.`):'';
   }
@@ -2325,21 +2514,23 @@ $('#numRnd').onclick=()=>{const had=!sol||$('#numOut').innerHTML;curLetters.forE
 $('#openEx2').onclick=()=>{$('#eqIn').value='AX=XA';mxVals.A='1 1\n0 1';setTab('rownania');runSolve();$('#numCard').scrollIntoView()};
 
 // ---- układy równań ----
-let sSize=3,sMode='one',sMeth='gauss',sTask=null,sPick='one',sScore={ok:0,all:0},sCounted=false,sysShown=false;
+let sSize=3,sMode='one',sMeth='gauss',sTask=null,sScore={ok:0,all:0},sCounted=false,sysShown=false;
 const chipsOn=(attr,val)=>document.querySelectorAll(`[data-${attr}]`).forEach(b=>b.classList.toggle('on',b.dataset[attr]===String(val)));
-function setPick(t){sPick=t;chipsOn('st',t);$('#sVals').hidden=t!=='one'}
+const sysTid=()=>sMode==='exam'?'sysexam':sMode==='any'&&sSize!=='r'?'sysany':{2:'sys2',3:'sys3',4:'sys4',r:'sysrect'}[sSize];
 function renderSysSol(){sTask.out=sysMethodHtml(sTask.Ab,sTask.names,sMeth);$('#sSolBox').innerHTML=sTask.out.html}
 function newSys(){
   chipsOn('ss',sSize);chipsOn('sm',sMode);chipsOn('me',sMeth);
-  sTask=genSys(sSize,sMode);sCounted=false;
+  document.querySelectorAll('[data-ss]').forEach(b=>{b.disabled=sMode==='exam'});
+  sTask=sMode==='exam'?genExamSys():genSys(sSize,sMode);sCounted=false;
+  sTask.ans=sysAns(sTask.Ab,sTask.names);
+  $('#sQ').innerHTML=sMode==='exam'?$t('Jeśli to możliwe, rozwiąż układ równań','Solve the system of equations, if possible'):$t('Rozwiąż układ równań','Solve the system of equations');
   $('#sEq').innerHTML=sysHtml(abRows(sTask.Ab,sTask.names.length),sTask.names);
-  $('#sVals').innerHTML=sTask.names.map((v,j)=>`<label class="ans-in" for="sv${j}"><span>${nmHtml(v)} =</span><input id="sv${j}" ${INP}></label>`).join('');
-  setPick('one');$('#sMsg').className='msg';$('#sSolBox').className='sol';renderSysSol();
+  $('#sAns').innerHTML=ansHtml(sTask.ans,'sa');
+  $('#sMsg').className='msg';$('#sSolBox').className='sol';renderSysSol();
 }
 document.querySelectorAll('[data-ss]').forEach(b=>b.onclick=()=>{sSize=b.dataset.ss==='r'?'r':+b.dataset.ss;newSys()});
 document.querySelectorAll('[data-sm]').forEach(b=>b.onclick=()=>{sMode=b.dataset.sm;newSys()});
 document.querySelectorAll('[data-me]').forEach(b=>b.onclick=()=>{sMeth=b.dataset.me;chipsOn('me',sMeth);renderSysSol();if(sysShown)runSys()});
-document.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>setPick(b.dataset.st));
 $('#sNew').onclick=newSys;
 $('#sSol').onclick=()=>$('#sSolBox').classList.toggle('on');
 $('#sHint').onclick=()=>{
@@ -2348,21 +2539,16 @@ $('#sHint').onclick=()=>{
     gauss:$t(`Zapisz macierz rozszerzoną ${augHtml(A,bc)} i zeruj kolumna po kolumnie. Wiersz [0 … 0 | liczba ≠ 0] oznacza sprzeczność, kolumna bez schodka — parametr.`,`Write the augmented matrix ${augHtml(A,bc)} and make zeros column by column. A row [0 … 0 | number ≠ 0] means a contradiction, a column without a pivot means a parameter.`),
     mac:$t(`Zapisz układ jako <span class="f"><i>AX</i> = <i>B</i></span>: ${matH(A)}·${colH(sTask.names)} = ${matH(bc)}. Jeśli <i>A</i> jest kwadratowa i odwracalna, to <span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>.`,`Write the system as <span class="f"><i>AX</i> = <i>B</i></span>: ${matH(A)}·${colH(sTask.names)} = ${matH(bc)}. If <i>A</i> is square and invertible, then <span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>.`),
     cra:$t(`Policz <span class="f"><i>W</i> = det <i>A</i></span>. Gdy <span class="f"><i>W</i> ≠ 0</span>: <span class="f"><i>x</i> = <i>W<sub>x</sub></i> / <i>W</i></span>, gdzie w <i>W<sub>x</sub></i> kolumnę przy <i>x</i> zastępujesz kolumną wyrazów wolnych. Gdy <span class="f"><i>W</i> = 0</span>, rozstrzyga Gauss.`,`Compute <span class="f"><i>D</i> = det <i>A</i></span>. If <span class="f"><i>D</i> ≠ 0</span>: <span class="f"><i>x</i> = <i>D<sub>x</sub></i> / <i>D</i></span>, where in <i>D<sub>x</sub></i> the column of <i>x</i> is replaced by the column of constants. If <span class="f"><i>D</i> = 0</span>, Gaussian elimination decides.`)
-  }[sMeth]);
+  }[sMeth]+(sMode==='exam'?$t(' Na sprawdzianie często któreś równanie jest kombinacją innych — porównaj wtedy prawe strony.',' In tests one equation is often a combination of others — then compare the right-hand sides.'):''));
 };
 $('#sCheck').onclick=()=>{
-  const out=sTask.out,msg=$('#sMsg'),ins=[...document.querySelectorAll('#sVals input')];let ok=false,counted=true;
-  ins.forEach(el=>el.classList.remove('ok','bad'));
-  if(sPick!==out.type)show(msg,'bad',$t(`✗ To nie ten przypadek. Porównaj rz <i>A</i> i rz [<i>A</i> | <i>B</i>] z liczbą niewiadomych (${sTask.names.length}) — pomoże Podpowiedź albo ściąga.`,`✗ That is not the right case. Compare rank <i>A</i> and rank [<i>A</i> | <i>B</i>] with the number of unknowns (${sTask.names.length}) — the Hint or the cheat sheet will help.`));
-  else if(out.type==='one'){
-    let good=0,empty=0;
-    ins.forEach((el,k)=>{const v=parseFr(el.value);if(!el.value.trim())empty++;const g=v&&v.eq(out.vals[k]);el.classList.toggle('ok',!!g);el.classList.toggle('bad',!g);if(g)good++});
-    if(empty){counted=false;show(msg,'bad',$t(`Uzupełnij wszystkie niewiadome (${empty} pustych).`,`Fill in all unknowns (${empty} empty).`))}
-    else if(good===ins.length){ok=true;show(msg,'ok',$t('✓ Dobrze! Układ ma dokładnie jedno rozwiązanie i to jest ono.','✓ Correct! The system has exactly one solution and this is it.'))}
-    else show(msg,'bad',$t(`✗ Dobrze: ${good} z ${ins.length}. Podstaw swoje liczby do równań i sprawdź, które się nie zgadza.`,`✗ Correct: ${good} of ${ins.length}. Substitute your numbers into the equations and see which one fails.`));
-  }else{ok=true;show(msg,'ok',out.type==='inf'?$t('✓ Tak — nieskończenie wiele rozwiązań. W „Rozwiązaniu” zobaczysz, jak zapisać rozwiązanie ogólne z parametrem.','✓ Yes — infinitely many solutions. The “Solution” shows how to write the general solution with a parameter.'):$t('✓ Tak — układ jest sprzeczny, nie ma rozwiązań.','✓ Yes — the system is inconsistent, it has no solutions.'))}
-  if(counted&&!sCounted){sScore.all++;if(ok)sScore.ok++;sCounted=true;rec(sMode==='any'&&sSize!=='r'?'sysany':{2:'sys2',3:'sys3',4:'sys4',r:'sysrect'}[sSize],ok?1:0)}
-  $('#sScore').textContent=sScore.all?$t(`wynik: ${sScore.ok}/${sScore.all}`,`score: ${sScore.ok}/${sScore.all}`):'';
+  const msg=$('#sMsg'),r=ansCheck(sTask.ans,ansRead('sa',sTask.ans));ansMark('sa',r);
+  if(r.empty){show(msg,'bad',$t('Najpierw wybierz liczbę rozwiązań i wpisz wartości niewiadomych.','First choose the number of solutions and type the values of the unknowns.'));return}
+  const ok=r.score===1;
+  if(ok)show(msg,'ok',{one:$t('✓ Dobrze! Układ ma dokładnie jedno rozwiązanie i to jest ono.','✓ Correct! The system has exactly one solution and this is it.'),inf:$t('✓ Dobrze! Nieskończenie wiele rozwiązań i Twoje rozwiązanie ogólne jest poprawne.','✓ Correct! Infinitely many solutions, and your general solution is right.'),none:$t('✓ Tak — układ jest sprzeczny, nie ma rozwiązań.','✓ Yes — the system is inconsistent, it has no solutions.')}[sTask.ans.type]);
+  else show(msg,'bad','✗ '+(r.msg||$t('Niestety nie.','Not quite.')));
+  if(!sCounted){sScore.all++;if(ok)sScore.ok++;sCounted=true;rec(sysTid(),r.score)}
+  $('#sScore').textContent=$t(`wynik: ${sScore.ok}/${sScore.all}`,`score: ${sScore.ok}/${sScore.all}`);
 };
 function runSys(){
   const err=$('#sysErr');err.className='msg';$('#sysOut').innerHTML='';
@@ -2466,6 +2652,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key===' '&&!(e.target.closest&&e.target.closest('button'))){$('#plPlay').click();e.preventDefault()}
 });
 function play(make,name,msgEl){
+  PL.make=make;
   let fr;try{fr=make()}catch(e){if(msgEl)show(msgEl,'bad',e.message);return}
   if(fr&&fr.length)plOpen(fr,name);
 }
@@ -2492,15 +2679,21 @@ function ansFill(id,ans,inp){
   if(ans.kind==='mat')inp.forEach((x,k)=>set(k,x));
   else if(ans.kind==='num')set(0,inp);
   else if(ans.kind==='formula')set('f',inp);
-  else if(ans.kind==='sys'){const box=document.querySelector(`[data-gst-box="${id}"]`);if(box)box.querySelectorAll('[data-gst]').forEach(c=>c.classList.toggle('on',c.dataset.gst===inp.type));const vals=document.getElementById(id+'-vals');if(vals)vals.hidden=inp.type!=='one';inp.vals.forEach((x,j)=>set('v'+j,x))}
+  else if(ans.kind==='sys'){const box=document.querySelector(`[data-gst-box="${id}"]`);if(box)box.querySelectorAll('[data-gst]').forEach(c=>c.classList.toggle('on',c.dataset.gst===inp.type));sysMode(id,inp.type);inp.vals.forEach((x,j)=>set('v'+j,x))}
   else if(ans.kind==='param')inp.forEach((r,k)=>{set('a'+k,r.a);set('t'+k,r.type)});
 }
 function ansMark(id,res){for(const [k,ok] of Object.entries(res.marks)){const el=document.getElementById(id+'-'+k);if(el){el.classList.toggle('ok',!!ok);el.classList.toggle('bad',!ok)}}}
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-gst]');if(!b)return;
   const box=b.closest('[data-gst-box]');box.querySelectorAll('[data-gst]').forEach(c=>c.classList.toggle('on',c===b));
-  const vals=document.getElementById(box.dataset.gstBox+'-vals');if(vals)vals.hidden=b.dataset.gst!=='one';
+  sysMode(box.dataset.gstBox,b.dataset.gst);
 });
+// pola wartości: przy „jedno” liczby, przy „nieskończenie wiele” rozwiązanie ogólne, przy „brak” nic
+function sysMode(id,type){
+  const vals=document.getElementById(id+'-vals'),hint=document.getElementById(id+'-genhint');
+  if(vals){vals.hidden=type==='none';vals.classList.toggle('gen',type==='inf')}
+  if(hint)hint.hidden=type!=='inf';
+}
 const plain=h=>String(h).replace(/<[^>]+>/g,'');
 // oba języki naraz — CSS pokazuje bieżący (do elementów budowanych raz, np. przycisków)
 const bi=(pl,en)=>`<span data-ln="pl">${pl}</span><span data-ln="en">${en}</span>`;
@@ -2531,7 +2724,7 @@ function makePractice(root,o){
   $i('Play').onclick=()=>play(task.fr,plain(tName(topic)),$i('Msg'));
   $i('Sol').onclick=()=>$i('SolBox').classList.toggle('on');
   $i('New').onclick=()=>{next();if(o.onNew)o.onNew()};
-  return {next};
+  return {next,refresh(){if(task)$i('SolBox').innerHTML=task.sol}};
 }
 
 // ================= Ćwiczenia =================
@@ -2703,10 +2896,25 @@ function setLang(l,rerender){
 }
 document.querySelector('.lang').addEventListener('click',e=>{const b=e.target.closest('[data-lang]');if(b&&b.dataset.lang!==LANG.cur)setLang(b.dataset.lang,true)});
 
+// ================= Liczenie bez ułamków (pole wyboru) =================
+function setNoFrac(v,rerender){
+  OPT.noFrac=!!v;
+  try{localStorage.setItem('algebra-bez-ulamkow',OPT.noFrac?'1':'0')}catch(e){}
+  document.querySelectorAll('[data-nofrac]').forEach(c=>{c.checked=OPT.noFrac});
+  if(!rerender)return;
+  // przeliczam to, co jest na ekranie — zadania zostają te same
+  if(sTask)renderSysSol();if(sysShown)runSys();
+  if(nTask)$('#nSolBox').innerHTML=nTask.solHtml;
+  if(lastNum&&$('#numOut').innerHTML)computeNum();
+  CW.refresh();if(PRP)PRP.refresh();
+  if(!$('#pl').hidden&&PL.make){try{PL.fr=PL.make();PL.k=0;plSetPlay(false);plRender(true)}catch(e){}}
+}
+document.addEventListener('change',e=>{if(e.target.matches&&e.target.matches('[data-nofrac]'))setNoFrac(e.target.checked,true)});
+
 // start
 newNum();runSolve();newSys();runSys();fillCheat();
 cwRender();CW.next();exSetup();prRender();$('#fbIn').value=EX_CHAIN;fbRun();
-setLang(LANG.cur,false);setTab(location.hash.slice(1));
+setLang(LANG.cur,false);setNoFrac(OPT.noFrac,false);setTab(location.hash.slice(1));
 </script>
 </body>
 </html>

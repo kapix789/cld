@@ -30,6 +30,7 @@
 <button class="chip" data-shape="rect">⟪prostokątna⫽rectangular⟫</button>
 </div>
 <div class="row"><select id="ntSel" class="code"></select></div>
+<div class="row"><label class="chk" for="nfLi"><input type="checkbox" id="nfLi" data-nofrac checked> <span>⟪Odwrotność licz bez ułamków (jeśli się da)⫽Compute the inverse without fractions (where possible)⟫</span></label></div>
 <p class="mute" id="ntNote" style="margin-top:8px"></p>
 </div>
 <div class="card">
@@ -103,17 +104,16 @@
 <div class="row" style="margin-top:0"><span class="lbl">⟪Rozmiar⫽Size⟫</span>
 <button class="chip" data-ss="2">2×2</button><button class="chip" data-ss="3">3×3</button><button class="chip" data-ss="4">4×4</button><button class="chip" data-ss="r">⟪nietypowy⫽non-square⟫ (m ≠ n)</button></div>
 <div class="row"><span class="lbl">⟪Rodzaj⫽Type⟫</span>
-<button class="chip" data-sm="one">⟪zawsze jedno rozwiązanie⫽always one solution⟫</button><button class="chip" data-sm="any">⟪losowy (też sprzeczne i nieoznaczone)⫽random (also inconsistent and underdetermined)⟫</button></div>
+<button class="chip" data-sm="one">⟪zawsze jedno rozwiązanie⫽always one solution⟫</button><button class="chip" data-sm="any">⟪losowy (też sprzeczne i nieoznaczone)⫽random (also inconsistent and underdetermined)⟫</button><button class="chip" data-sm="exam">⟪jak na sprawdzianie: 4×4, „jeśli to możliwe”⫽exam style: 4×4, “if possible”⟫</button></div>
 <div class="row"><span class="lbl">⟪Metoda⫽Method⟫</span>
 <button class="chip" data-me="gauss">Gauss</button><button class="chip" data-me="mac">⟪macierzowa⫽matrix⟫ <span class="f"><i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span></button><button class="chip" data-me="cra">Cramer</button></div>
+<div class="row"><label class="chk" for="nfUk"><input type="checkbox" id="nfUk" data-nofrac checked> <span>⟪<b>Licz bez ułamków</b> (jak na kartce): jedynkę robię kombinacją wierszy, zamiast dzielić mnożę wiersz zerowany, a dzielę dopiero na końcu⫽<b>Avoid fractions</b> (like on paper): make a 1 by combining rows, multiply the row being cleared instead of dividing, divide only at the end⟫</span></label></div>
 </div>
 
 <div class="card">
-<div class="row" style="margin-top:0"><span class="q">⟪Rozwiąż układ równań⫽Solve the system of equations⟫</span><span class="score" id="sScore"></span></div>
+<div class="row" style="margin-top:0"><span class="q" id="sQ"></span><span class="score" id="sScore"></span></div>
 <div class="sysbox" id="sEq"></div>
-<p class="mute" style="margin:6px 0">⟪Ile rozwiązań ma ten układ?⫽How many solutions does this system have?⟫</p>
-<div class="chips" id="sType"><button class="chip" data-st="one">⟪jedno⫽one⟫</button><button class="chip" data-st="inf">⟪nieskończenie wiele⫽infinitely many⟫</button><button class="chip" data-st="none">⟪brak — układ sprzeczny⫽none — inconsistent⟫</button></div>
-<div class="nums" id="sVals" style="margin-top:12px"></div>
+<div id="sAns" style="margin-top:6px"></div>
 <div class="row">
 <button class="btn" id="sCheck">⟪Sprawdź⫽Check⟫</button>
 <button class="btn ghost" id="sHint">⟪Podpowiedź⫽Hint⟫</button>
@@ -143,6 +143,7 @@ x - y + 2z = 5
 <div class="card">
 <div class="row" style="margin-top:0"><span class="lbl">⟪Dział⫽Section⟫</span><div class="chips" id="cwSecs"></div></div>
 <div class="row"><span class="lbl">⟪Temat⫽Topic⟫</span><div class="chips" id="cwTopics"></div></div>
+<div class="row"><label class="chk" for="nfCw"><input type="checkbox" id="nfCw" data-nofrac checked> <span>⟪Rozwiązania licz bez ułamków (jeśli się da)⫽Solutions without fractions (where possible)⟫</span></label></div>
 </div>
 <div id="cwBox"></div>
 </section>
@@ -507,7 +508,7 @@ x - y + 2z = 5
 <button class="btn ghost" id="plPrev">◀ ⟪Wstecz⫽Back⟫</button>
 <button class="btn ghost" id="plPlay">▶ Odtwarzaj</button>
 <button class="btn" id="plNext">Dalej ▶</button>
-<div class="sp" id="plSpd"><button class="chip" data-spd="1.7">⟪wolno⫽slow⟫</button><button class="chip on" data-spd="1">⟪normalnie⫽normal⟫</button><button class="chip" data-spd="0.55">⟪szybko⫽fast⟫</button></div>
+<div class="sp" id="plSpd"><label class="chk" for="nfPl"><input type="checkbox" id="nfPl" data-nofrac checked> <span>⟪bez ułamków⫽no fractions⟫</span></label><button class="chip" data-spd="1.7">⟪wolno⫽slow⟫</button><button class="chip on" data-spd="1">⟪normalnie⫽normal⟫</button><button class="chip" data-spd="0.55">⟪szybko⫽fast⟫</button></div>
 </div>
 </div>
 </div>

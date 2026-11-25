@@ -192,3 +192,10 @@ html[data-lang="en"] [data-ln="pl"],html:not([data-lang="en"]) [data-ln="en"]{di
 .lang{display:flex;flex:none;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card)}
 .lang button{border:0;background:none;color:var(--mute);font:600 12.5px Inter,sans-serif;letter-spacing:.04em;padding:6px 11px;cursor:pointer}
 .lang button.on{background:var(--acc);color:var(--on-acc)}
+.chip:disabled{opacity:.4;cursor:default}
+.nums.gen .ans-in input{width:min(190px,62vw);text-align:left;padding:0 10px}
+.chk{display:inline-flex;align-items:flex-start;gap:8px;font-size:14px;line-height:1.45;cursor:pointer}
+.chk input{flex:none;width:18px;height:18px;margin:1px 0 0;accent-color:var(--acc);cursor:pointer}
+.pl-ctl .sp{flex-wrap:wrap;align-items:center}
+.pl-ctl .chk{font-size:12.5px;align-items:center;margin-right:6px}
+.pl-ctl .chk input{margin:0}
