@@ -126,9 +126,9 @@ function genRank(){
     }
     if(fail)continue;
     for(let i=rows.length-1;i>0;i--){const j=rnd(0,i);[rows[i],rows[j]]=[rows[j],rows[i]]}
-    const sc=fracCount(rref(rows.map(x=>[...x,F(0)]),n));
+    const sc=planMax(elimPlan(rows,n,{down:true,norm:false}));
     if(!best||sc<best.sc)best={A:rows,sc};
-    if(sc<=2)break;
+    if(sc<=12)break;
   }
   return best.A;
 }
@@ -452,7 +452,7 @@ function sysAns(Ab,names){
 function genExamSys(){
   const nv=4,m=4,names=['x1','x2','x3','x4'],want=pick(['none','none','none','inf','inf','inf','one']),r=want==='one'?4:pick([2,2,3]);
   let best=null,found=0;
-  for(let at=0;at<900&&found<45;at++){
+  for(let at=0;at<1500&&found<(want==='inf'?90:45);at++){
     const base=[];
     for(let t=0;t<40&&base.length<r;t++){const row=Array.from({length:nv},()=>F(rnd(1,8)*(Math.random()<.15?-1:1)));if(rankOf([...base,row])===base.length+1)base.push(row)}
     if(base.length<r)continue;
@@ -475,7 +475,7 @@ function genExamSys(){
     const dr=dep.map(i=>Ab[i]),zeros=dr.reduce((s,row)=>s+row.slice(0,nv).filter(x=>x.z).length,0),big=Math.max(0,...dr.flatMap(row=>row.slice(0,nv).map(x=>Math.abs(x.n))));
     // ładny wynik: małe liczby i mało ułamków w końcowej postaci (jak w zadaniach z kolokwium)
     const fin=res.A.flat(),finMax=Math.max(...fin.map(x=>Math.max(Math.abs(x.n),x.d))),finFr=fin.filter(x=>x.d!==1).length;
-    const sc=fracCount(res)*.3+finFr*1.5+Math.max(0,finMax-6)*1.5+(zeros>=1&&zeros<=2?-4:zeros>2?2:0)+(big>=8?-3:0)+Math.max(...Ab.map(row=>Math.abs(row[nv].n)))/6;
+    const sc=planFrac(elimPlan(Ab,nv,{sys:true}))*1.5+finFr*10+Math.max(0,finMax-6)*1.5+(zeros>=1&&zeros<=2?-4:zeros>2?2:0)+(big>=8?-3:0)+Math.max(...Ab.map(row=>Math.abs(row[nv].n)))/6;
     if(!best||sc<best.sc)best={Ab,sc};
   }
   if(!best)return genExamSys();

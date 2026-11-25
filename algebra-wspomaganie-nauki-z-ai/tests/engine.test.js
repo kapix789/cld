@@ -2,7 +2,7 @@
 const fs=require('fs'),path=require('path');
 const src=f=>fs.readFileSync(path.join(__dirname,'..','src',f),'utf8');
 const E=new Function(src('engine.js')+'\n'+src('topics.js')+`
-return {LANG,F,M,rref,sysSolution,genExamSys,sysAns,checkGeneral,genSys,sysFrames,sysMethodHtml,parseSystem,linSolve,numbersSolve,solve,genNum,genLin,NT,numFrames,genTask,genEq,symFrames,
+return {elimPlan,planFrac,planGroups,richUni,rnd,gaussFrames,LANG,F,M,rref,sysSolution,genExamSys,sysAns,checkGeneral,genSys,sysFrames,sysMethodHtml,parseSystem,linSolve,numbersSolve,solve,genNum,genLin,NT,numFrames,genTask,genEq,symFrames,
   TOPICS,SECTIONS,ansCheck,ansHtml,ansShow,inpShow,checkChain,chainReport,parseChain,mulReport,EX_CHAIN,detF,laplaceTerms,genParam,polyFromDet,polyAt,paramAt,rankOf,genRank,checkAnswer,rP,unimod2};`)();
 const {F,M}=E;let fails=0,checks=0;
 const ok=(c,m)=>{checks++;if(!c){fails++;if(fails<25)console.log('✗',m)}};
@@ -109,6 +109,23 @@ ok(types.none>3&&types.inf>3,'egzamin: za mało układów sprzecznych/nieoznaczo
   ok(a.type==='none'&&a.rank===2,'układ ze sprawdzianu: oczekiwano sprzecznego, rz A = 2');
   const sy2=E.parseSystem('3x1 + 2x2 + 5x3 + 4x4 = 3\n2x1 + 3x2 + 6x3 + 8x4 = 5\n4x1 - 4x2 - 4x3 - 16x4 = -8\n4x1 + x2 + 4x3 = 1'),a2=E.sysAns(sy2.Ab,sy2.names);
   ok(a2.type==='inf'&&E.checkGeneral(a2,genText(a2)).score===1,'wersja nieoznaczona układu ze sprawdzianu');
+}
+// 6c. eliminacja bez ułamków: ten sam wynik co RREF, ułamki tylko gdy wynik jest ułamkowy (i dopiero na końcu)
+{
+  const key=(A,n)=>JSON.stringify(A.map(r=>r.slice(0,n).map(x=>x.str())));
+  for(let i=0;i<150;i++){
+    const n=E.rnd(2,4),m=n+E.rnd(-1,1),A=M.make(m,n+1,()=>F(E.rnd(-6,8))),res=E.rref(A,n),pl=E.elimPlan(A,n);
+    ok(key(res.A,n)===key(pl.A,n),'plan bez ułamków: inny wynik niż RREF');
+    const fin=pl.A.flat().some(x=>x.d!==1),mid=pl.ev.some(e=>e.k!=='norm'&&e.A&&e.A.flat().some(x=>x.d!==1));
+    ok(!mid,'ułamek przed końcowym dzieleniem');
+    if(!fin)ok(E.planFrac(pl)===0,'całkowity wynik, a w krokach są ułamki');
+    // animacja: każda klatka zaczyna się tam, gdzie skończyła poprzednia
+    if(i<30){const fr=E.gaussFrames(A,n,{mode:'sys',names:['x','y','z','t'].slice(0,n)}).frames;let prev=null;
+      for(const f of fr){if(!f.B||f.B.length!==1)continue;const st=f.B[0].M.map(r=>r.slice());if(prev)ok(JSON.stringify(prev)===JSON.stringify(st),'animacja: klatka nie zaczyna się od stanu poprzedniej');(f.U||[]).filter(u=>u.v!==undefined).sort((a,b)=>a.t-b.t).forEach(u=>{st[u.i][u.j]=u.v});prev=st}}
+  }
+  for(let i=0;i<40;i++){const A=E.richUni(3),I=M.I(3),pl=E.elimPlan(A.map((r,k)=>[...r,...I[k]]),3,{stop:true});ok(E.planFrac(pl)===0&&M.eq(M.mul(A,pl.A.map(r=>r.slice(3))),I),'odwrotna z det ±1: ułamki albo zły wynik')}
+  const sy=E.parseSystem('3x1 + 2x2 + 5x3 + 4x4 = 3\n2x1 + 3x2 + 6x3 + 8x4 = 5\n4x1 - 4x2 - 4x3 - 16x4 = -8\n4x1 + x2 + 4x3 = 2'),pl=E.elimPlan(sy.Ab,4,{sys:true});
+  ok(E.planFrac(pl)===0&&pl.contra,'układ z kartki: ułamki w krokach albo brak sprzeczności');
 }
 // 7. tryb angielski: każdy temat działa i nie zostaje w nim polski tekst
 E.LANG.cur='en';
