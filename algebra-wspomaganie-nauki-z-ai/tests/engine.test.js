@@ -2,7 +2,7 @@
 const fs=require('fs'),path=require('path');
 const src=f=>fs.readFileSync(path.join(__dirname,'..','src',f),'utf8');
 const E=new Function(src('engine.js')+'\n'+src('topics.js')+`
-return {OPT,elimPlan,planFrac,planGroups,richUni,rnd,gaussFrames,LANG,F,M,rref,sysSolution,genExamSys,sysAns,checkGeneral,genSys,sysFrames,sysMethodHtml,parseSystem,linSolve,numbersSolve,solve,genNum,genLin,NT,numFrames,genTask,genEq,symFrames,
+return {handCost,OPT,elimPlan,planFrac,planGroups,richUni,rnd,gaussFrames,LANG,F,M,rref,sysSolution,genExamSys,sysAns,checkGeneral,genSys,sysFrames,sysMethodHtml,parseSystem,linSolve,numbersSolve,solve,genNum,genLin,NT,numFrames,genTask,genEq,symFrames,
   TOPICS,SECTIONS,ansCheck,ansHtml,ansShow,inpShow,checkChain,chainReport,parseChain,mulReport,EX_CHAIN,detF,laplaceTerms,genParam,polyFromDet,polyAt,paramAt,rankOf,genRank,checkAnswer,rP,unimod2};`)();
 const {F,M}=E;let fails=0,checks=0;
 const ok=(c,m)=>{checks++;if(!c){fails++;if(fails<25)console.log('✗',m)}};
@@ -109,6 +109,17 @@ ok(types.none>3&&types.inf>3,'egzamin: za mało układów sprzecznych/nieoznaczo
   ok(a.type==='none'&&a.rank===2,'układ ze sprawdzianu: oczekiwano sprzecznego, rz A = 2');
   const sy2=E.parseSystem('3x1 + 2x2 + 5x3 + 4x4 = 3\n2x1 + 3x2 + 6x3 + 8x4 = 5\n4x1 - 4x2 - 4x3 - 16x4 = -8\n4x1 + x2 + 4x3 = 1'),a2=E.sysAns(sy2.Ab,sy2.names);
   ok(a2.type==='inf'&&E.checkGeneral(a2,genText(a2)).score===1,'wersja nieoznaczona układu ze sprawdzianu');
+}
+// 6b2. poziom trudności zadań „jak na sprawdzianie” (wzór: kartka ucznia — 6 operacji, liczby do 16, ok. 10 minut)
+{
+  const H=[];for(let i=0;i<40;i++){const g=E.genExamSys();H.push(E.handCost(g.Ab,4))}
+  const q90=k=>H.map(h=>h[k]).sort((a,b)=>a-b)[Math.floor(.9*(H.length-1))];
+  ok(q90('ops')<=8,'za dużo operacji w zadaniach jak na sprawdzianie: '+q90('ops'));
+  ok(q90('max')<=16,'za duże liczby w zadaniach jak na sprawdzianie: '+q90('max'));
+  ok(H.every(h=>h.fr===0),'ułamki w zadaniach jak na sprawdzianie');
+  ok(H.filter(h=>h.mult>1).length<=2,'za dużo mnożenia całych wierszy');
+  const G=[];for(let i=0;i<20;i++){const g=E.genSys(4,'one');G.push(E.handCost(g.Ab,4))}
+  ok(G.map(h=>h.max).sort((a,b)=>a-b)[17]<=16,'Gauss 4×4: za duże liczby');
 }
 // 6c. eliminacja bez ułamków: ten sam wynik co RREF, ułamki tylko gdy wynik jest ułamkowy (i dopiero na końcu)
 {

@@ -449,39 +449,62 @@ function sysAns(Ab,names){
 }
 // układ 4×4 jak na kolokwium: 2–3 równania bazowe, reszta to ich kombinacje (większe liczby, znikające wyrazy),
 // zwykle sprzeczny albo nieoznaczony — stąd „jeśli to możliwe”
+// Ile pracy zajmuje zadanie na kartce: rozwiązuję je po cichu tak, jak pokazuje trener, i liczę
+// operacje na wierszach, największą liczbę po drodze, mnożenia całego wiersza i ułamki.
+function handCost(Ab,nv){
+  const pl=elimPlan(Ab,nv,{sys:true}),ev=pl.ev.filter(e=>e.k!=='pivot'&&e.k!=='none');
+  const vals=[...Ab.flat(),...ev.flatMap(e=>e.A.flat())];
+  return {ops:ev.filter(e=>!(e.k==='scale'&&e.why==='reduce')&&e.k!=='swap').length,
+    max:Math.max(0,...vals.map(x=>Math.abs(x.n))),mult:ev.filter(e=>e.k==='elim'&&!e.a.one).length,fr:vals.filter(x=>x.d!==1).length};
+}
+// Układ 4×4 jak na kolokwium (wzór: zadanie ucznia, ok. 10 minut): jedno równanie ma na początku 1 albo daje się
+// do niej skrócić (np. 4x₁ − 4x₂ − 4x₃ − 16x₄ = −8), reszta to proste kombinacje równań bazowych.
+// Wynik: układ sprzeczny albo nieoznaczony — stąd „jeśli to możliwe”. Zadania za długie do policzenia odrzucam.
 function genExamSys(){
-  const nv=4,m=4,names=['x1','x2','x3','x4'],want=pick(['none','none','none','inf','inf','inf','one']),r=want==='one'?4:pick([2,2,3]);
-  let best=null,found=0;
-  for(let at=0;at<1500&&found<(want==='inf'?90:45);at++){
-    const base=[];
-    for(let t=0;t<40&&base.length<r;t++){const row=Array.from({length:nv},()=>F(rnd(1,8)*(Math.random()<.15?-1:1)));if(rankOf([...base,row])===base.length+1)base.push(row)}
-    if(base.length<r)continue;
-    const rows=base.map(x=>x.slice()),dep=[];let fail=false;
-    while(rows.length<m){
-      let row=null;
-      for(let t=0;t<80&&!row;t++){
-        const k=base.map(()=>pick([-4,-3,-2,-1,1,2,3,4,0,0]));if(k.filter(x=>x).length<Math.min(2,r))continue;
-        const c=base[0].map((_,j)=>base.reduce((s,bb,i)=>s.add(bb[j].mul(F(k[i]))),F(0)));
-        if(c.every(x=>Math.abs(x.n)<=20)&&c.filter(x=>!x.z).length>=2&&!rows.some(o=>o.every((x,j)=>x.eq(c[j]))))row=c;
+  const nv=4,m=4,names=['x1','x2','x3','x4'],want=pick(['none','none','none','inf','inf']),r=pick([2,2,2,3]);
+  const row=()=>Array.from({length:nv},()=>F(rnd(1,5)*(Math.random()<.2?-1:1)));
+  const kpick=()=>Math.random()<.8?pick([1,-1,2,-2]):pick([3,-3,4,-4]);
+  for(const lim of [{ops:r===2?6:8,max:16,mult:1},{ops:r===2?7:9,max:18,mult:1},{ops:10,max:24,mult:2}]){
+    let best=null,found=0;
+    for(let at=0;at<1200&&found<30;at++){
+      // równania bazowe: pierwsze zaczyna się od 1
+      const base=[[F(1),...Array.from({length:nv-1},()=>F(rich(-3,4)))]];
+      for(let t=0;t<30&&base.length<r;t++){const x=row();if(rankOf([...base,x])===base.length+1)base.push(x)}
+      if(base.length<r)continue;
+      const rows=base.map(x=>x.slice()),dep=[];let fail=false;
+      while(rows.length<m){
+        let c=null;
+        for(let t=0;t<60&&!c;t++){
+          const k=base.map(()=>kpick());if(r===3&&Math.random()<.5)k[rnd(0,2)]=0;
+          const v=base[0].map((_,q)=>base.reduce((s,bb,i)=>s.add(bb[q].mul(F(k[i]))),F(0)));
+          if(v.every(x=>Math.abs(x.n)<=16)&&v.filter(x=>!x.z).length>=2&&!rows.some(o=>o.every((x,q)=>x.eq(v[q])||x.eq(v[q].neg()))))c=v;
+        }
+        if(!c){fail=true;break}
+        dep.push(rows.length);rows.push(c);
       }
-      if(!row){fail=true;break}
-      dep.push(rows.length);rows.push(row);
+      if(fail)continue;
+      const x0=Array.from({length:nv},()=>F(rnd(-2,2))),Ab=rows.map(x=>[...x,x.reduce((s,a,q)=>s.add(a.mul(x0[q])),F(0))]);
+      if(want==='none'){const i=pick(dep);Ab[i][nv]=Ab[i][nv].add(F(pick([-2,-1,1,2])))}
+      // czasem „chowam” jedynkę: równanie z 1 mnożę przez 2–4 (uczeń sam skraca, jak w₃ : 4 na kartce)
+      let hid=false;
+      if(Math.random()<.5){const g=pick([2,3,4]);if(Ab[0].every(x=>Math.abs(x.n*g)<=16)){Ab[0]=Ab[0].map(x=>x.mul(F(g)));hid=true}}
+      if(Ab.some(x=>Math.abs(x[nv].n)>16))continue;
+      const res=rref(Ab,nv);if(res.type!==want)continue;
+      if(want==='inf'&&res.A.flat().some(x=>x.d!==1))continue;
+      const hc=handCost(Ab,nv);
+      if(hc.fr||hc.ops>lim.ops||hc.max>lim.max||hc.mult>lim.mult)continue;
+      found++;
+      const zeros=dep.reduce((s,i)=>s+Ab[i].slice(0,nv).filter(x=>x.z).length,0);
+      const sc=hc.ops*2+hc.max/4+hc.mult*3-(hid?2:0)-(zeros>=1&&zeros<=2?1.5:0);
+      if(!best||sc<best.sc)best={Ab,sc};
     }
-    if(fail)continue;
-    const x0=Array.from({length:nv},()=>F(rnd(-2,3))),Ab=rows.map(row=>[...row,row.reduce((s,a,j)=>s.add(a.mul(x0[j])),F(0))]);
-    if(want==='none'){const i=pick(dep);Ab[i][nv]=Ab[i][nv].add(F(pick([-3,-2,-1,1,2,3])))}
-    if(Ab.some(row=>Math.abs(row[nv].n)>24))continue;
-    const res=rref(Ab,nv);if(res.type!==want)continue;found++;
-    const dr=dep.map(i=>Ab[i]),zeros=dr.reduce((s,row)=>s+row.slice(0,nv).filter(x=>x.z).length,0),big=Math.max(0,...dr.flatMap(row=>row.slice(0,nv).map(x=>Math.abs(x.n))));
-    // ładny wynik: małe liczby i mało ułamków w końcowej postaci (jak w zadaniach z kolokwium)
-    const fin=res.A.flat(),finMax=Math.max(...fin.map(x=>Math.max(Math.abs(x.n),x.d))),finFr=fin.filter(x=>x.d!==1).length;
-    const sc=planFrac(elimPlan(Ab,nv,{sys:true}))*1.5+finFr*10+Math.max(0,finMax-6)*1.5+(zeros>=1&&zeros<=2?-4:zeros>2?2:0)+(big>=8?-3:0)+Math.max(...Ab.map(row=>Math.abs(row[nv].n)))/6;
-    if(!best||sc<best.sc)best={Ab,sc};
+    if(best){
+      const Ab=best.Ab;
+      if(Math.random()<.6){const t=Ab.shift();Ab.splice(rnd(1,3),0,t)}   // równanie z jedynką nie zawsze na górze
+      return {Ab,names};
+    }
   }
-  if(!best)return genExamSys();
-  const Ab=best.Ab;
-  if(Math.random()<.35)for(let i=Ab.length-1;i>0;i--){const j=rnd(0,i);[Ab[i],Ab[j]]=[Ab[j],Ab[i]]}
-  return {Ab,names};
+  return genExamSys();
 }
 function examTopic(){
   const g=genExamSys(),out=sysMethodHtml(g.Ab,g.names,'gauss');
