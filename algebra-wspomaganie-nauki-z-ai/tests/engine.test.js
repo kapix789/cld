@@ -2,7 +2,7 @@
 const fs=require('fs'),path=require('path');
 const src=f=>fs.readFileSync(path.join(__dirname,'..','src',f),'utf8');
 const E=new Function(src('engine.js')+'\n'+src('topics.js')+`
-return {F,M,rref,genSys,sysFrames,sysMethodHtml,parseSystem,linSolve,numbersSolve,solve,genNum,genLin,NT,numFrames,genTask,genEq,symFrames,
+return {LANG,F,M,rref,genSys,sysFrames,sysMethodHtml,parseSystem,linSolve,numbersSolve,solve,genNum,genLin,NT,numFrames,genTask,genEq,symFrames,
   TOPICS,SECTIONS,ansCheck,ansHtml,ansShow,inpShow,checkChain,chainReport,parseChain,mulReport,EX_CHAIN,detF,laplaceTerms,genParam,polyFromDet,polyAt,paramAt,rankOf,genRank,checkAnswer,rP,unimod2};`)();
 const {F,M}=E;let fails=0,checks=0;
 const ok=(c,m)=>{checks++;if(!c){fails++;if(fails<25)console.log('✗',m)}};
@@ -72,4 +72,18 @@ ok(/Błędnych elementów: 1/.test(E.mulReport(mat([[2,1],[-1,3]]),mat([[1,4],[2
 for(let k=0;k<E.NT.length;k++){const t=E.NT[k];if(t.lin){frames(E.genLin(t).fr(),'lin '+t.eq);continue}for(const n of [2,3])for(const rect of [false,true]){const T=E.genNum(n,k,rect);ok(M.eq(T.Lv,T.Rv),`X nie spełnia ${t.eq}`)}}
 for(const sz of [2,3,4,'r'])for(const mode of ['one','any']){const G=E.genSys(sz,mode);for(const me of ['gauss','mac','cra'])frames(E.sysFrames(G.Ab,G.names,me),`układ ${sz} ${mode} ${me}`)}
 for(let i=0;i<20;i++){const q=E.genEq(1+i%3);try{const so=E.solve(q);ok(E.checkAnswer(so,goodInput({kind:'formula',sol:so})),'wzór z rozwiązania nie przechodzi: '+q)}catch(e){if(!e.lin)ok(false,q+' '+e.message)}}
+// 7. tryb angielski: każdy temat działa i nie zostaje w nim polski tekst
+E.LANG.cur='en';
+const PLC=/[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ„]/;
+for(const t of E.TOPICS){
+  ok(t.en,`${t.id}: brak angielskiej nazwy (pole en)`);
+  for(let i=0;i<3;i++){
+    const task=t.gen(),tag=`EN ${t.id}#${i}`;
+    const html=task.q+task.body+task.sol+(task.hint||'')+E.ansHtml(task.ans,'x')+E.ansShow(task.ans)+(task.fr&&i===0?JSON.stringify(task.fr()):'');
+    const m=html.match(PLC);ok(!m,`${tag}: polski tekst w trybie EN: …${m?html.slice(Math.max(0,m.index-40),m.index+30):''}…`);
+    ok(E.ansCheck(task.ans,goodInput(task.ans)).score===1,`${tag}: poprawna odpowiedź nie zaliczona`);
+  }
+}
+ok(!PLC.test(E.chainReport(E.EX_CHAIN)),'EN: polski tekst w „Znajdź błąd”');
+E.LANG.cur='pl';
 console.log(`${checks} sprawdzeń, błędów: ${fails}`);process.exit(fails?1:0);

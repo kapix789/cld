@@ -8,6 +8,7 @@ Kolejność skryptów ma znaczenie: engine.js (matematyka, bez DOM) → topics.j
 """
 import argparse
 import pathlib
+import re
 
 ROOT = pathlib.Path(__file__).resolve().parent
 SRC = ROOT / "src"
@@ -20,9 +21,19 @@ def read(name):
     return (SRC / name).read_text(encoding="utf-8")
 
 
+def bilingual(html):
+    """⟦polski⫽English⟧ → dwa bloki <div data-ln>, ⟪polski⫽English⟫ → dwa <span data-ln>. CSS pokazuje jeden język."""
+    html = re.sub(r"⟦(.*?)⫽(.*?)⟧", lambda m: f'<div data-ln="pl">{m[1]}</div><div data-ln="en">{m[2]}</div>', html, flags=re.S)
+    html = re.sub(r"⟪(.*?)⫽(.*?)⟫", lambda m: f'<span data-ln="pl">{m[1]}</span><span data-ln="en">{m[2]}</span>', html, flags=re.S)
+    left = [c for c in "⟦⟧⟪⟫⫽" if c in html]
+    if left:
+        raise SystemExit(f"page.html: niedomknięty znacznik języka {left}")
+    return html
+
+
 def parts():
     css = read("style.css")
-    page = read("page.html")
+    page = bilingual(read("page.html"))
     js = "\n".join(read(n) for n in SCRIPTS)
     return css, page, js
 
