@@ -679,6 +679,17 @@ const randRow=nv=>Array.from({length:nv},()=>F(rich(-4,5)));
 function genSysOnce(m,nv,want){
   const r=want==='one'?nv:want==='inf'?Math.min(m,nv-1):Math.min(m-1,nv);
   if(r<1||r>m)return null;
+  // układ kwadratowy z jednym rozwiązaniem: zwykle macierz o wyznaczniku ±1 z małymi liczbami (L·U) —
+  // w każdej kolumnie da się wziąć 1 albo −1, więc rachunki są krótkie i bez ułamków
+  if(want==='one'&&m===nv&&nv>=3&&Math.random()<.75){
+    const n=nv,small=()=>Math.random()<.35?0:rnd(-2,2);
+    const Lm=M.make(n,n,(i,j)=>F(i===j?1:i>j?small():0)),Um=M.make(n,n,(i,j)=>F(i===j?pick([1,1,-1]):i<j?small():0));
+    const A=M.mul(Lm,Um);if(A.flat().some(x=>Math.abs(x.n)>8))return null;
+    const x0=Array.from({length:n},()=>F(rich(-3,4))),Ab=A.map(row=>[...row,row.reduce((s,a,j)=>s.add(a.mul(x0[j])),F(0))]);
+    if(Ab.some(row=>Math.abs(row[n].n)>30))return null;
+    for(let i=Ab.length-1;i>0;i--){const j=rnd(0,i);[Ab[i],Ab[j]]=[Ab[j],Ab[i]]}
+    return Ab;
+  }
   let base=null;
   for(let t=0;t<50&&!base;t++){const B=Array.from({length:r},()=>randRow(nv));if(rref(B.map(x=>[...x,F(0)]),nv).rank===r)base=B}
   if(!base)return null;
@@ -704,12 +715,14 @@ function genSys(sz,mode){
   let want=mode==='one'?'one':pick(['one','one','inf','none']);
   if(m<nv&&want==='one')want='inf';
   let best=null,ok=0;
-  for(let at=0;at<400&&ok<25;at++){
+  for(let at=0;at<900&&ok<50;at++){
     const Ab=genSysOnce(m,nv,want);if(!Ab)continue;
     const res=rref(Ab,nv);if(res.type!==want)continue;ok++;
-    const plan=elimPlan(Ab,nv,{sys:true}),sc=planFrac(plan)*3+Math.max(0,planMax(plan)-20);
+    // krótko i na małych liczbach: mało operacji, małe liczby, bez mnożenia całych wierszy i ułamków
+    const plan=elimPlan(Ab,nv,{sys:true}),ev=plan.ev.filter(e=>e.k!=='pivot'&&e.k!=='none'&&e.k!=='swap'&&!(e.k==='scale'&&e.why==='reduce'));
+    const target={2:2,3:5,4:9}[nv]||5,zeros=Ab.flat().filter((x,q)=>q%(nv+1)<nv&&x.z).length,okZeros={2:0,3:1,4:3}[nv]||2;
+    const sc=planFrac(plan)*3+Math.max(0,planMax(plan)-12)*1.5+ev.filter(e=>e.k==='elim'&&!e.a.one).length*3+Math.abs(ev.length-target)*1.2+Math.max(0,zeros-okZeros)*2;
     if(!best||sc<best.sc)best={Ab,sc};
-    if(sc===0&&ok>3)break;
   }
   return {Ab:best.Ab,names:stdNames(nv)};
 }
