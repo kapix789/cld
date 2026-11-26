@@ -10,4 +10,4 @@ Source, tests and build instructions are in [`blackboard-studio/`](blackboard-st
 
 ## Also in this repository
 
-[**Algebra — wspomaganie nauki z AI**](algebra-wspomaganie-nauki-z-ai/README.md) — a linear-algebra trainer in Polish (matrices, matrix equations, systems of equations, determinants, rank) with step-by-step animated solutions: https://kapix789.github.io/cld/algebra-wspomaganie-nauki-z-ai/
+[**Kratka**](kratka/README.md): practice tasks with step-by-step solutions for linear algebra, physics and operating systems (Polish, with an English switch): https://kapix789.github.io/cld/kratka/

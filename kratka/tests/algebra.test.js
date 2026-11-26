@@ -1,9 +1,6 @@
-// Testy silnika i rejestru tematów (bez przeglądarki):  node tests/engine.test.js
-const fs=require('fs'),path=require('path');
-const src=f=>fs.readFileSync(path.join(__dirname,'..','src',f),'utf8');
-const E=new Function(src('engine.js')+'\n'+src('topics.js')+`
-return {handCost,OPT,elimPlan,planFrac,planGroups,richUni,rnd,gaussFrames,LANG,F,M,rref,sysSolution,genExamSys,sysAns,checkGeneral,genSys,sysFrames,sysMethodHtml,parseSystem,linSolve,numbersSolve,solve,genNum,genLin,NT,numFrames,genTask,genEq,symFrames,
-  TOPICS,SECTIONS,ansCheck,ansHtml,ansShow,inpShow,checkChain,chainReport,parseChain,mulReport,EX_CHAIN,detF,laplaceTerms,genParam,polyFromDet,polyAt,paramAt,rankOf,genRank,checkAnswer,rP,unimod2};`)();
+// Testy algebry (silnik i rejestr tematów), bez przeglądarki:  node tests/algebra.test.js
+const E=require('./load')(['handCost','OPT','elimPlan','planFrac','planGroups','richUni','rnd','gaussFrames','LANG','F','M','rref','sysSolution','genExamSys','sysAns','checkGeneral','genSys','sysFrames','sysMethodHtml','parseSystem','linSolve','numbersSolve','solve','genNum','genLin','NT','numFrames','genTask','genEq','symFrames',
+  'TOPICS','SECTIONS','SUBJECTS','ansCheck','ansHtml','ansShow','inpShow','checkChain','chainReport','parseChain','mulReport','EX_CHAIN','detF','laplaceTerms','genParam','polyFromDet','polyAt','paramAt','rankOf','genRank','checkAnswer','rP','unimod2']);
 const {F,M}=E;let fails=0,checks=0;
 const ok=(c,m)=>{checks++;if(!c){fails++;if(fails<25)console.log('✗',m)}};
 const mat=a=>M.ints(a);
@@ -27,8 +24,8 @@ function frames(fr,tag){
 // poprawna odpowiedź w formacie pól
 function goodInput(ans){
   if(ans.kind==='mat')return ans.M.flat().map(s);
-  if(ans.kind==='num')return s(ans.v);
-  if(ans.kind==='formula')return E.rP(ans.sol.P).replace(/<sup>T<\/sup>/g,'^T').replace(/<sup>−1<\/sup>/g,'^-1').replace(/<sup>(\d)<\/sup>/g,'^$1').replace(/<span class="fr"><span>(\d+)<\/span><span>(\d+)<\/span><\/span>/g,'$1/$2').replace(/<[^>]+>/g,'').replace(/−/g,'-').replace(/\s/g,'');
+  if(ans.kind==='num')return [s(ans.v)];
+  if(ans.kind==='formula')return [E.rP(ans.sol.P).replace(/<sup>T<\/sup>/g,'^T').replace(/<sup>−1<\/sup>/g,'^-1').replace(/<sup>(\d)<\/sup>/g,'^$1').replace(/<span class="fr"><span>(\d+)<\/span><span>(\d+)<\/span><\/span>/g,'$1/$2').replace(/<[^>]+>/g,'').replace(/−/g,'-').replace(/\s/g,'')];
   if(ans.kind==='sys')return {type:ans.type,vals:ans.type==='one'?ans.vals.map(s):ans.type==='inf'?genText(ans):ans.names.map(()=> '')};
   if(ans.kind==='param')return [0,1,2].map(k=>ans.roots[k]?{a:s(ans.roots[k].a),type:ans.roots[k].type}:{a:'',type:''});
 }
@@ -58,10 +55,10 @@ for(const t of E.TOPICS){
 }
 // 2. puste odpowiedzi są puste, a złe dostają < 1
 for(const t of E.TOPICS){const task=t.gen(),a=task.ans;
-  const empty=a.kind==='mat'?a.M.flat().map(()=> ''):a.kind==='sys'?{type:'one',vals:a.names.map(()=> '')}:a.kind==='param'?[0,1,2].map(()=>({a:'',type:''})):'';
+  const empty=a.kind==='mat'?a.M.flat().map(()=> ''):a.kind==='sys'?{type:'one',vals:a.names.map(()=> '')}:a.kind==='param'?[0,1,2].map(()=>({a:'',type:''})):[''];
   ok(E.ansCheck(a,empty).empty,t.id+': pusta odpowiedź nie jest pusta');
   if(a.kind==='mat'){const g=goodInput(a);g[0]=g[0]==='999'?'998':'999';ok(E.ansCheck(a,g).score<1,t.id+': zła macierz zaliczona')}
-  if(a.kind==='num')ok(E.ansCheck(a,'12345').score===0,t.id+': zła liczba zaliczona');
+  if(a.kind==='num')ok(E.ansCheck(a,['12345']).score===0,t.id+': zła liczba zaliczona');
 }
 // 3. wyznaczniki: Laplace = eliminacja
 for(let i=0;i<40;i++){const A=M.make(4,4,()=>F(Math.floor(Math.random()*9)-4));const {t}=E.laplaceTerms(A);ok(t.reduce((x,o)=>x.add(o.v),F(0)).eq(E.detF(A)),'Laplace ≠ det')}
@@ -76,12 +73,12 @@ ok(/Pierwszy błąd jest w kroku 2/.test(E.chainReport(E.EX_CHAIN)),'raport: bra
 const good=`1 2 | 5\n3 4 | 6\n\n1 2 | 5\n0 -2 | -9\n\n1 0 | -4\n0 1 | 9/2`;ok(/Wszystkie kroki są poprawne/.test(E.chainReport(good)),'poprawny łańcuch oznaczony jako błędny');
 ok(/postaci schodkowej zredukowanej/.test(E.chainReport(good)),'brak informacji o postaci zredukowanej');
 const inv=`2 1 | 1 0\n1 1 | 0 1\n\n1 1 | 0 1\n2 1 | 1 0\n\n1 1 | 0 1\n0 -1 | 1 -2\n\n1 0 | 1 -1\n0 -1 | 1 -2\n\n1 0 | 1 -1\n0 1 | -1 2`;
-ok(/poprawną odwrotność/.test(E.chainReport(inv)),'odwrotność nierozpoznana');
+ok(/poprawna odwrotność/.test(E.chainReport(inv)),'odwrotność nierozpoznana');
 ok(/Błędnych elementów: 1/.test(E.mulReport(mat([[2,1],[-1,3]]),mat([[1,4],[2,-2]]),mat([[4,6],[5,-2]]))),'mnożenie: zły raport');
 // 6. stare funkcje nadal działają
 for(let k=0;k<E.NT.length;k++){const t=E.NT[k];if(t.lin){frames(E.genLin(t).fr(),'lin '+t.eq);continue}for(const n of [2,3])for(const rect of [false,true]){const T=E.genNum(n,k,rect);ok(M.eq(T.Lv,T.Rv),`X nie spełnia ${t.eq}`)}}
 for(const sz of [2,3,4,'r'])for(const mode of ['one','any']){const G=E.genSys(sz,mode);for(const me of ['gauss','mac','cra'])frames(E.sysFrames(G.Ab,G.names,me),`układ ${sz} ${mode} ${me}`)}
-for(let i=0;i<20;i++){const q=E.genEq(1+i%3);try{const so=E.solve(q);ok(E.checkAnswer(so,goodInput({kind:'formula',sol:so})),'wzór z rozwiązania nie przechodzi: '+q)}catch(e){if(!e.lin)ok(false,q+' '+e.message)}}
+for(let i=0;i<20;i++){const q=E.genEq(1+i%3);try{const so=E.solve(q);ok(E.checkAnswer(so,goodInput({kind:'formula',sol:so})[0]),'wzór z rozwiązania nie przechodzi: '+q)}catch(e){if(!e.lin)ok(false,q+' '+e.message)}}
 // 6b. układy jak na sprawdzianie i rozwiązanie ogólne
 const types={};
 for(let i=0;i<40;i++){

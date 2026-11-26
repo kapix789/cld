@@ -1,0 +1,192 @@
+<!-- ===================== SO: TERMINAL ===================== -->
+<section data-view="terminal" data-subj="so" hidden>
+<div class="vh">
+<div class="eyebrow">⟪Systemy operacyjne · narzędzia⫽Operating systems · tools⟫</div>
+<h1>Terminal</h1>
+<p class="lead">⟪Symulowane Ubuntu do ćwiczeń: użytkownicy i grupy, <code>chmod</code>, ACL, <code>grep</code> na pliku <code>miasta.txt</code> i zapora UFW. Wszystko dzieje się w przeglądarce. Listę poleceń pokazuje <code>help</code>.⫽A simulated Ubuntu for practice: users and groups, <code>chmod</code>, ACLs, <code>grep</code> on <code>miasta.txt</code> and the UFW firewall. Everything happens in the browser. <code>help</code> lists the commands.⟫</p>
+</div>
+<div class="term-box">
+<pre class="term" id="tmOut" aria-live="polite"></pre>
+<form class="term-line" id="tmForm" autocomplete="off"><label class="p" for="tmIn" id="tmPrompt">student@ubuntu:~$</label><input id="tmIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send"></form>
+</div>
+<div class="actions"><button type="button" class="btn ghost" id="tmReset">⟪Zacznij od nowa⫽Start over⟫</button><span class="note">⟪Strzałki ↑ i ↓ przywołują poprzednie polecenia.⫽The ↑ and ↓ keys recall previous commands.⟫</span></div>
+<div class="block">
+<h2>⟪Do wypróbowania⫽Things to try⟫</h2>
+<div class="chips" id="tmEx">
+<button type="button" class="chip" data-cmd="ls -l">ls -l</button>
+<button type="button" class="chip" data-cmd="grep '^K' miasta.txt">grep '^K' miasta.txt</button>
+<button type="button" class="chip" data-cmd="sudo useradd -m anna">sudo useradd -m anna</button>
+<button type="button" class="chip" data-cmd="id anna">id anna</button>
+<button type="button" class="chip" data-cmd="setfacl -d -m u:anna:rwx projekty_shared">setfacl -d -m u:anna:rwx projekty_shared</button>
+<button type="button" class="chip" data-cmd="getfacl projekty_shared">getfacl projekty_shared</button>
+<button type="button" class="chip" data-cmd="sudo ufw status">sudo ufw status</button>
+</div>
+</div>
+</section>
+
+<!-- ===================== SO: ŚCIĄGA ===================== -->
+<section data-view="sciaga" data-subj="so" hidden>
+<div class="vh">
+<div class="eyebrow">⟪Systemy operacyjne⫽Operating systems⟫</div>
+<h1>⟪Ściąga⫽Cheat sheet⟫</h1>
+</div>
+<div class="sheet-cols">
+
+<div class="thm">⟦
+<div class="thm-h">Polecenia · użytkownicy i grupy</div>
+<ul class="rules">
+<li><code>sudo useradd -m anna</code>: nowy użytkownik z katalogiem domowym; hasło: <code>sudo passwd anna</code>.</li>
+<li><code>sudo adduser anna</code>: to samo interaktywnie (pyta o hasło i dane).</li>
+<li><code>sudo groupadd studenci</code>: nowa grupa.</li>
+<li><code>sudo usermod -aG studenci anna</code>: dopisanie do grupy. Bez <code>-a</code> lista grup zostaje <b>zastąpiona</b>.</li>
+<li><code>sudo gpasswd -a anna studenci</code> albo <code>sudo adduser anna studenci</code>: to samo inaczej.</li>
+<li><code>sudo gpasswd -d anna studenci</code>: usunięcie z grupy.</li>
+</ul>
+<p>Sprawdzenie: <code>id anna</code>, <code>groups anna</code>, <code>getent group studenci</code>.</p>
+⫽
+<div class="thm-h">Commands · users and groups</div>
+<ul class="rules">
+<li><code>sudo useradd -m anna</code>: a new user with a home directory; password: <code>sudo passwd anna</code>.</li>
+<li><code>sudo adduser anna</code>: the same, interactively (asks for the password and details).</li>
+<li><code>sudo groupadd studenci</code>: a new group.</li>
+<li><code>sudo usermod -aG studenci anna</code>: add to a group. Without <code>-a</code> the group list is <b>replaced</b>.</li>
+<li><code>sudo gpasswd -a anna studenci</code> or <code>sudo adduser anna studenci</code>: the same in another way.</li>
+<li><code>sudo gpasswd -d anna studenci</code>: remove from a group.</li>
+</ul>
+<p>Check: <code>id anna</code>, <code>groups anna</code>, <code>getent group studenci</code>.</p>
+⟧</div>
+
+<div class="thm">⟦
+<div class="thm-h">Wzory · prawa rwx</div>
+<p>W <code>ls -l</code> po literze typu (<code>d</code> katalog, <code>-</code> plik) stoją trzy trójki: właściciel (u), grupa (g), inni (o). Cyfry: r = 4, w = 2, x = 1.</p>
+<ul class="rules">
+<li><code>rwx</code> = 7, <code>rw-</code> = 6, <code>r-x</code> = 5, <code>r--</code> = 4, <code>---</code> = 0.</li>
+<li><code>chmod 750 kat</code> to <code>rwxr-x---</code>; <code>chmod 640 plik</code> to <code>rw-r-----</code>.</li>
+<li><code>chmod g=r kat</code>: grupa ma <b>tylko</b> odczyt. <code>g+r</code> dodaje, <code>g-w</code> zabiera.</li>
+<li>Katalog: <code>r</code> wypisanie nazw, <code>w</code> tworzenie i usuwanie plików, <code>x</code> wejście (<code>cd</code>).</li>
+<li><code>sudo chgrp studenci kat</code>, <code>sudo chown anna:studenci kat</code>: zmiana grupy i właściciela.</li>
+</ul>
+⫽
+<div class="thm-h">Formulas · rwx permissions</div>
+<p>In <code>ls -l</code>, after the type letter (<code>d</code> directory, <code>-</code> file) come three triples: owner (u), group (g), others (o). Digits: r = 4, w = 2, x = 1.</p>
+<ul class="rules">
+<li><code>rwx</code> = 7, <code>rw-</code> = 6, <code>r-x</code> = 5, <code>r--</code> = 4, <code>---</code> = 0.</li>
+<li><code>chmod 750 dir</code> is <code>rwxr-x---</code>; <code>chmod 640 file</code> is <code>rw-r-----</code>.</li>
+<li><code>chmod g=r dir</code>: the group has <b>only</b> read. <code>g+r</code> adds, <code>g-w</code> removes.</li>
+<li>Directory: <code>r</code> lists names, <code>w</code> creates and deletes files, <code>x</code> lets you enter (<code>cd</code>).</li>
+<li><code>sudo chgrp studenci dir</code>, <code>sudo chown anna:studenci dir</code>: change the group and the owner.</li>
+</ul>
+⟧</div>
+
+<div class="thm">⟦
+<div class="thm-h">Przepis · ACL</div>
+<ul class="rules">
+<li><code>setfacl -m u:anna:rwx kat</code>: prawa dla użytkownika.</li>
+<li><code>setfacl -m g:studenci:rw- kat</code>: prawa dla grupy.</li>
+<li><code>setfacl -d -m u:anna:rwx kat</code>: ACL <b>domyślne</b>, dziedziczone przez nowe pliki w katalogu (to samo: <code>-m d:u:anna:rwx</code>).</li>
+<li><code>setfacl -d -m o::r kat</code>: domyślnie inni tylko czytają.</li>
+<li><code>setfacl -m m::r-x plik</code>: maska.</li>
+<li><code>setfacl -x u:anna plik</code> usuwa wpis, <code>-b</code> całe ACL, <code>-k</code> tylko domyślne.</li>
+</ul>
+<p>Sprawdzenie: <code>getfacl plik</code>. W <code>ls -l</code> ACL zdradza znak <code>+</code> po prawach.</p>
+⫽
+<div class="thm-h">Recipe · ACL</div>
+<ul class="rules">
+<li><code>setfacl -m u:anna:rwx dir</code>: permissions for a user.</li>
+<li><code>setfacl -m g:studenci:rw- dir</code>: permissions for a group.</li>
+<li><code>setfacl -d -m u:anna:rwx dir</code>: the <b>default</b> ACL, inherited by new files in the directory (also: <code>-m d:u:anna:rwx</code>).</li>
+<li><code>setfacl -d -m o::r dir</code>: by default others only read.</li>
+<li><code>setfacl -m m::r-x file</code>: the mask.</li>
+<li><code>setfacl -x u:anna file</code> removes an entry, <code>-b</code> the whole ACL, <code>-k</code> only the default one.</li>
+</ul>
+<p>Check: <code>getfacl file</code>. In <code>ls -l</code> an ACL shows as a <code>+</code> after the permissions.</p>
+⟧</div>
+
+<div class="thm warn-b">⟦
+<div class="thm-h">Uwaga · maska ACL</div>
+<p>Maska ogranicza nazwanych użytkowników, nazwane grupy i grupę właścicielską (nie właściciela i nie innych). Efektywne prawa to część wspólna wpisu i maski: <code>rwx</code> i maska <code>r-x</code> dają <code>r-x</code>; <code>getfacl</code> dopisuje wtedy <code>#effective:r-x</code>.</p>
+<p>Każde <code>setfacl -m</code> przelicza maskę od nowa, więc <b>maskę ustawiamy na końcu</b> (albo z opcją <code>-n</code>). Przy ACL środkowa trójka w <code>ls -l</code> pokazuje maskę.</p>
+⫽
+<div class="thm-h">Note · the ACL mask</div>
+<p>The mask limits named users, named groups and the owning group (not the owner and not others). The effective permissions are the intersection of the entry and the mask: <code>rwx</code> with the mask <code>r-x</code> gives <code>r-x</code>; <code>getfacl</code> then adds <code>#effective:r-x</code>.</p>
+<p>Every <code>setfacl -m</code> recalculates the mask, so <b>set the mask last</b> (or use <code>-n</code>). With an ACL the middle triple in <code>ls -l</code> shows the mask.</p>
+⟧</div>
+
+<div class="thm">⟦
+<div class="thm-h">Wzory · grep na miasta.txt</div>
+<ul class="rules">
+<li><code>grep '^G' miasta.txt</code>: zaczynające się na G.</li>
+<li><code>grep -E '^.{6}$' miasta.txt</code> albo <code>grep '^......$' miasta.txt</code>: dokładnie 6 znaków.</li>
+<li><code>grep '^[KL]' miasta.txt</code> albo <code>grep -E '^(K|L)' miasta.txt</code>: na K lub L.</li>
+<li><code>grep 'ów$' miasta.txt</code>: kończące się na -ów.</li>
+<li><code>grep -v '^S' miasta.txt</code>: nie zaczynające się na S (Ś to inna litera).</li>
+</ul>
+<p><code>^</code> początek linii, <code>$</code> koniec, <code>.</code> dowolny znak, <code>*</code> zero lub więcej razy, <code>[abc]</code> jeden z listy, <code>[^abc]</code> żaden z listy. Opcje: <code>-v</code> odwraca, <code>-c</code> liczy, <code>-i</code> ignoruje wielkość liter, <code>-n</code> numeruje, <code>-E</code> włącza <code>{n}</code>, <code>|</code>, <code>+</code>, <code>?</code>. Wzorzec piszemy w apostrofach.</p>
+⫽
+<div class="thm-h">Formulas · grep on miasta.txt</div>
+<ul class="rules">
+<li><code>grep '^G' miasta.txt</code>: starting with G.</li>
+<li><code>grep -E '^.{6}$' miasta.txt</code> or <code>grep '^......$' miasta.txt</code>: exactly 6 characters.</li>
+<li><code>grep '^[KL]' miasta.txt</code> or <code>grep -E '^(K|L)' miasta.txt</code>: starting with K or L.</li>
+<li><code>grep 'ów$' miasta.txt</code>: ending in -ów.</li>
+<li><code>grep -v '^S' miasta.txt</code>: not starting with S (Ś is a different letter).</li>
+</ul>
+<p><code>^</code> start of line, <code>$</code> end, <code>.</code> any character, <code>*</code> zero or more times, <code>[abc]</code> one from the list, <code>[^abc]</code> none from the list. Options: <code>-v</code> inverts, <code>-c</code> counts, <code>-i</code> ignores case, <code>-n</code> numbers lines, <code>-E</code> enables <code>{n}</code>, <code>|</code>, <code>+</code>, <code>?</code>. Put the pattern in single quotes.</p>
+⟧</div>
+
+<div class="thm">⟦
+<div class="thm-h">Przepis · statyczny adres IP</div>
+<p>Plik <code>/etc/netplan/01-netcfg.yaml</code> (wcięcia spacjami):</p>
+<pre class="term">network:
+  version: 2
+  ethernets:
+    enp0s3:
+      dhcp4: false
+      addresses:
+        - 193.107.32.22/24
+      routes:
+        - to: default
+          via: 193.107.32.1
+      nameservers:
+        addresses: [8.8.8.8]</pre>
+<p>Potem <code>sudo netplan apply</code>, sprawdzenie: <code>ip a</code> i <code>ip route</code>. Na Ubuntu Desktop to samo da się ustawić przez <code>nmcli</code> albo w ustawieniach sieci. Pakiet z internetu (np. <code>openssh-server</code>) instalujemy, zanim karta dostanie adres bez dostępu do sieci.</p>
+⫽
+<div class="thm-h">Recipe · static IP address</div>
+<p>The file <code>/etc/netplan/01-netcfg.yaml</code> (indent with spaces):</p>
+<pre class="term">network:
+  version: 2
+  ethernets:
+    enp0s3:
+      dhcp4: false
+      addresses:
+        - 193.107.32.22/24
+      routes:
+        - to: default
+          via: 193.107.32.1
+      nameservers:
+        addresses: [8.8.8.8]</pre>
+<p>Then <code>sudo netplan apply</code>; check with <code>ip a</code> and <code>ip route</code>. On Ubuntu Desktop the same can be set with <code>nmcli</code> or in the network settings. Install packages from the internet (e.g. <code>openssh-server</code>) before the card gets an address without network access.</p>
+⟧</div>
+
+<div class="thm">⟦
+<div class="thm-h">Przepis · serwer SSH</div>
+<ol>
+<li><code>sudo apt update</code> i <code>sudo apt install openssh-server</code>; stan: <code>systemctl status ssh</code>.</li>
+<li>Port: w <code>/etc/ssh/sshd_config</code> wpisujemy <code>Port 997</code>. W nowszym Ubuntu działa też gniazdo <code>ssh.socket</code>, a klient może mieć port w <code>/etc/ssh/ssh_config</code>. Potem <code>sudo systemctl daemon-reload</code>, <code>sudo systemctl restart ssh.socket</code>, <code>sudo systemctl restart ssh</code>. Sprawdzenie: <code>sudo ss -tlnp | grep 997</code>.</li>
+<li>Zapora na serwerze: <code>sudo ufw allow 997/tcp</code> (albo tylko ze stacji: <code>sudo ufw allow from 193.107.32.22 to any port 997 proto tcp</code>), potem <code>sudo ufw enable</code>. Na stacji roboczej: <code>sudo ufw allow out 997/tcp</code>. Stan: <code>sudo ufw status</code>.</li>
+<li>Klucze, na stacji roboczej: <code>ssh-keygen -t ed25519</code>, <code>ssh-copy-id -p 997 user@193.107.32.1</code>.</li>
+<li>Dopiero teraz na serwerze w <code>sshd_config</code>: <code>PasswordAuthentication no</code>, potem <code>sudo systemctl restart ssh</code>. Test: <code>ssh -p 997 user@193.107.32.1</code> loguje bez hasła.</li>
+</ol>
+⫽
+<div class="thm-h">Recipe · SSH server</div>
+<ol>
+<li><code>sudo apt update</code> and <code>sudo apt install openssh-server</code>; status: <code>systemctl status ssh</code>.</li>
+<li>Port: write <code>Port 997</code> in <code>/etc/ssh/sshd_config</code>. Newer Ubuntu also uses the <code>ssh.socket</code> unit, and the client can keep the port in <code>/etc/ssh/ssh_config</code>. Then <code>sudo systemctl daemon-reload</code>, <code>sudo systemctl restart ssh.socket</code>, <code>sudo systemctl restart ssh</code>. Check: <code>sudo ss -tlnp | grep 997</code>.</li>
+<li>Firewall on the server: <code>sudo ufw allow 997/tcp</code> (or only from the workstation: <code>sudo ufw allow from 193.107.32.22 to any port 997 proto tcp</code>), then <code>sudo ufw enable</code>. On the workstation: <code>sudo ufw allow out 997/tcp</code>. Status: <code>sudo ufw status</code>.</li>
+<li>Keys, on the workstation: <code>ssh-keygen -t ed25519</code>, <code>ssh-copy-id -p 997 user@193.107.32.1</code>.</li>
+<li>Only now, on the server, in <code>sshd_config</code>: <code>PasswordAuthentication no</code>, then <code>sudo systemctl restart ssh</code>. Test: <code>ssh -p 997 user@193.107.32.1</code> logs in without a password.</li>
+</ol>
+⟧</div>
+
+</div>
+</section>

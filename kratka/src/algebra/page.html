@@ -1,0 +1,436 @@
+<!-- ===================== ALGEBRA: X NA LICZBACH ===================== -->
+<section data-view="liczby" data-subj="algebra" hidden>
+<div class="vh">
+<div class="eyebrow">⟪Algebra liniowa · narzędzia⫽Linear algebra · tools⟫</div>
+<h1><i>X</i> ⟪na liczbach⫽with numbers⟫</h1>
+<p class="lead">⟪Równanie macierzowe z konkretnymi macierzami. Najpierw wyznaczamy <i>X</i> wzorem, potem liczymy odwrotność i iloczyny.⫽A matrix equation with concrete matrices. First we find a formula for <i>X</i>, then we compute the inverse and the products.⟫</p>
+</div>
+<div class="setup">
+<div class="field"><span class="lbl" id="nSzL">⟪Rozmiar⫽Size⟫</span><div class="seg" role="group" aria-labelledby="nSzL"><button type="button" data-n="2">2×2</button><button type="button" data-n="3">3×3</button></div></div>
+<div class="field"><span class="lbl" id="nShL"><i>X</i></span><div class="seg" role="group" aria-labelledby="nShL"><button type="button" data-shape="sq">⟪kwadratowa⫽square⟫</button><button type="button" data-shape="rect">⟪prostokątna⫽rectangular⟫</button></div></div>
+<div class="field"><label class="lbl" for="ntSel">⟪Równanie⫽Equation⟫</label><select id="ntSel" class="code"></select></div>
+<div class="field"><span class="lbl"></span><label class="chk" for="nfLi"><input type="checkbox" id="nfLi" data-nofrac checked> <span>⟪Odwrotność bez ułamków, jeśli się da⫽Inverse without fractions where possible⟫</span></label></div>
+<p class="note" id="ntNote"></p>
+</div>
+<div class="task">
+<div class="task-top"><div class="task-q">⟪Wyznacz macierz⫽Find the matrix⟫ <i>X</i></div><span class="score" id="nScore"></span></div>
+<div class="sheet"><div class="eq" id="nEq"></div><div class="given" id="nGiven"></div><div class="task-ans" id="nAns"></div></div>
+<p class="note">⟪Ułamki wpisuj jako <code>1/2</code> albo <code>-3/4</code>.⫽Type fractions as <code>1/2</code> or <code>-3/4</code>.⟫</p>
+<div class="actions">
+<button type="button" class="btn" id="nCheck">⟪Sprawdź⫽Check⟫</button>
+<button type="button" class="btn ghost" id="nHint">⟪Podpowiedź⫽Hint⟫</button>
+<button type="button" class="btn ghost play" id="nPlay">⟪Krok po kroku⫽Step by step⟫</button>
+<button type="button" class="btn ghost" id="nSol">⟪Rozwiązanie⫽Solution⟫</button>
+<button type="button" class="btn link" id="nNew">⟪Następne zadanie⫽Next task⟫</button>
+</div>
+<div class="msg" id="nMsg" role="status"></div>
+<div class="sol" id="nSolBox"></div>
+</div>
+</section>
+
+<!-- ===================== ALGEBRA: X NA LITERACH ===================== -->
+<section data-view="rownania" data-subj="algebra" hidden>
+<div class="vh">
+<div class="eyebrow">⟪Algebra liniowa · narzędzia⫽Linear algebra · tools⟫</div>
+<h1><i>X</i> ⟪na literach⫽symbolically⟫</h1>
+<p class="lead">⟪Wpisz równanie, a dostaniesz wzór na <i>X</i> z rozpisanymi krokami. Własne macierze można potem podstawić niżej.⫽Type an equation to get a formula for <i>X</i> with every step written out. Your own matrices can be substituted below.⟫</p>
+</div>
+<div class="block">
+<label class="lbl-top" for="eqIn">⟪Równanie⫽Equation⟫</label>
+<input id="eqIn" class="code" autocomplete="off" autocapitalize="characters" spellcheck="false" value="A^TB^-1XCA=(AD)^-1D">
+<div class="keys" id="keys">
+<button type="button" data-i="A"><i>A</i></button><button type="button" data-i="B"><i>B</i></button><button type="button" data-i="C"><i>C</i></button><button type="button" data-i="D"><i>D</i></button><button type="button" data-i="X"><i>X</i></button><button type="button" data-i="I"><i>I</i></button><button type="button" data-i="=">=</button>
+<button type="button" data-i="^T"><i>M</i><sup>T</sup></button><button type="button" data-i="^-1"><i>M</i><sup>−1</sup></button><button type="button" data-i="(">(</button><button type="button" data-i=")">)</button><button type="button" data-i="+">+</button><button type="button" data-i="-">−</button><button type="button" data-i="⌫" class="w" aria-label="⟪Usuń znak⫽Delete a character⟫">⌫</button>
+<button type="button" data-i="2">2</button><button type="button" data-i="3">3</button><button type="button" data-i="^2"><i>M</i><sup>2</sup></button><button type="button" data-i="CLR" class="w span4">⟪wyczyść⫽clear⟫</button>
+</div>
+<div class="actions">
+<button type="button" class="btn" id="solveBtn">⟪Rozwiąż⫽Solve⟫</button>
+<span class="note">⟪Losowe:⫽Random:⟫</span>
+<button type="button" class="btn ghost small" data-lvl="1">⟪łatwe⫽easy⟫</button>
+<button type="button" class="btn ghost small" data-lvl="2">⟪średnie⫽medium⟫</button>
+<button type="button" class="btn ghost small" data-lvl="3">⟪trudne⫽hard⟫</button>
+</div>
+<p class="note">⟪Zapis⫽Notation⟫: <code>A^T</code>, <code>B^-1</code>, <code>(AD)^-1</code>, <code>2X</code>, <code>A^2</code>, <code>I</code> ⟪to macierz jednostkowa⫽is the identity matrix⟫.</p>
+<div class="msg" id="eqErr" role="status"></div>
+</div>
+
+<div id="eqWork" hidden>
+<div class="sheet"><div class="eq" id="eqShow"></div></div>
+<p class="note center" id="eqTry">⟪Najlepiej najpierw spróbować samemu, a dopiero potem odsłaniać kroki.⫽It is best to try on your own first and only then reveal the steps.⟫</p>
+<div class="block" id="ansCard">
+<h2>⟪Twoja odpowiedź⫽Your answer⟫</h2>
+<label class="ans-in wide" for="ansIn"><span><i>X</i> =</span><input id="ansIn" class="code" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
+<div class="actions"><button type="button" class="btn" id="ansBtn">⟪Sprawdź⫽Check⟫</button><span class="note">⟪klawiatura wyżej też tu wpisuje⫽the keypad above types here too⟫</span></div>
+<div class="msg" id="ansMsg" role="status"></div>
+</div>
+<div class="block" id="stepsCard">
+<h2>⟪Rozwiązanie⫽Solution⟫</h2>
+<div id="steps"></div>
+<div class="actions"><button type="button" class="btn ghost play" id="symPlay">⟪Krok po kroku⫽Step by step⟫</button><button type="button" class="btn" id="nextStep">⟪Następny krok⫽Next step⟫</button><button type="button" class="btn ghost" id="allSteps">⟪Pokaż wszystko⫽Show all⟫</button></div>
+</div>
+<div class="block" id="numCard">
+<h2>⟪Na liczbach⫽With numbers⟫</h2>
+<p class="note">⟪Liczby oddzielaj spacjami, każdy wiersz w nowej linii, ułamki jako <code>1/2</code>. Na start wpisane są przykładowe macierze 2×2.⫽Separate numbers with spaces, one row per line, fractions as <code>1/2</code>. Example 2×2 matrices are filled in to start with.⟫</p>
+<div class="mxs" id="mxIns"></div>
+<div class="actions"><button type="button" class="btn" id="numBtn">⟪Oblicz <i>X</i>⫽Compute <i>X</i>⟫</button><button type="button" class="btn ghost play" id="numPlay">⟪Krok po kroku⫽Step by step⟫</button><button type="button" class="btn ghost" id="numRnd">⟪Inne przykładowe macierze⫽Other example matrices⟫</button></div>
+<div class="msg" id="numMsg" role="status"></div>
+<div class="sol on" id="numOut"></div>
+</div>
+</div>
+</section>
+
+<!-- ===================== ALGEBRA: UKŁADY RÓWNAŃ ===================== -->
+<section data-view="uklady" data-subj="algebra" hidden>
+<div class="vh">
+<div class="eyebrow">⟪Algebra liniowa · narzędzia⫽Linear algebra · tools⟫</div>
+<h1>⟪Układy równań⫽Systems of equations⟫</h1>
+<p class="lead">⟪Losowe układy do rozwiązania i rozwiązywanie własnego układu trzema metodami.⫽Random systems to solve, and your own system solved with three methods.⟫</p>
+</div>
+<div class="setup">
+<div class="field"><span class="lbl" id="sSzL">⟪Rozmiar⫽Size⟫</span><div class="seg" role="group" aria-labelledby="sSzL"><button type="button" data-ss="2">2×2</button><button type="button" data-ss="3">3×3</button><button type="button" data-ss="4">4×4</button><button type="button" data-ss="r">⟪nietypowy⫽non-square⟫ (<i>m</i> ≠ <i>n</i>)</button></div></div>
+<div class="field"><span class="lbl" id="sMoL">⟪Rodzaj⫽Type⟫</span><div class="seg" role="group" aria-labelledby="sMoL"><button type="button" data-sm="one">⟪jedno rozwiązanie⫽one solution⟫</button><button type="button" data-sm="any">⟪losowy⫽random⟫</button><button type="button" data-sm="exam">⟪jak na kolokwium 4×4⫽exam style 4×4⟫</button></div></div>
+<div class="field"><span class="lbl" id="sMeL">⟪Metoda⫽Method⟫</span><div class="seg" role="group" aria-labelledby="sMeL"><button type="button" data-me="gauss">Gauss</button><button type="button" data-me="mac">⟪macierzowa⫽matrix⟫</button><button type="button" data-me="cra">Cramer</button></div></div>
+<div class="field"><span class="lbl"></span><label class="chk" for="nfUk"><input type="checkbox" id="nfUk" data-nofrac checked> <span>⟪<b>Bez ułamków</b>, jak na kartce: jedynkę robimy kombinacją wierszy, zamiast dzielić mnożymy wiersz zerowany, a dzielimy dopiero na końcu⫽<b>Without fractions</b>, as on paper: make a 1 by combining rows, multiply the row being cleared instead of dividing, and divide only at the end⟫</span></label></div>
+<p class="note" id="sModeNote"></p>
+</div>
+<div class="task">
+<div class="task-top"><div class="task-q" id="sQ"></div><span class="score" id="sScore"></span></div>
+<div class="sheet"><div class="sysbox" id="sEq"></div><div class="task-ans" id="sAns"></div></div>
+<p class="note">⟪Ułamki wpisuj jako <code>1/2</code> albo <code>-3/4</code>.⫽Type fractions as <code>1/2</code> or <code>-3/4</code>.⟫</p>
+<div class="actions">
+<button type="button" class="btn" id="sCheck">⟪Sprawdź⫽Check⟫</button>
+<button type="button" class="btn ghost" id="sHint">⟪Podpowiedź⫽Hint⟫</button>
+<button type="button" class="btn ghost play" id="sPlay">⟪Krok po kroku⫽Step by step⟫</button>
+<button type="button" class="btn ghost" id="sSol">⟪Rozwiązanie⫽Solution⟫</button>
+<button type="button" class="btn link" id="sNew">⟪Następne zadanie⫽Next task⟫</button>
+</div>
+<div class="msg" id="sMsg" role="status"></div>
+<div class="sol" id="sSolBox"></div>
+</div>
+<div class="block">
+<h2>⟪Własny układ⫽Your own system⟫</h2>
+<p class="note">⟪Każde równanie w osobnej linii. Niewiadome: <code>x y z t</code> albo <code>x1 x2 x3</code>. Wyrazy mogą stać po obu stronach znaku „=”.⫽One equation per line. Unknowns: <code>x y z t</code> or <code>x1 x2 x3</code>. Terms may stand on both sides of “=”.⟫</p>
+<textarea id="sysIn" class="code" rows="4" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="⟪Układ równań⫽System of equations⟫">2x + y - z = 3
+x - y + 2z = 5
+3x + 2y + z = 10</textarea>
+<div class="actions"><button type="button" class="btn" id="sysBtn">⟪Rozwiąż⫽Solve⟫</button><button type="button" class="btn ghost play" id="sysPlay">⟪Krok po kroku⫽Step by step⟫</button><span class="note">⟪metodą wybraną wyżej⫽with the method chosen above⟫</span></div>
+<div class="msg" id="sysErr" role="status"></div>
+<div class="sol on" id="sysOut"></div>
+</div>
+</section>
+
+<!-- ===================== ALGEBRA: ZNAJDŹ BŁĄD ===================== -->
+<section data-view="blad" data-subj="algebra" hidden>
+<div class="vh">
+<div class="eyebrow">⟪Algebra liniowa · narzędzia⫽Linear algebra · tools⟫</div>
+<h1>⟪Znajdź błąd⫽Find my mistake⟫</h1>
+<p class="lead">⟪Przepisz rachunki z zeszytu. Każdy krok zostanie sprawdzony, a błędne liczby zaznaczone.⫽Copy your working from your notebook. Every step is checked and the wrong numbers are marked.⟫</p>
+</div>
+<div class="seg" id="fbMode" role="group"><button type="button" class="on" data-fb="gauss">⟪Eliminacja Gaussa⫽Gaussian elimination⟫</button><button type="button" data-fb="mul">⟪Mnożenie macierzy⫽Matrix multiplication⟫</button></div>
+<div id="fbGauss" class="block flat">
+<p class="note">⟪Kolejne macierze oddziel pustą linią, liczby spacjami. Kreskę można zaznaczyć znakiem <code>|</code>. W jednym kroku wolno zrobić kilka operacji. Działa dla układów [<i>A</i> | <i>B</i>], odwrotności [<i>A</i> | <i>I</i>] i zwykłych macierzy (rząd).⫽Separate consecutive matrices with an empty line and numbers with spaces. The bar can be marked with <code>|</code>. Several operations may be done in one step. Works for systems [<i>A</i> | <i>B</i>], inverses [<i>A</i> | <i>I</i>] and plain matrices (rank).⟫</p>
+<textarea id="fbIn" class="code" rows="12" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="⟪Kolejne macierze⫽Consecutive matrices⟫"></textarea>
+<div class="actions"><button type="button" class="btn" id="fbBtn">⟪Sprawdź kroki⫽Check the steps⟫</button><button type="button" class="btn ghost" id="fbEx">⟪Przykład z błędem⫽Example with a mistake⟫</button><button type="button" class="btn ghost" id="fbClr">⟪Wyczyść⫽Clear⟫</button></div>
+</div>
+<div id="fbMul" class="block flat" hidden>
+<p class="note">⟪Wpisz <i>A</i>, <i>B</i> i swój wynik <i>A</i>·<i>B</i>: liczby oddzielone spacjami, każdy wiersz w nowej linii.⫽Type <i>A</i>, <i>B</i> and your result <i>A</i>·<i>B</i>: numbers separated by spaces, one row per line.⟫</p>
+<div class="mxs">
+<label class="mx" for="fbA"><span><i>A</i> =</span><textarea id="fbA" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false">2 1
+-1 3</textarea></label>
+<label class="mx" for="fbB"><span><i>B</i> =</span><textarea id="fbB" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false">1 4
+2 -2</textarea></label>
+<label class="mx" for="fbC"><span><i>AB</i> =</span><textarea id="fbC" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false">4 6
+5 -2</textarea></label>
+</div>
+<div class="actions"><button type="button" class="btn" id="fbMulBtn">⟪Sprawdź iloczyn⫽Check the product⟫</button></div>
+</div>
+<div class="msg" id="fbMsg" role="status"></div>
+<div id="fbOut"></div>
+</section>
+
+<!-- ===================== ALGEBRA: ŚCIĄGA ===================== -->
+<section data-view="sciaga" data-subj="algebra" hidden>
+<div class="vh">
+<div class="eyebrow">⟪Algebra liniowa⫽Linear algebra⟫</div>
+<h1>⟪Ściąga⫽Cheat sheet⟫</h1>
+</div>
+<div class="sheet-cols">
+
+<div class="thm">⟦
+<div class="thm-h">Przepis · równanie macierzowe</div>
+<ol>
+<li>Rozpisujemy nawiasy z <sup>T</sup> i <sup>−1</sup>. Kolejność czynników się <b>odwraca</b>.</li>
+<li>Wyrazy z <i>X</i> przenosimy na lewo, pozostałe na prawo (ze zmianą znaku).</li>
+<li>Gdy <i>X</i> występuje kilka razy, wyciągamy go przed nawias.</li>
+<li>Macierz stojącą <b>przed</b> <i>X</i> usuwamy, mnożąc obie strony <b>z lewej</b> przez jej odwrotność.</li>
+<li>Macierz stojącą <b>za</b> <i>X</i> usuwamy, mnożąc obie strony <b>z prawej</b> przez jej odwrotność.</li>
+<li>Dopiero teraz podstawiamy liczby: odwrotność, potem iloczyny.</li>
+</ol>
+⫽
+<div class="thm-h">Recipe · matrix equation</div>
+<ol>
+<li>Expand the brackets with <sup>T</sup> and <sup>−1</sup>. The order of the factors <b>reverses</b>.</li>
+<li>Move the terms with <i>X</i> to the left and the others to the right (changing their sign).</li>
+<li>If <i>X</i> appears several times, factor it out.</li>
+<li>Remove the matrix <b>in front of</b> <i>X</i> by multiplying both sides <b>on the left</b> by its inverse.</li>
+<li>Remove the matrix <b>after</b> <i>X</i> by multiplying both sides <b>on the right</b> by its inverse.</li>
+<li>Only now substitute the numbers: the inverse first, then the products.</li>
+</ol>
+⟧</div>
+
+<div class="thm warn-b">⟦
+<div class="thm-h">Uwaga · najczęstsze błędy</div>
+<ul class="rules">
+<li>Jedna strona mnożona z lewej, a druga z prawej. Obie strony mnożymy zawsze <b>z tej samej strony</b>.</li>
+<li><span class="f">(<i>AB</i>)<sup>−1</sup> ≠ <i>A</i><sup>−1</sup><i>B</i><sup>−1</sup></span>. Poprawnie: <span class="f"><i>B</i><sup>−1</sup><i>A</i><sup>−1</sup></span>.</li>
+<li><span class="f"><i>AX</i> − <i>X</i> = (<i>A</i> − 1)<i>X</i></span> jest <b>błędne</b>, bo od macierzy nie odejmuje się liczby. Poprawnie: <span class="f">(<i>A</i> − <i>I</i>)<i>X</i></span>.</li>
+<li>Nie ma dzielenia przez macierz, jest tylko mnożenie przez odwrotną.</li>
+</ul>
+⫽
+<div class="thm-h">Note · the most common mistakes</div>
+<ul class="rules">
+<li>One side multiplied on the left and the other on the right. Always multiply both sides <b>on the same side</b>.</li>
+<li><span class="f">(<i>AB</i>)<sup>−1</sup> ≠ <i>A</i><sup>−1</sup><i>B</i><sup>−1</sup></span>. Correct: <span class="f"><i>B</i><sup>−1</sup><i>A</i><sup>−1</sup></span>.</li>
+<li><span class="f"><i>AX</i> − <i>X</i> = (<i>A</i> − 1)<i>X</i></span> is <b>wrong</b>, because a number cannot be subtracted from a matrix. Correct: <span class="f">(<i>A</i> − <i>I</i>)<i>X</i></span>.</li>
+<li>There is no division by a matrix, only multiplication by the inverse.</li>
+</ul>
+⟧</div>
+
+<div class="thm">
+<div class="thm-h">⟪Przykład · <i>X</i> występuje dwa razy⫽Example · <i>X</i> appears twice⟫</div>
+<div class="eq left"><i>AX</i> = <i>X</i> + <i>B</i></div>
+<p>⟪Przenosimy <i>X</i> na lewo⫽Move <i>X</i> to the left⟫: <span class="f"><i>AX</i> − <i>X</i> = <i>B</i></span>. ⟪Samotne <i>X</i> to⫽A lone <i>X</i> is⟫ <span class="f"><i>IX</i></span>, ⟪więc⫽so⟫</p>
+<div class="eq left">(<i>A</i> − <i>I</i>)<i>X</i> = <i>B</i> &nbsp;⇒&nbsp; <i>X</i> = (<i>A</i> − <i>I</i>)<sup>−1</sup><i>B</i></div>
+<p>⟪Strona ma znaczenie: w⫽The side matters: in⟫ <span class="f"><i>XA</i> − 2<i>X</i></span> ⟪<i>X</i> stoi z lewej, więc⫽<i>X</i> stands on the left, so⟫ <span class="f"><i>X</i>(<i>A</i> − 2<i>I</i>)</span>. ⟪Wyrażenia⫽The expression⟫ <span class="f"><i>AX</i> + <i>XB</i></span> ⟪nie da się tak zapisać.⫽cannot be written this way.⟫</p>
+</div>
+
+<div class="thm">
+<div class="thm-h">⟪Przykład⫽Example⟫ · <span class="f"><i>A</i><sup>T</sup><i>B</i><sup>−1</sup><i>XCA</i> = (<i>AD</i>)<sup>−1</sup><i>D</i></span></div>
+<p>1. <span class="f">(<i>AD</i>)<sup>−1</sup> = <i>D</i><sup>−1</sup><i>A</i><sup>−1</sup></span>:</p>
+<div class="eq left"><i>A</i><sup>T</sup><i>B</i><sup>−1</sup><i>XCA</i> = <i>D</i><sup>−1</sup><i>A</i><sup>−1</sup><i>D</i></div>
+<p>2. ⟪Z lewej przez⫽On the left by⟫ <span class="f">(<i>A</i><sup>T</sup><i>B</i><sup>−1</sup>)<sup>−1</sup> = <i>B</i>(<i>A</i><sup>T</sup>)<sup>−1</sup></span>:</p>
+<div class="eq left"><i>XCA</i> = <span class="hl"><i>B</i>(<i>A</i><sup>T</sup>)<sup>−1</sup></span><i>D</i><sup>−1</sup><i>A</i><sup>−1</sup><i>D</i></div>
+<p>3. ⟪Z prawej przez⫽On the right by⟫ <span class="f">(<i>CA</i>)<sup>−1</sup> = <i>A</i><sup>−1</sup><i>C</i><sup>−1</sup></span>:</p>
+<div class="eq left"><i>X</i> = <i>B</i>(<i>A</i><sup>T</sup>)<sup>−1</sup><i>D</i><sup>−1</sup><i>A</i><sup>−1</sup><i>D</i><span class="hl"><i>A</i><sup>−1</sup><i>C</i><sup>−1</sup></span></div>
+<div class="actions"><button type="button" class="btn ghost small" id="openEx">⟪Otwórz w narzędziu⫽Open in the tool⟫</button></div>
+</div>
+
+<div class="thm">
+<div class="thm-h">⟪Wzory · transpozycja i odwrotność⫽Formulas · transpose and inverse⟫</div>
+<ul class="rules f">
+<li>(<i>AB</i>)<sup>T</sup> = <i>B</i><sup>T</sup><i>A</i><sup>T</sup> &nbsp;&nbsp; (<i>ABC</i>)<sup>T</sup> = <i>C</i><sup>T</sup><i>B</i><sup>T</sup><i>A</i><sup>T</sup></li>
+<li>(<i>AB</i>)<sup>−1</sup> = <i>B</i><sup>−1</sup><i>A</i><sup>−1</sup> &nbsp;&nbsp; (<i>ABC</i>)<sup>−1</sup> = <i>C</i><sup>−1</sup><i>B</i><sup>−1</sup><i>A</i><sup>−1</sup></li>
+<li>(<i>A</i><sup>T</sup>)<sup>T</sup> = <i>A</i> &nbsp;&nbsp; (<i>A</i><sup>−1</sup>)<sup>−1</sup> = <i>A</i> &nbsp;&nbsp; (<i>A</i><sup>T</sup>)<sup>−1</sup> = (<i>A</i><sup>−1</sup>)<sup>T</sup></li>
+<li><i>AA</i><sup>−1</sup> = <i>A</i><sup>−1</sup><i>A</i> = <i>I</i>, &nbsp; <i>AI</i> = <i>IA</i> = <i>A</i></li>
+<li>(<i>A</i> + <i>B</i>)<sup>T</sup> = <i>A</i><sup>T</sup> + <i>B</i><sup>T</sup> &nbsp;&nbsp; (<i>kA</i>)<sup>T</sup> = <i>kA</i><sup>T</sup> &nbsp;&nbsp; (<i>kA</i>)<sup>−1</sup> = <sup>1</sup>⁄<sub><i>k</i></sub><i>A</i><sup>−1</sup></li>
+<li>⟪Dla⫽For⟫ (<i>A</i> + <i>B</i>)<sup>−1</sup> ⟪nie ma wzoru.⫽there is no formula.⟫</li>
+</ul>
+</div>
+
+<div class="thm">⟦
+<div class="thm-h">Przepis · macierz odwrotna metodą Gaussa</div>
+<p>Zapisujemy obok siebie <span class="f">[<i>A</i> | <i>I</i>]</span> i operacjami na <b>wierszach</b> sprowadzamy lewą część do <i>I</i>. Po prawej otrzymujemy <span class="f"><i>A</i><sup>−1</sup></span>.</p>
+<p>Dozwolone operacje, zawsze na całym wierszu po obu stronach kreski:</p>
+<ul class="rules">
+<li><span class="f">w<sub>1</sub> ↔ w<sub>2</sub></span>: zamiana wierszy;</li>
+<li><span class="f">w<sub>1</sub> : 3</span>: podzielenie wiersza przez liczbę różną od 0;</li>
+<li><span class="f">w<sub>2</sub> − 3w<sub>1</sub></span>: od wiersza 2 odejmujemy wiersz 1 pomnożony przez 3.</li>
+</ul>
+<p>Pracujemy kolumna po kolumnie: jedynka na przekątnej, potem zera nad nią i pod nią. Wygodnie zaczynać od wiersza, który ma w tej kolumnie 1 albo −1. Sprawdzenie: <span class="f"><i>A</i>·<i>A</i><sup>−1</sup> = <i>I</i></span>.</p>
+⫽
+<div class="thm-h">Recipe · inverse by Gaussian elimination</div>
+<p>Write <span class="f">[<i>A</i> | <i>I</i>]</span> side by side and use <b>row</b> operations to turn the left part into <i>I</i>. The right part becomes <span class="f"><i>A</i><sup>−1</sup></span>.</p>
+<p>Allowed operations, always on the whole row on both sides of the bar:</p>
+<ul class="rules">
+<li><span class="f">R<sub>1</sub> ↔ R<sub>2</sub></span>: swap two rows;</li>
+<li><span class="f">R<sub>1</sub> : 3</span>: divide a row by a nonzero number;</li>
+<li><span class="f">R<sub>2</sub> − 3R<sub>1</sub></span>: subtract 3 times row 1 from row 2.</li>
+</ul>
+<p>Work column by column: a 1 on the diagonal, then zeros above and below it. It helps to start from a row with 1 or −1 in that column. Check: <span class="f"><i>A</i>·<i>A</i><sup>−1</sup> = <i>I</i></span>.</p>
+⟧</div>
+
+<div class="thm">⟦
+<div class="thm-h">Przepis · równanie przez niewiadome</div>
+<p>Gdy <i>X</i> nie da się wyciągnąć przed nawias (<span class="f"><i>AX</i> + <i>XB</i></span>, <span class="f"><i>AX</i> = <i>XA</i></span>, <i>X</i> razem z <i>X</i><sup>T</sup>) albo macierz do odwrócenia nie jest kwadratowa lub odwracalna, liczymy na elementach:</p>
+<ol>
+<li>Wymiar <i>X</i> odczytujemy z wymiarów działań i zapisujemy <span class="f"><i>X</i> = </span><span class="mat" style="grid-template-columns:repeat(2,auto)"><span><i>x</i></span><span><i>y</i></span><span><i>z</i></span><span><i>t</i></span></span>.</li>
+<li>Wymnażamy obie strony; elementy są wyrażeniami z <i>x</i>, <i>y</i>, <i>z</i>, <i>t</i>.</li>
+<li>Macierze są równe, gdy równe są <b>wszystkie elementy</b>. Porównanie daje układ równań.</li>
+<li>Rozwiązujemy układ metodą Gaussa. Może być jedno <i>X</i>, nieskończenie wiele albo żadne.</li>
+</ol>
+<p><b>Przykład:</b> wszystkie <i>X</i> przemienne z <span class="f"><i>A</i> = </span><span class="mat" style="grid-template-columns:repeat(2,auto)"><span>1</span><span>1</span><span>0</span><span>1</span></span>, czyli <span class="f"><i>AX</i> = <i>XA</i></span>:</p>
+⫽
+<div class="thm-h">Recipe · equation using unknowns</div>
+<p>When <i>X</i> cannot be factored out (<span class="f"><i>AX</i> + <i>XB</i></span>, <span class="f"><i>AX</i> = <i>XA</i></span>, <i>X</i> together with <i>X</i><sup>T</sup>) or the matrix to invert is not square or not invertible, compute with the entries:</p>
+<ol>
+<li>Read the size of <i>X</i> from the sizes in the operations and write <span class="f"><i>X</i> = </span><span class="mat" style="grid-template-columns:repeat(2,auto)"><span><i>x</i></span><span><i>y</i></span><span><i>z</i></span><span><i>t</i></span></span>.</li>
+<li>Multiply out both sides; the entries are expressions in <i>x</i>, <i>y</i>, <i>z</i>, <i>t</i>.</li>
+<li>Matrices are equal when <b>all their entries</b> are equal. Comparing them gives a system of equations.</li>
+<li>Solve the system by Gaussian elimination. There may be one <i>X</i>, infinitely many or none.</li>
+</ol>
+<p><b>Example:</b> all <i>X</i> that commute with <span class="f"><i>A</i> = </span><span class="mat" style="grid-template-columns:repeat(2,auto)"><span>1</span><span>1</span><span>0</span><span>1</span></span>, that is <span class="f"><i>AX</i> = <i>XA</i></span>:</p>
+⟧<div class="eq left"><i>AX</i> = <span class="mat" style="grid-template-columns:repeat(2,auto)"><span><i>x</i> + <i>z</i></span><span><i>y</i> + <i>t</i></span><span><i>z</i></span><span><i>t</i></span></span> &nbsp; <i>XA</i> = <span class="mat" style="grid-template-columns:repeat(2,auto)"><span><i>x</i></span><span><i>x</i> + <i>y</i></span><span><i>z</i></span><span><i>z</i> + <i>t</i></span></span></div>
+<p>⟪Porównanie daje⫽Comparing gives⟫ <span class="f"><i>z</i> = 0</span> ⟪i⫽and⟫ <span class="f"><i>t</i> = <i>x</i></span>, ⟪zatem⫽so⟫ <span class="f"><i>X</i> = </span><span class="mat" style="grid-template-columns:repeat(2,auto)"><span><i>x</i></span><span><i>y</i></span><span>0</span><span><i>x</i></span></span> ⟪dla dowolnych⫽for any⟫ <span class="f"><i>x</i>, <i>y</i> ∈ ℝ</span>.</p>
+<div class="actions"><button type="button" class="btn ghost small" id="openEx2">⟪Otwórz w narzędziu⫽Open in the tool⟫</button></div>
+</div>
+
+<div class="thm">
+<div class="thm-h">⟪Definicja · układ jako równanie macierzowe⫽Definition · a system as a matrix equation⟫</div>
+<p>⟪Układ liniowy to równanie <span class="f"><i>AX</i> = <i>B</i></span>, gdzie <i>A</i> to macierz współczynników, <i>X</i> kolumna niewiadomych, a <i>B</i> kolumna wyrazów wolnych. Macierz rozszerzona to <span class="f">[<i>A</i> | <i>B</i>]</span>.⫽A linear system is an equation <span class="f"><i>AX</i> = <i>B</i></span>, where <i>A</i> is the coefficient matrix, <i>X</i> the column of unknowns and <i>B</i> the column of constants. The augmented matrix is <span class="f">[<i>A</i> | <i>B</i>]</span>.⟫</p>
+<div class="sysbox" id="chSys"></div>
+</div>
+
+<div class="thm">⟦
+<div class="thm-h">Twierdzenie Kroneckera–Capellego</div>
+<p>Niech <i>n</i> oznacza liczbę niewiadomych, a rz rząd macierzy (liczbę niezerowych wierszy po eliminacji Gaussa).</p>
+<ul class="rules">
+<li><b>rz <i>A</i> = rz [<i>A</i> | <i>B</i>] = <i>n</i></b>: dokładnie <b>jedno</b> rozwiązanie (układ oznaczony).</li>
+<li><b>rz <i>A</i> = rz [<i>A</i> | <i>B</i>] = <i>r</i> &lt; <i>n</i></b>: <b>nieskończenie wiele</b> rozwiązań zależnych od <b><i>n</i> − <i>r</i></b> parametrów.</li>
+<li><b>rz <i>A</i> &lt; rz [<i>A</i> | <i>B</i>]</b>: <b>brak</b> rozwiązań (układ sprzeczny).</li>
+</ul>
+⫽
+<div class="thm-h">The Rouché–Capelli theorem</div>
+<p>Let <i>n</i> be the number of unknowns and rank the rank of a matrix (the number of nonzero rows after Gaussian elimination).</p>
+<ul class="rules">
+<li><b>rank <i>A</i> = rank [<i>A</i> | <i>B</i>] = <i>n</i></b>: exactly <b>one</b> solution.</li>
+<li><b>rank <i>A</i> = rank [<i>A</i> | <i>B</i>] = <i>r</i> &lt; <i>n</i></b>: <b>infinitely many</b> solutions depending on <b><i>n</i> − <i>r</i></b> parameters.</li>
+<li><b>rank <i>A</i> &lt; rank [<i>A</i> | <i>B</i>]</b>: <b>no</b> solutions (an inconsistent system).</li>
+</ul>
+⟧</div>
+
+<div class="thm">⟦
+<div class="thm-h">Przepis · metoda Gaussa dla układu</div>
+<ol>
+<li>Zapisujemy macierz rozszerzoną <span class="f">[<i>A</i> | <i>B</i>]</span>.</li>
+<li>Operacjami na wierszach (tymi samymi co przy <i>A</i><sup>−1</sup>) robimy kolumna po kolumnie jedynki na schodkach oraz zera nad nimi i pod nimi.</li>
+<li>Wiersz <span class="f">[0 … 0 | 0]</span>, czyli 0 = 0, skreślamy. Wiersz <span class="f">[0 … 0 | 5]</span>, czyli 0 = 5, oznacza układ <b>sprzeczny</b>.</li>
+<li>Niewiadome z kolumn bez schodka są <b>swobodne</b> (dowolne liczby). Pozostałe wyrażamy przez nie.</li>
+</ol>
+<p><b>Rozwiązanie ogólne</b> zapisujemy np. tak: <span class="f"><i>x</i> = 2 − 3<i>z</i>, &nbsp;<i>y</i> = 1 + <i>z</i>, &nbsp;<i>z</i> ∈ ℝ</span>. Każda liczba podstawiona za <i>z</i> daje jedno rozwiązanie.</p>
+⫽
+<div class="thm-h">Recipe · Gaussian elimination for a system</div>
+<ol>
+<li>Write the augmented matrix <span class="f">[<i>A</i> | <i>B</i>]</span>.</li>
+<li>With row operations (the same as for <i>A</i><sup>−1</sup>) make, column by column, ones on the steps and zeros above and below them.</li>
+<li>A row <span class="f">[0 … 0 | 0]</span>, that is 0 = 0, is crossed out. A row <span class="f">[0 … 0 | 5]</span>, that is 0 = 5, means the system is <b>inconsistent</b>.</li>
+<li>The unknowns in columns without a pivot are <b>free</b> (any numbers). Express the others in terms of them.</li>
+</ol>
+<p>The <b>general solution</b> is written e.g. as <span class="f"><i>x</i> = 2 − 3<i>z</i>, &nbsp;<i>y</i> = 1 + <i>z</i>, &nbsp;<i>z</i> ∈ ℝ</span>. Every number substituted for <i>z</i> gives one solution.</p>
+⟧</div>
+
+<div class="thm">⟦
+<div class="thm-h">Wzory · metoda macierzowa i Cramer</div>
+<p>Obie metody działają tylko dla układu <b>kwadratowego</b> z <span class="f">det <i>A</i> ≠ 0</span>. Gdy <span class="f">det <i>A</i> = 0</span>, układ jest sprzeczny albo ma nieskończenie wiele rozwiązań i rozstrzyga metoda Gaussa.</p>
+<ul class="rules">
+<li><b>Macierzowa:</b> <span class="f"><i>AX</i> = <i>B</i> ⇒ <i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>. Mnożymy <b>z lewej</b>; <span class="f"><i>BA</i><sup>−1</sup></span> to błąd (zwykle nawet niewykonalny).</li>
+<li><b>Cramer:</b> <span class="f"><i>W</i> = det <i>A</i></span>, a <span class="f"><i>W<sub>x</sub></i></span> to wyznacznik <i>A</i> z kolumną przy <i>x</i> zastąpioną kolumną wyrazów wolnych. Wtedy <span class="f"><i>x</i> = <i>W<sub>x</sub></i> / <i>W</i></span>, <span class="f"><i>y</i> = <i>W<sub>y</sub></i> / <i>W</i></span> itd.</li>
+<li><b>Wyznacznik 2×2:</b> <span class="f"><span class="mat det" style="grid-template-columns:repeat(2,auto)"><span><i>a</i></span><span><i>b</i></span><span><i>c</i></span><span><i>d</i></span></span> = <i>ad</i> − <i>bc</i></span>.</li>
+<li><b>Wyznacznik 3×3 (Sarrus):</b> trzy iloczyny po przekątnych w prawo w dół z plusem, trzy w lewo w dół z minusem: <span class="f"><i>a</i><sub>11</sub><i>a</i><sub>22</sub><i>a</i><sub>33</sub> + <i>a</i><sub>12</sub><i>a</i><sub>23</sub><i>a</i><sub>31</sub> + <i>a</i><sub>13</sub><i>a</i><sub>21</sub><i>a</i><sub>32</sub> − <i>a</i><sub>13</sub><i>a</i><sub>22</sub><i>a</i><sub>31</sub> − <i>a</i><sub>11</sub><i>a</i><sub>23</sub><i>a</i><sub>32</sub> − <i>a</i><sub>12</sub><i>a</i><sub>21</sub><i>a</i><sub>33</sub></span>.</li>
+</ul>
+⫽
+<div class="thm-h">Formulas · matrix method and Cramer’s rule</div>
+<p>Both methods work only for a <b>square</b> system with <span class="f">det <i>A</i> ≠ 0</span>. When <span class="f">det <i>A</i> = 0</span>, the system is inconsistent or has infinitely many solutions, and Gaussian elimination decides.</p>
+<ul class="rules">
+<li><b>Matrix method:</b> <span class="f"><i>AX</i> = <i>B</i> ⇒ <i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>. Multiply <b>on the left</b>; <span class="f"><i>BA</i><sup>−1</sup></span> is a mistake (and usually not even defined).</li>
+<li><b>Cramer:</b> <span class="f"><i>D</i> = det <i>A</i></span>, and <span class="f"><i>D<sub>x</sub></i></span> is the determinant of <i>A</i> with the column of <i>x</i> replaced by the column of constants. Then <span class="f"><i>x</i> = <i>D<sub>x</sub></i> / <i>D</i></span>, <span class="f"><i>y</i> = <i>D<sub>y</sub></i> / <i>D</i></span> and so on.</li>
+<li><b>2×2 determinant:</b> <span class="f"><span class="mat det" style="grid-template-columns:repeat(2,auto)"><span><i>a</i></span><span><i>b</i></span><span><i>c</i></span><span><i>d</i></span></span> = <i>ad</i> − <i>bc</i></span>.</li>
+<li><b>3×3 determinant (Sarrus):</b> three diagonal products going down to the right with a plus, three going down to the left with a minus: <span class="f"><i>a</i><sub>11</sub><i>a</i><sub>22</sub><i>a</i><sub>33</sub> + <i>a</i><sub>12</sub><i>a</i><sub>23</sub><i>a</i><sub>31</sub> + <i>a</i><sub>13</sub><i>a</i><sub>21</sub><i>a</i><sub>32</sub> − <i>a</i><sub>13</sub><i>a</i><sub>22</sub><i>a</i><sub>31</sub> − <i>a</i><sub>11</sub><i>a</i><sub>23</sub><i>a</i><sub>32</sub> − <i>a</i><sub>12</sub><i>a</i><sub>21</sub><i>a</i><sub>33</sub></span>.</li>
+</ul>
+⟧</div>
+
+<div class="thm">⟦
+<div class="thm-h">Wzory · własności wyznacznika</div>
+<ul class="rules f">
+<li>det(<i>AB</i>) = det <i>A</i> · det <i>B</i> &nbsp;&nbsp; det(<i>A</i><sup>T</sup>) = det <i>A</i> &nbsp;&nbsp; det(<i>A</i><sup>−1</sup>) = 1 / det <i>A</i></li>
+<li>det(<i>kA</i>) = <i>k</i><sup><i>n</i></sup> · det <i>A</i> dla macierzy <i>n</i>×<i>n</i> (liczba wychodzi z każdego wiersza)</li>
+<li>det(<i>A</i> + <i>B</i>) ≠ det <i>A</i> + det <i>B</i></li>
+</ul>
+<ul class="rules">
+<li>Zamiana dwóch wierszy (kolumn) zmienia znak wyznacznika.</li>
+<li>Dodanie do wiersza wielokrotności innego wiersza <b>nie zmienia</b> wyznacznika. Tak robi się zera przed rozwinięciem Laplace’a.</li>
+<li>Wiersz zer albo dwa proporcjonalne wiersze dają det = 0.</li>
+<li>Macierz trójkątna: det to iloczyn liczb na przekątnej.</li>
+<li><i>A</i> jest odwracalna ⇔ det <i>A</i> ≠ 0.</li>
+</ul>
+⫽
+<div class="thm-h">Formulas · properties of the determinant</div>
+<ul class="rules f">
+<li>det(<i>AB</i>) = det <i>A</i> · det <i>B</i> &nbsp;&nbsp; det(<i>A</i><sup>T</sup>) = det <i>A</i> &nbsp;&nbsp; det(<i>A</i><sup>−1</sup>) = 1 / det <i>A</i></li>
+<li>det(<i>kA</i>) = <i>k</i><sup><i>n</i></sup> · det <i>A</i> for an <i>n</i>×<i>n</i> matrix (the number comes out of every row)</li>
+<li>det(<i>A</i> + <i>B</i>) ≠ det <i>A</i> + det <i>B</i></li>
+</ul>
+<ul class="rules">
+<li>Swapping two rows (columns) changes the sign of the determinant.</li>
+<li>Adding a multiple of one row to another <b>does not change</b> the determinant. This is how zeros are made before a Laplace expansion.</li>
+<li>A row of zeros or two proportional rows give det = 0.</li>
+<li>Triangular matrix: det is the product of the numbers on the diagonal.</li>
+<li><i>A</i> is invertible ⇔ det <i>A</i> ≠ 0.</li>
+</ul>
+⟧</div>
+
+<div class="thm">⟦
+<div class="thm-h">Twierdzenie · rozwinięcie Laplace’a</div>
+<p>Wybieramy wiersz albo kolumnę z największą liczbą zer. Dla każdego niezerowego elementu <span class="f"><i>a</i><sub><i>ij</i></sub></span>:</p>
+⫽
+<div class="thm-h">Theorem · Laplace expansion</div>
+<p>Choose the row or column with the most zeros. For every nonzero entry <span class="f"><i>a</i><sub><i>ij</i></sub></span>:</p>
+⟧<div class="eq left">det <i>A</i> = Σ (−1)<sup><i>i</i>+<i>j</i></sup> · <i>a</i><sub><i>ij</i></sub> · det <i>M</i><sub><i>ij</i></sub></div>
+<p>⟪<span class="f"><i>M</i><sub><i>ij</i></sub></span> to minor: macierz bez <i>i</i>-tego wiersza i <i>j</i>-tej kolumny. Znaki układają się w szachownicę: + − + − / − + − + …⫽<span class="f"><i>M</i><sub><i>ij</i></sub></span> is the minor: the matrix without row <i>i</i> and column <i>j</i>. The signs form a chessboard: + − + − / − + − + …⟫</p>
+</div>
+
+<div class="thm">⟦
+<div class="thm-h">Definicja · rząd macierzy</div>
+<ul class="rules">
+<li>Rząd to liczba niezerowych wierszy po sprowadzeniu macierzy do postaci schodkowej (Gauss, zera <b>pod</b> elementami głównymi).</li>
+<li>Operacje na wierszach (i kolumnach) nie zmieniają rzędu.</li>
+<li>rz <i>A</i> ≤ min(liczba wierszy, liczba kolumn). Dla macierzy kwadratowej <i>n</i>×<i>n</i>: rz <i>A</i> = <i>n</i> ⇔ det <i>A</i> ≠ 0.</li>
+</ul>
+⫽
+<div class="thm-h">Definition · rank of a matrix</div>
+<ul class="rules">
+<li>The rank is the number of nonzero rows after reducing the matrix to row echelon form (Gauss, zeros <b>below</b> the pivots).</li>
+<li>Row (and column) operations do not change the rank.</li>
+<li>rank <i>A</i> ≤ min(number of rows, number of columns). For a square <i>n</i>×<i>n</i> matrix: rank <i>A</i> = <i>n</i> ⇔ det <i>A</i> ≠ 0.</li>
+</ul>
+⟧</div>
+
+<div class="thm">⟦
+<div class="thm-h">Przepis · układ z parametrem</div>
+<ol>
+<li>Liczymy wyznacznik główny <span class="f"><i>W</i>(<i>a</i>)</span>, traktując <i>a</i> jak zwykłą liczbę.</li>
+<li>Rozwiązujemy <span class="f"><i>W</i>(<i>a</i>) = 0</span>. Dla pozostałych <i>a</i> układ ma <b>dokładnie jedno</b> rozwiązanie.</li>
+<li>Każdą wartość z <span class="f"><i>W</i> = 0</span> podstawiamy do układu i rozstrzygamy metodą Gaussa (albo rzędami): sprzeczny czy nieskończenie wiele rozwiązań.</li>
+<li>Odpowiedź zbieramy w punktach: dla <i>a</i> ∉ {…}, dla <i>a</i> = …, dla <i>a</i> = ….</li>
+</ol>
+⫽
+<div class="thm-h">Recipe · system with a parameter</div>
+<ol>
+<li>Compute the main determinant <span class="f"><i>D</i>(<i>a</i>)</span>, treating <i>a</i> as an ordinary number.</li>
+<li>Solve <span class="f"><i>D</i>(<i>a</i>) = 0</span>. For all other <i>a</i> the system has <b>exactly one</b> solution.</li>
+<li>Substitute each value with <span class="f"><i>D</i> = 0</span> into the system and decide by Gaussian elimination (or ranks): inconsistent or infinitely many solutions.</li>
+<li>Collect the answer in points: for <i>a</i> ∉ {…}, for <i>a</i> = …, for <i>a</i> = ….</li>
+</ol>
+⟧</div>
+
+<div class="thm">⟦
+<div class="thm-h">Wzory · działania na macierzach</div>
+<ul class="rules">
+<li><b>Dodawanie</b>: tylko te same wymiary, element po elemencie.</li>
+<li><b>Mnożenie</b> <span class="f"><i>A</i>·<i>B</i></span>: (m×<b>n</b>)·(<b>n</b>×p) = m×p. Element <span class="f"><i>c</i><sub>ij</sub></span> to <i>i</i>-ty wiersz <i>A</i> razy <i>j</i>-ta kolumna <i>B</i>.</li>
+<li><span class="f"><i>AB</i> ≠ <i>BA</i></span>: kolejność ma znaczenie.</li>
+<li><b>Transpozycja</b>: wiersze stają się kolumnami; m×n → n×m.</li>
+<li><span class="f"><i>A</i><sup>2</sup> = <i>A</i>·<i>A</i></span>, czyli iloczyn macierzy, a nie kwadraty elementów.</li>
+</ul>
+⫽
+<div class="thm-h">Formulas · matrix operations</div>
+<ul class="rules">
+<li><b>Addition</b>: equal sizes only, entry by entry.</li>
+<li><b>Multiplication</b> <span class="f"><i>A</i>·<i>B</i></span>: (m×<b>n</b>)·(<b>n</b>×p) = m×p. The entry <span class="f"><i>c</i><sub>ij</sub></span> is row <i>i</i> of <i>A</i> times column <i>j</i> of <i>B</i>.</li>
+<li><span class="f"><i>AB</i> ≠ <i>BA</i></span>: the order matters.</li>
+<li><b>Transpose</b>: rows become columns; m×n → n×m.</li>
+<li><span class="f"><i>A</i><sup>2</sup> = <i>A</i>·<i>A</i></span>, the matrix product, not the squares of the entries.</li>
+</ul>
+⟧</div>
+
+</div>
+</section>
