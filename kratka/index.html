@@ -469,6 +469,100 @@ ol.steps>li{margin:10px 0}
 .vec::after{content:"";position:absolute;left:.08em;right:-.04em;top:-.12em;height:.42em;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 8' preserveAspectRatio='none'%3E%3Cpath d='M0 4H18M13.5 1L18.5 4L13.5 7' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 8' preserveAspectRatio='none'%3E%3Cpath d='M0 4H18M13.5 1L18.5 4L13.5 7' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E") center/100% 100% no-repeat}
 .res-sum{flex:1 1 280px;min-width:0}
 .res-sum p{margin-top:6px}
+
+/* ---------- zeszyt i brudnopis ----------
+   Kartka: kratka 24 px, czerwony margines, tekst w linii co 24 px. <pre> z wynikami leży pod <textarea>
+   z przezroczystymi literami, więc obie warstwy muszą mieć identyczny krój, rozmiar i odstępy. */
+:root{--nb-grid:#dce3ed;--nb-margin:#eba3a8;--nb-hl:rgba(255,212,0,.4);--nb-hl-ic:#f2c200;--nb-sel:rgba(35,67,181,.2)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--nb-grid:#212935;--nb-margin:rgba(255,127,135,.42);--nb-hl:rgba(255,214,10,.3);--nb-hl-ic:#d6b11a;--nb-sel:rgba(143,166,255,.32)}}
+:root[data-theme="dark"]{--nb-grid:#212935;--nb-margin:rgba(255,127,135,.42);--nb-hl:rgba(255,214,10,.3);--nb-hl-ic:#d6b11a;--nb-sel:rgba(143,166,255,.32)}
+.nb{display:flex;flex-direction:column;min-height:0;border:1px solid var(--rule);border-radius:3px;background:var(--paper);overflow:hidden}
+.nb:focus-within{border-color:var(--ink-3)}
+.nb-bar{display:flex;align-items:center;gap:8px;padding:8px;background:var(--side);border-bottom:1px solid var(--rule)}
+.nb-bar .seg>button{display:inline-flex;align-items:center;gap:7px}
+.nb svg,.nbd-head svg,.btn.pad svg{flex:none;width:18px;height:18px}
+.btn.pad svg{width:16px;height:16px}
+.nb-hist{display:flex;gap:6px;margin-left:auto}
+.nb-ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:36px;padding:0;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);cursor:pointer}
+.nb-ic:hover{border-color:var(--ink-3)}
+.nb-ic:disabled{opacity:.38;cursor:default}
+.nb-ic:disabled:hover{border-color:var(--rule)}
+.nb-ic.on{border-color:var(--pen);background:var(--pen-soft);color:var(--pen)}
+.nb-sub{display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid var(--rule);overflow-x:auto;scrollbar-width:none;background:var(--paper)}
+.nb-sub::-webkit-scrollbar{display:none}
+.nb-keys>button{flex:none;min-width:38px;height:34px;padding:0 9px;border:1px solid var(--rule);border-radius:3px;background:var(--side);color:var(--ink);font:17px/1 var(--f-math);cursor:pointer;white-space:nowrap}
+.nb-keys>button.w{font:14px/1 var(--f-code)}
+.nb-keys>button:hover{border-color:var(--ink-3)}
+.nb-keys>button:active{background:var(--pen-soft);border-color:var(--pen)}
+.nb-keys .seg{flex:none;flex-wrap:nowrap}
+.nb-sep{flex:none;width:1px;height:22px;background:var(--rule);margin:0 3px}
+.nb-dot{display:block;width:14px;height:14px;border-radius:50%;background:var(--c)}
+.nb-hint{flex:none;margin-left:6px;font-size:13px;color:var(--ink-3);white-space:nowrap}
+@media (pointer:fine){.nb-hint{display:none}}
+.nb:not(.nb-pen) .nb-tools,.nb.nb-pen .nb-keys{display:none}
+/* z myszą i zwykłą klawiaturą zostają tylko symbole, których na niej nie ma */
+@media (pointer:fine){.nb-keys>.kb{display:none}}
+.nb-bar,.nb-sub,.nb-foot,.nbd-head{-webkit-user-select:none;user-select:none}
+.nb-pen .nb-page{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.nb-scroll{position:relative;flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}
+.nb-page{position:relative;background-color:var(--paper);background-image:linear-gradient(90deg,transparent 48px,var(--nb-margin) 48px,var(--nb-margin) 49.5px,transparent 49.5px),linear-gradient(var(--nb-grid) 1px,transparent 1px),linear-gradient(90deg,var(--nb-grid) 1px,transparent 1px);background-size:100% 100%,24px 24px,24px 24px}
+/* padding-left 58 px = NB_PAD w notebook.js */
+.nb-mirror,.nb-text{position:absolute;left:0;top:0;margin:0;padding:24px 24px 24px 58px;border:0;border-radius:0;font:16px/24px var(--f-code);letter-spacing:0;word-spacing:0;tab-size:4;white-space:pre;overflow-wrap:normal;word-break:normal;font-variant-ligatures:none;font-kerning:none;text-transform:none;text-indent:0;text-align:left}
+.nb-mirror{color:var(--ink);pointer-events:none;width:max-content;background:none}
+.nb-text{display:block;color:transparent;-webkit-text-fill-color:transparent;caret-color:var(--ink);background:transparent;resize:none;overflow:hidden;outline:0;box-shadow:none;-webkit-appearance:none;appearance:none}
+.nb-text::selection{background:var(--nb-sel);color:transparent;-webkit-text-fill-color:transparent}
+.nb-pen .nb-text{pointer-events:none}
+.nb-ink{position:absolute;left:0;top:0;pointer-events:none}
+.nb-pen .nb-ink{pointer-events:auto;touch-action:none;cursor:crosshair}
+.nb-pen[data-tool="erase"] .nb-ink{cursor:cell}
+.nb-c{color:var(--ink-3)}
+.nb-r{display:inline-block;height:24px;vertical-align:top;margin-left:18px;color:var(--pen);font:17px/24px var(--f-math);white-space:pre}
+.nb-r.err,.nb-r.bad{color:var(--red)}
+.nb-r.ok{color:var(--green)}
+.nb-r sub{font-size:.68em;line-height:0}
+.nb-foot{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:6px 8px;border-top:1px solid var(--rule);background:var(--side)}
+.nb-pages{display:flex;align-items:center;gap:4px;margin-right:auto}
+.nb-pages .tn-arrow{width:36px;height:34px}
+.nb-pn{min-width:96px;text-align:center;font-size:13.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.nb-pn b{color:var(--ink);font-weight:600}
+.nb>.msg{margin:0;border-radius:0}
+.nb-warn{margin:0;padding:8px 12px;font-size:13.5px;background:var(--amber-soft)}
+.nb-view .nb{height:clamp(440px,calc(100vh - var(--top-h) - 250px),1100px)}
+@supports (height:100dvh){.nb-view .nb{height:clamp(440px,calc(100dvh - var(--top-h) - 250px),1100px)}}
+.nb-help{margin-top:18px;padding:8px 12px}
+.nb-dl{display:grid;grid-template-columns:minmax(0,max-content) minmax(0,1fr);gap:10px 20px;margin:12px 0 6px}
+.nb-dl dt{margin:0;white-space:nowrap}
+.nb-dl dd{margin:0;font-size:14.5px;color:var(--ink-2)}
+.nb-dl code{white-space:pre}
+/* brudnopis: panel z prawej (komputer) albo cały ekran (telefon) */
+.btn.pad.on{border-color:var(--pen);color:var(--pen);background:var(--pen-soft)}
+.nbd{position:fixed;z-index:45;top:calc(var(--top-h) + env(safe-area-inset-top,0px));right:0;bottom:0;width:min(560px,46vw);display:flex;flex-direction:column;background:var(--paper);border-left:1px solid var(--rule);box-shadow:-18px 0 40px rgba(14,21,35,.12)}
+.nbd-head{display:flex;align-items:center;gap:10px;padding:8px max(10px,env(safe-area-inset-right,0px)) 8px 16px;border-bottom:1px solid var(--rule);color:var(--ink)}
+.nbd-head h2{flex:1;margin:0;font-size:16px}
+.nbd-task{display:none}
+.nbd-host{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.nbd-host .nb{flex:1 1 auto;border:0;border-radius:0}
+html.nbd-open .main{padding-right:calc(min(560px,46vw) + 32px)}
+@media (min-width:980px) and (max-width:1399px){html.nbd-open .layout{grid-template-columns:minmax(0,1fr)}html.nbd-open .side{display:none}}
+@media (max-width:979px){
+  .nbd{inset:0;width:auto;z-index:55;border-left:0;box-shadow:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+  html.nbd-open .main{padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .nbd-task{display:block;max-height:34vh;overflow:auto;padding:0 16px 10px;border:0;border-bottom:1px solid var(--rule);border-radius:0;margin:0;background:var(--side)}
+  .nbd-task summary{padding:8px 0;font-size:13px;color:var(--ink-2)}
+  .nbd-task .task-q{font-size:15px;margin-bottom:4px}
+  .nbd-task .sheet{margin:6px 0 0;padding:10px}
+  .nbd.nbd-kb .nbd-task{max-height:20vh}
+  .nbd.nbd-kb .nb-foot{display:none}
+}
+@media (max-width:639px){
+  .nb-bar .seg>button{padding:6px 10px}
+  .nb-dl{grid-template-columns:minmax(0,1fr);gap:2px}
+  .nb-dl dd{margin-bottom:10px}
+  .nb-dl dt{white-space:normal}
+  .nb-view .nb{height:calc(100vh - var(--top-h) - 150px);min-height:420px}
+  .nb-view .lead{display:none}
+}
+@supports (height:100dvh){@media (max-width:639px){.nb-view .nb{height:calc(100dvh - var(--top-h) - 150px)}}}
 </style>
 </head>
 <body>
@@ -522,7 +616,7 @@ ol.steps>li{margin:10px 0}
 <div class="task-q" id="exQ"></div>
 <div class="sheet"><div id="exBody"></div><div class="task-ans" id="exAns"></div></div>
 <p class="note" id="exNote"></p>
-<div class="actions"><button type="button" class="btn ghost" id="exPrev"><span data-ln="pl">Poprzednie</span><span data-ln="en">Previous</span></button><button type="button" class="btn ghost" id="exNext"><span data-ln="pl">Następne</span><span data-ln="en">Next</span></button><button type="button" class="btn" id="exEnd"><span data-ln="pl">Oddaj i oceń</span><span data-ln="en">Hand in and grade</span></button></div>
+<div class="actions"><button type="button" class="btn ghost" id="exPrev"><span data-ln="pl">Poprzednie</span><span data-ln="en">Previous</span></button><button type="button" class="btn ghost" id="exNext"><span data-ln="pl">Następne</span><span data-ln="en">Next</span></button><button type="button" class="btn ghost pad" data-pad="ex" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 16.5l.9-3.6 9.4-9.4a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1l-9.4 9.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.3 5l2.7 2.7" stroke="currentColor" stroke-width="1.5"/></svg><span><span data-ln="pl">Brudnopis</span><span data-ln="en">Scratch pad</span></span></button><button type="button" class="btn" id="exEnd"><span data-ln="pl">Oddaj i oceń</span><span data-ln="en">Hand in and grade</span></button></div>
 <div class="msg" id="exConfirm" role="status"></div>
 </div>
 <div id="exRes" hidden></div>
@@ -539,6 +633,65 @@ ol.steps>li{margin:10px 0}
 <div id="prBox"></div>
 <h2 class="rule-h"><span data-ln="pl">Tematy</span><span data-ln="en">Topics</span></h2>
 <div id="prList"></div>
+</section>
+
+<!-- ===================== ZESZYT: wspólny dla przedmiotów; jako Brudnopis przenosi się do panelu #nbd ===================== -->
+<section data-view="zeszyt" class="nb-view" hidden>
+<div class="vh"><div class="eyebrow" id="nbEyebrow"></div><h1><span data-ln="pl">Zeszyt</span><span data-ln="en">Notebook</span></h1>
+<p class="lead"><span data-ln="pl">Kartka w kratkę na rachunki i notatki. Z klawiatury każda linia liczy się od razu, a wynik staje na jej końcu. Piórem piszesz palcem, rysikiem albo myszą. Zeszyt zapisuje się w tej przeglądarce, osobno dla każdego przedmiotu.</span><span data-ln="en">Squared paper for calculations and notes. With the keyboard every line is calculated as you type and the result appears at its end. With the pen you write with a finger, a stylus or the mouse. The notebook is saved in this browser, separately for each subject.</span></p></div>
+<div id="nbHome">
+<div class="nb" id="nb" data-tool="pen">
+<div class="nb-bar">
+<div class="seg" id="nbMode" role="group" aria-label="Sposób pisania" data-al-pl="Sposób pisania" data-al-en="How to write"><button type="button" data-nbm="type" class="on" aria-pressed="true"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="1.75" y="5" width="16.5" height="10.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5h.5M8 8.5h.5M11 8.5h.5M14 8.5h.5M6 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span><span data-ln="pl">Klawiatura</span><span data-ln="en">Keyboard</span></span></button><button type="button" data-nbm="pen" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 16.5l.9-3.6 9.4-9.4a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1l-9.4 9.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.3 5l2.7 2.7" stroke="currentColor" stroke-width="1.5"/></svg><span><span data-ln="pl">Pióro</span><span data-ln="en">Pen</span></span></button></div>
+<div class="nb-hist"><button type="button" class="nb-ic" id="nbUndo" aria-label="Cofnij" data-al-pl="Cofnij" data-al-en="Undo" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4.5l-4 4 4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 8.5h7.5a4.25 4.25 0 0 1 0 8.5H9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><button type="button" class="nb-ic" id="nbRedo" aria-label="Ponów" data-al-pl="Ponów" data-al-en="Redo" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 8.5H8.5a4.25 4.25 0 0 0 0 8.5H11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
+</div>
+<div class="nb-sub nb-keys" id="nbKeys">
+<div class="seg small" id="nbDeg" role="group" aria-label="Kąty w sin, cos i tg" data-al-pl="Kąty w sin, cos i tg" data-al-en="Angles in sin, cos and tan"><button type="button" data-deg="1" class="on" aria-pressed="true"><span data-ln="pl">stopnie</span><span data-ln="en">degrees</span></button><button type="button" data-deg="0" aria-pressed="false"><span data-ln="pl">radiany</span><span data-ln="en">radians</span></button></div>
+<span class="nb-sep" aria-hidden="true"></span>
+<button type="button" data-k="^" aria-label="potęga" data-al-pl="potęga" data-al-en="power"><i>x</i><sup>y</sup></button><button type="button" data-k="√">√</button><button type="button" class="kb" data-k="()">( )</button><button type="button" class="kb" data-k="/">/</button><button type="button" class="kb" data-k="·">·</button><button type="button" class="kb" data-k="=">=</button><button type="button" data-k="π">π</button><button type="button" data-k="°">°</button><button type="button" class="kb" data-k="[]" aria-label="macierz" data-al-pl="macierz" data-al-en="matrix">[ ]</button><button type="button" class="kb" data-k=";" aria-label="nowy wiersz macierzy" data-al-pl="nowy wiersz macierzy" data-al-en="new matrix row">;</button><button type="button" data-k="^-1" aria-label="odwrotność" data-al-pl="odwrotność" data-al-en="inverse"><i>A</i><sup>−1</sup></button><button type="button" data-k="^T" aria-label="transpozycja" data-al-pl="transpozycja" data-al-en="transpose"><i>A</i><sup>T</sup></button><button type="button" data-k="det()" class="w">det</button><button type="button" data-k="sin()" class="w">sin</button><button type="button" data-k="cos()" class="w">cos</button><button type="button" data-k="# " class="w" aria-label="notatka bez liczenia" data-al-pl="notatka bez liczenia" data-al-en="a note, not calculated"># <span data-ln="pl">notatka</span><span data-ln="en">note</span></button>
+</div>
+<div class="nb-sub nb-tools" id="nbTools" role="group" aria-label="Przybory" data-al-pl="Przybory" data-al-en="Tools">
+<button type="button" class="nb-ic on" data-tool="pen" aria-pressed="true" aria-label="Niebieski długopis" data-al-pl="Niebieski długopis" data-al-en="Blue pen"><i class="nb-dot" style="--c:var(--pen)"></i></button><button type="button" class="nb-ic" data-tool="ink" aria-pressed="false" aria-label="Czarny długopis" data-al-pl="Czarny długopis" data-al-en="Black pen"><i class="nb-dot" style="--c:var(--ink)"></i></button><button type="button" class="nb-ic" data-tool="red" aria-pressed="false" aria-label="Czerwony długopis" data-al-pl="Czerwony długopis" data-al-en="Red pen"><i class="nb-dot" style="--c:var(--red)"></i></button><button type="button" class="nb-ic" data-tool="hl" aria-pressed="false" aria-label="Zakreślacz" data-al-pl="Zakreślacz" data-al-en="Highlighter"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 17.5h15" stroke="var(--nb-hl-ic)" stroke-width="3.5" stroke-linecap="round"/><path d="M6 13.5l1-3.2 6.6-6.6a1.3 1.3 0 0 1 1.8 0l1.4 1.4a1.3 1.3 0 0 1 0 1.8l-6.6 6.6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button><button type="button" class="nb-ic" data-tool="erase" aria-pressed="false" aria-label="Gumka: usuwa całą kreskę" data-al-pl="Gumka: usuwa całą kreskę" data-al-en="Eraser: removes a whole stroke"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M9 16.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3.6 11.9l7.5-7.5a1.4 1.4 0 0 1 2 0l3 3a1.4 1.4 0 0 1 0 2L10.2 15.3H7z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.3 8.2l5 5" stroke="currentColor" stroke-width="1.5"/></svg></button>
+<span class="nb-hint"><span data-ln="pl">Dwa palce przewijają</span><span data-ln="en">Two fingers scroll</span></span>
+</div>
+<div class="nb-scroll" id="nbScroll">
+<div class="nb-page" id="nbPage">
+<pre class="nb-mirror" id="nbMirror" aria-hidden="true"></pre>
+<textarea class="nb-text" id="nbText" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Kartka zeszytu: wynik każdej linii pojawia się na jej końcu" data-al-pl="Kartka zeszytu: wynik każdej linii pojawia się na jej końcu" data-al-en="Notebook page: each line’s result appears at its end"></textarea>
+<canvas class="nb-ink" id="nbInk" aria-hidden="true"></canvas>
+</div>
+</div>
+<div class="nb-foot">
+<div class="nb-pages"><button type="button" class="tn-arrow tn-prev" id="nbPrev" aria-label="Poprzednia strona" data-al-pl="Poprzednia strona" data-al-en="Previous page"></button><span class="nb-pn" id="nbPageN"></span><button type="button" class="tn-arrow tn-next" id="nbNext" aria-label="Następna strona" data-al-pl="Następna strona" data-al-en="Next page"></button></div>
+<button type="button" class="btn ghost small" id="nbAdd"><span data-ln="pl">Nowa strona</span><span data-ln="en">New page</span></button><button type="button" class="btn link small" id="nbClear"><span data-ln="pl">Wyczyść</span><span data-ln="en">Clear</span></button><button type="button" class="btn link small" id="nbDel"><span data-ln="pl">Usuń stronę</span><span data-ln="en">Delete page</span></button>
+</div>
+<div class="msg" id="nbMsg" role="status"></div>
+<p class="nb-warn" id="nbWarn" hidden><span data-ln="pl">Nie udało się zapisać zeszytu w przeglądarce (brak miejsca albo okno prywatne). To, co na kartce, zostaje do zamknięcia strony.</span><span data-ln="en">The notebook could not be saved in this browser (no space or a private window). What is on the page stays until you close it.</span></p>
+<div class="vh-only" id="nbLive" aria-live="polite"></div>
+</div>
+</div>
+<details class="nb-help">
+<summary><span data-ln="pl">Co rozumie zeszyt</span><span data-ln="en">What the notebook understands</span></summary>
+<div data-ln="pl"><dl class="nb-dl">
+<dt><code>1/2 + 1/3</code></dt><dd>Ułamki zostają ułamkami, obok jest wartość dziesiętna. Gdy piszesz liczby z przecinkiem, wynik też jest dziesiętny.</dd>
+<dt><code>v0 = 72/3,6</code></dt><dd>Zmienna. W kolejnych liniach wystarczy <code>v0^2</code> albo <code>2v0</code>; mnożenie można pominąć.</dd>
+<dt><code>a = 4 m/s²</code></dt><dd>Jednostka na końcu linii nie przeszkadza w liczeniu.</dd>
+<dt><code>A = [2 1; 5 3]</code></dt><dd>Macierz: liczby oddzielone spacją, wiersze średnikiem. Dalej <code>det(A)</code>, <code>A^-1</code>, <code>A^T</code>, <code>rz(A)</code>, <code>A*B</code>, <code>2A</code>.</dd>
+<dt><code>sin(30°)  √2  5!  ln 2  log2(64)</code></dt><dd>Funkcje i stałe <code>π</code>, <code>e</code>. Kąty w stopniach albo w radianach, zależnie od przełącznika nad kartką.</dd>
+<dt><code>0b1011  0x1F  hex(255)  oct(493)</code></dt><dd>Systemy dwójkowy, ósemkowy i szesnastkowy.</dd>
+<dt><code>2/3 + 1/4 = 11/12</code></dt><dd>Wpisz swój wynik po znaku równości, a zeszyt sprawdzi, czy się zgadza. Zaokrąglony wynik, np. <code>10/3 = 3,33</code>, też przejdzie.</dd>
+<dt><code># notatka</code></dt><dd>Komentarz. Zwykły tekst bez liczb zostaje tekstem.</dd>
+</dl></div><div data-ln="en"><dl class="nb-dl">
+<dt><code>1/2 + 1/3</code></dt><dd>Fractions stay fractions, with the decimal value next to them. When you type decimals, the result is decimal too.</dd>
+<dt><code>v0 = 72/3.6</code></dt><dd>A variable. In the following lines <code>v0^2</code> or <code>2v0</code> is enough; the multiplication sign can be left out.</dd>
+<dt><code>a = 4 m/s²</code></dt><dd>A unit at the end of the line does not get in the way.</dd>
+<dt><code>A = [2 1; 5 3]</code></dt><dd>A matrix: numbers separated by spaces, rows by semicolons. Then <code>det(A)</code>, <code>A^-1</code>, <code>A^T</code>, <code>rank(A)</code>, <code>A*B</code>, <code>2A</code>.</dd>
+<dt><code>sin(30°)  √2  5!  ln 2  log2(64)</code></dt><dd>Functions and the constants <code>π</code> and <code>e</code>. Angles in degrees or radians, depending on the switch above the page.</dd>
+<dt><code>0b1011  0x1F  hex(255)  oct(493)</code></dt><dd>Binary, octal and hexadecimal numbers.</dd>
+<dt><code>2/3 + 1/4 = 11/12</code></dt><dd>Type your result after an equals sign and the notebook checks it. A rounded result such as <code>10/3 = 3.33</code> passes too.</dd>
+<dt><code># note</code></dt><dd>A comment. Plain text without numbers stays text.</dd>
+</dl></div>
+</details>
 </section>
 
 <!-- ===================== ALGEBRA: X NA LICZBACH ===================== -->
@@ -1317,6 +1470,13 @@ x - y + 2z = 5
 <div class="bs-head"><h2 id="bsT"></h2><button type="button" class="pl-close" data-close aria-label="Zamknij" data-al-pl="Zamknij" data-al-en="Close">×</button></div>
 <div class="bs-body" id="bsBody"></div>
 </div>
+</div>
+
+<!-- ===================== BRUDNOPIS: zeszyt obok zadania (na telefonie na cały ekran, z treścią zadania) ===================== -->
+<div class="nbd" id="nbd" hidden role="dialog" aria-labelledby="nbdT">
+<div class="nbd-head"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 16.5l.9-3.6 9.4-9.4a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1l-9.4 9.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.3 5l2.7 2.7" stroke="currentColor" stroke-width="1.5"/></svg><h2 id="nbdT"><span data-ln="pl">Brudnopis</span><span data-ln="en">Scratch pad</span></h2><button type="button" class="pl-close" id="nbdClose" aria-label="Zamknij brudnopis" data-al-pl="Zamknij brudnopis" data-al-en="Close the scratch pad">×</button></div>
+<details class="nbd-task" id="nbdTask" open><summary><span data-ln="pl">Treść zadania</span><span data-ln="en">The task</span></summary><div id="nbdTaskBody"></div></details>
+<div class="nbd-host" id="nbdHost"></div>
 </div>
 <script>
 // =====================================================================
@@ -2480,6 +2640,424 @@ function numbersSolve(src,env){
   const L=linSolve(src,env);
   return {html:(why?$t(`<div class="tip">${why} Liczymy <b>przez niewiadome</b>; ta metoda działa zawsze.</div>`,`<div class="tip">${why} We compute <b>using unknowns</b>; this method always works.</div>`):'')+L.html,X:L.X,
     fr:()=>(why?[{sec:$t('Dlaczego nie wzorem?','Why not a formula?'),t:$t('Wzór tu nie zadziała','The formula will not work here'),x:why+$t(' Dlatego liczymy <b>przez niewiadome</b>; ta metoda działa zawsze.',' So we compute <b>using unknowns</b>; this method always works.')}]:[]).concat(linFrames(L))};
+}
+
+// =====================================================================
+//  Kalkulator zeszytu (bez DOM): każda linia tekstu → wynik
+// =====================================================================
+//  calcText(tekst, {deg}) → dla każdej linii null (tekst albo nic nowego) lub {html, cls}
+//    cls: '' wynik, 'err' błąd w rachunku, 'ok' / 'bad' sprawdzona równość
+//  Liczby:    2,5  1/3  2·10^3  0b1011  0x1f  0o755   (ułamki zostają dokładne)
+//  Działania: + − * · × / : ^ ! %  nawiasy, potęgi ² ³ ⁻¹, mnożenie bez znaku (2x, 2(3+4), 2πr)
+//  Funkcje:   sqrt √ sin cos tg ctg arcsin arccos arctg ln log lg log2 exp abs; bin() hex() oct() zmieniają zapis
+//  Macierze:  A = [1 2; 3 4]  det(A) |A|  A^-1  inv(A)  A^T  A'  rz(A)  tr(A)  rref(A)  A*B  2A
+//  Zmienne:   v0 = 20 m/s; jednostka na końcu linii nie wchodzi do rachunku, tylko wraca w wyniku
+//  Linie:     „2+2=” liczy lewą stronę, „1/2 + 1/3 = 5/6” sprawdza równość, # zaczyna komentarz,
+//             linia ze zwykłym tekstem zostaje tekstem
+//  Kąty:      w stopniach (deg: true) albo w radianach; 30° działa w obu trybach
+// =====================================================================
+class CalcErr extends Error{}
+const C_FUN=new Set(['sqrt','√','sin','cos','tg','tan','ctg','cot','arcsin','asin','arccos','acos','arctg','arctan','atan','ln','log','lg','log2','exp','abs','det','inv','rank','rz','tr','rref']);
+const C_L='A-Za-zÀ-ÖØ-öø-ÿĀ-žΑ-Ωα-ω_';
+const C_NUM=/^((?:\d+(?:[.,]\d+)?|\.\d+)(?:[eE][-+]?\d+)?)/;
+const C_ID=new RegExp(`^[${C_L}][${C_L}0-9]*`);
+const C_IDS=new RegExp(`[${C_L}][${C_L}0-9]*`,'g');
+const C_ASG=new RegExp(`^([${C_L}][${C_L}0-9]*)\\s*=\\s*([^=]+)$`);
+const C_LIT=/^[-−]?(?:\d+(?:[.,]\d+)?|[.,]\d+)$/;
+const C_SUP={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+// x² → x^2, A⁻¹ → A^(-1), Aᵀ → A^T
+const cNorm=s=>s.replace(/ᵀ/g,'^T').replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+/g,m=>m.length>1?'^('+[...m].map(c=>C_SUP[c]).join('')+')':'^'+C_SUP[m]);
+// has(nazwa): czy zmienna już jest; wtedy krótka nieznana nazwa z liter („ac”, „πr”) rozpada się na iloczyn liter
+function calcTokens(s,has){
+  const t=[];let i=0;
+  while(i<s.length){
+    const c=s[i],r=s.slice(i);
+    if(/\s/.test(c)){i++;continue}
+    if(c==='['){const j=s.indexOf(']',i);if(j<0)throw new CalcErr('[');t.push({k:'mat',v:s.slice(i+1,j)});i=j+1;continue}
+    let m=r.match(/^0([bxo])([0-9a-f]+)/i);
+    if(m){
+      const base={b:2,x:16,o:8}[m[1].toLowerCase()];
+      if(![...m[2]].every(d=>parseInt(d,16)<base))throw new CalcErr('base');
+      t.push({k:'num',v:String(parseInt(m[2],base))});i+=m[0].length;continue;
+    }
+    m=r.match(C_NUM);
+    if(m){t.push({k:'num',v:m[1].replace(',','.')});i+=m[1].length;continue}
+    m=r.match(C_ID);
+    if(m){
+      const v=m[0],ch=[...v],one=c=>has(c)||c==='π'||c==='e';
+      // „4ac” = 4·a·c, „πr^2” = π·r², ale dłuższa nieznana nazwa to raczej słowo
+      if(has&&!has(v)&&!C_FUN.has(v)&&v!=='pi'&&ch.length>1&&ch.length<=3&&ch.every(c=>/\p{L}/u.test(c))&&ch.some(one))ch.forEach(c=>t.push({k:'id',v:c}));
+      else t.push({k:'id',v});
+      i+=v.length;continue;
+    }
+    if('+-−–*·×÷/:^()!°%\'√|'.includes(c)){t.push({k:'op',v:c==='−'||c==='–'?'-':c==='·'||c==='×'?'*':c===':'||c==='÷'?'/':c});i++;continue}
+    throw new CalcErr(c);
+  }
+  return t;
+}
+// drzewo wyrażenia: {t:'num',v} {t:'var',n} {t:'bin',o,a,b} {t:'neg',a} {t:'call',f,a} {t:'mat',rows} {t:'post',o,a} {t:'pow',a,b}
+function calcParse(tokens,has){
+  let p=0;const peek=()=>tokens[p],is=v=>peek()&&peek().k==='op'&&peek().v===v;
+  const expr=()=>{let a=term();while(is('+')||is('-')){const o=tokens[p++].v;a={t:'bin',o,a,b:term()}}return a};
+  const startsFactor=()=>{const x=peek();return x&&(x.k==='num'||x.k==='id'||x.k==='mat'||(x.k==='op'&&(x.v==='('||x.v==='√')))};
+  const term=()=>{
+    let a=unary();
+    for(;;){
+      if(is('*')||is('/')){const o=tokens[p++].v;a={t:'bin',o,a,b:unary()};continue}
+      // mnożenie bez znaku: 2x, 2(3), (1+2)(3), xy; ale nie „x 2” ani „5 2” (to raczej tekst)
+      const prev=tokens[p-1],x=peek();
+      if(prev&&startsFactor()&&!(x.k==='num'&&(prev.k==='id'||prev.k==='num'))&&!(prev.k==='id'&&C_FUN.has(prev.v))){a={t:'bin',o:'*',a,b:unary()};continue}
+      return a;
+    }
+  };
+  const unary=()=>{if(is('-')){p++;return {t:'neg',a:unary()}}if(is('+')){p++;return unary()}return power()};
+  const power=()=>{
+    const a=post();
+    if(is('^')){p++;
+      if(peek()&&peek().k==='id'&&peek().v==='T'){p++;return postLoop({t:'post',o:'T',a})}
+      return {t:'pow',a,b:unary()};
+    }
+    return a;
+  };
+  const postLoop=a=>{for(;;){if(is('!')||is('°')||is('%')){a={t:'post',o:tokens[p++].v,a}}else if(is("'")){p++;a={t:'post',o:'T',a}}else return a}};
+  const post=()=>postLoop(primary());
+  // wiersz macierzy: przecinek dzieli elementy, gdy stoi przed spacją albo w wierszu nie ma spacji; „1,5 2,5” to dwie liczby dziesiętne
+  const cells=r=>(/,\s/.test(r)||!/\s/.test(r)?r.split(','):r.split(/\s+/)).map(e=>e.trim()).filter(Boolean).map(e=>calcParse(calcTokens(e,has),has));
+  const primary=()=>{
+    const x=tokens[p++];if(!x)throw new CalcErr('end');
+    if(x.k==='num')return {t:'num',v:x.v};
+    if(x.k==='mat')return {t:'mat',rows:x.v.split(';').map(r=>r.trim()).filter(Boolean).map(cells)};
+    if(x.k==='op'&&x.v==='('){const a=expr();if(!is(')'))throw new CalcErr(')');p++;return a}
+    if(x.k==='op'&&x.v==='|'){const a=expr();if(!is('|'))throw new CalcErr('|');p++;return {t:'call',f:'abs',a}}
+    if(x.k==='op'&&x.v==='√')return {t:'call',f:'sqrt',a:post()};
+    if(x.k==='id'){
+      if(C_FUN.has(x.v)){
+        if(is('(')){p++;const a=expr();if(!is(')'))throw new CalcErr(')');p++;return {t:'call',f:x.v,a}}
+        return {t:'call',f:x.v,a:post()};
+      }
+      return {t:'var',n:x.v};
+    }
+    throw new CalcErr(x.v);
+  };
+  const a=expr();
+  if(p<tokens.length)throw new CalcErr('rest');
+  return a;
+}
+
+// ---------- wartości: ułamek Fr, liczba zmiennoprzecinkowa albo macierz {mat} ----------
+const isMat=v=>!!(v&&v.mat);
+const isFr=v=>v instanceof Fr;
+const toNum=v=>isFr(v)?v.n/v.d:v;
+const SAFE=9e15;
+const frOk=(n,d)=>Math.abs(n)<SAFE&&Math.abs(d)<SAFE;
+function cAdd(a,b,s=1){
+  if(isFr(a)&&isFr(b)&&frOk(a.n*b.d,b.n*a.d)&&frOk(a.d*b.d,1))return s>0?a.add(b):a.sub(b);
+  return toNum(a)+s*toNum(b);
+}
+function cMul(a,b){if(isFr(a)&&isFr(b)&&frOk(a.n*b.n,a.d*b.d))return a.mul(b);return toNum(a)*toNum(b)}
+function cDiv(a,b){
+  if(isFr(b)?b.z:b===0)throw new CalcErr('div0');
+  if(isFr(a)&&isFr(b)&&frOk(a.n*b.d,a.d*b.n))return a.div(b);
+  return toNum(a)/toNum(b);
+}
+const cNeg=a=>isFr(a)?a.neg():-a;
+const cZero=a=>isFr(a)?a.z:Math.abs(a)<1e-12;
+function cPowS(a,b){
+  if(isFr(b)&&b.d===1&&Math.abs(b.n)<=200&&isFr(a)){
+    let r=F(1);const n=Math.abs(b.n);
+    for(let k=0;k<n;k++){const q=cMul(r,a);if(!isFr(q))return Math.pow(toNum(a),toNum(b));r=q}
+    return b.n<0?cDiv(F(1),r):r;
+  }
+  const r=Math.pow(toNum(a),toNum(b));
+  if(Number.isNaN(r))throw new CalcErr('nan');
+  return r;
+}
+function mDims(A,B,what){if(A.length!==B.length||A[0].length!==B[0].length)throw new CalcErr('dims:'+what)}
+function cMatMul(A,B){
+  if(A[0].length!==B.length)throw new CalcErr('dims:mul');
+  return A.map((r,i)=>B[0].map((_,j)=>r.reduce((s,x,k)=>cAdd(s,cMul(x,B[k][j])),F(0))));
+}
+const cT=A=>A[0].map((_,j)=>A.map(r=>r[j]));
+// eliminacja: na ułamkach dokładnie, na liczbach dziesiętnych z wyborem największego elementu
+function cElim(A0,full){
+  const A=A0.map(r=>r.slice()),m=A.length,n=A[0].length;let row=0,sign=1;const piv=[];
+  for(let j=0;j<n&&row<m;j++){
+    let best=-1;
+    for(let i=row;i<m;i++)if(!cZero(A[i][j])&&(best<0||Math.abs(toNum(A[i][j]))>Math.abs(toNum(A[best][j]))))best=i;
+    if(best<0)continue;
+    if(best!==row){[A[row],A[best]]=[A[best],A[row]];sign=-sign}
+    const pv=A[row][j];
+    if(full){A[row]=A[row].map(x=>cDiv(x,pv))}
+    for(let i=full?0:row+1;i<m;i++){if(i===row||cZero(A[i][j]))continue;const f=cDiv(A[i][j],A[row][j]);A[i]=A[i].map((x,k)=>cAdd(x,cMul(f,A[row][k]),-1))}
+    piv.push(j);row++;
+  }
+  return {A,rank:row,sign,piv};
+}
+function cDet(A){
+  if(A.length!==A[0].length)throw new CalcErr('square');
+  const e=cElim(A,false);if(e.rank<A.length)return F(0);
+  let d=e.sign>0?F(1):F(-1);for(let i=0;i<A.length;i++)d=cMul(d,e.A[i][i]);return d;
+}
+function cInv(A){
+  if(A.length!==A[0].length)throw new CalcErr('square');
+  const n=A.length,e=cElim(A.map((r,i)=>[...r,...r.map((_,j)=>F(i===j?1:0))]),true);
+  if(e.piv.length<n||e.piv[n-1]!==n-1)throw new CalcErr('singular');
+  return e.A.map(r=>r.slice(n));
+}
+const unit=a=>a.map((r,i)=>r.map((_,j)=>F(i===j?1:0)));
+function cMatPow(A,b){
+  if(!isFr(b)||b.d!==1)throw new CalcErr('matpow');
+  if(A.length!==A[0].length)throw new CalcErr('square');
+  let R=unit(A),B=b.n<0?cInv(A):A;
+  for(let k=0;k<Math.abs(b.n);k++)R=cMatMul(R,B);
+  return R;
+}
+const RAD=Math.PI/180;
+function cTrig(f,x,deg){
+  const v=toNum(x),a=deg?v*RAD:v;
+  const r={sin:Math.sin,cos:Math.cos,tg:Math.tan,tan:Math.tan,ctg:t=>1/Math.tan(t),cot:t=>1/Math.tan(t)}[f](a);
+  return Math.abs(r)<1e-13?0:Math.abs(r-Math.round(r))<1e-13?Math.round(r):r;
+}
+function cArc(f,x,deg){
+  const v=toNum(x),r={arcsin:Math.asin,asin:Math.asin,arccos:Math.acos,acos:Math.acos,arctg:Math.atan,arctan:Math.atan,atan:Math.atan}[f](v);
+  if(Number.isNaN(r))throw new CalcErr('nan');
+  return deg?r/RAD:r;
+}
+function calcEval(n,env,o){
+  const ev=x=>calcEval(x,env,o);
+  switch(n.t){
+    case 'num':{
+      if(/e/i.test(n.v)){const x=+n.v;return Number.isInteger(x)&&Math.abs(x)<SAFE?F(x):x}
+      const [a,b='']=n.v.split('.'),s=a+b;return frOk(+s,10**b.length)?F(parseInt(s,10),10**b.length):+n.v;
+    }
+    case 'var':{
+      if(env.has(n.n))return env.get(n.n);
+      if(n.n==='pi'||n.n==='π')return Math.PI;
+      if(n.n==='e')return Math.E;
+      throw Object.assign(new CalcErr('var'),{name:n.n});
+    }
+    case 'neg':{const a=ev(n.a);return isMat(a)?{mat:a.mat.map(r=>r.map(cNeg))}:cNeg(a)}
+    case 'bin':return calcBin(n.o,ev(n.a),ev(n.b));
+    case 'pow':{const a=ev(n.a),b=ev(n.b);if(isMat(b))throw new CalcErr('matexp');return isMat(a)?{mat:cMatPow(a.mat,b)}:cPowS(a,b)}
+    case 'post':{
+      const a=ev(n.a);
+      if(n.o==='T'){if(!isMat(a))return a;return {mat:cT(a.mat)}}
+      if(isMat(a))throw new CalcErr('scalar');
+      if(n.o==='°')return o.deg?a:cMul(a,Math.PI/180);
+      if(n.o==='%')return cDiv(a,F(100));
+      const v=toNum(a);if(v<0||v>170||Math.round(v)!==v)throw new CalcErr('fact');
+      let r=F(1);for(let k=2;k<=v;k++)r=cMul(r,F(k));return r;
+    }
+    case 'mat':{
+      const rows=n.rows.map(r=>r.map(x=>{const v=ev(x);if(isMat(v))throw new CalcErr('nested');return v}));
+      if(!rows.length||rows.some(r=>r.length!==rows[0].length))throw new CalcErr('ragged');
+      return {mat:rows};
+    }
+    case 'call':{
+      const a=ev(n.a),f=n.f;
+      if(f==='abs'&&isMat(a))return cDet(a.mat);   // |A| to wyznacznik
+      if(['det','inv','rank','rz','tr','rref'].includes(f)){
+        if(!isMat(a))throw new CalcErr('needmat');
+        if(f==='det')return cDet(a.mat);
+        if(f==='inv')return {mat:cInv(a.mat)};
+        if(f==='rank'||f==='rz')return F(cElim(a.mat,false).rank);
+        if(f==='tr'){if(a.mat.length!==a.mat[0].length)throw new CalcErr('square');return a.mat.reduce((s,r,i)=>cAdd(s,r[i]),F(0))}
+        return {mat:cElim(a.mat,true).A};
+      }
+      if(isMat(a))throw new CalcErr('scalar');
+      if(f==='abs')return isFr(a)?a.abs():Math.abs(a);
+      if(f==='sqrt'||f==='√'){
+        const v=toNum(a);if(v<0)throw new CalcErr('nan');
+        if(isFr(a)){const rn=Math.round(Math.sqrt(a.n)),rd=Math.round(Math.sqrt(a.d));if(rn*rn===a.n&&rd*rd===a.d)return F(rn,rd)}
+        return Math.sqrt(v);
+      }
+      if(['sin','cos','tg','tan','ctg','cot'].includes(f))return cTrig(f,a,o.deg&&!hasPi(n.a));
+      if(['arcsin','asin','arccos','acos','arctg','arctan','atan'].includes(f))return cArc(f,a,o.deg);
+      const v=toNum(a);
+      if(f==='exp')return Math.exp(v);
+      if(v<=0)throw new CalcErr('log');
+      if(f==='log2'){const r=Math.log2(v);return Math.abs(r-Math.round(r))<1e-12?F(Math.round(r)):r}
+      if(f==='log'||f==='lg'){const r=Math.log10(v);return Math.abs(r-Math.round(r))<1e-12?F(Math.round(r)):r}
+      return Math.log(v);
+    }
+  }
+  throw new CalcErr('?');
+}
+const hasPi=n=>!!n&&(n.t==='var'&&/π|^pi$/.test(n.n)||['a','b'].some(k=>n[k]&&typeof n[k]==='object'&&hasPi(n[k])));
+function calcBin(op,a,b){
+  const A=isMat(a),B=isMat(b);
+  if(op==='+'||op==='-'){
+    const s=op==='+'?1:-1;
+    if(A&&B){mDims(a.mat,b.mat,'add');return {mat:a.mat.map((r,i)=>r.map((x,j)=>cAdd(x,b.mat[i][j],s)))}}
+    if(A||B)throw new CalcErr('matnum');
+    return cAdd(a,b,s);
+  }
+  if(op==='*'){
+    if(A&&B)return {mat:cMatMul(a.mat,b.mat)};
+    if(A)return {mat:a.mat.map(r=>r.map(x=>cMul(x,b)))};
+    if(B)return {mat:b.mat.map(r=>r.map(x=>cMul(a,x)))};
+    return cMul(a,b);
+  }
+  if(B)throw new CalcErr('matdiv');
+  if(A)return {mat:a.mat.map(r=>r.map(x=>cDiv(x,b)))};
+  return cDiv(a,b);
+}
+// równość z dokładnością tol (np. 0,005, gdy ktoś zaokrąglił do dwóch miejsc)
+function cSame(a,b,tol=0){
+  if(isMat(a)||isMat(b))return isMat(a)&&isMat(b)&&a.mat.length===b.mat.length&&a.mat[0].length===b.mat[0].length&&a.mat.every((r,i)=>r.every((x,j)=>cSame(x,b.mat[i][j],tol)));
+  if(isFr(a)&&isFr(b)&&a.n===b.n&&a.d===b.d)return true;
+  const x=toNum(a),y=toNum(b);
+  return Math.abs(x-y)<=tol+1e-9*Math.max(1,Math.abs(x),Math.abs(y));
+}
+
+// ---------- zapis wyniku ----------
+const cDec=s=>(LANG.cur==='en'?s:s.replace('.',',')).replace(/^-/,'−');
+// liczba całkowita, od 10 000 z odstępami między tysiącami (po angielsku przecinki)
+function cInt(n,grp){
+  const s=String(Math.abs(n)),g=grp&&s.length>4&&/^\d+$/.test(s)?s.replace(/\B(?=(\d{3})+$)/g,LANG.cur==='en'?',':' '):s;
+  return (n<0?'−':'')+g;
+}
+// liczba dziesiętna do 6 cyfr znaczących (bardzo duże i małe jako m·10^k); ex: zapis jest dokładny, więc „=”, a nie „≈”
+function cNum(x){
+  if(x===0||Object.is(x,-0))return {s:'0',ex:true};
+  const ax=Math.abs(x),close=y=>Math.abs(y-x)<=1e-12*ax;
+  if(ax>=1e9||ax<1e-4){const e=Math.floor(Math.log10(ax)),m=+(x/10**e).toPrecision(5);return {s:`${cDec(String(m))}·10<sup>${e<0?'−'+(-e):e}</sup>`,ex:close(m*10**e)}}
+  const y=+x.toPrecision(6);return {s:cDec(String(y)),ex:close(y)};
+}
+const cNumF=x=>{const q=cNum(x);return q.ex?{eq:q.s}:{ap:q.s}};
+// ułamek o skończonym rozwinięciu (mianownik 2^a·5^b), najwyżej 8 cyfr po przecinku: 981/200 → "4.905"
+function cTerm(v){
+  let d=v.d,a=0,b=0;while(d%2===0){d/=2;a++}while(d%5===0){d/=5;b++}
+  const k=Math.max(a,b);if(d!==1||k>8)return null;
+  let m=BigInt(v.n)*(10n**BigInt(k)/BigInt(v.d));const neg=m<0n;if(neg)m=-m;
+  const s=m.toString().padStart(k+1,'0');
+  return (neg?'-':'')+s.slice(0,s.length-k)+'.'+s.slice(s.length-k);
+}
+// dec: w linii są liczby dziesiętne, więc wynik też dziesiętny (bez 981/200)
+function cFmt(v,dec,grp){
+  if(isFr(v)){
+    if(v.d===1)return {eq:cInt(v.n,grp)};
+    const t=cTerm(v),fr=`${v.n<0?'−':''}${Math.abs(v.n)}/${v.d}`;
+    if(dec)return t?{eq:cDec(t)}:cNumF(v.n/v.d);
+    return t?{eq:fr,eq2:cDec(t)}:{eq:fr,ap:cDec(String(+(v.n/v.d).toPrecision(4)))};
+  }
+  if(!Number.isFinite(v))throw new CalcErr('nan');
+  const r=Math.round(v);
+  if(r!==0&&Math.abs(v-r)<1e-10*Math.abs(v)&&Math.abs(v)<1e15)return {eq:cInt(r,grp)};
+  return cNumF(v);
+}
+// short: bez dopisków (≈ 0,8333 albo = 0,25 po ułamku), do krótkich komunikatów
+function calcShow(v,dec,short){
+  if(isMat(v)){
+    let ap=false;
+    const cell=x=>{const f=cFmt(x,dec,false);if(f.eq)return f.eq;ap=true;return f.ap};
+    const body=v.mat.map(r=>r.map(cell).join(' ')).join('; ');
+    return (ap?'≈ [':'= [')+body+']';
+  }
+  const f=cFmt(v,dec,true);
+  if(!f.eq)return '≈ '+f.ap;
+  return '= '+f.eq+(short?'':(f.eq2?' = '+f.eq2:'')+(f.ap?' ≈ '+f.ap:''));
+}
+function calcErrText(e){
+  const m=e.message,k=m.split(':')[0];
+  if(k==='var')return $t(`nieznana zmienna ${e.name}`,`unknown variable ${e.name}`);
+  return {div0:$t('dzielenie przez 0','division by 0'),nan:$t('poza dziedziną','outside the domain'),log:$t('logarytm z liczby ≤ 0','logarithm of a number ≤ 0'),
+    dims:$t('wymiary macierzy nie pasują','the matrix sizes do not match'),square:$t('macierz nie jest kwadratowa','the matrix is not square'),
+    singular:$t('macierz nieodwracalna (det = 0)','the matrix is not invertible (det = 0)'),matpow:$t('potęga macierzy musi być całkowita','a matrix power must be an integer'),
+    needmat:$t('tu potrzebna jest macierz','a matrix is needed here'),scalar:$t('tu potrzebna jest liczba','a number is needed here'),
+    matnum:$t('nie dodaje się liczby do macierzy','a number cannot be added to a matrix'),matdiv:$t('nie dzieli się przez macierz','you cannot divide by a matrix'),
+    ragged:$t('wiersze macierzy mają różne długości','the matrix rows have different lengths'),fact:$t('silnia tylko z liczb 0–170','factorial only of 0–170'),
+    matexp:$t('wykładnik nie może być macierzą','the exponent cannot be a matrix'),nested:$t('element macierzy nie może być macierzą','a matrix entry cannot be a matrix'),
+    base:$t('ta cyfra nie pasuje do systemu liczby','a digit does not fit the number base'),int:$t('tu potrzebna jest liczba całkowita ≥ 0','a whole number ≥ 0 is needed here')}[k]||$t('błąd','error');
+}
+// jednostki, które mogą stać na końcu linii: 20 m/s, 72 km/h, 9,81 m/s², 4 GB
+const C_UNITS=new Set('m s g kg dag mg t km cm mm dm µm μm nm h min ms µs μs ns N kN mN J kJ MJ eV W kW MW Pa kPa hPa MPa bar Hz kHz MHz GHz V mV kV A mA Ω kΩ K mol l L ml C rad B kB KB MB GB TB KiB MiB GiB b kb Mb Gb bit bps'.split(' '));
+const cUnit=u=>u==='°C'||u.length<=14&&u.split(/[/·*]/).every(p=>C_UNITS.has(p.replace(/(\^[-−]?\d+|[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+)$/,'')));
+const C_UNIT_RE=/^(.*?[\d)\]°!%])\s*([^\s\d()[\]+\-−*·×÷/:^|'=.,]\S*)$/;
+// cała kartka: zmienne przechodzą z linii do linii
+function calcText(text,o={deg:true}){
+  const env=new Map(),decV=new Set();
+  const known=x=>env.has(x)||C_FUN.has(x)||x==='pi'||x==='π';
+  const isDec=s=>/\d[.,]\d/.test(s)||(s.match(C_IDS)||[]).some(x=>decV.has(x));
+  const has=x=>env.has(x);
+  const parse=s=>{try{return calcParse(calcTokens(cNorm(s),has),has)}catch(e){if(e.message==='base')throw e;return null}};
+  // wartość wyrażenia {v, unit, lit, base} albo null, gdy to raczej zwykły tekst; błąd w rachunku → wyjątek
+  const value=src=>{
+    src=src.trim();
+    const bm=src.match(/^(bin|hex|oct)(?:\s*\((.+)\)|\s+(.+))$/i);
+    if(bm){
+      const r=value(bm[2]||bm[3]);if(!r)return null;
+      if(!isFr(r.v)||r.v.d!==1||r.v.n<0)throw new CalcErr('int');
+      return {...r,base:{bin:2,hex:16,oct:8}[bm[1].toLowerCase()],lit:false};
+    }
+    // linia bez cyfr i działań to tekst, chyba że składa się ze znanych nazw (np. „det B”)
+    if(!/[\d+\-−*/·×÷:^()[\]√!°%|'⁰¹²³⁴⁵⁶⁷⁸⁹⁻ᵀ]/.test(src)&&!(src.match(C_IDS)||[]).every(known))return null;
+    const ast=parse(src);let err=null;
+    // sama liczba albo macierz z samych liczb: wynik powtórzyłby to, co wpisane
+    const litMat=ast&&ast.t==='mat'&&ast.rows.every(r=>r.every(c=>c.t==='num'||c.t==='neg'&&c.a.t==='num'));
+    if(ast){try{return {v:calcEval(ast,env,o),unit:'',lit:C_LIT.test(src)||litMat}}catch(e){err=e}}
+    if(!ast||err.message==='var'){
+      const um=src.match(C_UNIT_RE),a2=um&&cUnit(um[2])?parse(um[1]):null;
+      if(a2)return {v:calcEval(a2,env,o),unit:um[2],lit:C_LIT.test(um[1].trim())};
+    }
+    if(!ast)return null;
+    if(err.message==='var'&&err.name&&err.name.length>=3&&!/\d/.test(err.name))return null;   // zwykłe słowo w notatce
+    throw err;
+  };
+  const show=(r,dec,short)=>{
+    if(r.base)return `= ${r.v.n.toString(r.base).toUpperCase()}<sub>${r.base}</sub>`;
+    return calcShow(r.v,dec,short)+(r.unit&&!isMat(r.v)?' '+escH(r.unit):'');
+  };
+  const fail=e=>e instanceof CalcErr?{html:calcErrText(e),cls:'err'}:{html:$t('błąd','error'),cls:'err'};
+  return String(text).split('\n').map(raw=>{
+    // bez komentarza i bez numeracji „a)”, „2.”; „Pole: 3·4” liczy to, co po dwukropku
+    let line=raw.replace(/(^|\s)(#|\/\/).*$/,'').trim().replace(/^(?:[a-zA-Z]|\d{1,2})[).]\s+/,'');
+    const lab=line.match(/^([^:\d=()[\]]+):\s*(.+)$/);
+    if(lab&&/\p{L}{2,}/u.test(lab[1])&&!(lab[1].match(C_IDS)||[]).every(known))line=lab[2];
+    if(!line)return null;
+    try{
+      // przypisanie: v0 = 72/3,6
+      const m=line.match(C_ASG);
+      if(m&&!C_FUN.has(m[1])){
+        let r;
+        try{r=value(m[2])}catch(e){env.delete(m[1]);throw e}
+        if(!r)return null;
+        const dec=isDec(m[2]);
+        env.set(m[1],r.v);if(dec)decV.add(m[1]);else decV.delete(m[1]);
+        return r.lit?null:{html:show(r,dec),cls:''};   // „a = 4”: nic nowego do pokazania
+      }
+      const sides=line.replace(/≈/g,'=').split('=');
+      // „2 + 2 =” liczy lewą stronę
+      if(sides.length===2&&!sides[1].trim()){const r=value(sides[0]);return r?{html:show(r,isDec(sides[0])),cls:''}:null}
+      // „1/2 + 1/3 = 5/6” sprawdza równość; „10/3 = 3,33” przechodzi po zaokrągleniu
+      if(sides.length===2&&sides[0].trim()){
+        let L,Rv;
+        try{L=value(sides[0]);Rv=value(sides[1])}catch(e){if(e.message==='var')return null;throw e}   // „2x = 10”: równanie do rozwiązania, nie rachunek
+        if(!L||!Rv)return null;
+        const dec=isDec(line),lit=s=>C_LIT.test(s.trim()),kd=s=>{const q=s.trim().match(/[.,](\d+)$/);return lit(s)&&q?q[1].length:0};
+        if(cSame(L.v,Rv.v))return {html:$t('zgadza się','correct'),cls:'ok'};
+        const k=Math.max(kd(sides[0]),kd(sides[1]));
+        if(k&&cSame(L.v,Rv.v,0.5*10**-k))return {html:$t('zgadza się po zaokrągleniu','correct after rounding'),cls:'ok'};
+        const tell=$t('lewa strona ','the left side ')+show(L,dec,true)+(lit(sides[1])?'':$t(', prawa ',', the right side ')+show(Rv,dec,true));
+        return {html:$t('nie zgadza się: ','does not match: ')+tell,cls:'bad'};
+      }
+      if(sides.length>1)return null;
+      const r=value(line);
+      return r&&!r.lit?{html:show(r,isDec(line)),cls:''}:null;
+    }catch(e){return fail(e)}
+  });
+}
+// pierwsza strona zeszytu: krótki przykład tego, co umie kalkulator, osobno dla każdego przedmiotu
+function calcExample(subj){
+  const ex={
+    algebra:['# Wynik pojawia się obok.\n1/2 + 1/3\nA = [2 1; 5 3]\ndet(A)\nA^-1\nA*A^-1\n2/3 + 1/4 = 11/12\n',
+             '# Results show at line ends\n1/2 + 1/3\nA = [2 1; 5 3]\ndet(A)\nA^-1\nA*A^-1\n2/3 + 1/4 = 11/12\n'],
+    fizyka:['# Wynik pojawia się obok.\n# 72 km/h na m/s:\nv0 = 72/3,6\na = 4 m/s²\ns = v0^2/(2a)\ng = 9,81\nt = 2v0·sin(30°)/g\n',
+            '# Results show at line ends\n# 72 km/h in m/s:\nv0 = 72/3.6\na = 4 m/s²\ns = v0^2/(2a)\ng = 9.81\nt = 2v0·sin(30°)/g\n'],
+    so:['# Prawa: r = 4, w = 2, x = 1\nr = 4\nw = 2\nx = 1\nr+w+x\nr+x\n# rwxr-xr-x jako bity:\noct(0b111101101)\n# Hosty w sieci /24:\n2^8 - 2\n',
+        '# Permissions: r=4, w=2, x=1\nr = 4\nw = 2\nx = 1\nr+w+x\nr+x\n# rwxr-xr-x as bits:\noct(0b111101101)\n# Hosts in a /24 network:\n2^8 - 2\n']
+  };
+  const e=ex[subj];return e?$t(e[0],e[1]):'';
 }
 
 // =====================================================================
@@ -4752,15 +5330,18 @@ const plain=h=>String(h).replace(/<[^>]+>/g,'');
 // nazwa tematu bez znaczników (do <option>): wykładniki jako znaki Unicode
 const txt=h=>plain(String(h).replace(/<sup>−1<\/sup>/g,'⁻¹').replace(/<sup>T<\/sup>/g,'ᵀ').replace(/<sup>2<\/sup>/g,'²').replace(/<sub>(\d)<\/sub>/g,(m,d)=>'₀₁₂₃₄₅₆₇₈₉'[d])).replace(/&nbsp;/g,' ');
 const pctS=x=>Math.round(x*100)+'%';
+const ICON_PEN='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 16.5l.9-3.6 9.4-9.4a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1l-9.4 9.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.3 5l2.7 2.7" stroke="currentColor" stroke-width="1.5"/></svg>';
 function ansMark(id,res){for(const [k,ok] of Object.entries(res.marks||{})){const el=document.getElementById(id+'-'+k);if(el){el.classList.toggle('ok',!!ok);el.classList.toggle('bad',!ok)}}}
 
 // ================= Nawigacja =================
 const R={subj:null,view:null};
 const BASE_VIEWS=[{id:'cwiczenia',name:'Ćwiczenia',en:'Practice'},{id:'sprawdzian',name:'Sprawdzian',en:'Test'},{id:'postep',name:'Postęp',en:'Progress'}];
+// zeszyt (notebook.js) jest w każdym przedmiocie; keep: po zmianie przedmiotu zostajemy w zeszycie
+const NOTEBOOK_VIEW={id:'zeszyt',name:'Zeszyt',en:'Notebook',tool:true,keep:true};
 function viewsOf(S){
   const v=S.topics.length?BASE_VIEWS.slice():[];
   if(S.sheet)v.push({id:'sciaga',name:S.sheet.name,en:S.sheet.en});
-  return v.concat(S.tools.map(t=>({...t,tool:true})));
+  return v.concat([NOTEBOOK_VIEW],S.tools.map(t=>({...t,tool:true})));
 }
 // stare adresy z czasów trenera algebry (#uklady, #sprawdzian…) otwierają te same widoki
 const OLD_HASH={liczby:'liczby',rownania:'rownania',uklady:'uklady',cwiczenia:'cwiczenia',dzialania:'cwiczenia',sprawdzian:'sprawdzian',blad:'blad',postep:'postep',sciaga:'sciaga'};
@@ -4792,7 +5373,7 @@ function go(subj,view,topic){
 window.addEventListener('hashchange',route);
 const viewHref=(S,id)=>'#'+S.id+'-'+id;
 // przy zmianie przedmiotu zostajemy w tym samym widoku (np. Sprawdzian), jeśli nowy przedmiot go ma
-const keepView=s=>viewsOf(s).some(v=>v.id===R.view&&!v.tool)?R.view:viewsOf(s)[0].id;
+const keepView=s=>viewsOf(s).some(v=>v.id===R.view&&(!v.tool||v.keep))?R.view:viewsOf(s)[0].id;
 function navRender(){
   const S=subjById(R.subj),vs=viewsOf(S);
   $('#subjTabs').innerHTML=SUBJECTS.map(s=>`<a href="${viewHref(s,keepView(s))}"${s===S?' class="on" aria-current="page"':''}>${sName(s)}</a>`).join('');
@@ -4963,6 +5544,7 @@ function makePractice(root,o){
 <button type="button" class="btn ghost" id="${id}Hint">${bi('Podpowiedź','Hint')}</button>
 <button type="button" class="btn ghost play" id="${id}Play">${bi('Krok po kroku','Step by step')}</button>
 <button type="button" class="btn ghost" id="${id}Sol" aria-expanded="false">${bi('Rozwiązanie','Solution')}</button>
+<button type="button" class="btn ghost pad" data-pad="${id}" aria-pressed="false">${ICON_PEN}${bi('Brudnopis','Scratch pad')}</button>
 <button type="button" class="btn link" id="${id}New">${bi('Następne zadanie','Next task')}</button>
 </div>
 <div class="msg" id="${id}Msg" role="status"></div>
@@ -5223,6 +5805,386 @@ function kratkaStart(){
   setLang(LANG.cur,false);syncNoFrac();
   route();
 }
+
+// =====================================================================
+//  Zeszyt: kartka w kratkę do pisania palcem (rysikiem, myszą) albo z klawiatury
+// =====================================================================
+//  Każdy przedmiot ma własny zeszyt: strony z tekstem i kreskami, zapisane w przeglądarce
+//  (localStorage, klucz kratka-zeszyt-<przedmiot>).
+//  Klawiatura: <textarea> z przezroczystymi literami leży nad <pre>, który pokazuje ten sam tekst
+//  i wynik każdej linii (calcText z calc.js). Oba mają tę samą czcionkę i wysokość linii (24 px = kratka).
+//  Pióro: kreski na <canvas> nad tekstem. Jeden palec pisze, dwa przewijają; gdy w grze jest rysik,
+//  palec tylko przewija, żeby dłoń oparta o ekran nie pisała.
+//  Ten sam zeszyt otwiera się jako Brudnopis obok zadania (Ćwiczenia, Powtórka, Sprawdzian).
+// =====================================================================
+const NB_CELL=24,NB_PAD=58,NB_MAX_H=12000;   // NB_PAD: lewy odstęp tekstu (padding-left .nb-text w style.css)
+const NB={subj:null,d:null,res:[],mode:'type',tool:'pen',undo:[],redo:[],txt:null,saveT:0,liveT:0,draw:null,erase:null,
+  touches:new Map(),pan:false,sawPen:false,dpr:1,W:0,H:0,where:'home',at:null,opener:null};
+const NB_TOOLS={pen:{c:'--pen',w:2.2},ink:{c:'--ink',w:2.2},red:{c:'--red',w:2.2},hl:{c:'--nb-hl',w:16}};
+const nbKey=id=>'kratka-zeszyt-'+id;
+const nbPage=()=>NB.d.pages[NB.d.page];
+const nbTa=$('#nbText'),nbCv=$('#nbInk'),nbSc=$('#nbScroll');
+const nbNarrow=()=>window.matchMedia('(max-width:979px)').matches;
+
+// ---------- zapis w przeglądarce ----------
+function nbLoad(S){
+  let d=null;try{d=JSON.parse(store.get(nbKey(S.id),'null'))}catch(e){d=null}
+  if(!d||!Array.isArray(d.pages))d={pages:[{text:calcExample(S.id),strokes:[]}],page:0,deg:true};
+  d.pages=d.pages.filter(p=>p&&typeof p==='object').map(p=>({text:String(p.text||''),
+    strokes:(Array.isArray(p.strokes)?p.strokes:[]).filter(s=>s&&NB_TOOLS[s.c]&&Array.isArray(s.p)&&s.p.length>=2&&s.p.every(Number.isFinite))}));
+  if(!d.pages.length)d.pages=[{text:'',strokes:[]}];
+  d.page=Math.min(Math.max(0,d.page|0),d.pages.length-1);d.deg=d.deg!==false;
+  return d;
+}
+function nbSave(){
+  clearTimeout(NB.saveT);NB.saveT=0;if(!NB.subj||!NB.d)return;
+  let ok=true;try{localStorage.setItem(nbKey(NB.subj),JSON.stringify(NB.d))}catch(e){ok=false}
+  $('#nbWarn').hidden=ok;
+}
+const nbSaveSoon=()=>{clearTimeout(NB.saveT);NB.saveT=setTimeout(nbSave,500)};
+window.addEventListener('pagehide',()=>{nbTxtCommit();nbSave()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')nbSave()});
+
+// ---------- otwieranie, strony, nagłówek ----------
+function nbOpen(S){
+  if(NB.subj===S.id){nbLayout();return}
+  nbTxtCommit();if(NB.subj)nbSave();
+  NB.subj=S.id;NB.d=nbLoad(S);NB.undo=[];NB.redo=[];
+  nbShowPage(true);
+}
+function nbShowPage(top){
+  nbTa.value=nbPage().text;
+  nbHead();nbCalc();NB.H=0;nbLayout();nbDraw();
+  if(top){nbSc.scrollTop=0;nbSc.scrollLeft=0}
+}
+function nbHead(){
+  const k=NB.d.page,n=NB.d.pages.length;
+  $('#nbPageN').innerHTML=$t(`strona <b>${k+1}</b> z ${n}`,`page <b>${k+1}</b> of ${n}`);
+  $('#nbPrev').disabled=k===0;$('#nbNext').disabled=k===n-1;$('#nbDel').hidden=n===1;
+  $$('#nbDeg [data-deg]').forEach(b=>{const on=(b.dataset.deg==='1')===NB.d.deg;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+  nbBtns();
+}
+function nbBtns(){
+  const pg=NB.d.page;
+  $('#nbUndo').disabled=!(NB.txt&&NB.txt.page===pg)&&!NB.undo.some(x=>x.page===pg);
+  $('#nbRedo').disabled=!NB.redo.some(x=>x.page===pg);
+}
+function nbGo(k){nbTxtCommit();NB.d.page=k;nbShowPage(true);nbSaveSoon()}
+$('#nbPrev').onclick=()=>{if(NB.d.page>0)nbGo(NB.d.page-1)};
+$('#nbNext').onclick=()=>{if(NB.d.page<NB.d.pages.length-1)nbGo(NB.d.page+1)};
+$('#nbAdd').onclick=()=>{
+  nbTxtCommit();const k=NB.d.page;
+  NB.d.pages.splice(k+1,0,{text:'',strokes:[]});
+  [...NB.undo,...NB.redo].forEach(x=>{if(x.page>k)x.page++});
+  nbGo(k+1);nbSave();
+  if(NB.mode==='type')nbTa.focus({preventScroll:true});
+};
+function nbAsk(msg,yes,fn){
+  const m=$('#nbMsg');
+  show(m,'bad',`${msg}<div class="actions"><button type="button" class="btn small danger" data-ask="1">${yes}</button><button type="button" class="btn ghost small" data-ask="0">${$t('Anuluj','Cancel')}</button></div>`);
+  m.onclick=e=>{const b=e.target.closest('[data-ask]');if(!b)return;m.className='msg';m.onclick=null;if(b.dataset.ask==='1')fn()};
+  m.querySelector('[data-ask="0"]').focus({preventScroll:true});
+}
+$('#nbClear').onclick=()=>{
+  const P=nbPage();if(!P.text&&!P.strokes.length)return;
+  nbAsk($t('Wyczyścić tę stronę? Tekst i rysunki znikną, ale przycisk Cofnij je przywróci.','Clear this page? The text and the drawings go away, but Undo brings them back.'),$t('Wyczyść','Clear'),()=>{
+    nbTxtCommit();const P=nbPage();nbHist({page:NB.d.page,op:'clear',strokes:P.strokes.slice(),text:P.text});
+    P.strokes=[];P.text='';nbShowPage(false);nbSave();
+  });
+};
+$('#nbDel').onclick=()=>nbAsk($t('Usunąć tę stronę razem z rysunkami? Tego nie da się cofnąć.','Delete this page with its drawings? This cannot be undone.'),$t('Usuń stronę','Delete the page'),()=>{
+  nbTxtCommit();const k=NB.d.page;NB.d.pages.splice(k,1);
+  const fix=a=>a.filter(x=>x.page!==k).map(x=>{if(x.page>k)x.page--;return x});
+  NB.undo=fix(NB.undo);NB.redo=fix(NB.redo);
+  NB.d.page=Math.min(k,NB.d.pages.length-1);nbShowPage(true);nbSave();
+});
+
+// ---------- tekst i wyniki ----------
+function nbCalc(){
+  const t=nbPage().text,res=calcText(t,{deg:NB.d.deg});NB.res=res;
+  $('#nbMirror').innerHTML=t.split('\n').map((l,i)=>{
+    const c=l.search(/(^|\s)(#|\/\/)/),r=res[i];
+    const txt=c<0?escH(l):escH(l.slice(0,c))+`<span class="nb-c">${escH(l.slice(c))}</span>`;
+    return txt+(r?`<span class="nb-r${r.cls?' '+r.cls:''}">${r.html}</span>`:'');
+  }).join('\n')+'\n';
+}
+// zmiany tekstu trafiają do historii paczkami: to, co wpisane bez dłuższej przerwy, cofa się naraz
+function nbTxtCommit(){
+  const T=NB.txt;if(!T)return;clearTimeout(T.t);NB.txt=null;
+  const P=NB.d&&NB.d.pages[T.page];if(P&&P.text!==T.a)nbHist({page:T.page,op:'text',a:T.a,b:P.text});
+  if(NB.d)nbBtns();
+}
+nbTa.addEventListener('input',()=>{
+  const P=nbPage(),pg=NB.d.page;
+  if(!NB.txt){NB.txt={page:pg,a:P.text,t:0};NB.redo=NB.redo.filter(x=>x.page!==pg)}
+  P.text=nbTa.value;clearTimeout(NB.txt.t);NB.txt.t=setTimeout(nbTxtCommit,1000);
+  nbCalc();nbLayout();nbBtns();nbSaveSoon();
+  // przeglądarka sama przewija kartkę za kursorem; po powrocie do krótkiej linii wracamy do marginesu
+  const v=nbTa.value.slice(0,nbTa.selectionEnd),col=v.length-v.lastIndexOf('\n')-1;
+  if(nbSc.scrollLeft&&NB_PAD+col*nbCw()+NB_CELL<nbSc.clientWidth)nbSc.scrollLeft=0;
+  clearTimeout(NB.liveT);NB.liveT=setTimeout(nbAnnounce,700);
+});
+// szerokość znaku czcionki kartki (stała, bo czcionka jest o stałej szerokości)
+function nbCw(){
+  if(!NB.cw){const m=document.createElement('span');m.textContent='0'.repeat(20);$('#nbMirror').appendChild(m);NB.cw=m.getBoundingClientRect().width/20||9.6;m.remove()}
+  return NB.cw;
+}
+// czytnik ekranu: wynik linii, w której stoi kursor
+function nbAnnounce(){
+  if(document.activeElement!==nbTa)return;
+  const r=NB.res[nbTa.value.slice(0,nbTa.selectionStart).split('\n').length-1];
+  $('#nbLive').textContent=r?plain(r.html):'';
+}
+// pole tekstowe jest tak duże jak kartka, więc samo nie przewija; przewija się kartka
+nbTa.addEventListener('scroll',()=>{if(nbTa.scrollTop||nbTa.scrollLeft){nbTa.scrollTop=0;nbTa.scrollLeft=0}});
+nbTa.addEventListener('beforeinput',e=>{if(e.inputType==='historyUndo'||e.inputType==='historyRedo'){e.preventDefault();nbUndo(e.inputType==='historyRedo')}});
+// rząd klawiszy z symbolami, których nie ma na klawiaturze telefonu; nie zabiera kursora z kartki
+['pointerdown','mousedown'].forEach(ev=>$('#nbKeys').addEventListener(ev,e=>{if(e.target.closest('[data-k]'))e.preventDefault()}));
+$('#nbKeys').addEventListener('click',e=>{
+  const b=e.target.closest('[data-k]');if(!b)return;
+  const k=b.dataset.k;
+  if(document.activeElement!==nbTa)nbTa.focus({preventScroll:true});
+  let done=false;try{done=document.execCommand('insertText',false,k)}catch(_){done=false}
+  if(!done){nbTa.setRangeText(k,nbTa.selectionStart,nbTa.selectionEnd,'end');nbTa.dispatchEvent(new Event('input'))}
+  if(/\(\)$|\[\]$/.test(k)){const p=nbTa.selectionEnd-1;nbTa.setSelectionRange(p,p)}
+});
+
+// ---------- wymiary kartki ----------
+function nbBox(s){
+  if(!s.bb){let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;for(let i=0;i<s.p.length;i+=2){x1=Math.min(x1,s.p[i]);x2=Math.max(x2,s.p[i]);y1=Math.min(y1,s.p[i+1]);y2=Math.max(y2,s.p[i+1])}
+    Object.defineProperty(s,'bb',{value:[x1,y1,x2,y2],enumerable:false,writable:true,configurable:true})}
+  return s.bb;
+}
+function nbLayout(){
+  if(!NB.d||!nbSc.clientWidth)return;
+  const P=nbPage(),lines=P.text.split('\n').length;
+  let mx=0,my=0;for(const s of P.strokes){const b=nbBox(s);if(b[2]>mx)mx=b[2];if(b[3]>my)my=b[3]}
+  const up=v=>Math.ceil(v/NB_CELL)*NB_CELL;
+  const W=up(Math.max(nbSc.clientWidth,$('#nbMirror').offsetWidth+NB_CELL*6,mx+NB_CELL*2));
+  // piórem trzeba mieć dokąd przewinąć, więc kartka jest trochę wyższa niż okno
+  const H=Math.min(NB_MAX_H,up(Math.max(nbSc.clientHeight+(NB.mode==='pen'?NB_CELL*6:0),(lines+7)*NB_CELL,my+NB_CELL*8,NB.H||0)));
+  if(W!==NB.W||H!==NB.H){
+    NB.W=W;NB.H=H;
+    $('#nbPage').style.width=W+'px';$('#nbPage').style.height=H+'px';nbTa.style.width=W+'px';nbTa.style.height=H+'px';
+    let dpr=Math.min(2,window.devicePixelRatio||1);if(W*H*dpr*dpr>16e6)dpr=Math.max(1,Math.sqrt(16e6/(W*H)));NB.dpr=dpr;
+    nbCv.width=Math.round(W*dpr);nbCv.height=Math.round(H*dpr);nbCv.style.width=W+'px';nbCv.style.height=H+'px';
+    nbDraw();
+  }
+  if(nbTa.scrollTop||nbTa.scrollLeft){nbTa.scrollTop=0;nbTa.scrollLeft=0}
+}
+let nbRT=0;
+window.addEventListener('resize',()=>{clearTimeout(nbRT);nbRT=setTimeout(()=>{if(NB.d&&$('#nb').offsetParent){NB.H=0;nbLayout()}nbVV()},120)});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{NB.cw=0;if(NB.d)nbLayout()});
+// w trybie pióra kartka rośnie, gdy przewijasz do jej końca
+nbSc.addEventListener('scroll',()=>{
+  if(NB.mode==='pen'&&NB.d&&NB.H<NB_MAX_H&&nbSc.scrollTop+nbSc.clientHeight>NB.H-NB_CELL*3){NB.H+=NB_CELL*12;nbLayout()}
+},{passive:true});
+
+// ---------- rysowanie ----------
+const nbCss=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim()||'#2343b5';
+function nbStroke(ctx,s,col){
+  const p=s.p,w=s.w||NB_TOOLS[s.c].w;
+  ctx.strokeStyle=ctx.fillStyle=col[s.c];ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';
+  if(p.length<=2){ctx.beginPath();ctx.arc(p[0],p[1],w/2,0,7);ctx.fill();return}
+  ctx.beginPath();ctx.moveTo(p[0],p[1]);
+  // gładka linia: łuki przez środki kolejnych odcinków
+  for(let i=2;i<p.length-2;i+=2)ctx.quadraticCurveTo(p[i],p[i+1],(p[i]+p[i+2])/2,(p[i+1]+p[i+3])/2);
+  ctx.lineTo(p[p.length-2],p[p.length-1]);ctx.stroke();
+}
+function nbDraw(){
+  const ctx=nbCv.getContext('2d');if(!ctx||!NB.d)return;
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,nbCv.width,nbCv.height);ctx.setTransform(NB.dpr,0,0,NB.dpr,0,0);
+  const col={};for(const k in NB_TOOLS)col[k]=nbCss(NB_TOOLS[k].c);
+  const st=nbPage().strokes;
+  // zakreślacz pod tuszem
+  for(const s of st)if(s.c==='hl')nbStroke(ctx,s,col);
+  if(NB.draw&&NB.draw.s.c==='hl')nbStroke(ctx,NB.draw.s,col);
+  for(const s of st)if(s.c!=='hl')nbStroke(ctx,s,col);
+  if(NB.draw&&NB.draw.s.c!=='hl')nbStroke(ctx,NB.draw.s,col);
+}
+if(window.matchMedia)matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(NB.d)nbDraw()});
+function nbPt(e){const r=nbCv.getBoundingClientRect();return [Math.round((e.clientX-r.left)*10)/10,Math.round((e.clientY-r.top)*10)/10]}
+// mniej punktów w zapisie (Ramer–Douglas–Peucker), kształt zostaje
+function nbSimplify(p,eps){
+  const n=p.length/2;if(n<3)return p;
+  const keep=new Uint8Array(n);keep[0]=keep[n-1]=1;const st=[[0,n-1]];
+  while(st.length){
+    const [a,b]=st.pop(),ax=p[2*a],ay=p[2*a+1],dx=p[2*b]-ax,dy=p[2*b+1]-ay,L=Math.hypot(dx,dy);let md=0,mi=-1;
+    for(let i=a+1;i<b;i++){const x=p[2*i]-ax,y=p[2*i+1]-ay,d=L<1e-6?Math.hypot(x,y):Math.abs(dx*y-dy*x)/L;if(d>md){md=d;mi=i}}
+    if(md>eps){keep[mi]=1;st.push([a,mi],[mi,b])}
+  }
+  const out=[];for(let i=0;i<n;i++)if(keep[i])out.push(p[2*i],p[2*i+1]);return out;
+}
+function nbHist(op){NB.undo.push(op);if(NB.undo.length>400)NB.undo.shift();NB.redo=NB.redo.filter(x=>x.page!==op.page);nbBtns()}
+function nbEraseAt(x,y){
+  const st=nbPage().strokes,R=10;let hit=false;
+  for(let i=st.length-1;i>=0;i--){
+    const s=st[i],b=nbBox(s),w=(s.w||NB_TOOLS[s.c].w)/2+R;
+    if(x<b[0]-w||x>b[2]+w||y<b[1]-w||y>b[3]+w)continue;
+    for(let k=0;k<s.p.length;k+=2)if(Math.hypot(s.p[k]-x,s.p[k+1]-y)<=w){NB.erase.del.push({i,s});st.splice(i,1);hit=true;break}
+  }
+  if(hit)nbDraw();
+}
+function nbEraseEnd(){
+  const E=NB.erase;NB.erase=null;if(!E||!E.del.length)return;
+  nbHist({page:NB.d.page,op:'del',items:E.del});nbSaveSoon();
+}
+nbCv.addEventListener('pointerdown',e=>{
+  if(NB.mode!=='pen'||!NB.d)return;
+  if(e.pointerType==='mouse'&&e.button!==0)return;
+  if(e.pointerType==='pen')NB.sawPen=true;
+  if(e.pointerType==='touch'){
+    NB.touches.set(e.pointerId,[e.clientX,e.clientY]);
+    // dwa palce przewijają; przy rysiku palec zawsze tylko przewija
+    if(NB.sawPen||NB.touches.size>=2){
+      if(NB.draw&&NB.draw.touch){NB.draw=null;nbDraw()}
+      if(NB.erase&&NB.erase.touch)nbEraseEnd();
+      NB.pan=true;e.preventDefault();return;
+    }
+  }
+  e.preventDefault();
+  try{nbCv.setPointerCapture(e.pointerId)}catch(_){}
+  const [x,y]=nbPt(e);
+  if(NB.tool==='erase'||e.pointerType==='pen'&&(e.button===5||(e.buttons&32))){NB.erase={id:e.pointerId,touch:e.pointerType==='touch',del:[]};nbEraseAt(x,y);return}
+  NB.draw={id:e.pointerId,touch:e.pointerType==='touch',s:{c:NB.tool,p:[x,y]}};
+  nbDraw();
+});
+nbCv.addEventListener('pointermove',e=>{
+  if(NB.mode!=='pen'||!NB.d)return;
+  if(e.pointerType==='touch'){
+    const q=NB.touches.get(e.pointerId);
+    if(q&&NB.pan){const n=NB.touches.size;nbSc.scrollLeft-=(e.clientX-q[0])/n;nbSc.scrollTop-=(e.clientY-q[1])/n;NB.touches.set(e.pointerId,[e.clientX,e.clientY]);e.preventDefault();return}
+    if(q)NB.touches.set(e.pointerId,[e.clientX,e.clientY]);
+  }
+  let evs=e.getCoalescedEvents?e.getCoalescedEvents():[];if(!evs.length)evs=[e];
+  if(NB.erase&&NB.erase.id===e.pointerId){for(const ev of evs){const [x,y]=nbPt(ev);nbEraseAt(x,y)}return}
+  const D=NB.draw;if(!D||D.id!==e.pointerId)return;
+  const p=D.s.p,ctx=nbCv.getContext('2d'),t=NB_TOOLS[D.s.c];let moved=false;
+  ctx.setTransform(NB.dpr,0,0,NB.dpr,0,0);ctx.strokeStyle=nbCss(t.c);ctx.lineWidth=t.w;ctx.lineCap='round';ctx.lineJoin='round';
+  for(const ev of evs){
+    const [x,y]=nbPt(ev),lx=p[p.length-2],ly=p[p.length-1];if(Math.hypot(x-lx,y-ly)<0.8)continue;
+    p.push(x,y);moved=true;
+    // tusz rysujemy od razu kawałkami; półprzezroczysty zakreślacz trzeba rysować w całości
+    if(D.s.c!=='hl'){ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(x,y);ctx.stroke()}
+  }
+  if(moved&&D.s.c==='hl'&&!D.raf)D.raf=requestAnimationFrame(()=>{D.raf=0;if(NB.draw===D)nbDraw()});
+});
+function nbUp(e){
+  if(e.pointerType==='touch'){NB.touches.delete(e.pointerId);if(!NB.touches.size)NB.pan=false}
+  if(NB.erase&&NB.erase.id===e.pointerId){nbEraseEnd();return}
+  const D=NB.draw;if(!D||D.id!==e.pointerId)return;
+  NB.draw=null;const s=D.s;
+  if(e.type==='pointercancel'&&s.p.length<8){nbDraw();return}
+  s.p=nbSimplify(s.p,0.35);
+  nbPage().strokes.push(s);nbHist({page:NB.d.page,op:'add',s});
+  if(nbBox(s)[3]>NB.H-NB_CELL*6)NB.H+=NB_CELL*12;
+  nbLayout();nbDraw();nbSaveSoon();
+}
+nbCv.addEventListener('pointerup',nbUp);nbCv.addEventListener('pointercancel',nbUp);
+nbCv.addEventListener('lostpointercapture',e=>{if(NB.draw&&NB.draw.id===e.pointerId)nbUp(e)});
+
+// ---------- cofnij i ponów (osobno dla każdej strony) ----------
+function nbApply(op,back){
+  const P=NB.d.pages[op.page];if(!P)return;const st=P.strokes;
+  if(op.op==='add'){if(back){const k=st.lastIndexOf(op.s);if(k>=0)st.splice(k,1)}else st.push(op.s)}
+  else if(op.op==='del'){if(back)op.items.slice().reverse().forEach(x=>st.splice(Math.min(x.i,st.length),0,x.s));else op.items.forEach(x=>{const k=st.indexOf(x.s);if(k>=0)st.splice(k,1)})}
+  else if(op.op==='text')P.text=back?op.a:op.b;
+  else if(op.op==='clear'){if(back){P.strokes=op.strokes.slice();P.text=op.text}else{P.strokes=[];P.text=''}}
+}
+// miejsce kursora po cofnięciu: koniec zmienionego fragmentu
+const nbChangeEnd=(a,b)=>{let i=0;while(i<a.length&&i<b.length&&a[i]===b[i])i++;let j=0;while(j<a.length-i&&j<b.length-i&&a[a.length-1-j]===b[b.length-1-j])j++;return b.length-j};
+function nbUndo(redo){
+  if(!NB.d)return;nbTxtCommit();
+  const pg=NB.d.page,from=redo?NB.redo:NB.undo,to=redo?NB.undo:NB.redo;
+  let k=from.length-1;while(k>=0&&from[k].page!==pg)k--;
+  if(k<0)return;
+  const op=from.splice(k,1)[0];nbApply(op,!redo);to.push(op);
+  const P=nbPage();
+  if(nbTa.value!==P.text){const c=nbChangeEnd(nbTa.value,P.text);nbTa.value=P.text;if(document.activeElement===nbTa)nbTa.setSelectionRange(c,c)}
+  NB.H=0;nbCalc();nbLayout();nbDraw();nbBtns();nbSaveSoon();
+}
+$('#nbUndo').onclick=()=>nbUndo(false);$('#nbRedo').onclick=()=>nbUndo(true);
+document.addEventListener('keydown',e=>{
+  if(!NB.d||!(e.ctrlKey||e.metaKey)||e.altKey||e.defaultPrevented)return;
+  const k=(e.key||'').toLowerCase();if(k!=='z'&&k!=='y')return;
+  const t=e.target;
+  if(t!==nbTa&&t.closest&&t.closest('input,textarea,select,[contenteditable]'))return;   // inne pola cofają po swojemu
+  if(!$('#nb').offsetParent)return;
+  e.preventDefault();nbUndo(k==='y'||e.shiftKey);
+});
+
+// ---------- tryb, przybory, kąty ----------
+function nbMode(m,user){
+  m=m==='pen'?'pen':'type';NB.mode=m;
+  $('#nb').classList.toggle('nb-pen',m==='pen');
+  $$('#nbMode [data-nbm]').forEach(b=>{const on=b.dataset.nbm===m;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+  nbTa.tabIndex=m==='pen'?-1:0;
+  if(m==='pen'){nbTxtCommit();if(document.activeElement===nbTa)nbTa.blur()}
+  if(NB.d)nbLayout();
+  if(user){store.set('kratka-zeszyt-tryb',m);if(m==='type')nbTa.focus({preventScroll:true})}
+}
+$('#nbMode').addEventListener('click',e=>{const b=e.target.closest('[data-nbm]');if(b)nbMode(b.dataset.nbm,true)});
+$('#nbTools').addEventListener('click',e=>{
+  const b=e.target.closest('[data-tool]');if(!b)return;
+  NB.tool=b.dataset.tool;$('#nb').dataset.tool=NB.tool;
+  $$('#nbTools [data-tool]').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on)});
+});
+$('#nbDeg').addEventListener('click',e=>{const b=e.target.closest('[data-deg]');if(!b||!NB.d)return;NB.d.deg=b.dataset.deg==='1';nbHead();nbCalc();nbLayout();nbSaveSoon()});
+
+// ---------- Brudnopis: ten sam zeszyt obok zadania ----------
+function nbDrawerOpen(task,opener){
+  const S=subjById(R.subj);nbOpen(S);
+  NB.opener=opener||null;
+  $('#nbdTask').hidden=!task;
+  if(task){$('#nbdTaskBody').innerHTML=`<div class="task-q">${task.q}</div>${task.body||''}`;$('#nbdTask').open=true}
+  $('#nbdHost').appendChild($('#nb'));NB.where='drawer';
+  $('#nbd').hidden=false;document.documentElement.classList.add('nbd-open');
+  $$('[data-pad]').forEach(b=>{b.classList.add('on');b.setAttribute('aria-pressed','true')});
+  if(nbNarrow())document.body.style.overflow='hidden';
+  // pisze się od nowej linii pod tym, co już jest na stronie
+  const P=nbPage();if(P.text&&!P.text.endsWith('\n')){P.text+='\n';nbTa.value=P.text;nbCalc();nbSaveSoon()}
+  nbVV();NB.H=0;nbLayout();
+  const end=nbTa.value.length;nbTa.setSelectionRange(end,end);
+  nbSc.scrollTop=Math.max(0,(nbTa.value.split('\n').length+3)*NB_CELL-nbSc.clientHeight);
+  if(!nbNarrow()&&NB.mode==='type')nbTa.focus({preventScroll:true});else $('#nbdClose').focus({preventScroll:true});
+}
+function nbDrawerClose(){
+  if($('#nbd').hidden)return;
+  nbTxtCommit();nbSave();
+  $('#nbd').hidden=true;document.documentElement.classList.remove('nbd-open');document.body.style.overflow='';
+  $('#nbHome').appendChild($('#nb'));NB.where='home';nbVV();
+  $$('[data-pad]').forEach(b=>{b.classList.remove('on');b.setAttribute('aria-pressed','false')});
+  if(NB.opener&&document.contains(NB.opener)&&NB.opener.offsetParent)NB.opener.focus({preventScroll:true});
+  NB.opener=null;
+}
+$('#nbdClose').onclick=nbDrawerClose;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!e.defaultPrevented&&!$('#nbd').hidden&&$('#pl').hidden&&$('#bs').hidden){nbDrawerClose();e.preventDefault()}});
+document.addEventListener('click',e=>{
+  const b=e.target.closest&&e.target.closest('[data-pad]');if(!b)return;
+  if(!$('#nbd').hidden){nbDrawerClose();return}
+  const id=b.dataset.pad,q=document.getElementById(id+'Q'),body=document.getElementById(id+'Body');
+  nbDrawerOpen(q?{q:q.innerHTML,body:body?body.innerHTML:''}:null,b);
+});
+// telefon z otwartą klawiaturą: panel ma wysokość widocznej części ekranu
+function nbVV(){
+  const d=$('#nbd'),v=window.visualViewport;
+  if(d.hidden||!v||!nbNarrow()){d.style.top=d.style.height=d.style.bottom='';d.classList.remove('nbd-kb');return}
+  d.style.top=v.offsetTop+'px';d.style.height=v.height+'px';d.style.bottom='auto';
+  d.classList.toggle('nbd-kb',v.height<window.innerHeight*0.75);
+}
+if(window.visualViewport){visualViewport.addEventListener('resize',nbVV);visualViewport.addEventListener('scroll',nbVV)}
+
+// ---------- podpięcie do szkieletu ----------
+HOOKS.start.push(()=>nbMode(store.get('kratka-zeszyt-tryb')==='pen'?'pen':'type',false));
+HOOKS.view.push((S,view)=>{
+  const at=S.id+'-'+view;
+  if(NB.at&&NB.at!==at)nbDrawerClose();
+  NB.at=at;
+  $('#nbEyebrow').innerHTML=sName(S);
+  $$('#nb [aria-label]').forEach(b=>{b.title=b.getAttribute('aria-label')});
+  if(view==='zeszyt'){nbOpen(S);requestAnimationFrame(()=>{NB.H=0;nbLayout()})}
+});
+HOOKS.lang.push(()=>{if(NB.d){nbHead();nbCalc();nbLayout()}});
 
 // =====================================================================
 //  ALGEBRA: narzędzia (X na liczbach, X na literach, układy równań, znajdź błąd) i ściąga

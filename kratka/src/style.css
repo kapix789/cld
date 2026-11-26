@@ -458,3 +458,97 @@ ol.steps>li{margin:10px 0}
 .vec::after{content:"";position:absolute;left:.08em;right:-.04em;top:-.12em;height:.42em;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 8' preserveAspectRatio='none'%3E%3Cpath d='M0 4H18M13.5 1L18.5 4L13.5 7' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 8' preserveAspectRatio='none'%3E%3Cpath d='M0 4H18M13.5 1L18.5 4L13.5 7' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E") center/100% 100% no-repeat}
 .res-sum{flex:1 1 280px;min-width:0}
 .res-sum p{margin-top:6px}
+
+/* ---------- zeszyt i brudnopis ----------
+   Kartka: kratka 24 px, czerwony margines, tekst w linii co 24 px. <pre> z wynikami leży pod <textarea>
+   z przezroczystymi literami, więc obie warstwy muszą mieć identyczny krój, rozmiar i odstępy. */
+:root{--nb-grid:#dce3ed;--nb-margin:#eba3a8;--nb-hl:rgba(255,212,0,.4);--nb-hl-ic:#f2c200;--nb-sel:rgba(35,67,181,.2)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--nb-grid:#212935;--nb-margin:rgba(255,127,135,.42);--nb-hl:rgba(255,214,10,.3);--nb-hl-ic:#d6b11a;--nb-sel:rgba(143,166,255,.32)}}
+:root[data-theme="dark"]{--nb-grid:#212935;--nb-margin:rgba(255,127,135,.42);--nb-hl:rgba(255,214,10,.3);--nb-hl-ic:#d6b11a;--nb-sel:rgba(143,166,255,.32)}
+.nb{display:flex;flex-direction:column;min-height:0;border:1px solid var(--rule);border-radius:3px;background:var(--paper);overflow:hidden}
+.nb:focus-within{border-color:var(--ink-3)}
+.nb-bar{display:flex;align-items:center;gap:8px;padding:8px;background:var(--side);border-bottom:1px solid var(--rule)}
+.nb-bar .seg>button{display:inline-flex;align-items:center;gap:7px}
+.nb svg,.nbd-head svg,.btn.pad svg{flex:none;width:18px;height:18px}
+.btn.pad svg{width:16px;height:16px}
+.nb-hist{display:flex;gap:6px;margin-left:auto}
+.nb-ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:36px;padding:0;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);cursor:pointer}
+.nb-ic:hover{border-color:var(--ink-3)}
+.nb-ic:disabled{opacity:.38;cursor:default}
+.nb-ic:disabled:hover{border-color:var(--rule)}
+.nb-ic.on{border-color:var(--pen);background:var(--pen-soft);color:var(--pen)}
+.nb-sub{display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid var(--rule);overflow-x:auto;scrollbar-width:none;background:var(--paper)}
+.nb-sub::-webkit-scrollbar{display:none}
+.nb-keys>button{flex:none;min-width:38px;height:34px;padding:0 9px;border:1px solid var(--rule);border-radius:3px;background:var(--side);color:var(--ink);font:17px/1 var(--f-math);cursor:pointer;white-space:nowrap}
+.nb-keys>button.w{font:14px/1 var(--f-code)}
+.nb-keys>button:hover{border-color:var(--ink-3)}
+.nb-keys>button:active{background:var(--pen-soft);border-color:var(--pen)}
+.nb-keys .seg{flex:none;flex-wrap:nowrap}
+.nb-sep{flex:none;width:1px;height:22px;background:var(--rule);margin:0 3px}
+.nb-dot{display:block;width:14px;height:14px;border-radius:50%;background:var(--c)}
+.nb-hint{flex:none;margin-left:6px;font-size:13px;color:var(--ink-3);white-space:nowrap}
+@media (pointer:fine){.nb-hint{display:none}}
+.nb:not(.nb-pen) .nb-tools,.nb.nb-pen .nb-keys{display:none}
+/* z myszą i zwykłą klawiaturą zostają tylko symbole, których na niej nie ma */
+@media (pointer:fine){.nb-keys>.kb{display:none}}
+.nb-bar,.nb-sub,.nb-foot,.nbd-head{-webkit-user-select:none;user-select:none}
+.nb-pen .nb-page{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.nb-scroll{position:relative;flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}
+.nb-page{position:relative;background-color:var(--paper);background-image:linear-gradient(90deg,transparent 48px,var(--nb-margin) 48px,var(--nb-margin) 49.5px,transparent 49.5px),linear-gradient(var(--nb-grid) 1px,transparent 1px),linear-gradient(90deg,var(--nb-grid) 1px,transparent 1px);background-size:100% 100%,24px 24px,24px 24px}
+/* padding-left 58 px = NB_PAD w notebook.js */
+.nb-mirror,.nb-text{position:absolute;left:0;top:0;margin:0;padding:24px 24px 24px 58px;border:0;border-radius:0;font:16px/24px var(--f-code);letter-spacing:0;word-spacing:0;tab-size:4;white-space:pre;overflow-wrap:normal;word-break:normal;font-variant-ligatures:none;font-kerning:none;text-transform:none;text-indent:0;text-align:left}
+.nb-mirror{color:var(--ink);pointer-events:none;width:max-content;background:none}
+.nb-text{display:block;color:transparent;-webkit-text-fill-color:transparent;caret-color:var(--ink);background:transparent;resize:none;overflow:hidden;outline:0;box-shadow:none;-webkit-appearance:none;appearance:none}
+.nb-text::selection{background:var(--nb-sel);color:transparent;-webkit-text-fill-color:transparent}
+.nb-pen .nb-text{pointer-events:none}
+.nb-ink{position:absolute;left:0;top:0;pointer-events:none}
+.nb-pen .nb-ink{pointer-events:auto;touch-action:none;cursor:crosshair}
+.nb-pen[data-tool="erase"] .nb-ink{cursor:cell}
+.nb-c{color:var(--ink-3)}
+.nb-r{display:inline-block;height:24px;vertical-align:top;margin-left:18px;color:var(--pen);font:17px/24px var(--f-math);white-space:pre}
+.nb-r.err,.nb-r.bad{color:var(--red)}
+.nb-r.ok{color:var(--green)}
+.nb-r sub{font-size:.68em;line-height:0}
+.nb-foot{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:6px 8px;border-top:1px solid var(--rule);background:var(--side)}
+.nb-pages{display:flex;align-items:center;gap:4px;margin-right:auto}
+.nb-pages .tn-arrow{width:36px;height:34px}
+.nb-pn{min-width:96px;text-align:center;font-size:13.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.nb-pn b{color:var(--ink);font-weight:600}
+.nb>.msg{margin:0;border-radius:0}
+.nb-warn{margin:0;padding:8px 12px;font-size:13.5px;background:var(--amber-soft)}
+.nb-view .nb{height:clamp(440px,calc(100vh - var(--top-h) - 250px),1100px)}
+@supports (height:100dvh){.nb-view .nb{height:clamp(440px,calc(100dvh - var(--top-h) - 250px),1100px)}}
+.nb-help{margin-top:18px;padding:8px 12px}
+.nb-dl{display:grid;grid-template-columns:minmax(0,max-content) minmax(0,1fr);gap:10px 20px;margin:12px 0 6px}
+.nb-dl dt{margin:0;white-space:nowrap}
+.nb-dl dd{margin:0;font-size:14.5px;color:var(--ink-2)}
+.nb-dl code{white-space:pre}
+/* brudnopis: panel z prawej (komputer) albo cały ekran (telefon) */
+.btn.pad.on{border-color:var(--pen);color:var(--pen);background:var(--pen-soft)}
+.nbd{position:fixed;z-index:45;top:calc(var(--top-h) + env(safe-area-inset-top,0px));right:0;bottom:0;width:min(560px,46vw);display:flex;flex-direction:column;background:var(--paper);border-left:1px solid var(--rule);box-shadow:-18px 0 40px rgba(14,21,35,.12)}
+.nbd-head{display:flex;align-items:center;gap:10px;padding:8px max(10px,env(safe-area-inset-right,0px)) 8px 16px;border-bottom:1px solid var(--rule);color:var(--ink)}
+.nbd-head h2{flex:1;margin:0;font-size:16px}
+.nbd-task{display:none}
+.nbd-host{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.nbd-host .nb{flex:1 1 auto;border:0;border-radius:0}
+html.nbd-open .main{padding-right:calc(min(560px,46vw) + 32px)}
+@media (min-width:980px) and (max-width:1399px){html.nbd-open .layout{grid-template-columns:minmax(0,1fr)}html.nbd-open .side{display:none}}
+@media (max-width:979px){
+  .nbd{inset:0;width:auto;z-index:55;border-left:0;box-shadow:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+  html.nbd-open .main{padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .nbd-task{display:block;max-height:34vh;overflow:auto;padding:0 16px 10px;border:0;border-bottom:1px solid var(--rule);border-radius:0;margin:0;background:var(--side)}
+  .nbd-task summary{padding:8px 0;font-size:13px;color:var(--ink-2)}
+  .nbd-task .task-q{font-size:15px;margin-bottom:4px}
+  .nbd-task .sheet{margin:6px 0 0;padding:10px}
+  .nbd.nbd-kb .nbd-task{max-height:20vh}
+  .nbd.nbd-kb .nb-foot{display:none}
+}
+@media (max-width:639px){
+  .nb-bar .seg>button{padding:6px 10px}
+  .nb-dl{grid-template-columns:minmax(0,1fr);gap:2px}
+  .nb-dl dd{margin-bottom:10px}
+  .nb-dl dt{white-space:normal}
+  .nb-view .nb{height:calc(100vh - var(--top-h) - 150px);min-height:420px}
+  .nb-view .lead{display:none}
+}
+@supports (height:100dvh){@media (max-width:639px){.nb-view .nb{height:calc(100dvh - var(--top-h) - 150px)}}}

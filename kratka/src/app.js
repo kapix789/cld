@@ -25,15 +25,18 @@ const plain=h=>String(h).replace(/<[^>]+>/g,'');
 // nazwa tematu bez znaczników (do <option>): wykładniki jako znaki Unicode
 const txt=h=>plain(String(h).replace(/<sup>−1<\/sup>/g,'⁻¹').replace(/<sup>T<\/sup>/g,'ᵀ').replace(/<sup>2<\/sup>/g,'²').replace(/<sub>(\d)<\/sub>/g,(m,d)=>'₀₁₂₃₄₅₆₇₈₉'[d])).replace(/&nbsp;/g,' ');
 const pctS=x=>Math.round(x*100)+'%';
+const ICON_PEN='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 16.5l.9-3.6 9.4-9.4a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1l-9.4 9.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.3 5l2.7 2.7" stroke="currentColor" stroke-width="1.5"/></svg>';
 function ansMark(id,res){for(const [k,ok] of Object.entries(res.marks||{})){const el=document.getElementById(id+'-'+k);if(el){el.classList.toggle('ok',!!ok);el.classList.toggle('bad',!ok)}}}
 
 // ================= Nawigacja =================
 const R={subj:null,view:null};
 const BASE_VIEWS=[{id:'cwiczenia',name:'Ćwiczenia',en:'Practice'},{id:'sprawdzian',name:'Sprawdzian',en:'Test'},{id:'postep',name:'Postęp',en:'Progress'}];
+// zeszyt (notebook.js) jest w każdym przedmiocie; keep: po zmianie przedmiotu zostajemy w zeszycie
+const NOTEBOOK_VIEW={id:'zeszyt',name:'Zeszyt',en:'Notebook',tool:true,keep:true};
 function viewsOf(S){
   const v=S.topics.length?BASE_VIEWS.slice():[];
   if(S.sheet)v.push({id:'sciaga',name:S.sheet.name,en:S.sheet.en});
-  return v.concat(S.tools.map(t=>({...t,tool:true})));
+  return v.concat([NOTEBOOK_VIEW],S.tools.map(t=>({...t,tool:true})));
 }
 // stare adresy z czasów trenera algebry (#uklady, #sprawdzian…) otwierają te same widoki
 const OLD_HASH={liczby:'liczby',rownania:'rownania',uklady:'uklady',cwiczenia:'cwiczenia',dzialania:'cwiczenia',sprawdzian:'sprawdzian',blad:'blad',postep:'postep',sciaga:'sciaga'};
@@ -65,7 +68,7 @@ function go(subj,view,topic){
 window.addEventListener('hashchange',route);
 const viewHref=(S,id)=>'#'+S.id+'-'+id;
 // przy zmianie przedmiotu zostajemy w tym samym widoku (np. Sprawdzian), jeśli nowy przedmiot go ma
-const keepView=s=>viewsOf(s).some(v=>v.id===R.view&&!v.tool)?R.view:viewsOf(s)[0].id;
+const keepView=s=>viewsOf(s).some(v=>v.id===R.view&&(!v.tool||v.keep))?R.view:viewsOf(s)[0].id;
 function navRender(){
   const S=subjById(R.subj),vs=viewsOf(S);
   $('#subjTabs').innerHTML=SUBJECTS.map(s=>`<a href="${viewHref(s,keepView(s))}"${s===S?' class="on" aria-current="page"':''}>${sName(s)}</a>`).join('');
@@ -236,6 +239,7 @@ function makePractice(root,o){
 <button type="button" class="btn ghost" id="${id}Hint">${bi('Podpowiedź','Hint')}</button>
 <button type="button" class="btn ghost play" id="${id}Play">${bi('Krok po kroku','Step by step')}</button>
 <button type="button" class="btn ghost" id="${id}Sol" aria-expanded="false">${bi('Rozwiązanie','Solution')}</button>
+<button type="button" class="btn ghost pad" data-pad="${id}" aria-pressed="false">${ICON_PEN}${bi('Brudnopis','Scratch pad')}</button>
 <button type="button" class="btn link" id="${id}New">${bi('Następne zadanie','Next task')}</button>
 </div>
 <div class="msg" id="${id}Msg" role="status"></div>

@@ -40,6 +40,17 @@ Polecenia wpisuje się jak w terminalu. Kratka wykonuje je na symulowanym Ubuntu
 
 ![Rzut ukośny z rysunkiem toru](docs/fizyka-rzut.png)
 
+### Zeszyt i brudnopis
+
+Każdy przedmiot ma swój zeszyt: kartkę w kratkę, na której pisze się z klawiatury albo palcem, rysikiem czy myszą (tryb **Pióro**: trzy kolory, zakreślacz, gumka). Stron może być dowolnie wiele, a wszystko zapisuje się w przeglądarce.
+
+- Z klawiatury każda linia liczy się od razu, a wynik staje na jej końcu: `1/2 + 1/3` daje `= 5/6 ≈ 0,8333`, a `v0 = 72/3,6` tworzy zmienną do następnych linii (`v0^2/(2a)`, `2v0`).
+- Macierze: `A = [2 1; 5 3]`, potem `det(A)`, `A^-1`, `A^T`, `rz(A)`, `A*B`. Do tego `sin(30°)`, `√2`, `log2`, liczby `0b1011` i `0x1F` oraz jednostka na końcu linii (`a = 4 m/s²`).
+- Po znaku równości można wpisać własny wynik. `2/3 + 1/4 = 11/12` dostaje odpowiedź „zgadza się”, a przy złym wyniku widać, ile wychodzi naprawdę.
+- Przy każdym zadaniu i na sprawdzianie przycisk **Brudnopis** otwiera ten sam zeszyt obok zadania. Na telefonie zajmuje cały ekran, a treść zadania jest u góry.
+
+![Brudnopis obok zadania: wyznacznik metodą Sarrusa policzony w zeszycie i sprawdzony](docs/zeszyt-brudnopis.png)
+
 ## Jak się z tego korzysta
 
 1. Wybierz przedmiot u góry i temat z listy po lewej (na telefonie z rozwijanej listy).
@@ -48,6 +59,7 @@ Polecenia wpisuje się jak w terminalu. Kratka wykonuje je na symulowanym Ubuntu
 4. **Sprawdzian** losuje 5–10 zadań z wybranych działów, z limitem czasu albo bez, i na końcu wystawia ocenę od 2,0 do 5,0.
 5. **Postęp** pokazuje wyniki 10 ostatnich prób z każdego tematu. **Powtórka** częściej losuje tematy, które idą słabo.
 6. **Ściąga** (w fizyce **Wzory**) zbiera definicje, twierdzenia, przepisy i najczęstsze błędy.
+7. **Zeszyt** to kartka na własne rachunki i notatki. Przy zadaniu otwiera się jako **Brudnopis**.
 
 <img src="docs/telefon-terminal.png" width="300" alt="Terminal na telefonie w ciemnym motywie">
 
@@ -59,7 +71,9 @@ Kratka to jedna strona HTML składana z plików w `src/`. Nie ma frameworków an
 src/
   core.js        język, rejestr przedmiotów (addSubject) i rodzajów odpowiedzi (KINDS)
   engine.js      matematyka: ułamki, macierze, eliminacja Gaussa, równania, klatki animacji
+  calc.js        kalkulator zeszytu: linia tekstu → wynik (ułamki, macierze, zmienne, jednostki)
   app.js         wspólny interfejs: nawigacja, ćwiczenia, sprawdzian, postęp, odtwarzacz
+  notebook.js    zeszyt i brudnopis: kartka, pióro, strony, cofanie, zapis w przeglądarce
   page.html      szkielet strony
   style.css      wygląd (jasny i ciemny motyw)
   algebra/       topics.js (tematy), tools.js i page.html (narzędzia, ściąga)
@@ -74,6 +88,7 @@ python3 build.py                  # po każdej zmianie w src/
 node tests/algebra.test.js        # losuje zadania z każdego tematu i sprawdza je
 node tests/fizyka.test.js
 node tests/so.test.js
+node tests/calc.test.js           # kalkulator zeszytu, m.in. losowe macierze porównane z silnikiem algebry
 ```
 
 ### Nowy temat
@@ -108,3 +123,5 @@ Przedmiot od razu dostaje swoją zakładkę, ćwiczenia, sprawdzian, postęp i a
 ## English
 
 Kratka is a practice tool for university exams in linear algebra, physics and operating systems. It generates tasks, checks your answers and replays the solution step by step on squared paper. The operating systems part runs your shell commands on a simulated Ubuntu and checks the result. Use the PL / EN switch in the header to change the language of everything, including the solutions.
+
+Each subject also has a notebook: squared paper you can type on, where every line is calculated as you go (fractions, matrices, variables, units, and a check of your own result after an equals sign), or write on with a finger, a stylus or the mouse. Next to every task and in the test it opens as a scratch pad.
