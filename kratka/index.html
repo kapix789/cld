@@ -516,7 +516,9 @@ ol.steps>li{margin:10px 0}
 .nb-pen .nb-ink{pointer-events:auto;touch-action:none;cursor:crosshair}
 .nb-pen[data-tool="erase"] .nb-ink{cursor:cell}
 .nb-c{color:var(--ink-3)}
-.nb-r{display:inline-block;height:24px;vertical-align:top;margin:0 0 0 18px!important;color:var(--pen);font:17px/24px var(--f-math);white-space:pre}
+.nb-r{display:inline-block;height:24px;vertical-align:top;margin-left:18px;color:var(--pen);font:17px/24px var(--f-math);white-space:pre}
+/* w lustrze kartki wynik nigdy nie zmienia wysokości linii (klasy z reszty strony, np. .note, mają marginesy) */
+.nb-mirror .nb-r{margin:0 0 0 18px}
 .nb-r.err,.nb-r.bad{color:var(--red)}
 .nb-r.ok{color:var(--green)}
 .nb-r sub{font-size:.68em;line-height:0}
