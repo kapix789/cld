@@ -10,7 +10,7 @@
 //  Obraz znaku (hwRaster) musi powstawać dokładnie tak jak raster() w tools/hw_train.py.
 //  Poprawki użytkownika (hwLearn) zapisują jego wersję znaku; podobny znak czyta się potem tak samo.
 // =====================================================================
-let HW_NET=null,HW_CACHE=null;   // HW_CACHE: odczytane znaki według identyfikatorów kresek (kreska się nie zmienia)
+let HW_NET=null,HW_CACHE=null,HW_DEF=null;   // HW_DEF: litery, które są zmiennymi (null: wszystkie)   // HW_CACHE: odczytane znaki według identyfikatorów kresek (kreska się nie zmienia)
 function hwNet(){
   if(HW_NET)return HW_NET;
   const dq=L=>{const s=atob(L.q),w=new Float32Array(s.length);for(let i=0;i<s.length;i++)w[i]=(s.charCodeAt(i)<<24>>24)*L.s;return {w,b:Float32Array.from(L.b)}};
@@ -188,6 +188,8 @@ function hwParse(items,depth=0){
     const t=tokens[i],prev=out[out.length-1],next=tokens[i+1];
     if(t.text!==undefined){out.push({text:t.text,show:t.show,num:true});conf=Math.min(conf,t.conf);syms.push(...(t.syms||[]));continue}
     let ch=t.ch;
+    // litera A, B, C zostaje literą tylko jako zmienna przypisana na tej stronie (B = ...); inaczej to cyfra (8, 4, 0)
+    if(/[ABC]/.test(ch)&&HW_DEF&&!HW_DEF.has(ch))ch=t.cls&&/\d/.test(t.cls.alt)?t.cls.alt:{A:'4',B:'8',C:'0'}[ch];
     if(ch==='dot'){
       const between=prev&&prev.num&&next&&next.ch&&/\d/.test(next.ch);
       ch=between&&t.b.cy>mid+symH*.25?'.':'·';
@@ -214,8 +216,17 @@ function hwParse(items,depth=0){
   return text?{text,show:shows.join(''),syms,conf,tokens}:null;
 }
 // cała strona: linie pisma, a w linii osobne działania, gdy dzieli je duża przerwa
-function hwRead(strokes,cache){
-  HW_CACHE=cache||null;
+// defined: litery przypisane poza pismem (np. w tekście z klawiatury)
+function hwRead(strokes,cache,defined){
+  HW_CACHE=cache||new Map();
+  // pierwsze czytanie znajduje przypisania „A = …”, drugie czyta resztę liter jako cyfry
+  HW_DEF=null;
+  const first=hwRead1(strokes),def=new Set(defined||[]);
+  first.forEach(r=>{const m=r.text.match(/^([ABC])=/);if(m)def.add(m[1])});
+  HW_DEF=def;
+  const res=hwRead1(strokes);HW_DEF=null;return res;
+}
+function hwRead1(strokes){
   const items=strokes.map((s,k)=>({k,id:s.id,p:s.p,b:hwBox([s.p])})).filter(t=>t.p.length>=2);
   if(!items.length)return [];
   const res=[];
