@@ -100,6 +100,11 @@ function hwLines(items,gf=.6){
 }
 // tekst jednej linii (albo licznika, mianownika): → {text, syms, conf} | null
 // macierz: para wysokich nawiasów ([ ] albo ( )), między nimi wiersze liczb → „[1 2; 3 4]”
+// haczyk nawiasu narysowany osobno: tylko przy prostej pionowej kresce, płaski, krótki i dotyka jej końca
+// (cyfry i kreski „=” obok nawiasu haczykami nie są)
+const hwHook=(B,t)=>t!==B&&B.b.w<B.b.h*.2&&t.b.h<=Math.max(t.b.w*.6,B.b.h*.08)&&t.b.w<B.b.h*.6&&
+  (Math.abs(t.b.cy-B.b.y1)<B.b.h*.12||Math.abs(t.b.cy-B.b.y2)<B.b.h*.12)&&
+  (Math.abs(t.b.x1-B.b.cx)<B.b.h*.1||Math.abs(t.b.x2-B.b.cx)<B.b.h*.1);
 function hwMatrices(items,depth){
   // typowa wysokość znaku: kreski, które nie są płaskie (bez −, = i kropek)
   const hs=items.filter(t=>t.b.h>=t.b.w*.5&&t.b.h>4).map(t=>t.b.h),base=hwMed(hs);
@@ -112,7 +117,7 @@ function hwMatrices(items,depth){
     const d=mx/c-(p[0]+p[p.length-2])/2;
     if(d<-t.b.h*.06)return 'L';if(d>t.b.h*.06)return 'R';
     // prosta pionowa kreska: o stronie mówią osobno narysowane haczyki
-    const hk=items.filter(h=>h!==t&&h.b.h<t.b.h*.3&&(Math.abs(h.b.cy-t.b.y1)<t.b.h*.15||Math.abs(h.b.cy-t.b.y2)<t.b.h*.15)&&h.b.x1<t.b.x2+t.b.h*.35&&h.b.x2>t.b.x1-t.b.h*.35);
+    const hk=items.filter(h=>hwHook(t,h));
     if(hk.length){const hx=hk.reduce((s,h)=>s+h.b.cx,0)/hk.length;return hx>t.b.cx?'L':'R'}
     return '';
   };
@@ -123,7 +128,7 @@ function hwMatrices(items,depth){
     if(used.has(L)||used.has(R))continue;
     const y1=Math.min(L.b.y1,R.b.y1),y2=Math.max(L.b.y2,R.b.y2);
     // haczyki nawiasów rysowane osobno: krótkie kreski przy końcach pionowej kreski
-    const hook=(B,t)=>t!==B&&t.b.h<B.b.h*.3&&(Math.abs(t.b.cy-B.b.y1)<B.b.h*.15||Math.abs(t.b.cy-B.b.y2)<B.b.h*.15)&&t.b.x1<B.b.x2+B.b.h*.35&&t.b.x2>B.b.x1-B.b.h*.35;
+    const hook=hwHook;
     const hooks=items.filter(t=>!used.has(t)&&(hook(L,t)||hook(R,t)));
     const inside=items.filter(t=>t!==L&&t!==R&&!hooks.includes(t)&&!used.has(t)&&t.b.cx>L.b.x1+Math.min(L.b.w*.3,12)&&t.b.cx<R.b.x2-Math.min(R.b.w*.3,12)&&t.b.cy>y1&&t.b.cy<y2);   // nawias może mieć długie haczyki nad cyframi
     if(!inside.length)continue;
