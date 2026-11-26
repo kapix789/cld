@@ -548,3 +548,52 @@ $('#nbHwSave').onclick=()=>{
   NB.hwCache.clear();nbSave();nbHwMenuClose();nbHwRun();
 };
 HOOKS.start.push(()=>{nbShowMode(store.get('kratka-zeszyt-wyniki')!=='0',false);nbReadMode(store.get('kratka-zeszyt-pismo')!=='0',false)});
+
+// ---------- PDF: strony zeszytu jako obrazy w pliku PDF (bez bibliotek) ----------
+function nbPageImg(P){
+  const C=NB_CELL,lines=P.text.split('\n'),res=calcText(P.text,{deg:NB.d.deg});
+  let mx=0,my=0;P.strokes.forEach(s=>{const b=nbBox(s);mx=Math.max(mx,b[2]);my=Math.max(my,b[3])});
+  const ctx0=document.createElement('canvas').getContext('2d');ctx0.font='16px "Fira Mono",monospace';
+  const tw=Math.max(0,...lines.map(l=>ctx0.measureText(l).width+220));
+  const W=Math.ceil(Math.max(720,NB_PAD+tw,mx+C)/C)*C,H=Math.ceil(Math.max(C*30,(lines.length+2)*C,my+C*2)/C)*C,k=2;
+  const cv=document.createElement('canvas');cv.width=W*k;cv.height=H*k;const g=cv.getContext('2d');g.scale(k,k);
+  g.fillStyle='#fff';g.fillRect(0,0,W,H);g.strokeStyle='#dce3ed';g.lineWidth=1;g.beginPath();
+  for(let x=0;x<=W;x+=C){g.moveTo(x+.5,0);g.lineTo(x+.5,H)}for(let y=0;y<=H;y+=C){g.moveTo(0,y+.5);g.lineTo(W,y+.5)}g.stroke();
+  g.fillStyle='#eba3a8';g.fillRect(48,0,1.5,H);
+  lines.forEach((l,i)=>{const y=C+i*C+17;g.font='16px "Fira Mono",monospace';g.fillStyle=/^\s*(#|\/\/)/.test(l)?'#858fa4':'#152033';g.fillText(l,NB_PAD,y);
+    const r=res[i];if(r){g.font='17px "STIX Two Text",Georgia,serif';g.fillStyle=r.cls==='err'||r.cls==='bad'?'#c02a34':r.cls==='ok'?'#1b7a3f':'#2343b5';
+      g.fillText(plain(r.html.replace(/<sup>(.*?)<\/sup>/g,'^$1').replace(/<sub>(.*?)<\/sub>/g,'_$1')),NB_PAD+ctx0.measureText(l).width+18,y)}});
+  const col={pen:'#2343b5',ink:'#152033',red:'#c02a34',hl:'rgba(255,212,0,.4)'};
+  for(const pass of [1,0])P.strokes.filter(s=>(s.c==='hl')===!!pass).forEach(s=>nbStroke(g,s,col));
+  const b=atob(cv.toDataURL('image/jpeg',.88).split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
+  return {data:u,w:W*k,h:H*k};
+}
+function nbPdfBlob(imgs){
+  const enc=new TextEncoder(),parts=[],offs=[];let len=0;
+  const add=x=>{const b=typeof x==='string'?enc.encode(x):x;parts.push(b);len+=b.length};
+  const obj=(n,f)=>{offs[n]=len;add(`${n} 0 obj\n`);f();add('\nendobj\n')};
+  add('%PDF-1.4\n');
+  const n=imgs.length,cnt=3+n*3;
+  obj(1,()=>add('<< /Type /Catalog /Pages 2 0 R >>'));
+  obj(2,()=>add(`<< /Type /Pages /Kids [${imgs.map((_,i)=>`${3+i*3} 0 R`).join(' ')}] /Count ${n} >>`));
+  imgs.forEach((im,i)=>{
+    const q=3+i*3,pw=595,ph=Math.round(595*im.h/im.w),c=`q ${pw} 0 0 ${ph} 0 0 cm /I${i} Do Q`;
+    obj(q,()=>add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pw} ${ph}] /Resources << /XObject << /I${i} ${q+1} 0 R >> >> /Contents ${q+2} 0 R >>`));
+    obj(q+1,()=>{add(`<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.data.length} >>\nstream\n`);add(im.data);add('\nendstream')});
+    obj(q+2,()=>add(`<< /Length ${c.length} >>\nstream\n${c}\nendstream`));
+  });
+  const x=len;
+  add(`xref\n0 ${cnt}\n0000000000 65535 f \n`+offs.slice(1,cnt).map(o=>String(o).padStart(10,'0')+' 00000 n \n').join('')+`trailer\n<< /Size ${cnt} /Root 1 0 R >>\nstartxref\n${x}\n%%EOF\n`);
+  return new Blob(parts,{type:'application/pdf'});
+}
+function nbPdfSave(all){
+  nbTxtCommit();
+  const pages=all?NB.d.pages:[nbPage()],blob=nbPdfBlob(pages.map(nbPageImg));
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=all?'zeszyt.pdf':`zeszyt-strona-${NB.d.page+1}.pdf`;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+$('#nbPdf').onclick=()=>{
+  const m=$('#nbMsg');
+  show(m,'info',$t('Pobierz jako PDF:','Download as PDF:')+`<div class="actions"><button type="button" class="btn small" data-pdf="0">${$t('Ta strona','This page')}</button><button type="button" class="btn ghost small" data-pdf="1">${$t('Wszystkie strony','All pages')} (${NB.d.pages.length})</button></div>`);
+  m.onclick=e=>{const b=e.target.closest('[data-pdf]');if(!b)return;m.className='msg';m.onclick=null;nbPdfSave(b.dataset.pdf==='1')};
+};
