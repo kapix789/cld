@@ -84,7 +84,7 @@ function hwClassify(strokes){
   const img=hwRaster(strokes),f=hwForward(img),N=hwNet(),p=Array.from(f.p);
   for(const s of hwMine()){const sim=hwCos(f.h,s.h);if(sim>.9){const k=N.cls.indexOf(s.c);if(k>=0)p[k]+=(sim-.9)*8}}
   const ord=p.map((v,k)=>[v,k]).sort((a,b)=>b[0]-a[0]),z=p.reduce((s,v)=>s+v,0);
-  return {ch:N.cls[ord[0][1]],p:ord[0][0]/z,alt:N.cls[ord[1][1]],pAlt:ord[1][0]/z,h:f.h};
+  return {ch:N.cls[ord[0][1]],p:ord[0][0]/z,alt:N.cls[ord[1][1]],pAlt:ord[1][0]/z,h:f.h,ps:p.map(v=>v/z)};
 }
 
 // ---------- układ kresek: linie, ułamki, znaki, kropki, potęgi ----------
@@ -105,8 +105,22 @@ function hwMatrices(items,depth){
   const hs=items.filter(t=>t.b.h>=t.b.w*.5&&t.b.h>4).map(t=>t.b.h),base=hwMed(hs);
   const tall=items.filter(t=>t.b.h>Math.max(base*1.6,24)&&t.b.w<t.b.h*.9).sort((a,b)=>a.b.x1-b.b.x1);
   const used=new Set(),tokens=[];
-  for(let i=0;i+1<tall.length;i++){
-    const L=tall[i],R=tall[i+1];if(used.has(L)||used.has(R))continue;
+  // w którą stronę otwiera się wysoka kreska: [ ( C otwierają się w prawo, ] ) w lewo
+  const side=t=>{
+    const p=t.p,n=p.length/2;let mx=0,c=0;
+    for(let i=Math.floor(n/3);i<Math.max(Math.ceil(2*n/3),Math.floor(n/3)+1);i++){mx+=p[2*i];c++}
+    const d=mx/c-(p[0]+p[p.length-2])/2;
+    if(d<-t.b.h*.06)return 'L';if(d>t.b.h*.06)return 'R';
+    // prosta pionowa kreska: o stronie mówią osobno narysowane haczyki
+    const hk=items.filter(h=>h!==t&&h.b.h<t.b.h*.3&&(Math.abs(h.b.cy-t.b.y1)<t.b.h*.15||Math.abs(h.b.cy-t.b.y2)<t.b.h*.15)&&h.b.x1<t.b.x2+t.b.h*.35&&h.b.x2>t.b.x1-t.b.h*.35);
+    if(hk.length){const hx=hk.reduce((s,h)=>s+h.b.cx,0)/hk.length;return hx>t.b.cx?'L':'R'}
+    return '';
+  };
+  const stack=[],pairs=[];
+  for(const t of tall){const s=side(t)||(stack.length?'R':'L');if(s==='L')stack.push(t);else if(stack.length)pairs.push([stack.pop(),t])}
+  pairs.sort((a,b)=>a[0].b.x1-b[0].b.x1);
+  for(const [L,R] of pairs){
+    if(used.has(L)||used.has(R))continue;
     const y1=Math.min(L.b.y1,R.b.y1),y2=Math.max(L.b.y2,R.b.y2);
     // haczyki nawiasów rysowane osobno: krótkie kreski przy końcach pionowej kreski
     const hook=(B,t)=>t!==B&&t.b.h<B.b.h*.3&&(Math.abs(t.b.cy-B.b.y1)<B.b.h*.15||Math.abs(t.b.cy-B.b.y2)<B.b.h*.15)&&t.b.x1<B.b.x2+B.b.h*.35&&t.b.x2>B.b.x1-B.b.h*.35;
@@ -197,6 +211,18 @@ function hwParse(items,depth=0){
     const t=tokens[i],prev=out[out.length-1],next=tokens[i+1];
     if(t.text!==undefined){out.push({text:t.text,show:t.show,num:true});conf=Math.min(conf,t.conf);syms.push(...(t.syms||[]));continue}
     let ch=t.ch;
+    const ps=t.cls&&t.cls.ps,P=c=>ps?ps[HW_MODEL.classes.indexOf(c)]||0:0,best=a=>a.slice().sort((x,y)=>P(y)-P(x))[0];
+    if(ps&&!HW_CELL&&!/[A-C]/.test(ch)){
+      // pierwszy znak, po którym stoi „=”, to nazwa zmiennej (C = […] nie jest „( = […]”)
+      const L1=best(['A','B','C']);
+      if(!out.length&&next&&next.ch==='='&&/[()\/*]/.test(ch))ch=L1;
+      // litera, która jest zmienną na tej stronie, stojąca osobno (nie w środku liczby)
+      else if(HW_DEF&&HW_DEF.size){
+        const L2=best([...HW_DEF].filter(c=>/^[A-C]$/.test(c)));
+        const alone=!(prev&&prev.num&&!prev.sup)&&!(next&&next.ch&&/\d/.test(next.ch));
+        if(L2&&alone&&(ch==='('&&!tokens.slice(i+1).some(x=>x.ch===')')||/[0148]/.test(ch)&&P(L2)>.05))ch=L2;
+      }
+    }
     // litera A, B, C zostaje literą tylko jako zmienna przypisana na tej stronie (B = ...); inaczej to cyfra (8, 4, 0)
     if(/[ABC]/.test(ch)&&(HW_CELL||HW_DEF&&!HW_DEF.has(ch)))ch=t.cls&&/\d/.test(t.cls.alt)?t.cls.alt:{A:'4',B:'8',C:'0'}[ch];
     if(ch==='dot'){
