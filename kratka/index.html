@@ -6849,6 +6849,19 @@ $('#nbTools').addEventListener('click',e=>{
 $('#nbDeg').addEventListener('click',e=>{const b=e.target.closest('[data-deg]');if(!b||!NB.d)return;NB.d.deg=b.dataset.deg==='1';nbHead();nbCalc();nbLayout();nbSaveSoon()});
 
 // ---------- Brudnopis: ten sam zeszyt obok zadania ----------
+function nbGiven(html){
+  const d=document.createElement('div');d.innerHTML=html;
+  d.querySelectorAll('sup').forEach(x=>{x.textContent='^'+x.textContent});
+  const t=d.textContent.replace(/−/g,'-').replace(/\s+/g,' '),out=[],seen=new Set();
+  const re=/(^|[\s(,;:])([A-Za-zα-ωΔ][A-Za-z0-9]{0,3})\s*=\s*(-?\d+(?:[.,]\d+)?(?:·10\^-?\d+)?)(?:\s*([^\s,;.)]+))?/g;
+  let m;
+  while((m=re.exec(t))&&out.length<12){
+    if(seen.has(m[2]))continue;seen.add(m[2]);
+    const u=m[4]&&cUnit(m[4])?' '+m[4]:'';
+    out.push(`${m[2]} = ${m[3]}${u}`);
+  }
+  return out;
+}
 function nbDrawerOpen(task,opener){
   nbOpen();
   NB.opener=opener||null;
@@ -6860,6 +6873,9 @@ function nbDrawerOpen(task,opener){
   if(nbNarrow())document.body.style.overflow='hidden';
   // pisze się od nowej linii pod tym, co już jest na stronie
   const P=nbPage();if(P.text&&!P.text.endsWith('\n')){P.text+='\n';nbTa.value=P.text;nbCalc();nbSaveSoon()}
+  // dane z treści zadania (t = 1 s, v0 = 20 m/s) od razu jako zmienne
+  if(task){const have=P.text.split('\n'),add=nbGiven(task.q+' '+(task.body||'')).filter(l=>!have.includes(l));
+    if(add.length){P.text+=`# ${$t('dane z zadania','given')}\n${add.join('\n')}\n`;nbTa.value=P.text;nbCalc();nbSaveSoon()}}
   nbVV();NB.H=0;nbLayout();
   const end=nbTa.value.length;nbTa.setSelectionRange(end,end);
   nbSc.scrollTop=Math.max(0,(nbTa.value.split('\n').length+3)*NB_CELL-nbSc.clientHeight);
