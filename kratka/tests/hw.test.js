@@ -57,7 +57,7 @@ function write(text, x0 = 40, y0 = 40, H = 42) {
     if (t.startsWith('{')) {                          // macierz: {1 2|3 4}, wysokie nawiasy
       const rows = t.slice(1, -1).split('|').map(r => r.split(' ')), n = rows.length, cw = Math.max(...rows.flat().map(c => c.length)) * H * .5 + H * .5;
       const top = y0 - (n - 1) * H * .45, bot = top + n * H * .9, w = rows[0].length * cw;
-      strokes.push({ c: 'pen', p: dense([[x + 10, top - 4], [x, top - 4], [x, bot], [x + 10, bot]]).flat() });
+      const hk = u(10, H * 1.1); strokes.push({ c: 'pen', p: dense([[x + hk, top - 4], [x, top - 4], [x, bot], [x + hk, bot]]).flat() });   // haczyki bywają długie, nad cyframi
       rows.forEach((r, i) => r.forEach((c, j) => { let xx = x + H * .35 + j * cw; for (const ch of c) xx += put(ch, xx, top + i * H * .9, H * .7) }));
       const xr = x + w + H * .3; strokes.push({ c: 'pen', p: dense([[xr - 10, top - 4], [xr, top - 4], [xr, bot], [xr - 10, bot]]).flat() });
       x = xr + H * .45; continue;
@@ -117,7 +117,7 @@ ok(good / tot >= .85, `działania czytane za słabo: ${good} z ${tot}`);
   let good = 0, tot = 0;
   // linie jednej strony; litera to zmienna tylko wtedy, gdy jest przypisana („B = …”), inaczej cyfra
   for (const [e, w] of [[['A={1 2|3 4}'], ['A=[1 2; 3 4]']], [['{2 4|1 2}·{1 3|5 6}'], ['[2 4; 1 2]*[1 3; 5 6]']], [['B={1 2|3 4}', 'B·4='], ['B=[1 2; 3 4]', 'B*4=']],
-    [['{12 3|4 56}'], ['[12 3; 4 56]']], [['C=5', 'C+2'], ['C=5', 'C+2']], [['8+1'], ['8+1']]])
+    [['{12 3|4 56}'], ['[12 3; 4 56]']], [['C=5', 'C+2'], ['C=5', 'C+2']], [['8+1'], ['8+1']], [['A·5=', 'A={1 2|3 4}'], ['A*5=', 'A=[1 2; 3 4]']]])
     for (let k = 0; k < 8; k++) { tot++; const r = read(e.flatMap((l, i) => write(l, 40, 60 + i * 150))); if (JSON.stringify(r) === JSON.stringify(w)) good++; else if (k < 1) console.log('  odczyt', JSON.stringify(e), '→', JSON.stringify(r)) }
   console.log(`macierze i litery: dobrze ${good} z ${tot}`);
   ok(good / tot >= .75, `macierze i litery czytane za słabo: ${good} z ${tot}`);

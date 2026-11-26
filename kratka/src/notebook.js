@@ -499,8 +499,10 @@ function nbHwRun(){
     let found=[];try{found=hwRead(st,NB.hwCache,(P.text.match(/^\s*[ABC]\s*=/gm)||[]).map(x=>x.trim()[0]))}catch(e){found=[]}
     // linie pisma od góry liczymy razem (i po tekście z klawiatury), więc A = [...] działa w następnej linii
     const rows=found.map(f=>{const key=f.ks.map(k=>st[k].id).sort().join(','),fix=P.hw[key];return {...f,key,text:fix||f.text,show:fix||f.show,fixed:!!fix}}).sort((a,b)=>a.box[1]-b.box[1]);
-    const base=P.text.split('\n').length,recs=calcLines(P.text+'\n'+rows.map(r=>r.text).join('\n'),{deg:NB.d.deg});
-    rows.forEach((r,i)=>{const rec=recs[base+i];if(rec&&nbHwMath(r.text))NB.hw.push({...r,rec})});
+    // przypisania z pisma (A = [...]) liczymy przed resztą, nawet jeśli stoją niżej na kartce
+    const ord=[...rows.filter(r=>/^[A-Za-z]\w*=/.test(r.text)),...rows.filter(r=>!/^[A-Za-z]\w*=/.test(r.text))];
+    const base=P.text.split('\n').length,recs=calcLines(P.text+'\n'+ord.map(r=>r.text).join('\n'),{deg:NB.d.deg});
+    rows.forEach(r=>{const rec=recs[base+ord.indexOf(r)];if(rec&&nbHwMath(r.text))NB.hw.push({...r,rec})});
   }
   nbHwPaint();
 }

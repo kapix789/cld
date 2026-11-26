@@ -103,7 +103,7 @@ function hwLines(items,gf=.6){
 function hwMatrices(items,depth){
   // typowa wysokość znaku: kreski, które nie są płaskie (bez −, = i kropek)
   const hs=items.filter(t=>t.b.h>=t.b.w*.5&&t.b.h>4).map(t=>t.b.h),base=hwMed(hs);
-  const tall=items.filter(t=>t.b.h>Math.max(base*1.6,24)&&t.b.w<t.b.h*.55).sort((a,b)=>a.b.x1-b.b.x1);
+  const tall=items.filter(t=>t.b.h>Math.max(base*1.6,24)&&t.b.w<t.b.h*.9).sort((a,b)=>a.b.x1-b.b.x1);
   const used=new Set(),tokens=[];
   for(let i=0;i+1<tall.length;i++){
     const L=tall[i],R=tall[i+1];if(used.has(L)||used.has(R))continue;
@@ -111,10 +111,13 @@ function hwMatrices(items,depth){
     // haczyki nawiasów rysowane osobno: krótkie kreski przy końcach pionowej kreski
     const hook=(B,t)=>t!==B&&t.b.h<B.b.h*.3&&(Math.abs(t.b.cy-B.b.y1)<B.b.h*.15||Math.abs(t.b.cy-B.b.y2)<B.b.h*.15)&&t.b.x1<B.b.x2+B.b.h*.35&&t.b.x2>B.b.x1-B.b.h*.35;
     const hooks=items.filter(t=>!used.has(t)&&(hook(L,t)||hook(R,t)));
-    const inside=items.filter(t=>t!==L&&t!==R&&!hooks.includes(t)&&!used.has(t)&&t.b.cx>L.b.x2&&t.b.cx<R.b.x1&&t.b.cy>y1&&t.b.cy<y2);
+    const inside=items.filter(t=>t!==L&&t!==R&&!hooks.includes(t)&&!used.has(t)&&t.b.cx>L.b.x1+Math.min(L.b.w*.3,12)&&t.b.cx<R.b.x2-Math.min(R.b.w*.3,12)&&t.b.cy>y1&&t.b.cy<y2);   // nawias może mieć długie haczyki nad cyframi
     if(!inside.length)continue;
     const rows=[];
-    for(const row of hwLines(inside,.18)){
+    // wiersze: znaki, których środki leżą na podobnej wysokości (przerwy między wierszami macierzy bywają małe)
+    const gh=hwMed(inside.map(t=>t.b.h).filter(h=>h>3))||12,byY=inside.slice().sort((a,b)=>a.b.cy-b.b.cy),rowsI=[];
+    for(const t of byY){const r=rowsI[rowsI.length-1];if(r&&t.b.cy-r.cy<gh*.6){r.items.push(t);r.cy=r.items.reduce((s,x)=>s+x.b.cy,0)/r.items.length}else rowsI.push({items:[t],cy:t.b.cy})}
+    for(const row of rowsI.map(r=>r.items)){
       const h=Math.max(8,hwMed(row.map(t=>Math.max(t.b.h,t.b.w*.6)))),ord=row.slice().sort((a,b)=>a.b.x1-b.b.x1),cells=[];let cur=[],right=-1e9;
       for(const t of ord){if(cur.length&&t.b.x1-right>h*.55){cells.push(cur);cur=[]}cur.push(t);right=Math.max(right,t.b.x2)}
       if(cur.length)cells.push(cur);
@@ -160,7 +163,7 @@ function hwParse(items,depth=0){
   for(const t of strokes){
     const g=groups[groups.length-1];
     if(g){const ov=Math.min(g.x2,t.b.x2)-Math.max(g.x1,t.b.x1),mw=Math.min(g.x2-g.x1,t.b.w);
-      if(ov>Math.max(mw*.35,1)||t.b.cx>=g.x1&&t.b.cx<=g.x2||(g.x1+g.x2)/2>=t.b.x1&&(g.x1+g.x2)/2<=t.b.x2){g.items.push(t);g.x1=Math.min(g.x1,t.b.x1);g.x2=Math.max(g.x2,t.b.x2);continue}}
+      if(ov>Math.max(mw*.35,1)||t.b.cx>=g.x1-3&&t.b.cx<=g.x2+3||(g.x1+g.x2)/2>=t.b.x1&&(g.x1+g.x2)/2<=t.b.x2){g.items.push(t);g.x1=Math.min(g.x1,t.b.x1);g.x2=Math.max(g.x2,t.b.x2);continue}}
     groups.push({items:[t],x1:t.b.x1,x2:t.b.x2});
   }
   const lineTop=Math.min(...items.map(t=>t.b.y1)),lineBot=Math.max(...items.map(t=>t.b.y2));
