@@ -20,8 +20,9 @@ import time
 import numpy as np
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-CLASSES = "0123456789+-*/()="
-OPS = "+-*/()="
+CLASSES = "0123456789+-*/()=ABC"
+OPS = "+-*/()=ABC"
+GEN = OPS + "17"   # do cyfr z MNIST: jedynki z daszkiem i siódemki z poprzeczką (tak pisze się w Polsce)
 R_JS = 1.2          # promień kreski w px obrazu 28×28, taki sam jak w src/hw.js
 rng = np.random.default_rng(7)
 
@@ -114,6 +115,37 @@ def gen_op(ch):
         a = u(.55, .9) * math.pi / 2
         s = arc(0, .5, dep, .5 / math.sin(a), math.pi - a, math.pi + a) if ch == '(' else arc(0, .5, dep, .5 / math.sin(a), -a, a)
         st = transform([s], u(-.12, .12), 1, 1, u(-.15, .15))
+    elif ch == 'A':            # Λ i poprzeczka (czasem dwie osobne ukośne)
+        top = (u(.3, .4), u(-.03, .05))
+        if rng.random() < .7:
+            st = [line((u(-.03, .05), u(.95, 1.03)), top, n=10, bend=u(-.05, .05)).tolist() + line(top, (u(.65, .75), u(.95, 1.03)), n=10, bend=u(-.05, .05)).tolist()]
+            st = [np.array(st[0])]
+        else:
+            st = [line((u(-.03, .05), 1), top, bend=u(-.05, .05)), line(top, (u(.65, .75), 1), bend=u(-.05, .05))]
+        y = u(.5, .7)
+        st.append(line((u(.12, .2), y), (u(.5, .6), y + u(-.04, .04))))
+        st = transform(st, u(-.12, .12), u(.85, 1.15), 1, u(-.15, .15))
+    elif ch == 'B':            # pionowa kreska i dwa brzuszki
+        m = u(.42, .52)
+        bumps = np.vstack([arc(.02, m / 2, u(.32, .42), m / 2, -math.pi / 2, math.pi / 2), arc(.02, (1 + m) / 2, u(.38, .5), (1 - m) / 2, -math.pi / 2, math.pi / 2)])
+        st = [line((0, 0), (0, 1)), bumps] if rng.random() < .6 else [np.vstack([line((0, 1), (0, 0)), bumps])]
+        st = transform(st, u(-.12, .12), u(.85, 1.2), 1, u(-.15, .15))
+    elif ch == 'C':            # szeroki łuk otwarty w prawo
+        a = u(.15, .35) * math.pi
+        st = [arc(.5, .5, u(.4, .55), .5, -a, -2 * math.pi + a, n=22)]
+        st = transform(st, u(-.15, .15), u(.85, 1.15), 1, u(-.1, .1))
+    elif ch == '1':
+        top = (u(.3, .42), u(-.03, .03))
+        st = [np.vstack([line((u(-.02, .15), u(.15, .35)), top, n=6), line(top, (u(.28, .45), 1), n=12, bend=u(-.04, .04))])]
+        if rng.random() < .3:
+            st.append(line((u(.05, .15), 1), (u(.55, .7), 1)))
+        st = transform(st, u(-.15, .15), 1, 1, u(-.2, .2))
+    elif ch == '7':
+        st = [np.vstack([line((0, u(-.03, .05)), (u(.55, .7), 0), n=8), line((u(.55, .7), 0), (u(.15, .35), 1), n=12, bend=u(-.06, .06))])]
+        if rng.random() < .5:
+            y = u(.42, .58)
+            st.append(line((u(.1, .25), y), (u(.45, .6), y + u(-.04, .04))))
+        st = transform(st, u(-.12, .12), 1, 1, u(-.15, .15))
     else:
         raise ValueError(ch)
     return st
@@ -264,7 +296,7 @@ def main():
     nv = 1000
     Xd_tr, Yd_tr, Xd_va, Yd_va = X[nv:], Y[nv:], X[:nv], Y[:nv]
     t0 = time.time()
-    ops_va = [(raster(gen_op(ch), r=rng.uniform(.9, 1.5)), CLASSES.index(ch)) for ch in OPS for _ in range(150)]
+    ops_va = [(raster(gen_op(ch), r=rng.uniform(.9, 1.5)), CLASSES.index(ch)) for ch in GEN for _ in range(150)]
     Xo_va = np.array([o[0] for o in ops_va])
     Yo_va = np.array([o[1] for o in ops_va])
     Xva = np.concatenate([Xd_va, Xo_va])[:, None]
@@ -276,7 +308,7 @@ def main():
     for ep in range(a.epochs):
         t0 = time.time()
         Xd = np.array([aug_digit(x) for x in Xd_tr])
-        ops = [(raster(gen_op(ch), r=rng.uniform(.9, 1.5)), CLASSES.index(ch)) for ch in OPS for _ in range(a.ops)]
+        ops = [(raster(gen_op(ch), r=rng.uniform(.9, 1.5)), CLASSES.index(ch)) for ch in GEN for _ in range(a.ops)]
         Xtr = np.concatenate([Xd, np.array([o[0] for o in ops])])[:, None]
         Ytr = np.concatenate([Yd_tr, np.array([o[1] for o in ops])])
         tprep = time.time() - t0
@@ -313,7 +345,7 @@ def main():
              "d1": {**q8(p['W3']), "b": [round(float(v), 5) for v in p['b3']]},
              "d2": {**q8(p['W4']), "b": [round(float(v), 5) for v in p['b4']]}}
     out = pathlib.Path(a.out)
-    out.write_text("// Wagi sieci, która czyta pismo w zeszycie (cyfry i + − × / ( ) =). Plik generuje tools/hw_train.py,\n"
+    out.write_text("// Wagi sieci, która czyta pismo w zeszycie (cyfry, + − × / ( ) = i litery A B C). Plik generuje tools/hw_train.py,\n"
                    "// nie edytuj go ręcznie. Cyfry uczone na MNIST (paczka npm mnist, MIT), znaki działań wygenerowane.\n"
                    f"// Trafność na próbkach kontrolnych: {acc * 100:.1f}%.\n"
                    f"const HW_MODEL={json.dumps(model, separators=(',', ':'))};\n", encoding="utf-8")

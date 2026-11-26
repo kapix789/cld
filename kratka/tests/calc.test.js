@@ -18,7 +18,7 @@ for(const [line,want] of [
   ['0b1101','= 13'],['0x1f','= 31'],['0o755','= 493'],['hex(255)','= FF_16'],['bin 13','= 1101_2'],['oct(0b111101101)','= 755_8'],
   ['[1 2; 3 4]','note: macierz 2×2'],['[1 2; 3 4]^T','= [1 3; 2 4]'],['det [1 2; 3 4]','= −2'],['|[1 2; 3 4]|','= −2'],['[1, 2, 3]','note: macierz 1×3'],['[1,5 2,5]','note: macierz 1×2'],['[1, 2, 3]*2','= [2 4 6]'],['[1,5 2,5]*2','= [3 5]'],['[1/2 1]','= [1/2 1]'],['[1/2 1; 0 2]^-1','= [2 −1; 0 1/2]'],
   ['x²','err: nieznana zmienna x'],['1/0','err: dzielenie przez 0'],['ln(0)','err: logarytm z liczby ≤ 0'],['√(-4)','err: poza dziedziną'],
-  ['2,5!','err: silnia tylko z liczb 0–170'],['0b102','err: ta cyfra nie pasuje do systemu liczby'],['hex(2,5)','err: tu potrzebna jest liczba całkowita ≥ 0'],
+  ['2,5!','err: silnia tylko z liczb 0–170'],['0b102','err: ta cyfra nie pasuje do systemu liczby'],['hex(2,5)','= 2,8_16'],['0b0.101','= 0,625'],['0b101.11 + 1','= 6,75'],['bin(0,625)','= 0,101_2'],['bin(5,75)','= 101,11_2'],['bin(1/3)','= 0,010101010101010101010101…_2'],['0x0.8','= 0,5'],['bin(-1)','err: tu potrzebna jest liczba ≥ 0'],
   ['det 5','err: tu potrzebna jest macierz'],['[1 2; 3]','err: wiersze macierzy mają różne długości'],['[1 2]+1','err: nie dodaje się liczby do macierzy'],
   ['2/3 + 1/4 = 11/12','ok: zgadza się'],['10/3 = 3,33','ok: zgadza się po zaokrągleniu'],['10/3 ≈ 3,33','ok: zgadza się po zaokrągleniu'],['sin(30) = 1/2','ok: zgadza się'],
   ['10/3 = 3,34','bad: nie zgadza się: lewa strona ≈ 3,33333'],['2/3 + 1/4 = 10/12','bad: nie zgadza się: lewa strona = 11/12, prawa = 5/6'],['7/2 = 3','bad: nie zgadza się: lewa strona = 7/2'],
@@ -103,7 +103,7 @@ for(let t=0;t<500;t++){
 {
   const squash=s=>s.replace(/[\s\[\];]/g,'');   // macierz w klatce to siatka komórek, bez nawiasów i średników
   const plainH=h=>String(h||'').replace(/<span class="fr"><span>(.*?)<\/span><span>(.*?)<\/span><\/span>/g,'$1/$2').replace(/<sup>(.*?)<\/sup>/g,'^$1').replace(/<sub>(.*?)<\/sub>/g,'_$1').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/\u202f/g,' ');
-  const page=['1/2 + 1/3','2 + 3·4','(1+2)·(3+4) - 2^3','2/3 : 4/5','v0 = 72/3,6','s = v0^2/(2·4)','sin(30) + √16','10/3 = 3,33','2/3 + 1/4 = 10/12','hex(255)','0b1101 + 1',
+  const page=['1/2 + 1/3','2 + 3·4','(1+2)·(3+4) - 2^3','2/3 : 4/5','v0 = 72/3,6','s = v0^2/(2·4)','sin(30) + √16','10/3 = 3,33','2/3 + 1/4 = 10/12','hex(255)','0b1101 + 1','bin(5,75)','0b0.101 + 1',
     'A = [2 1','5 3]','det(A)','A^-1','B = [1 2; 3 4]','A*B + 2B','A^T','A^3','rz(A)','tr(A)','C = [1 0 2 0; 3 1 0 1; 0 2 1 0; 1 0 0 3]','det(C)','5!','20%·50','log2(1024)','ln(e)','arcsin(1/2)','2^0,5','x = -3','x^2 - 2x','|x|','B/2','-A','√2·√2'].join('\n');
   for(const lang of ['pl','en']){
     K.LANG.cur=lang;

@@ -10,7 +10,7 @@
 //  Obraz znaku (hwRaster) musi powstawać dokładnie tak jak raster() w tools/hw_train.py.
 //  Poprawki użytkownika (hwLearn) zapisują jego wersję znaku; podobny znak czyta się potem tak samo.
 // =====================================================================
-let HW_NET=null,HW_CACHE=null;   // HW_CACHE: odczytane znaki według identyfikatorów kresek (kreska się nie zmienia)
+let HW_NET=null,HW_CACHE=null,HW_DEF=null;   // HW_DEF: litery, które są zmiennymi (null: wszystkie)   // HW_CACHE: odczytane znaki według identyfikatorów kresek (kreska się nie zmienia)
 function hwNet(){
   if(HW_NET)return HW_NET;
   const dq=L=>{const s=atob(L.q),w=new Float32Array(s.length);for(let i=0;i<s.length;i++)w[i]=(s.charCodeAt(i)<<24>>24)*L.s;return {w,b:Float32Array.from(L.b)}};
@@ -91,21 +91,53 @@ function hwClassify(strokes){
 const hwBox=ps=>{let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;for(const p of ps)for(let i=0;i<p.length;i+=2){x1=Math.min(x1,p[i]);x2=Math.max(x2,p[i]);y1=Math.min(y1,p[i+1]);y2=Math.max(y2,p[i+1])}return {x1,y1,x2,y2,w:x2-x1,h:y2-y1,cx:(x1+x2)/2,cy:(y1+y2)/2}};
 const hwMed=a=>{if(!a.length)return 0;const s=a.slice().sort((x,y)=>x-y);return s[s.length>>1]};
 // it: {k (indeks kreski), p (punkty), b (ramka)}
-function hwLines(items){
+function hwLines(items,gf=.6){
   // wielkość pisma: wysokość kresek, a dla płaskich (−, =) ich szerokość
-  const med=Math.max(12,hwMed(items.map(t=>Math.max(t.b.h,t.b.w)))),gap=Math.max(8,med*.6);
+  const med=Math.max(12,hwMed(items.map(t=>Math.max(t.b.h,t.b.w)))),gap=Math.max(gf<.3?3:8,med*gf);
   const ord=items.slice().sort((a,b)=>a.b.y1-b.b.y1),lines=[];
   for(const t of ord){const L=lines[lines.length-1];if(L&&t.b.y1<=L.y2+gap){L.items.push(t);L.y2=Math.max(L.y2,t.b.y2)}else lines.push({items:[t],y2:t.b.y2})}
   return lines.map(L=>L.items);
 }
 // tekst jednej linii (albo licznika, mianownika): → {text, syms, conf} | null
+// macierz: para wysokich nawiasów ([ ] albo ( )), między nimi wiersze liczb → „[1 2; 3 4]”
+function hwMatrices(items,depth){
+  // typowa wysokość znaku: kreski, które nie są płaskie (bez −, = i kropek)
+  const hs=items.filter(t=>t.b.h>=t.b.w*.5&&t.b.h>4).map(t=>t.b.h),base=hwMed(hs);
+  const tall=items.filter(t=>t.b.h>Math.max(base*1.6,24)&&t.b.w<t.b.h*.55).sort((a,b)=>a.b.x1-b.b.x1);
+  const used=new Set(),tokens=[];
+  for(let i=0;i+1<tall.length;i++){
+    const L=tall[i],R=tall[i+1];if(used.has(L)||used.has(R))continue;
+    const y1=Math.min(L.b.y1,R.b.y1),y2=Math.max(L.b.y2,R.b.y2);
+    // haczyki nawiasów rysowane osobno: krótkie kreski przy końcach pionowej kreski
+    const hook=(B,t)=>t!==B&&t.b.h<B.b.h*.3&&(Math.abs(t.b.cy-B.b.y1)<B.b.h*.15||Math.abs(t.b.cy-B.b.y2)<B.b.h*.15)&&t.b.x1<B.b.x2+B.b.h*.35&&t.b.x2>B.b.x1-B.b.h*.35;
+    const hooks=items.filter(t=>!used.has(t)&&(hook(L,t)||hook(R,t)));
+    const inside=items.filter(t=>t!==L&&t!==R&&!hooks.includes(t)&&!used.has(t)&&t.b.cx>L.b.x2&&t.b.cx<R.b.x1&&t.b.cy>y1&&t.b.cy<y2);
+    if(!inside.length)continue;
+    const rows=[];
+    for(const row of hwLines(inside,.18)){
+      const h=Math.max(8,hwMed(row.map(t=>Math.max(t.b.h,t.b.w*.6)))),ord=row.slice().sort((a,b)=>a.b.x1-b.b.x1),cells=[];let cur=[],right=-1e9;
+      for(const t of ord){if(cur.length&&t.b.x1-right>h*.55){cells.push(cur);cur=[]}cur.push(t);right=Math.max(right,t.b.x2)}
+      if(cur.length)cells.push(cur);
+      const txt=cells.map(c=>hwParse(c,depth+1)).filter(Boolean);
+      if(txt.length)rows.push(txt);
+    }
+    if(!rows.length)continue;
+    [L,R,...hooks,...inside].forEach(t=>used.add(t));
+    const text='['+rows.map(r=>r.map(c=>c.text).join(' ')).join('; ')+']';
+    tokens.push({x:L.b.x1,x2:R.b.x2,text,show:text,syms:rows.flat().flatMap(c=>c.syms),items:[L,R,...hooks,...inside],conf:Math.min(...rows.flat().map(c=>c.conf))});
+  }
+  return {tokens,used};
+}
 function hwParse(items,depth=0){
   if(!items.length)return null;
+  const MX=depth<2?hwMatrices(items,depth):{tokens:[],used:new Set()};
+  if(MX.tokens.length)items=items.filter(t=>!MX.used.has(t));
+  if(!items.length&&MX.tokens.length===1)return {text:MX.tokens[0].text,show:MX.tokens[0].show,syms:MX.tokens[0].syms,conf:MX.tokens[0].conf,tokens:MX.tokens};
   // wielkość pisma do wykrywania kropek i kresek ułamkowych (płaskie kreski liczą się szerokością)
   const medH=Math.max(10,hwMed(items.map(t=>Math.max(t.b.h,t.b.w))));
   const isDot=t=>Math.max(t.b.w,t.b.h)<Math.max(medH*.2,4);
   const isBar=t=>t.b.w>=medH*.55&&t.b.h<=Math.max(t.b.w*.3,3)&&t.b.h<=medH*.35;
-  const used=new Set(),tokens=[];
+  const used=new Set(),tokens=[...MX.tokens];
   // ułamki piętrowe (najszersza kreska pierwsza)
   for(const bar of items.filter(isBar).sort((a,b)=>b.b.w-a.b.w)){
     if(used.has(bar)||depth>2)continue;
@@ -156,6 +188,8 @@ function hwParse(items,depth=0){
     const t=tokens[i],prev=out[out.length-1],next=tokens[i+1];
     if(t.text!==undefined){out.push({text:t.text,show:t.show,num:true});conf=Math.min(conf,t.conf);syms.push(...(t.syms||[]));continue}
     let ch=t.ch;
+    // litera A, B, C zostaje literą tylko jako zmienna przypisana na tej stronie (B = ...); inaczej to cyfra (8, 4, 0)
+    if(/[ABC]/.test(ch)&&HW_DEF&&!HW_DEF.has(ch))ch=t.cls&&/\d/.test(t.cls.alt)?t.cls.alt:{A:'4',B:'8',C:'0'}[ch];
     if(ch==='dot'){
       const between=prev&&prev.num&&next&&next.ch&&/\d/.test(next.ch);
       ch=between&&t.b.cy>mid+symH*.25?'.':'·';
@@ -171,7 +205,7 @@ function hwParse(items,depth=0){
     const show=ch==='*'?'·':ch==='-'?'−':ch;
     const text=ch==='*'?'·':ch==='-'?'−':ch;
     if(sup){const last=out[out.length-1];if(last&&last.sup)last.supText+=text;else out.push({sup:true,supText:text})}
-    else out.push({text,show,num:/[\d.]/.test(ch)});
+    else out.push({text,show,num:/[\d.A-C]/.test(ch)});
     conf=Math.min(conf,t.conf);
     if(t.cls)syms.push({ch,h:t.cls.h,items:t.items});
   }
@@ -182,8 +216,17 @@ function hwParse(items,depth=0){
   return text?{text,show:shows.join(''),syms,conf,tokens}:null;
 }
 // cała strona: linie pisma, a w linii osobne działania, gdy dzieli je duża przerwa
-function hwRead(strokes,cache){
-  HW_CACHE=cache||null;
+// defined: litery przypisane poza pismem (np. w tekście z klawiatury)
+function hwRead(strokes,cache,defined){
+  HW_CACHE=cache||new Map();
+  // pierwsze czytanie znajduje przypisania „A = …”, drugie czyta resztę liter jako cyfry
+  HW_DEF=null;
+  const first=hwRead1(strokes),def=new Set(defined||[]);
+  first.forEach(r=>{const m=r.text.match(/^([ABC])=/);if(m)def.add(m[1])});
+  HW_DEF=def;
+  const res=hwRead1(strokes);HW_DEF=null;return res;
+}
+function hwRead1(strokes){
   const items=strokes.map((s,k)=>({k,id:s.id,p:s.p,b:hwBox([s.p])})).filter(t=>t.p.length>=2);
   if(!items.length)return [];
   const res=[];

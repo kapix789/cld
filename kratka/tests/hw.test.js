@@ -31,6 +31,9 @@ const GLYPH = {
   ')': () => [arc(0, .5, .3, .55, -P * .35, P * .35, 14)],
   '/': () => [[[.05, 1], [.48, 0]]],
   ',': () => [[[.08, .96], [.1, .98]]],
+  'A': () => [[[0, 1], [.32, 0], [.64, 1]], [[.14, .62], [.52, .62]]],
+  'B': () => [[[0, 0], [0, 1]], [[0, 0], ...arc(.04, .24, .36, .24, -P / 2, P / 2, 10), ...arc(.04, .74, .42, .26, -P / 2, P / 2, 10)]],
+  'C': () => [arc(.4, .5, .4, .5, -P * .25, -P * 1.75, 20)],
   ':': () => [[[.08, .3], [.1, .31]], [[.08, .72], [.1, .73]]],
 };
 const WIDTH = { '1': .45, '·': .25, ',': .25, ':': .25, '(': .45, ')': .45, '−': .6 };
@@ -49,8 +52,16 @@ function write(text, x0 = 40, y0 = 40, H = 42) {
     }
     return (WIDTH[ch] || .62) * h + h * u(.22, .4);
   };
-  const toks = text.match(/\[[^\]]+\]|\^.|./g);
+  const toks = text.match(/\{[^}]+\}|\[[^\]]+\]|\^.|./g);
   for (const t of toks) {
+    if (t.startsWith('{')) {                          // macierz: {1 2|3 4}, wysokie nawiasy
+      const rows = t.slice(1, -1).split('|').map(r => r.split(' ')), n = rows.length, cw = Math.max(...rows.flat().map(c => c.length)) * H * .5 + H * .5;
+      const top = y0 - (n - 1) * H * .45, bot = top + n * H * .9, w = rows[0].length * cw;
+      strokes.push({ c: 'pen', p: dense([[x + 10, top - 4], [x, top - 4], [x, bot], [x + 10, bot]]).flat() });
+      rows.forEach((r, i) => r.forEach((c, j) => { let xx = x + H * .35 + j * cw; for (const ch of c) xx += put(ch, xx, top + i * H * .9, H * .7) }));
+      const xr = x + w + H * .3; strokes.push({ c: 'pen', p: dense([[xr - 10, top - 4], [xr, top - 4], [xr, bot], [xr - 10, bot]]).flat() });
+      x = xr + H * .45; continue;
+    }
     if (t.startsWith('[')) {                          // ułamek piętrowy
       const [n, d] = t.slice(1, -1).split('/'), w = Math.max(n.length, d.length) * H * .62;
       let xn = x + (w - n.length * H * .62) / 2; for (const c of n) xn += put(c, xn, y0 - H * .62, H * .55);
@@ -100,6 +111,16 @@ ok(good / tot >= .85, `działania czytane za słabo: ${good} z ${tot}`);
   // duża obwódka (rysunek) nie jest czytana jako cyfra
   const circle = [{ c: 'red', p: Array.from({ length: 60 }, (_, k) => [300 + 140 * Math.cos(k / 9.4), 300 + 120 * Math.sin(k / 9.4)]).flat() }];
   ok(K.hwRead([...write('2+2=4', 40, 40), ...circle]).every(r => r.text !== '0' || true), 'obwódka');
+}
+// ---------- 3b. macierze w nawiasach i litery ----------
+{
+  let good = 0, tot = 0;
+  // linie jednej strony; litera to zmienna tylko wtedy, gdy jest przypisana („B = …”), inaczej cyfra
+  for (const [e, w] of [[['A={1 2|3 4}'], ['A=[1 2; 3 4]']], [['{2 4|1 2}·{1 3|5 6}'], ['[2 4; 1 2]*[1 3; 5 6]']], [['B={1 2|3 4}', 'B·4='], ['B=[1 2; 3 4]', 'B*4=']],
+    [['{12 3|4 56}'], ['[12 3; 4 56]']], [['C=5', 'C+2'], ['C=5', 'C+2']], [['8+1'], ['8+1']]])
+    for (let k = 0; k < 8; k++) { tot++; const r = read(e.flatMap((l, i) => write(l, 40, 60 + i * 150))); if (JSON.stringify(r) === JSON.stringify(w)) good++; else if (k < 1) console.log('  odczyt', JSON.stringify(e), '→', JSON.stringify(r)) }
+  console.log(`macierze i litery: dobrze ${good} z ${tot}`);
+  ok(good / tot >= .75, `macierze i litery czytane za słabo: ${good} z ${tot}`);
 }
 // ---------- 4. wynik z kalkulatora dla odczytanego działania ----------
 {
