@@ -271,20 +271,36 @@ function stMatOp(n,r,X){
 // ---------- systemy liczbowe ----------
 const stDigit=d=>d<10?String(d):String.fromCharCode(55+d);
 function stBaseIn(raw,v){
-  const base={b:2,x:16,o:8}[raw[1].toLowerCase()],ds=[...raw.slice(2)].map(c=>parseInt(c,16)),k=ds.length;
+  const base={b:2,x:16,o:8}[raw[1].toLowerCase()],[ip,fp='']=raw.slice(2).split(/[.,]/),ds=[...ip].map(c=>parseInt(c,16)),k=ds.length,fs=[...fp].map(c=>parseInt(c,16));
   const name={2:$t('dwójkowym','binary'),8:$t('ósemkowym','octal'),16:$t('szesnastkowym','hexadecimal')}[base];
-  const terms=ds.map((d,i)=>`${base===16&&d>9?`${stDigit(d)}(${d})`:d}·${base}<sup>${k-1-i}</sup>`);
+  const dd=d=>base===16&&d>9?`${stDigit(d)}(${d})`:d;
+  const terms=[...ds.map((d,i)=>`${dd(d)}·${base}<sup>${k-1-i}</sup>`),...fs.map((d,i)=>`${dd(d)}·${base}<sup>−${i+1}</sup>`)];
+  const vals=[...ds.map((d,i)=>String(d*base**(k-1-i))),...fs.map((d,i)=>stFrac(d,base**(i+1)))];
   return {sec:$t('Systemy liczbowe','Number bases'),t:$t(`${escH(raw)} w systemie dziesiętnym`,`${escH(raw)} in decimal`),
-    x:$t(`Zapis w systemie ${name}: każda cyfra mnoży kolejną potęgę ${base}, licząc od prawej od ${base}<sup>0</sup>.`,`In ${name} each digit multiplies the next power of ${base}, counting from the right from ${base}<sup>0</sup>.`),
-    C:[{h:`${escH(raw)} = ${terms.join(' + ')}`,full:true},{h:`= ${ds.map((d,i)=>d*base**(k-1-i)).join(' + ')} = <b>${cInt(toNum(v))}</b>`,full:true}],U:[{t:.4,line:0},{t:1.4,line:1}]};
+    x:$t(`Zapis w systemie ${name}: każda cyfra mnoży kolejną potęgę ${base}, licząc od prawej od ${base}<sup>0</sup>.${fs.length?` Cyfry po przecinku mnożą ujemne potęgi: ${base}<sup>−1</sup>, ${base}<sup>−2</sup> i tak dalej.`:''}`,`In ${name} each digit multiplies the next power of ${base}, counting from the right from ${base}<sup>0</sup>.${fs.length?` Digits after the point multiply negative powers: ${base}<sup>−1</sup>, ${base}<sup>−2</sup> and so on.`:''}`),
+    C:[{h:`${escH(raw)} = ${terms.join(' + ')}`,full:true},{h:`= ${vals.join(' + ')} = <b>${stNum(v,true)}</b>`,full:true}],U:[{t:.4,line:0},{t:1.4,line:1}]};
 }
-function stBaseOut(n,base){
-  const name={2:$t('dwójkowy','binary'),8:$t('ósemkowy','octal'),16:$t('szesnastkowy','hexadecimal')}[base],C=[],U=[];let x=n;
+function stBaseOut(v,base){
+  if(isFr(v)&&v.d!==1)return stBaseFrac(v,base);
+  const n=toNum(v),name={2:$t('dwójkowy','binary'),8:$t('ósemkowy','octal'),16:$t('szesnastkowy','hexadecimal')}[base],C=[],U=[];let x=n;
   if(x===0)C.push('0');
   while(x>0&&C.length<40){const q=Math.floor(x/base),d=x%base;C.push(`${x} : ${base} = ${q}, ${$t('reszta','remainder')} ${d}${d>9?` (${stDigit(d)})`:''}`);x=q}
   C.forEach((_,k)=>U.push({t:.4+k*.5,line:k}));
   C.push({h:$t('reszty czytane od dołu: ','remainders read from the bottom: ')+`<b>${n.toString(base).toUpperCase()}<sub>${base}</sub></b>`,full:true});U.push({t:.4+C.length*.5,line:C.length-1});
   return {sec:$t('Systemy liczbowe','Number bases'),t:$t(`${n} na system ${name}`,`${n} to ${name}`),x:$t(`Dzielimy przez ${base}, dopóki nie zostanie 0, i zapisujemy reszty. Reszty czytane od ostatniej do pierwszej to cyfry wyniku.`,`Divide by ${base} until 0 is left, writing down the remainders. Read from the last to the first, they are the digits of the result.`),C,U};
+}
+
+// część ułamkowa: mnożymy przez podstawę i zapisujemy część całkowitą wyniku
+function stBaseFrac(v,base){
+  const name={2:$t('dwójkowy','binary'),8:$t('ósemkowy','octal'),16:$t('szesnastkowy','hexadecimal')}[base],x=cBaseDigits(v,base,12),C=[],U=[];
+  const ip=x.ip;let f=F(v.n-ip*v.d,v.d);
+  C.push($t(`część całkowita ${ip} = ${ip.toString(base).toUpperCase()}<sub>${base}</sub>`,`whole part ${ip} = ${ip.toString(base).toUpperCase()}<sub>${base}</sub>`));
+  for(const d of x.ds){const p=f.mul(F(base));C.push(`${stNum(f,true)} · ${base} = ${stNum(p,true)} → ${stDigit(d)}`);f=p.sub(F(Math.floor(p.n/p.d)))}
+  if(x.more)C.push($t('… i tak dalej: rozwinięcie się nie kończy','… and so on: the expansion never ends'));
+  C.forEach((_,k)=>U.push({t:.4+k*.5,line:k}));
+  C.push({h:$t('wynik: ','result: ')+`<b>${cBaseStr(v,base)}<sub>${base}</sub></b>`,full:true});U.push({t:.4+C.length*.5,line:C.length-1});
+  return {sec:$t('Systemy liczbowe','Number bases'),t:$t(`${stNum(v,true)} na system ${name}`,`${stNum(v,true)} to ${name}`),
+    x:$t(`Część całkowitą zamieniamy jak zwykle (dzielenie przez ${base}). Część ułamkową mnożymy przez ${base}: część całkowita iloczynu to kolejna cyfra po przecinku, a dalej mnożymy to, co zostało po przecinku.`,`The whole part is converted as usual (dividing by ${base}). The fractional part is multiplied by ${base}: the whole part of the product is the next digit after the point, and we keep multiplying what is left after the point.`),C,U};
 }
 
 // ---------- całe wyrażenie ----------
@@ -355,9 +371,9 @@ function calcSteps(rec,src){
     return fr;
   }
   const e=stExpr(rec.src,X,sec),fr=e.frames;
-  if(rec.base)fr.push(stBaseOut(e.v.n,rec.base));
+  if(rec.base)fr.push(stBaseOut(isFr(e.v)?e.v:F(Math.round(e.v*1e6),1e6),rec.base));
   const left=rec.name?stName(rec.name):stH(stFrom(calcParse(calcTokens(cNorm(rec.src),x=>X.env.has(x)),x=>X.env.has(x)),{...X,subs:new Map(),bases:[]}),null,{dec:X.dec,names:true});
-  const tail=rec.base?`= ${e.v.n.toString(rec.base).toUpperCase()}<sub>${rec.base}</sub>`:eqTxt(e.v)+(rec.unit?' '+escH(rec.unit):'');
+  const tail=rec.base?`= ${cBaseStr(isFr(e.v)?e.v:F(Math.round(e.v*1e6),1e6),rec.base)}<sub>${rec.base}</sub>`:eqTxt(e.v)+(rec.unit?' '+escH(rec.unit):'');
   fr.push({sec,t:$t('Wynik','Result'),x:rec.name?$t(`Ta wartość trafia do zmiennej ${stName(rec.name)}; można jej używać w następnych liniach.`,`This value goes into the variable ${stName(rec.name)}; you can use it in the following lines.`):'',S:`<div class="eq">${left} ${tail}</div>`});
   return fr;
 }

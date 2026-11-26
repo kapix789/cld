@@ -747,24 +747,24 @@ html[data-subj="start"] .side,html[data-subj="start"] .views{display:none!import
 <dt><code>a = 4 m/s²</code></dt><dd>Jednostka na końcu linii nie przeszkadza w liczeniu.</dd>
 <dt><code>A = [2 1; 5 3]</code></dt><dd>Macierz: liczby oddzielone spacją, wiersze średnikiem albo każdy wiersz w nowej linii (<code>A = [2 1</code>, pod spodem <code>5 3]</code>). Można też krócej: <code>A[2 1; 5 3]</code>. Dalej <code>det(A)</code>, <code>A^-1</code>, <code>A^T</code>, <code>rz(A)</code>, <code>A*B</code>, <code>2A</code>.</dd>
 <dt><code>sin(30°)  √2  5!  ln 2  log2(64)</code></dt><dd>Funkcje i stałe <code>π</code>, <code>e</code>. Kąty w stopniach albo w radianach, zależnie od przełącznika nad kartką.</dd>
-<dt><code>0b1011  0x1F  hex(255)  oct(493)</code></dt><dd>Systemy dwójkowy, ósemkowy i szesnastkowy.</dd>
+<dt><code>0b1011  0x1F  hex(255)  oct(493)</code></dt><dd>Systemy dwójkowy, ósemkowy i szesnastkowy, także z częścią po przecinku: <code>0b0.101</code> = 0,625, <code>bin(5,75)</code> = 101,11₂.</dd>
 <dt><code>2/3 + 1/4 = 11/12</code></dt><dd>Wpisz swój wynik po znaku równości, a zeszyt sprawdzi, czy się zgadza. Zaokrąglony wynik, np. <code>10/3 = 3,33</code>, też przejdzie.</dd>
 <dt><code># notatka</code></dt><dd>Komentarz. Zwykły tekst bez liczb zostaje tekstem.</dd>
 <dt><b>Rozpisz</b></dt><dd>Rozpisuje krok po kroku linię, w której stoi kursor, albo zaznaczony fragment: kolejność działań, wspólny mianownik, wyznacznik, odwrotność macierzy.</dd>
 <dt><b>Oko</b> (nad kartką)</dt><dd>Wyłącza wyniki, gdy chcesz liczyć sam. Wynik konkretnej linii pokazuje wtedy przycisk Wynik, a sprawdzenie „= swój wynik” mówi tylko, czy się zgadza.</dd>
-<dt><b>Pióro</b></dt><dd>Zeszyt czyta pisane cyfry i znaki + − · × : / ( ) =, ułamki piętrowe i potęgi. Odczyt i wynik pojawiają się obok. Kliknij odczyt, żeby go poprawić: zeszyt zapamięta, jak piszesz.</dd>
+<dt><b>Pióro</b></dt><dd>Zeszyt czyta pisane cyfry, znaki + − · × : / ( ) =, litery A, B, C, ułamki piętrowe, potęgi i macierze w wysokich nawiasach (wiersz pod wierszem). Odczyt i wynik pojawiają się obok. Kliknij odczyt, żeby go poprawić: zeszyt zapamięta, jak piszesz.</dd>
 </dl></div><div data-ln="en"><dl class="nb-dl">
 <dt><code>1/2 + 1/3</code></dt><dd>Fractions stay fractions, with the decimal value next to them. When you type decimals, the result is decimal too.</dd>
 <dt><code>v0 = 72/3.6</code></dt><dd>A variable. In the following lines <code>v0^2</code> or <code>2v0</code> is enough; the multiplication sign can be left out.</dd>
 <dt><code>a = 4 m/s²</code></dt><dd>A unit at the end of the line does not get in the way.</dd>
 <dt><code>A = [2 1; 5 3]</code></dt><dd>A matrix: numbers separated by spaces, rows by semicolons. Then <code>det(A)</code>, <code>A^-1</code>, <code>A^T</code>, <code>rank(A)</code>, <code>A*B</code>, <code>2A</code>.</dd>
 <dt><code>sin(30°)  √2  5!  ln 2  log2(64)</code></dt><dd>Functions and the constants <code>π</code> and <code>e</code>. Angles in degrees or radians, depending on the switch above the page.</dd>
-<dt><code>0b1011  0x1F  hex(255)  oct(493)</code></dt><dd>Binary, octal and hexadecimal numbers.</dd>
+<dt><code>0b1011  0x1F  hex(255)  oct(493)</code></dt><dd>Binary, octal and hexadecimal numbers, also with a fractional part: <code>0b0.101</code> = 0.625, <code>bin(5.75)</code> = 101.11₂.</dd>
 <dt><code>2/3 + 1/4 = 11/12</code></dt><dd>Type your result after an equals sign and the notebook checks it. A rounded result such as <code>10/3 = 3.33</code> passes too.</dd>
 <dt><code># note</code></dt><dd>A comment. Plain text without numbers stays text.</dd>
 <dt><b>Explain</b></dt><dd>Works out step by step the line with the cursor, or the selected part: order of operations, common denominators, determinants, matrix inverses.</dd>
 <dt><b>Eye</b> (above the page)</dt><dd>Turns results off when you want to work them out yourself. The Result button then shows one line, and a check “= your result” only says whether it is right.</dd>
-<dt><b>Pen</b></dt><dd>The notebook reads handwritten digits and the signs + − · × : / ( ) =, stacked fractions and powers. The reading and the result appear next to it. Click the reading to fix it: the notebook remembers how you write.</dd>
+<dt><b>Pen</b></dt><dd>The notebook reads handwritten digits, the signs + − · × : / ( ) =, the letters A, B, C, stacked fractions, powers and matrices in tall brackets (one row under another). The reading and the result appear next to it. Click the reading to fix it: the notebook remembers how you write.</dd>
 </dl></div>
 </details>
 </section>
@@ -2762,11 +2762,13 @@ function calcTokens(s,has){
     const c=s[i],r=s.slice(i);
     if(/\s/.test(c)){i++;continue}
     if(c==='['){const j=s.indexOf(']',i);if(j<0)throw new CalcErr('[');t.push({k:'mat',v:s.slice(i+1,j)});i=j+1;continue}
-    let m=r.match(/^0([bxo])([0-9a-f]+)/i);
+    // 0b1011, 0x1F, 0o755, także z częścią ułamkową: 0b0.101 = 0,625
+    let m=r.match(/^0([bxo])([0-9a-f]+)(?:[.,]([0-9a-f]+))?/i);
     if(m){
-      const base={b:2,x:16,o:8}[m[1].toLowerCase()];
-      if(![...m[2]].every(d=>parseInt(d,16)<base))throw new CalcErr('base');
-      t.push({k:'num',v:String(parseInt(m[2],base)),raw:m[0]});i+=m[0].length;continue;
+      const base={b:2,x:16,o:8}[m[1].toLowerCase()],fr=m[3]||'';
+      if(![...m[2]+fr].every(d=>parseInt(d,16)<base))throw new CalcErr('base');
+      const v=fr?cBaseDec(m[2],fr,base):String(parseInt(m[2],base));
+      t.push({k:'num',v,raw:m[0]});i+=m[0].length;continue;
     }
     // „2/3” zapisane ciasno to jeden ułamek: 2/3 : 4/5 = (2/3) : (4/5)
     m=r.match(/^(\d+)\/(\d+)(?![\d.,eE])/);
@@ -3006,6 +3008,26 @@ function cSame(a,b,tol=0){
   return Math.abs(x-y)<=tol+1e-9*Math.max(1,Math.abs(x),Math.abs(y));
 }
 
+// ---------- systemy liczbowe z częścią ułamkową ----------
+// „101” i „101” przy podstawie 2 → dokładny zapis dziesiętny „5.625” (mianownik to potęga 2, więc zawsze się kończy)
+function cBaseDec(ip,fp,base){
+  let n=BigInt(parseInt(ip,base)),d=1n;const B=BigInt(base);
+  for(const c of fp){n=n*B+BigInt(parseInt(c,16));d*=B}
+  let k=0,dd=d;while(dd>1n){dd/=2n;k++}                       // d = 2^k (dla 8 i 16 też)
+  const m=n*5n**BigInt(k),s=m.toString().padStart(k+1,'0');
+  return k?s.slice(0,s.length-k)+'.'+s.slice(s.length-k):s;
+}
+// ułamek zwykły w innym systemie: część całkowita + cyfry po przecinku (mnożenie przez podstawę); bez końca → „…”
+function cBaseDigits(v,base,max=24){
+  const ip=Math.floor(v.n/v.d),out=[];let n=v.n-ip*v.d;
+  while(n&&out.length<max){n*=base;out.push(Math.floor(n/v.d));n%=v.d}
+  return {ip,ds:out,more:n!==0};
+}
+function cBaseStr(v,base){
+  const x=cBaseDigits(v,base),dg=d=>d.toString(base).toUpperCase();
+  return dg(x.ip)+(x.ds.length?','.replace(',',LANG.cur==='en'?'.':',')+x.ds.map(dg).join('')+(x.more?'…':''):'');
+}
+
 // ---------- zapis wyniku ----------
 const cDec=s=>(LANG.cur==='en'?s:s.replace('.',',')).replace(/^-/,'−');
 // liczba całkowita, od 10 000 z odstępami między tysiącami (po angielsku przecinki)
@@ -3064,7 +3086,7 @@ function calcErrText(e){
     matnum:$t('nie dodaje się liczby do macierzy','a number cannot be added to a matrix'),matdiv:$t('nie dzieli się przez macierz','you cannot divide by a matrix'),
     ragged:$t('wiersze macierzy mają różne długości','the matrix rows have different lengths'),fact:$t('silnia tylko z liczb 0–170','factorial only of 0–170'),
     matexp:$t('wykładnik nie może być macierzą','the exponent cannot be a matrix'),nested:$t('element macierzy nie może być macierzą','a matrix entry cannot be a matrix'),
-    base:$t('ta cyfra nie pasuje do systemu liczby','a digit does not fit the number base'),int:$t('tu potrzebna jest liczba całkowita ≥ 0','a whole number ≥ 0 is needed here')}[k]||$t('błąd','error');
+    base:$t('ta cyfra nie pasuje do systemu liczby','a digit does not fit the number base'),int:$t('tu potrzebna jest liczba ≥ 0','a number ≥ 0 is needed here')}[k]||$t('błąd','error');
 }
 // jednostki, które mogą stać na końcu linii: 20 m/s, 72 km/h, 9,81 m/s², 4 GB
 const C_UNITS=new Set('m s g kg dag mg t km cm mm dm µm μm nm h min ms µs μs ns N kN mN J kJ MJ eV W kW MW Pa kPa hPa MPa bar Hz kHz MHz GHz V mV kV A mA Ω kΩ K mol l L ml C rad B kB KB MB GB TB KiB MiB GiB b kb Mb Gb bit bps'.split(' '));
@@ -3102,7 +3124,8 @@ function calcLines(text,o={deg:true}){
     const bm=src.match(/^(bin|hex|oct)(?:\s*\((.+)\)|\s+(.+))$/i);
     if(bm){
       const r=value(bm[2]||bm[3]);if(!r)return null;
-      if(!isFr(r.v)||r.v.d!==1||r.v.n<0)throw new CalcErr('int');
+      if(!isFr(r.v)&&typeof r.v!=='number'||isMat(r.v)||toNum(r.v)<0)throw new CalcErr('int');
+      if(!isFr(r.v))r.v=F(Math.round(r.v*1e6),1e6);
       return {...r,base:{bin:2,hex:16,oct:8}[bm[1].toLowerCase()],lit:false,litMat:false};
     }
     // linia bez cyfr i działań to tekst, chyba że składa się ze znanych nazw (np. „det B”)
@@ -3120,7 +3143,7 @@ function calcLines(text,o={deg:true}){
     throw err;
   };
   const show=(r,dec,short)=>{
-    if(r.base)return `= ${r.v.n.toString(r.base).toUpperCase()}<sub>${r.base}</sub>`;
+    if(r.base)return `= ${cBaseStr(r.v,r.base)}<sub>${r.base}</sub>`;
     return calcShow(r.v,dec,short)+(r.unit&&!isMat(r.v)?' '+escH(r.unit):'');
   };
   const dims=v=>$t(`macierz ${v.mat.length}×${v.mat[0].length}`,`${v.mat.length}×${v.mat[0].length} matrix`);
@@ -3464,20 +3487,36 @@ function stMatOp(n,r,X){
 // ---------- systemy liczbowe ----------
 const stDigit=d=>d<10?String(d):String.fromCharCode(55+d);
 function stBaseIn(raw,v){
-  const base={b:2,x:16,o:8}[raw[1].toLowerCase()],ds=[...raw.slice(2)].map(c=>parseInt(c,16)),k=ds.length;
+  const base={b:2,x:16,o:8}[raw[1].toLowerCase()],[ip,fp='']=raw.slice(2).split(/[.,]/),ds=[...ip].map(c=>parseInt(c,16)),k=ds.length,fs=[...fp].map(c=>parseInt(c,16));
   const name={2:$t('dwójkowym','binary'),8:$t('ósemkowym','octal'),16:$t('szesnastkowym','hexadecimal')}[base];
-  const terms=ds.map((d,i)=>`${base===16&&d>9?`${stDigit(d)}(${d})`:d}·${base}<sup>${k-1-i}</sup>`);
+  const dd=d=>base===16&&d>9?`${stDigit(d)}(${d})`:d;
+  const terms=[...ds.map((d,i)=>`${dd(d)}·${base}<sup>${k-1-i}</sup>`),...fs.map((d,i)=>`${dd(d)}·${base}<sup>−${i+1}</sup>`)];
+  const vals=[...ds.map((d,i)=>String(d*base**(k-1-i))),...fs.map((d,i)=>stFrac(d,base**(i+1)))];
   return {sec:$t('Systemy liczbowe','Number bases'),t:$t(`${escH(raw)} w systemie dziesiętnym`,`${escH(raw)} in decimal`),
-    x:$t(`Zapis w systemie ${name}: każda cyfra mnoży kolejną potęgę ${base}, licząc od prawej od ${base}<sup>0</sup>.`,`In ${name} each digit multiplies the next power of ${base}, counting from the right from ${base}<sup>0</sup>.`),
-    C:[{h:`${escH(raw)} = ${terms.join(' + ')}`,full:true},{h:`= ${ds.map((d,i)=>d*base**(k-1-i)).join(' + ')} = <b>${cInt(toNum(v))}</b>`,full:true}],U:[{t:.4,line:0},{t:1.4,line:1}]};
+    x:$t(`Zapis w systemie ${name}: każda cyfra mnoży kolejną potęgę ${base}, licząc od prawej od ${base}<sup>0</sup>.${fs.length?` Cyfry po przecinku mnożą ujemne potęgi: ${base}<sup>−1</sup>, ${base}<sup>−2</sup> i tak dalej.`:''}`,`In ${name} each digit multiplies the next power of ${base}, counting from the right from ${base}<sup>0</sup>.${fs.length?` Digits after the point multiply negative powers: ${base}<sup>−1</sup>, ${base}<sup>−2</sup> and so on.`:''}`),
+    C:[{h:`${escH(raw)} = ${terms.join(' + ')}`,full:true},{h:`= ${vals.join(' + ')} = <b>${stNum(v,true)}</b>`,full:true}],U:[{t:.4,line:0},{t:1.4,line:1}]};
 }
-function stBaseOut(n,base){
-  const name={2:$t('dwójkowy','binary'),8:$t('ósemkowy','octal'),16:$t('szesnastkowy','hexadecimal')}[base],C=[],U=[];let x=n;
+function stBaseOut(v,base){
+  if(isFr(v)&&v.d!==1)return stBaseFrac(v,base);
+  const n=toNum(v),name={2:$t('dwójkowy','binary'),8:$t('ósemkowy','octal'),16:$t('szesnastkowy','hexadecimal')}[base],C=[],U=[];let x=n;
   if(x===0)C.push('0');
   while(x>0&&C.length<40){const q=Math.floor(x/base),d=x%base;C.push(`${x} : ${base} = ${q}, ${$t('reszta','remainder')} ${d}${d>9?` (${stDigit(d)})`:''}`);x=q}
   C.forEach((_,k)=>U.push({t:.4+k*.5,line:k}));
   C.push({h:$t('reszty czytane od dołu: ','remainders read from the bottom: ')+`<b>${n.toString(base).toUpperCase()}<sub>${base}</sub></b>`,full:true});U.push({t:.4+C.length*.5,line:C.length-1});
   return {sec:$t('Systemy liczbowe','Number bases'),t:$t(`${n} na system ${name}`,`${n} to ${name}`),x:$t(`Dzielimy przez ${base}, dopóki nie zostanie 0, i zapisujemy reszty. Reszty czytane od ostatniej do pierwszej to cyfry wyniku.`,`Divide by ${base} until 0 is left, writing down the remainders. Read from the last to the first, they are the digits of the result.`),C,U};
+}
+
+// część ułamkowa: mnożymy przez podstawę i zapisujemy część całkowitą wyniku
+function stBaseFrac(v,base){
+  const name={2:$t('dwójkowy','binary'),8:$t('ósemkowy','octal'),16:$t('szesnastkowy','hexadecimal')}[base],x=cBaseDigits(v,base,12),C=[],U=[];
+  const ip=x.ip;let f=F(v.n-ip*v.d,v.d);
+  C.push($t(`część całkowita ${ip} = ${ip.toString(base).toUpperCase()}<sub>${base}</sub>`,`whole part ${ip} = ${ip.toString(base).toUpperCase()}<sub>${base}</sub>`));
+  for(const d of x.ds){const p=f.mul(F(base));C.push(`${stNum(f,true)} · ${base} = ${stNum(p,true)} → ${stDigit(d)}`);f=p.sub(F(Math.floor(p.n/p.d)))}
+  if(x.more)C.push($t('… i tak dalej: rozwinięcie się nie kończy','… and so on: the expansion never ends'));
+  C.forEach((_,k)=>U.push({t:.4+k*.5,line:k}));
+  C.push({h:$t('wynik: ','result: ')+`<b>${cBaseStr(v,base)}<sub>${base}</sub></b>`,full:true});U.push({t:.4+C.length*.5,line:C.length-1});
+  return {sec:$t('Systemy liczbowe','Number bases'),t:$t(`${stNum(v,true)} na system ${name}`,`${stNum(v,true)} to ${name}`),
+    x:$t(`Część całkowitą zamieniamy jak zwykle (dzielenie przez ${base}). Część ułamkową mnożymy przez ${base}: część całkowita iloczynu to kolejna cyfra po przecinku, a dalej mnożymy to, co zostało po przecinku.`,`The whole part is converted as usual (dividing by ${base}). The fractional part is multiplied by ${base}: the whole part of the product is the next digit after the point, and we keep multiplying what is left after the point.`),C,U};
 }
 
 // ---------- całe wyrażenie ----------
@@ -3548,9 +3587,9 @@ function calcSteps(rec,src){
     return fr;
   }
   const e=stExpr(rec.src,X,sec),fr=e.frames;
-  if(rec.base)fr.push(stBaseOut(e.v.n,rec.base));
+  if(rec.base)fr.push(stBaseOut(isFr(e.v)?e.v:F(Math.round(e.v*1e6),1e6),rec.base));
   const left=rec.name?stName(rec.name):stH(stFrom(calcParse(calcTokens(cNorm(rec.src),x=>X.env.has(x)),x=>X.env.has(x)),{...X,subs:new Map(),bases:[]}),null,{dec:X.dec,names:true});
-  const tail=rec.base?`= ${e.v.n.toString(rec.base).toUpperCase()}<sub>${rec.base}</sub>`:eqTxt(e.v)+(rec.unit?' '+escH(rec.unit):'');
+  const tail=rec.base?`= ${cBaseStr(isFr(e.v)?e.v:F(Math.round(e.v*1e6),1e6),rec.base)}<sub>${rec.base}</sub>`:eqTxt(e.v)+(rec.unit?' '+escH(rec.unit):'');
   fr.push({sec,t:$t('Wynik','Result'),x:rec.name?$t(`Ta wartość trafia do zmiennej ${stName(rec.name)}; można jej używać w następnych liniach.`,`This value goes into the variable ${stName(rec.name)}; you can use it in the following lines.`):'',S:`<div class="eq">${left} ${tail}</div>`});
   return fr;
 }
@@ -3653,21 +3692,53 @@ function hwClassify(strokes){
 const hwBox=ps=>{let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;for(const p of ps)for(let i=0;i<p.length;i+=2){x1=Math.min(x1,p[i]);x2=Math.max(x2,p[i]);y1=Math.min(y1,p[i+1]);y2=Math.max(y2,p[i+1])}return {x1,y1,x2,y2,w:x2-x1,h:y2-y1,cx:(x1+x2)/2,cy:(y1+y2)/2}};
 const hwMed=a=>{if(!a.length)return 0;const s=a.slice().sort((x,y)=>x-y);return s[s.length>>1]};
 // it: {k (indeks kreski), p (punkty), b (ramka)}
-function hwLines(items){
+function hwLines(items,gf=.6){
   // wielkość pisma: wysokość kresek, a dla płaskich (−, =) ich szerokość
-  const med=Math.max(12,hwMed(items.map(t=>Math.max(t.b.h,t.b.w)))),gap=Math.max(8,med*.6);
+  const med=Math.max(12,hwMed(items.map(t=>Math.max(t.b.h,t.b.w)))),gap=Math.max(gf<.3?3:8,med*gf);
   const ord=items.slice().sort((a,b)=>a.b.y1-b.b.y1),lines=[];
   for(const t of ord){const L=lines[lines.length-1];if(L&&t.b.y1<=L.y2+gap){L.items.push(t);L.y2=Math.max(L.y2,t.b.y2)}else lines.push({items:[t],y2:t.b.y2})}
   return lines.map(L=>L.items);
 }
 // tekst jednej linii (albo licznika, mianownika): → {text, syms, conf} | null
+// macierz: para wysokich nawiasów ([ ] albo ( )), między nimi wiersze liczb → „[1 2; 3 4]”
+function hwMatrices(items,depth){
+  // typowa wysokość znaku: kreski, które nie są płaskie (bez −, = i kropek)
+  const hs=items.filter(t=>t.b.h>=t.b.w*.5&&t.b.h>4).map(t=>t.b.h),base=hwMed(hs);
+  const tall=items.filter(t=>t.b.h>Math.max(base*1.6,24)&&t.b.w<t.b.h*.55).sort((a,b)=>a.b.x1-b.b.x1);
+  const used=new Set(),tokens=[];
+  for(let i=0;i+1<tall.length;i++){
+    const L=tall[i],R=tall[i+1];if(used.has(L)||used.has(R))continue;
+    const y1=Math.min(L.b.y1,R.b.y1),y2=Math.max(L.b.y2,R.b.y2);
+    // haczyki nawiasów rysowane osobno: krótkie kreski przy końcach pionowej kreski
+    const hook=(B,t)=>t!==B&&t.b.h<B.b.h*.3&&(Math.abs(t.b.cy-B.b.y1)<B.b.h*.15||Math.abs(t.b.cy-B.b.y2)<B.b.h*.15)&&t.b.x1<B.b.x2+B.b.h*.35&&t.b.x2>B.b.x1-B.b.h*.35;
+    const hooks=items.filter(t=>!used.has(t)&&(hook(L,t)||hook(R,t)));
+    const inside=items.filter(t=>t!==L&&t!==R&&!hooks.includes(t)&&!used.has(t)&&t.b.cx>L.b.x2&&t.b.cx<R.b.x1&&t.b.cy>y1&&t.b.cy<y2);
+    if(!inside.length)continue;
+    const rows=[];
+    for(const row of hwLines(inside,.18)){
+      const h=Math.max(8,hwMed(row.map(t=>Math.max(t.b.h,t.b.w*.6)))),ord=row.slice().sort((a,b)=>a.b.x1-b.b.x1),cells=[];let cur=[],right=-1e9;
+      for(const t of ord){if(cur.length&&t.b.x1-right>h*.55){cells.push(cur);cur=[]}cur.push(t);right=Math.max(right,t.b.x2)}
+      if(cur.length)cells.push(cur);
+      const txt=cells.map(c=>hwParse(c,depth+1)).filter(Boolean);
+      if(txt.length)rows.push(txt);
+    }
+    if(!rows.length)continue;
+    [L,R,...hooks,...inside].forEach(t=>used.add(t));
+    const text='['+rows.map(r=>r.map(c=>c.text).join(' ')).join('; ')+']';
+    tokens.push({x:L.b.x1,x2:R.b.x2,text,show:text,syms:rows.flat().flatMap(c=>c.syms),items:[L,R,...hooks,...inside],conf:Math.min(...rows.flat().map(c=>c.conf))});
+  }
+  return {tokens,used};
+}
 function hwParse(items,depth=0){
   if(!items.length)return null;
+  const MX=depth<2?hwMatrices(items,depth):{tokens:[],used:new Set()};
+  if(MX.tokens.length)items=items.filter(t=>!MX.used.has(t));
+  if(!items.length&&MX.tokens.length===1)return {text:MX.tokens[0].text,show:MX.tokens[0].show,syms:MX.tokens[0].syms,conf:MX.tokens[0].conf,tokens:MX.tokens};
   // wielkość pisma do wykrywania kropek i kresek ułamkowych (płaskie kreski liczą się szerokością)
   const medH=Math.max(10,hwMed(items.map(t=>Math.max(t.b.h,t.b.w))));
   const isDot=t=>Math.max(t.b.w,t.b.h)<Math.max(medH*.2,4);
   const isBar=t=>t.b.w>=medH*.55&&t.b.h<=Math.max(t.b.w*.3,3)&&t.b.h<=medH*.35;
-  const used=new Set(),tokens=[];
+  const used=new Set(),tokens=[...MX.tokens];
   // ułamki piętrowe (najszersza kreska pierwsza)
   for(const bar of items.filter(isBar).sort((a,b)=>b.b.w-a.b.w)){
     if(used.has(bar)||depth>2)continue;
@@ -3733,7 +3804,7 @@ function hwParse(items,depth=0){
     const show=ch==='*'?'·':ch==='-'?'−':ch;
     const text=ch==='*'?'·':ch==='-'?'−':ch;
     if(sup){const last=out[out.length-1];if(last&&last.sup)last.supText+=text;else out.push({sup:true,supText:text})}
-    else out.push({text,show,num:/[\d.]/.test(ch)});
+    else out.push({text,show,num:/[\d.A-C]/.test(ch)});
     conf=Math.min(conf,t.conf);
     if(t.cls)syms.push({ch,h:t.cls.h,items:t.items});
   }
@@ -7019,23 +7090,17 @@ function nbReadMode(on,user){
 $('#nbRead').onclick=()=>nbReadMode(!NB.read,true);
 const nbHwSoon=()=>{clearTimeout(NB.hwT);NB.hwT=setTimeout(nbHwRun,700)};
 // odczyt działania: liczymy go osobno (bez zmiennych z kartki); bez działania albo „=” to nie rachunek
-function nbHwEval(text){
-  if(!/[+\-−·*×/:^=]/.test(text.replace(/^[−-]/,'')))return null;
-  const r=calcLines(text,{deg:NB.d.deg})[0];
-  return r&&r.kind!=='note'?r:null;
-}
+const nbHwMath=text=>/[+\-−·*×/:^=]/.test(text.replace(/^[−-]/,''));
 function nbHwRun(){
   clearTimeout(NB.hwT);NB.hw=[];
   if(!NB.d)return;
   const P=nbPage(),st=P.strokes.filter(s=>s.c!=='hl');
   if(NB.read&&st.length){
     let found=[];try{found=hwRead(st,NB.hwCache)}catch(e){found=[]}
-    for(const f of found){
-      const key=f.ks.map(k=>st[k].id).sort().join(','),fix=P.hw[key];
-      const text=fix||f.text,rec=nbHwEval(text);
-      if(!rec)continue;
-      NB.hw.push({...f,key,text,show:fix||f.show,fixed:!!fix,rec});
-    }
+    // linie pisma od góry liczymy razem (i po tekście z klawiatury), więc A = [...] działa w następnej linii
+    const rows=found.map(f=>{const key=f.ks.map(k=>st[k].id).sort().join(','),fix=P.hw[key];return {...f,key,text:fix||f.text,show:fix||f.show,fixed:!!fix}}).sort((a,b)=>a.box[1]-b.box[1]);
+    const base=P.text.split('\n').length,recs=calcLines(P.text+'\n'+rows.map(r=>r.text).join('\n'),{deg:NB.d.deg});
+    rows.forEach((r,i)=>{const rec=recs[base+i];if(rec&&nbHwMath(r.text))NB.hw.push({...r,rec})});
   }
   nbHwPaint();
 }

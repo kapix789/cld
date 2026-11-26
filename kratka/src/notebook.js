@@ -490,23 +490,17 @@ function nbReadMode(on,user){
 $('#nbRead').onclick=()=>nbReadMode(!NB.read,true);
 const nbHwSoon=()=>{clearTimeout(NB.hwT);NB.hwT=setTimeout(nbHwRun,700)};
 // odczyt działania: liczymy go osobno (bez zmiennych z kartki); bez działania albo „=” to nie rachunek
-function nbHwEval(text){
-  if(!/[+\-−·*×/:^=]/.test(text.replace(/^[−-]/,'')))return null;
-  const r=calcLines(text,{deg:NB.d.deg})[0];
-  return r&&r.kind!=='note'?r:null;
-}
+const nbHwMath=text=>/[+\-−·*×/:^=]/.test(text.replace(/^[−-]/,''));
 function nbHwRun(){
   clearTimeout(NB.hwT);NB.hw=[];
   if(!NB.d)return;
   const P=nbPage(),st=P.strokes.filter(s=>s.c!=='hl');
   if(NB.read&&st.length){
     let found=[];try{found=hwRead(st,NB.hwCache)}catch(e){found=[]}
-    for(const f of found){
-      const key=f.ks.map(k=>st[k].id).sort().join(','),fix=P.hw[key];
-      const text=fix||f.text,rec=nbHwEval(text);
-      if(!rec)continue;
-      NB.hw.push({...f,key,text,show:fix||f.show,fixed:!!fix,rec});
-    }
+    // linie pisma od góry liczymy razem (i po tekście z klawiatury), więc A = [...] działa w następnej linii
+    const rows=found.map(f=>{const key=f.ks.map(k=>st[k].id).sort().join(','),fix=P.hw[key];return {...f,key,text:fix||f.text,show:fix||f.show,fixed:!!fix}}).sort((a,b)=>a.box[1]-b.box[1]);
+    const base=P.text.split('\n').length,recs=calcLines(P.text+'\n'+rows.map(r=>r.text).join('\n'),{deg:NB.d.deg});
+    rows.forEach((r,i)=>{const rec=recs[base+i];if(rec&&nbHwMath(r.text))NB.hw.push({...r,rec})});
   }
   nbHwPaint();
 }

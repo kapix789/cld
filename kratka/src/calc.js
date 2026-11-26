@@ -30,11 +30,13 @@ function calcTokens(s,has){
     const c=s[i],r=s.slice(i);
     if(/\s/.test(c)){i++;continue}
     if(c==='['){const j=s.indexOf(']',i);if(j<0)throw new CalcErr('[');t.push({k:'mat',v:s.slice(i+1,j)});i=j+1;continue}
-    let m=r.match(/^0([bxo])([0-9a-f]+)/i);
+    // 0b1011, 0x1F, 0o755, także z częścią ułamkową: 0b0.101 = 0,625
+    let m=r.match(/^0([bxo])([0-9a-f]+)(?:[.,]([0-9a-f]+))?/i);
     if(m){
-      const base={b:2,x:16,o:8}[m[1].toLowerCase()];
-      if(![...m[2]].every(d=>parseInt(d,16)<base))throw new CalcErr('base');
-      t.push({k:'num',v:String(parseInt(m[2],base)),raw:m[0]});i+=m[0].length;continue;
+      const base={b:2,x:16,o:8}[m[1].toLowerCase()],fr=m[3]||'';
+      if(![...m[2]+fr].every(d=>parseInt(d,16)<base))throw new CalcErr('base');
+      const v=fr?cBaseDec(m[2],fr,base):String(parseInt(m[2],base));
+      t.push({k:'num',v,raw:m[0]});i+=m[0].length;continue;
     }
     // „2/3” zapisane ciasno to jeden ułamek: 2/3 : 4/5 = (2/3) : (4/5)
     m=r.match(/^(\d+)\/(\d+)(?![\d.,eE])/);
@@ -274,6 +276,26 @@ function cSame(a,b,tol=0){
   return Math.abs(x-y)<=tol+1e-9*Math.max(1,Math.abs(x),Math.abs(y));
 }
 
+// ---------- systemy liczbowe z częścią ułamkową ----------
+// „101” i „101” przy podstawie 2 → dokładny zapis dziesiętny „5.625” (mianownik to potęga 2, więc zawsze się kończy)
+function cBaseDec(ip,fp,base){
+  let n=BigInt(parseInt(ip,base)),d=1n;const B=BigInt(base);
+  for(const c of fp){n=n*B+BigInt(parseInt(c,16));d*=B}
+  let k=0,dd=d;while(dd>1n){dd/=2n;k++}                       // d = 2^k (dla 8 i 16 też)
+  const m=n*5n**BigInt(k),s=m.toString().padStart(k+1,'0');
+  return k?s.slice(0,s.length-k)+'.'+s.slice(s.length-k):s;
+}
+// ułamek zwykły w innym systemie: część całkowita + cyfry po przecinku (mnożenie przez podstawę); bez końca → „…”
+function cBaseDigits(v,base,max=24){
+  const ip=Math.floor(v.n/v.d),out=[];let n=v.n-ip*v.d;
+  while(n&&out.length<max){n*=base;out.push(Math.floor(n/v.d));n%=v.d}
+  return {ip,ds:out,more:n!==0};
+}
+function cBaseStr(v,base){
+  const x=cBaseDigits(v,base),dg=d=>d.toString(base).toUpperCase();
+  return dg(x.ip)+(x.ds.length?','.replace(',',LANG.cur==='en'?'.':',')+x.ds.map(dg).join('')+(x.more?'…':''):'');
+}
+
 // ---------- zapis wyniku ----------
 const cDec=s=>(LANG.cur==='en'?s:s.replace('.',',')).replace(/^-/,'−');
 // liczba całkowita, od 10 000 z odstępami między tysiącami (po angielsku przecinki)
@@ -332,7 +354,7 @@ function calcErrText(e){
     matnum:$t('nie dodaje się liczby do macierzy','a number cannot be added to a matrix'),matdiv:$t('nie dzieli się przez macierz','you cannot divide by a matrix'),
     ragged:$t('wiersze macierzy mają różne długości','the matrix rows have different lengths'),fact:$t('silnia tylko z liczb 0–170','factorial only of 0–170'),
     matexp:$t('wykładnik nie może być macierzą','the exponent cannot be a matrix'),nested:$t('element macierzy nie może być macierzą','a matrix entry cannot be a matrix'),
-    base:$t('ta cyfra nie pasuje do systemu liczby','a digit does not fit the number base'),int:$t('tu potrzebna jest liczba całkowita ≥ 0','a whole number ≥ 0 is needed here')}[k]||$t('błąd','error');
+    base:$t('ta cyfra nie pasuje do systemu liczby','a digit does not fit the number base'),int:$t('tu potrzebna jest liczba ≥ 0','a number ≥ 0 is needed here')}[k]||$t('błąd','error');
 }
 // jednostki, które mogą stać na końcu linii: 20 m/s, 72 km/h, 9,81 m/s², 4 GB
 const C_UNITS=new Set('m s g kg dag mg t km cm mm dm µm μm nm h min ms µs μs ns N kN mN J kJ MJ eV W kW MW Pa kPa hPa MPa bar Hz kHz MHz GHz V mV kV A mA Ω kΩ K mol l L ml C rad B kB KB MB GB TB KiB MiB GiB b kb Mb Gb bit bps'.split(' '));
@@ -370,7 +392,8 @@ function calcLines(text,o={deg:true}){
     const bm=src.match(/^(bin|hex|oct)(?:\s*\((.+)\)|\s+(.+))$/i);
     if(bm){
       const r=value(bm[2]||bm[3]);if(!r)return null;
-      if(!isFr(r.v)||r.v.d!==1||r.v.n<0)throw new CalcErr('int');
+      if(!isFr(r.v)&&typeof r.v!=='number'||isMat(r.v)||toNum(r.v)<0)throw new CalcErr('int');
+      if(!isFr(r.v))r.v=F(Math.round(r.v*1e6),1e6);
       return {...r,base:{bin:2,hex:16,oct:8}[bm[1].toLowerCase()],lit:false,litMat:false};
     }
     // linia bez cyfr i działań to tekst, chyba że składa się ze znanych nazw (np. „det B”)
@@ -388,7 +411,7 @@ function calcLines(text,o={deg:true}){
     throw err;
   };
   const show=(r,dec,short)=>{
-    if(r.base)return `= ${r.v.n.toString(r.base).toUpperCase()}<sub>${r.base}</sub>`;
+    if(r.base)return `= ${cBaseStr(r.v,r.base)}<sub>${r.base}</sub>`;
     return calcShow(r.v,dec,short)+(r.unit&&!isMat(r.v)?' '+escH(r.unit):'');
   };
   const dims=v=>$t(`macierz ${v.mat.length}×${v.mat[0].length}`,`${v.mat.length}×${v.mat[0].length} matrix`);
