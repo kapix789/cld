@@ -117,7 +117,7 @@ ok(good / tot >= .85, `działania czytane za słabo: ${good} z ${tot}`);
   let good = 0, tot = 0;
   // linie jednej strony; litera to zmienna tylko wtedy, gdy jest przypisana („B = …”), inaczej cyfra
   for (const [e, w] of [[['A={1 2|3 4}'], ['A=[1 2; 3 4]']], [['{2 4|1 2}·{1 3|5 6}'], ['[2 4; 1 2]*[1 3; 5 6]']], [['B={1 2|3 4}', 'B·4='], ['B=[1 2; 3 4]', 'B*4=']],
-    [['{12 3|4 56}'], ['[12 3; 4 56]']], [['C=5', 'C+2'], ['C=5', 'C+2']], [['8+1'], ['8+1']], [['A·5=', 'A={1 2|3 4}'], ['A*5=', 'A=[1 2; 3 4]']]])
+    [['{12 3|4 56}'], ['[12 3; 4 56]']], [['C=5', 'C+2'], ['C=5', 'C+2']], [['8+1'], ['8+1']], [['A·5=', 'A={1 2|3 4}'], ['A*5=', 'A=[1 2; 3 4]']], [['A={1 3|4 5}  B={2 3|4 8}', 'A·B'], ['A=[1 3; 4 5]', 'B=[2 3; 4 8]', 'A*B']]])
     for (let k = 0; k < 8; k++) { tot++; const r = read(e.flatMap((l, i) => write(l, 40, 60 + i * 150))); if (JSON.stringify(r) === JSON.stringify(w)) good++; else if (k < 1) console.log('  odczyt', JSON.stringify(e), '→', JSON.stringify(r)) }
   console.log(`macierze i litery: dobrze ${good} z ${tot}`);
   ok(good / tot >= .75, `macierze i litery czytane za słabo: ${good} z ${tot}`);
