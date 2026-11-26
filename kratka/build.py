@@ -5,7 +5,9 @@
     python3 build.py --artifact out.html  # dodatkowo fragment strony dla Claude Artifacts
 
 Kolejność skryptów ma znaczenie:
-    core.js (język, rejestry) → engine.js (matematyka) → <przedmiot>/topics.js → app.js (interfejs) → <przedmiot>/tools.js
+    core.js (język, rejestry) → engine.js (matematyka) → calc.js (kalkulator zeszytu) → steps.js (rozpisywanie)
+    → hw-model.js, hw.js (czytanie pisma) → <przedmiot>/topics.js → app.js (interfejs) → notebook.js (zeszyt)
+    → <przedmiot>/tools.js
 
 Przedmiot to folder src/<id>/ z plikiem topics.js (tematy, addSubject) i opcjonalnie page.html (widoki, ściąga),
 tools.js (kod tych widoków) oraz innymi plikami .js wczytywanymi przed topics.js (np. so/linux.js).
@@ -60,8 +62,9 @@ def parts():
     page = shell.replace("<!-- @przedmioty -->", pages)
     # w folderze przedmiotu: najpierw pliki pomocnicze (alfabetycznie), potem topics.js; tools.js dopiero po app.js
     libs = lambda s: sorted(p.name for p in (SRC / s).glob("*.js") if p.name not in ("topics.js", "tools.js"))
-    scripts = (["core.js", "engine.js"] + [f"{s}/{n}" for s in SUBJECTS for n in libs(s) + ["topics.js"]] + ["app.js"]
-               + [f"{s}/tools.js" for s in SUBJECTS if (SRC / s / "tools.js").exists()])
+    scripts = (["core.js", "engine.js", "calc.js", "steps.js", "hw-model.js", "hw.js"]
+               + [f"{s}/{n}" for s in SUBJECTS for n in libs(s) + ["topics.js"]]
+               + ["app.js", "notebook.js"] + [f"{s}/tools.js" for s in SUBJECTS if (SRC / s / "tools.js").exists()])
     js = "\n".join(read(n) for n in scripts) + "\nkratkaStart();\n"
     return css, page, js
 

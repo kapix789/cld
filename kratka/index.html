@@ -57,8 +57,9 @@ html[data-lang="en"] [data-ln="pl"],html:not([data-lang="en"]) [data-ln="en"]{di
 .subjects a{display:flex;align-items:center;padding:0 12px;color:var(--ink-2);font-weight:500;font-size:15px;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
 .subjects a:hover{color:var(--ink)}
 .subjects a.on{color:var(--ink);border-bottom-color:var(--pen)}
-.subj-pick{display:none;align-items:center}
-.subj-pick select{font:600 15px var(--f-ui);color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:3px;padding:6px 8px;width:100%;max-width:240px;min-width:0}
+.subj-btn{display:none;align-self:center;align-items:center;gap:8px;min-width:0;max-width:240px;flex:0 1 auto;height:36px;padding:0 10px;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);font:600 15px var(--f-ui);cursor:pointer}
+.subj-btn-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.subj-btn::after,.tn-open::after{content:"";flex:none;width:7px;height:7px;border:solid var(--ink-2);border-width:0 2px 2px 0;transform:translateY(-2px) rotate(45deg)}
 .lang{display:flex;align-self:center;margin-left:auto;border:1px solid var(--rule);border-radius:3px;overflow:hidden;flex:none}
 .lang button{border:0;background:none;color:var(--ink-3);font:600 12.5px var(--f-ui);letter-spacing:.06em;padding:6px 10px;cursor:pointer}
 .lang button+button{border-left:1px solid var(--rule)}
@@ -101,8 +102,34 @@ h3{font-size:13px;margin:18px 0 6px;color:var(--ink-2);text-transform:uppercase;
 .vh-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
 .vh-tools{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;margin-top:12px}
 .vh-tools:empty{display:none}
-.topic-pick{display:none;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-2);flex:1 1 280px}
-.topic-pick select{flex:1;min-width:0;font:500 15px var(--f-ui);color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:3px;padding:7px 8px}
+.topic-nav{display:none;align-items:stretch;gap:6px;flex:1 1 100%}
+.tn-open{flex:1;min-width:0;display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);font:600 15px var(--f-ui);cursor:pointer;text-align:left}
+.tn-l{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tn-c{color:var(--ink-3);font-weight:500;font-size:13.5px;font-variant-numeric:tabular-nums}
+.tn-arrow{flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);cursor:pointer}
+.tn-arrow::before{content:"";width:9px;height:9px;border:solid currentColor;border-width:0 0 2px 2px}
+.tn-prev::before{transform:translateX(2px) rotate(45deg)}
+.tn-next::before{transform:translateX(-2px) rotate(-135deg)}
+.tn-arrow:disabled{opacity:.35;cursor:default}
+/* panel od dołu (telefon) */
+.bs{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;justify-content:flex-end}
+.bs-scrim{position:absolute;inset:0;background:var(--scrim)}
+.bs-panel{position:relative;display:flex;flex-direction:column;max-height:86vh;background:var(--paper);color:var(--ink);border-top:1px solid var(--rule);border-radius:10px 10px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.25);padding-bottom:env(safe-area-inset-bottom,0px);animation:bsUp .2s ease-out}
+@keyframes bsUp{from{transform:translateY(28px);opacity:.5}to{transform:none;opacity:1}}
+.bs-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px max(12px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--rule)}
+.bs-head h2{margin:0;font-size:17px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bs-body{overflow-y:auto;overscroll-behavior:contain;padding-bottom:12px}
+.bs-sec{position:sticky;top:0;z-index:1;padding:8px max(16px,env(safe-area-inset-right,0px)) 7px max(16px,env(safe-area-inset-left,0px));background:var(--side);border-bottom:1px solid var(--grid);font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2)}
+.bs-t{display:flex;align-items:center;gap:12px;min-height:52px;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--grid);color:var(--ink);text-decoration:none;font-size:16px;line-height:1.35}
+.bs-t:active{background:var(--grid)}
+.bs-t.on{background:var(--pen-soft);color:var(--pen);font-weight:600}
+.bs-t .toc-n{white-space:normal}
+.bs-t i{font-family:var(--f-math)}
+.bs-t .sq i{width:9px;height:9px}
+.bs-s .toc-n{display:flex;flex-direction:column;gap:2px}
+.bs-s small{font-size:13px;font-weight:400;color:var(--ink-2)}
+.bs-t.on small{color:var(--pen)}
+@media (prefers-reduced-motion:reduce){.bs-panel{animation:none}}
 .opts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
 .rule-h{margin-top:34px;padding-top:16px;border-top:1px solid var(--rule)}
 p{margin:6px 0}
@@ -391,13 +418,13 @@ sup{font-size:.68em;line-height:0}
   .side{display:none}
   .views{display:flex}
   .main{padding:20px max(16px,env(safe-area-inset-right,0px)) 80px max(16px,env(safe-area-inset-left,0px))}
-  .topic-pick{display:flex}
+  .topic-nav{display:flex}
 }
 @media (max-width:639px){
   :root{--top-h:50px}
   .top-in{gap:12px}
   .subjects{display:none}
-  .subj-pick{display:flex;flex:1 1 auto;min-width:0}
+  .subj-btn{display:inline-flex}
   .lang button{padding:6px 8px}
   h1{font-size:24px}
   .field{grid-template-columns:1fr;gap:6px}
@@ -442,6 +469,137 @@ ol.steps>li{margin:10px 0}
 .vec::after{content:"";position:absolute;left:.08em;right:-.04em;top:-.12em;height:.42em;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 8' preserveAspectRatio='none'%3E%3Cpath d='M0 4H18M13.5 1L18.5 4L13.5 7' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 8' preserveAspectRatio='none'%3E%3Cpath d='M0 4H18M13.5 1L18.5 4L13.5 7' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E") center/100% 100% no-repeat}
 .res-sum{flex:1 1 280px;min-width:0}
 .res-sum p{margin-top:6px}
+
+/* ---------- zeszyt i brudnopis ----------
+   Kartka: kratka 24 px, czerwony margines, tekst w linii co 24 px. <pre> z wynikami leży pod <textarea>
+   z przezroczystymi literami, więc obie warstwy muszą mieć identyczny krój, rozmiar i odstępy. */
+:root{--nb-grid:#dce3ed;--nb-margin:#eba3a8;--nb-hl:rgba(255,212,0,.4);--nb-hl-ic:#f2c200;--nb-sel:rgba(35,67,181,.2)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--nb-grid:#212935;--nb-margin:rgba(255,127,135,.42);--nb-hl:rgba(255,214,10,.3);--nb-hl-ic:#d6b11a;--nb-sel:rgba(143,166,255,.32)}}
+:root[data-theme="dark"]{--nb-grid:#212935;--nb-margin:rgba(255,127,135,.42);--nb-hl:rgba(255,214,10,.3);--nb-hl-ic:#d6b11a;--nb-sel:rgba(143,166,255,.32)}
+.nb{display:flex;flex-direction:column;min-height:0;border:1px solid var(--rule);border-radius:3px;background:var(--paper);overflow:hidden}
+.nb:focus-within{border-color:var(--ink-3)}
+.nb-bar{display:flex;align-items:center;gap:8px;padding:8px;background:var(--side);border-bottom:1px solid var(--rule)}
+.nb-bar .seg>button{display:inline-flex;align-items:center;gap:7px}
+.nb svg,.nbd-head svg,.btn.pad svg{flex:none;width:18px;height:18px}
+.btn.pad svg{width:16px;height:16px}
+.nb-hist{display:flex;gap:6px;margin-left:auto}
+.nb-ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:36px;padding:0;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);cursor:pointer}
+.nb-ic:hover{border-color:var(--ink-3)}
+.nb-ic:disabled{opacity:.38;cursor:default}
+.nb-ic:disabled:hover{border-color:var(--rule)}
+.nb-ic.on{border-color:var(--pen);background:var(--pen-soft);color:var(--pen)}
+.nb-sub{display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid var(--rule);overflow-x:auto;scrollbar-width:none;background:var(--paper)}
+.nb-sub::-webkit-scrollbar{display:none}
+.nb-keys>button{flex:none;min-width:38px;height:34px;padding:0 9px;border:1px solid var(--rule);border-radius:3px;background:var(--side);color:var(--ink);font:17px/1 var(--f-math);cursor:pointer;white-space:nowrap}
+.nb-keys>button.w{font:14px/1 var(--f-code)}
+.nb-keys>button:hover{border-color:var(--ink-3)}
+.nb-keys>button:active{background:var(--pen-soft);border-color:var(--pen)}
+.nb-keys .seg{flex:none;flex-wrap:nowrap}
+.nb-sep{flex:none;width:1px;height:22px;background:var(--rule);margin:0 3px}
+.nb-dot{display:block;width:14px;height:14px;border-radius:50%;background:var(--c)}
+.nb-hint{flex:none;margin-left:6px;font-size:13px;color:var(--ink-3);white-space:nowrap}
+@media (pointer:fine),(max-width:560px){.nb-hint{display:none}}
+.nb:not(.nb-pen) .nb-tools,.nb.nb-pen .nb-keys{display:none}
+/* z myszą i zwykłą klawiaturą zostają tylko symbole, których na niej nie ma */
+@media (pointer:fine){.nb-keys>.kb{display:none}}
+.nb-bar,.nb-sub,.nb-foot,.nbd-head{-webkit-user-select:none;user-select:none}
+.nb-pen .nb-page{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.nb-scroll{position:relative;flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}
+.nb-page{position:relative;background-color:var(--paper);background-image:linear-gradient(90deg,transparent 48px,var(--nb-margin) 48px,var(--nb-margin) 49.5px,transparent 49.5px),linear-gradient(var(--nb-grid) 1px,transparent 1px),linear-gradient(90deg,var(--nb-grid) 1px,transparent 1px);background-size:100% 100%,24px 24px,24px 24px}
+/* padding-left 58 px = NB_PAD w notebook.js */
+.nb-mirror,.nb-text{position:absolute;left:0;top:0;margin:0;padding:24px 24px 24px 58px;border:0;border-radius:0;font:16px/24px var(--f-code);letter-spacing:0;word-spacing:0;tab-size:4;white-space:pre;overflow-wrap:normal;word-break:normal;font-variant-ligatures:none;font-kerning:none;text-transform:none;text-indent:0;text-align:left}
+.nb-mirror{color:var(--ink);pointer-events:none;width:max-content;background:none}
+.nb-text{display:block;color:transparent;-webkit-text-fill-color:transparent;caret-color:var(--ink);background:transparent;resize:none;overflow:hidden;outline:0;box-shadow:none;-webkit-appearance:none;appearance:none}
+.nb-text::selection{background:var(--nb-sel);color:transparent;-webkit-text-fill-color:transparent}
+.nb-pen .nb-text{pointer-events:none}
+.nb-ink{position:absolute;left:0;top:0;pointer-events:none}
+.nb-pen .nb-ink{pointer-events:auto;touch-action:none;cursor:crosshair}
+.nb-pen[data-tool="erase"] .nb-ink{cursor:cell}
+.nb-c{color:var(--ink-3)}
+.nb-r{display:inline-block;height:24px;vertical-align:top;margin-left:18px;color:var(--pen);font:17px/24px var(--f-math);white-space:pre}
+.nb-r.err,.nb-r.bad{color:var(--red)}
+.nb-r.ok{color:var(--green)}
+.nb-r sub{font-size:.68em;line-height:0}
+.nb-foot{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:6px 8px;border-top:1px solid var(--rule);background:var(--side)}
+.nb-pages{display:flex;align-items:center;gap:4px;margin-right:auto}
+.nb-pages .tn-arrow{width:36px;height:34px}
+.nb-pn{min-width:96px;text-align:center;font-size:13.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.nb-pn b{color:var(--ink);font-weight:600}
+.nb>.msg{margin:0;border-radius:0}
+.nb-warn{margin:0;padding:8px 12px;font-size:13.5px;background:var(--amber-soft)}
+.nb-view .nb{height:clamp(440px,calc(100vh - var(--top-h) - 250px),1100px)}
+@supports (height:100dvh){.nb-view .nb{height:clamp(440px,calc(100dvh - var(--top-h) - 250px),1100px)}}
+.nb-help{margin-top:18px;padding:8px 12px}
+.nb-dl{display:grid;grid-template-columns:minmax(0,max-content) minmax(0,1fr);gap:10px 20px;margin:12px 0 6px}
+.nb-dl dt{margin:0;white-space:nowrap}
+.nb-dl dd{margin:0;font-size:14.5px;color:var(--ink-2)}
+.nb-dl code{white-space:pre}
+/* brudnopis: panel z prawej (komputer) albo cały ekran (telefon) */
+.btn.pad.on{border-color:var(--pen);color:var(--pen);background:var(--pen-soft)}
+.nbd{position:fixed;z-index:45;top:calc(var(--top-h) + env(safe-area-inset-top,0px));right:0;bottom:0;width:min(560px,46vw);display:flex;flex-direction:column;background:var(--paper);border-left:1px solid var(--rule);box-shadow:-18px 0 40px rgba(14,21,35,.12)}
+.nbd-head{display:flex;align-items:center;gap:10px;padding:8px max(10px,env(safe-area-inset-right,0px)) 8px 16px;border-bottom:1px solid var(--rule);color:var(--ink)}
+.nbd-head h2{flex:1;margin:0;font-size:16px}
+.nbd-task{display:none}
+.nbd-host{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.nbd-host .nb{flex:1 1 auto;border:0;border-radius:0}
+html.nbd-open .main{padding-right:calc(min(560px,46vw) + 32px)}
+@media (min-width:980px) and (max-width:1399px){html.nbd-open .layout{grid-template-columns:minmax(0,1fr)}html.nbd-open .side{display:none}}
+@media (max-width:979px){
+  .nbd{inset:0;width:auto;z-index:55;border-left:0;box-shadow:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+  html.nbd-open .main{padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .nbd-task{display:block;max-height:34vh;overflow:auto;padding:0 16px 10px;border:0;border-bottom:1px solid var(--rule);border-radius:0;margin:0;background:var(--side)}
+  .nbd-task summary{padding:8px 0;font-size:13px;color:var(--ink-2)}
+  .nbd-task .task-q{font-size:15px;margin-bottom:4px}
+  .nbd-task .sheet{margin:6px 0 0;padding:10px}
+  .nbd.nbd-kb .nbd-task{max-height:20vh}
+  .nbd.nbd-kb .nb-foot{display:none}
+}
+@media (max-width:639px){
+  .nb-bar .seg>button{padding:6px 10px}
+  .nb-dl{grid-template-columns:minmax(0,1fr);gap:2px}
+  .nb-dl dd{margin-bottom:10px}
+  .nb-dl dt{white-space:normal}
+  .nb-view .nb{height:calc(100vh - var(--top-h) - 150px);min-height:420px}
+  .nb-view .lead{display:none}
+}
+@supports (height:100dvh){@media (max-width:639px){.nb-view .nb{height:calc(100dvh - var(--top-h) - 150px)}}}
+
+/* ---------- zeszyt jako osobna część: zakładka na początku, pełna szerokość ---------- */
+.subjects a.nb-tab{gap:7px}
+.subjects a.nb-tab svg{width:16px;height:16px;flex:none}
+.subj-sep{align-self:center;width:1px;height:22px;background:var(--rule);margin:0 6px;flex:none}
+.bs-nb{gap:14px}
+.bs-nb>svg{width:20px;height:20px;flex:none;color:var(--pen)}
+html[data-subj="zeszyt"] .layout{grid-template-columns:minmax(0,1fr)}
+html[data-subj="zeszyt"] .side,html[data-subj="zeszyt"] .views{display:none!important}
+html[data-subj="zeszyt"] .main{padding-left:max(16px,env(safe-area-inset-left,0px))}
+@media (min-width:980px){html[data-subj="zeszyt"] .main{padding-left:40px}}
+html[data-subj="zeszyt"] .main>section.nb-view{max-width:1120px;margin:0 auto}
+/* oko: wyniki od razu (otwarte) albo na żądanie (przekreślone) */
+.ic-eye .ic-slash{display:none}
+#nbShow.on .ic-eye .ic-slash{display:inline}
+.nb-keys>button.act{font:600 14px/1 var(--f-ui);color:var(--pen);border-color:var(--pen);background:var(--pen-soft)}
+.nb-r.hid{color:var(--ink-3);font-weight:600}
+.nb-r.note{color:var(--ink-3);font-size:15px}
+/* pismo: odczyt z wynikiem obok linii i okienko poprawiania */
+.nb-hwl{position:absolute;left:0;top:0;width:0;height:0}
+.nb-hwc{position:absolute;display:inline-flex;align-items:center;gap:10px;max-width:min(420px,80vw);min-height:30px;padding:2px 10px;border:1px solid var(--rule);border-radius:15px;background:var(--paper);color:var(--ink);box-shadow:0 2px 8px rgba(14,21,35,.08);cursor:pointer;white-space:nowrap;overflow:hidden;font:15px var(--f-code)}
+.nb-hwc:hover{border-color:var(--ink-3)}
+/* w trybie pióra odczyt nie łapie dotyku (pisze się po nim), a otwiera go krótkie stuknięcie (notebook.js) */
+.nb-pen .nb-hwc{pointer-events:none}
+.nb-hwl .nb-hwc{transition:opacity .15s}
+.nb-hwl.dim .nb-hwc{opacity:.25}
+.nb-hwc.fixed{border-style:dashed}
+.nb-hwc .nb-hwt{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis}
+.nb-hwc .nb-r{display:inline;height:auto;margin:0;line-height:1.3;font-size:16px}
+.nb-hwm{position:absolute;z-index:3;width:min(300px,86vw);padding:10px 12px;border:1px solid var(--rule);border-radius:4px;background:var(--paper);box-shadow:0 10px 30px rgba(14,21,35,.18)}
+.nb-hwm-l{display:block;font-size:12.5px;color:var(--ink-2);margin-bottom:4px}
+.nb-hwm .code{font-size:17px;padding:6px 9px}
+.nb-hwm-res{margin-top:6px;font:16px var(--f-math);min-height:4px}
+.nb-hwm-res .nb-r{display:inline;height:auto;margin:0}
+.nb-hwm .actions{margin-top:8px;gap:6px}
+.nb-read.on{border-color:var(--pen);background:var(--pen-soft);color:var(--pen)}
+@media (max-width:420px){.nb-bar .seg>button svg{display:none}}
 </style>
 </head>
 <body>
@@ -451,7 +609,7 @@ ol.steps>li{margin:10px 0}
 <div class="top-in">
 <a class="brand" href="#" id="brand" aria-label="Kratka"><svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 1.8v16.4M13 1.8v16.4M1.8 7h16.4M1.8 13h16.4" stroke="currentColor" stroke-width="1"/><rect x="7.6" y="7.6" width="4.8" height="4.8" class="brand-fill"/></svg><span>Kratka</span></a>
 <nav class="subjects" id="subjTabs" aria-label="Przedmiot" data-al-pl="Przedmiot" data-al-en="Subject"></nav>
-<label class="subj-pick" for="subjSel"><span class="vh-only"><span data-ln="pl">Przedmiot</span><span data-ln="en">Subject</span></span><select id="subjSel"></select></label>
+<button type="button" class="subj-btn" id="subjBtn" aria-haspopup="dialog" aria-expanded="false"><span class="vh-only"><span data-ln="pl">Przedmiot:</span><span data-ln="en">Subject:</span> </span><span class="subj-btn-n" id="subjBtnName"></span></button>
 <div class="lang" role="group" aria-label="Język / Language"><button type="button" data-lang="pl" lang="pl" title="Polski">PL</button><button type="button" data-lang="en" lang="en" title="English">EN</button></div>
 </div>
 <nav class="views" id="viewTabs" aria-label="Widoki" data-al-pl="Widoki" data-al-en="Views"></nav>
@@ -466,7 +624,11 @@ ol.steps>li{margin:10px 0}
 <div class="vh">
 <div class="vh-row"><div><div class="eyebrow" id="cwSec"></div><h1 id="cwTitle"></h1></div></div>
 <div class="vh-tools">
-<label class="topic-pick" for="topicSel"><span><span data-ln="pl">Temat</span><span data-ln="en">Topic</span></span><select id="topicSel"></select></label>
+<div class="topic-nav">
+<button type="button" class="tn-arrow tn-prev" id="topicPrev" aria-label="Poprzedni temat" data-al-pl="Poprzedni temat" data-al-en="Previous topic"></button>
+<button type="button" class="tn-open" id="topicBtn" aria-haspopup="dialog" aria-expanded="false"><span class="tn-l"><span data-ln="pl">Wszystkie tematy</span><span data-ln="en">All topics</span></span><span class="tn-c" id="topicCount"></span></button>
+<button type="button" class="tn-arrow tn-next" id="topicNext" aria-label="Następny temat" data-al-pl="Następny temat" data-al-en="Next topic"></button>
+</div>
 <div class="opts" id="cwOpts"></div>
 </div>
 </div>
@@ -491,7 +653,7 @@ ol.steps>li{margin:10px 0}
 <div class="task-q" id="exQ"></div>
 <div class="sheet"><div id="exBody"></div><div class="task-ans" id="exAns"></div></div>
 <p class="note" id="exNote"></p>
-<div class="actions"><button type="button" class="btn ghost" id="exPrev"><span data-ln="pl">Poprzednie</span><span data-ln="en">Previous</span></button><button type="button" class="btn ghost" id="exNext"><span data-ln="pl">Następne</span><span data-ln="en">Next</span></button><button type="button" class="btn" id="exEnd"><span data-ln="pl">Oddaj i oceń</span><span data-ln="en">Hand in and grade</span></button></div>
+<div class="actions"><button type="button" class="btn ghost" id="exPrev"><span data-ln="pl">Poprzednie</span><span data-ln="en">Previous</span></button><button type="button" class="btn ghost" id="exNext"><span data-ln="pl">Następne</span><span data-ln="en">Next</span></button><button type="button" class="btn ghost pad" data-pad="ex" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 16.5l.9-3.6 9.4-9.4a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1l-9.4 9.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.3 5l2.7 2.7" stroke="currentColor" stroke-width="1.5"/></svg><span><span data-ln="pl">Brudnopis</span><span data-ln="en">Scratch pad</span></span></button><button type="button" class="btn" id="exEnd"><span data-ln="pl">Oddaj i oceń</span><span data-ln="en">Hand in and grade</span></button></div>
 <div class="msg" id="exConfirm" role="status"></div>
 </div>
 <div id="exRes" hidden></div>
@@ -508,6 +670,81 @@ ol.steps>li{margin:10px 0}
 <div id="prBox"></div>
 <h2 class="rule-h"><span data-ln="pl">Tematy</span><span data-ln="en">Topics</span></h2>
 <div id="prList"></div>
+</section>
+
+<!-- ===================== ZESZYT: wspólny dla przedmiotów; jako Brudnopis przenosi się do panelu #nbd ===================== -->
+<section data-view="zeszyt" class="nb-view" hidden>
+<div class="vh"><h1><span data-ln="pl">Zeszyt</span><span data-ln="en">Notebook</span></h1>
+<p class="lead"><span data-ln="pl">Kartka w kratkę na rachunki i notatki, wspólna dla wszystkich przedmiotów. Z klawiatury każda linia liczy się od razu. Piórem piszesz palcem, rysikiem albo myszą, a zeszyt czyta cyfry i znaki działań. Przycisk Rozpisz pokazuje rachunek krok po kroku.</span><span data-ln="en">Squared paper for working and notes, shared by all subjects. With the keyboard every line is calculated as you type. With the pen you write with a finger, a stylus or the mouse, and the notebook reads digits and operation signs. The Explain button shows the working step by step.</span></p></div>
+<div id="nbHome">
+<div class="nb" id="nb" data-tool="pen">
+<div class="nb-bar">
+<div class="seg" id="nbMode" role="group" aria-label="Sposób pisania" data-al-pl="Sposób pisania" data-al-en="How to write"><button type="button" data-nbm="type" class="on" aria-pressed="true"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="1.75" y="5" width="16.5" height="10.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5h.5M8 8.5h.5M11 8.5h.5M14 8.5h.5M6 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span><span data-ln="pl">Klawiatura</span><span data-ln="en">Keyboard</span></span></button><button type="button" data-nbm="pen" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 16.5l.9-3.6 9.4-9.4a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1l-9.4 9.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.3 5l2.7 2.7" stroke="currentColor" stroke-width="1.5"/></svg><span><span data-ln="pl">Pióro</span><span data-ln="en">Pen</span></span></button></div>
+<div class="nb-hist"><button type="button" class="nb-ic" id="nbShow" aria-pressed="true" aria-label="Wyniki od razu (wyłącz, żeby liczyć samemu)" data-al-pl="Wyniki od razu (wyłącz, żeby liczyć samemu)" data-al-en="Results right away (turn off to work them out yourself)"><svg viewBox="0 0 20 20" aria-hidden="true" class="ic-eye"><path d="M1.8 10s3-5.5 8.2-5.5S18.2 10 18.2 10s-3 5.5-8.2 5.5S1.8 10 1.8 10z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="10" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path class="ic-slash" d="M3.5 16.5l13-13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><button type="button" class="nb-ic" id="nbUndo" aria-label="Cofnij" data-al-pl="Cofnij" data-al-en="Undo" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4.5l-4 4 4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 8.5h7.5a4.25 4.25 0 0 1 0 8.5H9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button><button type="button" class="nb-ic" id="nbRedo" aria-label="Ponów" data-al-pl="Ponów" data-al-en="Redo" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 8.5H8.5a4.25 4.25 0 0 0 0 8.5H11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
+</div>
+<div class="nb-sub nb-keys" id="nbKeys">
+<button type="button" class="act" id="nbExplain" aria-label="Rozpisz krok po kroku linię z kursorem albo zaznaczone działanie" data-al-pl="Rozpisz krok po kroku linię z kursorem albo zaznaczone działanie" data-al-en="Explain step by step the line with the cursor or the selected part"><span data-ln="pl">Rozpisz</span><span data-ln="en">Explain</span></button><button type="button" class="act" id="nbReveal" hidden aria-label="Pokaż wynik linii z kursorem" data-al-pl="Pokaż wynik linii z kursorem" data-al-en="Show the result of the line with the cursor"><span data-ln="pl">Wynik</span><span data-ln="en">Result</span></button>
+<span class="nb-sep" aria-hidden="true"></span>
+<div class="seg small" id="nbDeg" role="group" aria-label="Kąty w sin, cos i tg" data-al-pl="Kąty w sin, cos i tg" data-al-en="Angles in sin, cos and tan"><button type="button" data-deg="1" class="on" aria-pressed="true"><span data-ln="pl">stopnie</span><span data-ln="en">degrees</span></button><button type="button" data-deg="0" aria-pressed="false"><span data-ln="pl">radiany</span><span data-ln="en">radians</span></button></div>
+<span class="nb-sep" aria-hidden="true"></span>
+<button type="button" data-k="^" aria-label="potęga" data-al-pl="potęga" data-al-en="power"><i>x</i><sup>y</sup></button><button type="button" data-k="√">√</button><button type="button" class="kb" data-k="()">( )</button><button type="button" class="kb" data-k="/">/</button><button type="button" class="kb" data-k="·">·</button><button type="button" class="kb" data-k="=">=</button><button type="button" data-k="π">π</button><button type="button" data-k="°">°</button><button type="button" class="kb" data-k="[]" aria-label="macierz" data-al-pl="macierz" data-al-en="matrix">[ ]</button><button type="button" class="kb" data-k=";" aria-label="nowy wiersz macierzy" data-al-pl="nowy wiersz macierzy" data-al-en="new matrix row">;</button><button type="button" data-k="^-1" aria-label="odwrotność" data-al-pl="odwrotność" data-al-en="inverse"><i>A</i><sup>−1</sup></button><button type="button" data-k="^T" aria-label="transpozycja" data-al-pl="transpozycja" data-al-en="transpose"><i>A</i><sup>T</sup></button><button type="button" data-k="det()" class="w">det</button><button type="button" data-k="sin()" class="w">sin</button><button type="button" data-k="cos()" class="w">cos</button><button type="button" data-k="# " class="w" aria-label="notatka bez liczenia" data-al-pl="notatka bez liczenia" data-al-en="a note, not calculated"># <span data-ln="pl">notatka</span><span data-ln="en">note</span></button>
+</div>
+<div class="nb-sub nb-tools" id="nbTools" role="group" aria-label="Przybory" data-al-pl="Przybory" data-al-en="Tools">
+<button type="button" class="nb-ic on" data-tool="pen" aria-pressed="true" aria-label="Niebieski długopis" data-al-pl="Niebieski długopis" data-al-en="Blue pen"><i class="nb-dot" style="--c:var(--pen)"></i></button><button type="button" class="nb-ic" data-tool="ink" aria-pressed="false" aria-label="Czarny długopis" data-al-pl="Czarny długopis" data-al-en="Black pen"><i class="nb-dot" style="--c:var(--ink)"></i></button><button type="button" class="nb-ic" data-tool="red" aria-pressed="false" aria-label="Czerwony długopis" data-al-pl="Czerwony długopis" data-al-en="Red pen"><i class="nb-dot" style="--c:var(--red)"></i></button><button type="button" class="nb-ic" data-tool="hl" aria-pressed="false" aria-label="Zakreślacz" data-al-pl="Zakreślacz" data-al-en="Highlighter"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 17.5h15" stroke="var(--nb-hl-ic)" stroke-width="3.5" stroke-linecap="round"/><path d="M6 13.5l1-3.2 6.6-6.6a1.3 1.3 0 0 1 1.8 0l1.4 1.4a1.3 1.3 0 0 1 0 1.8l-6.6 6.6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button><button type="button" class="nb-ic" data-tool="erase" aria-pressed="false" aria-label="Gumka: usuwa całą kreskę" data-al-pl="Gumka: usuwa całą kreskę" data-al-en="Eraser: removes a whole stroke"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M9 16.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3.6 11.9l7.5-7.5a1.4 1.4 0 0 1 2 0l3 3a1.4 1.4 0 0 1 0 2L10.2 15.3H7z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.3 8.2l5 5" stroke="currentColor" stroke-width="1.5"/></svg></button>
+<span class="nb-sep" aria-hidden="true"></span><button type="button" class="nb-ic nb-read on" id="nbRead" aria-pressed="true" aria-label="Czytaj pismo: cyfry i znaki działań" data-al-pl="Czytaj pismo: cyfry i znaki działań" data-al-en="Read handwriting: digits and operation signs"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 13.5c1.5-3 2.6-3.2 3.3-1.6.6 1.4 1.4 1.5 2.6-.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 8h6.5M11 11.5h4.5M11 15h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 4.2l1.5-1.5 1.5 1.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+<span class="nb-hint"><span data-ln="pl">Dwa palce przewijają</span><span data-ln="en">Two fingers scroll</span></span>
+</div>
+<div class="nb-scroll" id="nbScroll">
+<div class="nb-page" id="nbPage">
+<pre class="nb-mirror" id="nbMirror" aria-hidden="true"></pre>
+<textarea class="nb-text" id="nbText" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Kartka zeszytu: wynik każdej linii pojawia się na jej końcu" data-al-pl="Kartka zeszytu: wynik każdej linii pojawia się na jej końcu" data-al-en="Notebook page: each line’s result appears at its end"></textarea>
+<canvas class="nb-ink" id="nbInk" aria-hidden="true"></canvas>
+<div class="nb-hwl" id="nbHw"></div>
+<div class="nb-hwm" id="nbHwMenu" hidden role="dialog" aria-label="Odczytane działanie" data-al-pl="Odczytane działanie" data-al-en="The reading">
+<label class="nb-hwm-l" for="nbHwIn"><span data-ln="pl">Zeszyt odczytał</span><span data-ln="en">The notebook read</span></label>
+<input class="code" id="nbHwIn" autocomplete="off" autocapitalize="off" spellcheck="false">
+<div class="nb-hwm-res" id="nbHwRes"></div>
+<div class="actions"><button type="button" class="btn small" id="nbHwExplain"><span data-ln="pl">Rozpisz</span><span data-ln="en">Explain</span></button><button type="button" class="btn ghost small" id="nbHwShow"><span data-ln="pl">Pokaż wynik</span><span data-ln="en">Show result</span></button><button type="button" class="btn ghost small" id="nbHwSave" hidden><span data-ln="pl">Zapisz poprawkę</span><span data-ln="en">Save the fix</span></button><button type="button" class="btn link small" id="nbHwClose"><span data-ln="pl">Zamknij</span><span data-ln="en">Close</span></button></div>
+</div>
+</div>
+</div>
+<div class="nb-foot">
+<div class="nb-pages"><button type="button" class="tn-arrow tn-prev" id="nbPrev" aria-label="Poprzednia strona" data-al-pl="Poprzednia strona" data-al-en="Previous page"></button><span class="nb-pn" id="nbPageN"></span><button type="button" class="tn-arrow tn-next" id="nbNext" aria-label="Następna strona" data-al-pl="Następna strona" data-al-en="Next page"></button></div>
+<button type="button" class="btn ghost small" id="nbAdd"><span data-ln="pl">Nowa strona</span><span data-ln="en">New page</span></button><button type="button" class="btn link small" id="nbClear"><span data-ln="pl">Wyczyść</span><span data-ln="en">Clear</span></button><button type="button" class="btn link small" id="nbDel"><span data-ln="pl">Usuń stronę</span><span data-ln="en">Delete page</span></button>
+</div>
+<div class="msg" id="nbMsg" role="status"></div>
+<p class="nb-warn" id="nbWarn" hidden><span data-ln="pl">Nie udało się zapisać zeszytu w przeglądarce (brak miejsca albo okno prywatne). To, co na kartce, zostaje do zamknięcia strony.</span><span data-ln="en">The notebook could not be saved in this browser (no space or a private window). What is on the page stays until you close it.</span></p>
+<div class="vh-only" id="nbLive" aria-live="polite"></div>
+</div>
+</div>
+<details class="nb-help">
+<summary><span data-ln="pl">Co rozumie zeszyt</span><span data-ln="en">What the notebook understands</span></summary>
+<div data-ln="pl"><dl class="nb-dl">
+<dt><code>1/2 + 1/3</code></dt><dd>Ułamki zostają ułamkami, obok jest wartość dziesiętna. Gdy piszesz liczby z przecinkiem, wynik też jest dziesiętny.</dd>
+<dt><code>v0 = 72/3,6</code></dt><dd>Zmienna. W kolejnych liniach wystarczy <code>v0^2</code> albo <code>2v0</code>; mnożenie można pominąć.</dd>
+<dt><code>a = 4 m/s²</code></dt><dd>Jednostka na końcu linii nie przeszkadza w liczeniu.</dd>
+<dt><code>A = [2 1; 5 3]</code></dt><dd>Macierz: liczby oddzielone spacją, wiersze średnikiem albo każdy wiersz w nowej linii (<code>A = [2 1</code>, pod spodem <code>5 3]</code>). Można też krócej: <code>A[2 1; 5 3]</code>. Dalej <code>det(A)</code>, <code>A^-1</code>, <code>A^T</code>, <code>rz(A)</code>, <code>A*B</code>, <code>2A</code>.</dd>
+<dt><code>sin(30°)  √2  5!  ln 2  log2(64)</code></dt><dd>Funkcje i stałe <code>π</code>, <code>e</code>. Kąty w stopniach albo w radianach, zależnie od przełącznika nad kartką.</dd>
+<dt><code>0b1011  0x1F  hex(255)  oct(493)</code></dt><dd>Systemy dwójkowy, ósemkowy i szesnastkowy.</dd>
+<dt><code>2/3 + 1/4 = 11/12</code></dt><dd>Wpisz swój wynik po znaku równości, a zeszyt sprawdzi, czy się zgadza. Zaokrąglony wynik, np. <code>10/3 = 3,33</code>, też przejdzie.</dd>
+<dt><code># notatka</code></dt><dd>Komentarz. Zwykły tekst bez liczb zostaje tekstem.</dd>
+<dt><b>Rozpisz</b></dt><dd>Rozpisuje krok po kroku linię, w której stoi kursor, albo zaznaczony fragment: kolejność działań, wspólny mianownik, wyznacznik, odwrotność macierzy.</dd>
+<dt><b>Oko</b> (nad kartką)</dt><dd>Wyłącza wyniki, gdy chcesz liczyć sam. Wynik konkretnej linii pokazuje wtedy przycisk Wynik, a sprawdzenie „= swój wynik” mówi tylko, czy się zgadza.</dd>
+<dt><b>Pióro</b></dt><dd>Zeszyt czyta pisane cyfry i znaki + − · × : / ( ) =, ułamki piętrowe i potęgi. Odczyt i wynik pojawiają się obok. Kliknij odczyt, żeby go poprawić: zeszyt zapamięta, jak piszesz.</dd>
+</dl></div><div data-ln="en"><dl class="nb-dl">
+<dt><code>1/2 + 1/3</code></dt><dd>Fractions stay fractions, with the decimal value next to them. When you type decimals, the result is decimal too.</dd>
+<dt><code>v0 = 72/3.6</code></dt><dd>A variable. In the following lines <code>v0^2</code> or <code>2v0</code> is enough; the multiplication sign can be left out.</dd>
+<dt><code>a = 4 m/s²</code></dt><dd>A unit at the end of the line does not get in the way.</dd>
+<dt><code>A = [2 1; 5 3]</code></dt><dd>A matrix: numbers separated by spaces, rows by semicolons. Then <code>det(A)</code>, <code>A^-1</code>, <code>A^T</code>, <code>rank(A)</code>, <code>A*B</code>, <code>2A</code>.</dd>
+<dt><code>sin(30°)  √2  5!  ln 2  log2(64)</code></dt><dd>Functions and the constants <code>π</code> and <code>e</code>. Angles in degrees or radians, depending on the switch above the page.</dd>
+<dt><code>0b1011  0x1F  hex(255)  oct(493)</code></dt><dd>Binary, octal and hexadecimal numbers.</dd>
+<dt><code>2/3 + 1/4 = 11/12</code></dt><dd>Type your result after an equals sign and the notebook checks it. A rounded result such as <code>10/3 = 3.33</code> passes too.</dd>
+<dt><code># note</code></dt><dd>A comment. Plain text without numbers stays text.</dd>
+<dt><b>Explain</b></dt><dd>Works out step by step the line with the cursor, or the selected part: order of operations, common denominators, determinants, matrix inverses.</dd>
+<dt><b>Eye</b> (above the page)</dt><dd>Turns results off when you want to work them out yourself. The Result button then shows one line, and a check “= your result” only says whether it is right.</dd>
+<dt><b>Pen</b></dt><dd>The notebook reads handwritten digits and the signs + − · × : / ( ) =, stacked fractions and powers. The reading and the result appear next to it. Click the reading to fix it: the notebook remembers how you write.</dd>
+</dl></div>
+</details>
 </section>
 
 <!-- ===================== ALGEBRA: X NA LICZBACH ===================== -->
@@ -1277,6 +1514,22 @@ x - y + 2z = 5
 </div>
 </div>
 </div>
+</div>
+
+<!-- ===================== PANEL OD DOŁU: wybór tematu i przedmiotu na telefonie ===================== -->
+<div class="bs" id="bs" hidden role="dialog" aria-modal="true" aria-labelledby="bsT">
+<div class="bs-scrim" data-close></div>
+<div class="bs-panel">
+<div class="bs-head"><h2 id="bsT"></h2><button type="button" class="pl-close" data-close aria-label="Zamknij" data-al-pl="Zamknij" data-al-en="Close">×</button></div>
+<div class="bs-body" id="bsBody"></div>
+</div>
+</div>
+
+<!-- ===================== BRUDNOPIS: zeszyt obok zadania (na telefonie na cały ekran, z treścią zadania) ===================== -->
+<div class="nbd" id="nbd" hidden role="dialog" aria-labelledby="nbdT">
+<div class="nbd-head"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 16.5l.9-3.6 9.4-9.4a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1l-9.4 9.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.3 5l2.7 2.7" stroke="currentColor" stroke-width="1.5"/></svg><h2 id="nbdT"><span data-ln="pl">Brudnopis</span><span data-ln="en">Scratch pad</span></h2><button type="button" class="pl-close" id="nbdClose" aria-label="Zamknij brudnopis" data-al-pl="Zamknij brudnopis" data-al-en="Close the scratch pad">×</button></div>
+<details class="nbd-task" id="nbdTask" open><summary><span data-ln="pl">Treść zadania</span><span data-ln="en">The task</span></summary><div id="nbdTaskBody"></div></details>
+<div class="nbd-host" id="nbdHost"></div>
 </div>
 <script>
 // =====================================================================
@@ -2440,6 +2693,1041 @@ function numbersSolve(src,env){
   const L=linSolve(src,env);
   return {html:(why?$t(`<div class="tip">${why} Liczymy <b>przez niewiadome</b>; ta metoda działa zawsze.</div>`,`<div class="tip">${why} We compute <b>using unknowns</b>; this method always works.</div>`):'')+L.html,X:L.X,
     fr:()=>(why?[{sec:$t('Dlaczego nie wzorem?','Why not a formula?'),t:$t('Wzór tu nie zadziała','The formula will not work here'),x:why+$t(' Dlatego liczymy <b>przez niewiadome</b>; ta metoda działa zawsze.',' So we compute <b>using unknowns</b>; this method always works.')}]:[]).concat(linFrames(L))};
+}
+
+// =====================================================================
+//  Kalkulator zeszytu (bez DOM): każda linia tekstu → wynik
+// =====================================================================
+//  calcText(tekst, {deg}) → dla każdej linii null (tekst albo nic nowego) lub {html, cls}
+//    cls: '' wynik, 'err' błąd w rachunku, 'ok' / 'bad' sprawdzona równość
+//  Liczby:    2,5  1/3  2·10^3  0b1011  0x1f  0o755   (ułamki zostają dokładne)
+//  Działania: + − * · × / : ^ ! %  nawiasy, potęgi ² ³ ⁻¹, mnożenie bez znaku (2x, 2(3+4), 2πr)
+//  Funkcje:   sqrt √ sin cos tg ctg arcsin arccos arctg ln log lg log2 exp abs; bin() hex() oct() zmieniają zapis
+//  Macierze:  A = [1 2; 3 4]  det(A) |A|  A^-1  inv(A)  A^T  A'  rz(A)  tr(A)  rref(A)  A*B  2A
+//  Zmienne:   v0 = 20 m/s; jednostka na końcu linii nie wchodzi do rachunku, tylko wraca w wyniku
+//  Linie:     „2+2=” liczy lewą stronę, „1/2 + 1/3 = 5/6” sprawdza równość, # zaczyna komentarz,
+//             linia ze zwykłym tekstem zostaje tekstem
+//  Kąty:      w stopniach (deg: true) albo w radianach; 30° działa w obu trybach
+// =====================================================================
+class CalcErr extends Error{}
+const C_FUN=new Set(['sqrt','√','sin','cos','tg','tan','ctg','cot','arcsin','asin','arccos','acos','arctg','arctan','atan','ln','log','lg','log2','exp','abs','det','inv','rank','rz','tr','rref']);
+const C_L='A-Za-zÀ-ÖØ-öø-ÿĀ-žΑ-Ωα-ω_';
+const C_NUM=/^((?:\d+(?:[.,]\d+)?|\.\d+)(?:[eE][-+]?\d+)?)/;
+const C_ID=new RegExp(`^[${C_L}][${C_L}0-9]*`);
+const C_IDS=new RegExp(`[${C_L}][${C_L}0-9]*`,'g');
+const C_ASG=new RegExp(`^([${C_L}][${C_L}0-9]*)\\s*=\\s*([^=]+)$`);
+const C_LIT=/^[-−]?(?:\d+(?:[.,]\d+)?|[.,]\d+)$/;
+const C_SUP={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+// x² → x^2, A⁻¹ → A^(-1), Aᵀ → A^T
+const cNorm=s=>s.replace(/ᵀ/g,'^T').replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+/g,m=>m.length>1?'^('+[...m].map(c=>C_SUP[c]).join('')+')':'^'+C_SUP[m]);
+// has(nazwa): czy zmienna już jest; wtedy krótka nieznana nazwa z liter („ac”, „πr”) rozpada się na iloczyn liter
+function calcTokens(s,has){
+  const t=[];let i=0;
+  while(i<s.length){
+    const c=s[i],r=s.slice(i);
+    if(/\s/.test(c)){i++;continue}
+    if(c==='['){const j=s.indexOf(']',i);if(j<0)throw new CalcErr('[');t.push({k:'mat',v:s.slice(i+1,j)});i=j+1;continue}
+    let m=r.match(/^0([bxo])([0-9a-f]+)/i);
+    if(m){
+      const base={b:2,x:16,o:8}[m[1].toLowerCase()];
+      if(![...m[2]].every(d=>parseInt(d,16)<base))throw new CalcErr('base');
+      t.push({k:'num',v:String(parseInt(m[2],base)),raw:m[0]});i+=m[0].length;continue;
+    }
+    // „2/3” zapisane ciasno to jeden ułamek: 2/3 : 4/5 = (2/3) : (4/5)
+    m=r.match(/^(\d+)\/(\d+)(?![\d.,eE])/);
+    if(m&&!(t.length&&t[t.length-1].k==='op'&&t[t.length-1].v==='^')){t.push({k:'frac',a:m[1],b:m[2]});i+=m[0].length;continue}
+    m=r.match(C_NUM);
+    if(m){t.push({k:'num',v:m[1].replace(',','.')});i+=m[1].length;continue}
+    m=r.match(C_ID);
+    if(m){
+      const v=m[0],ch=[...v],one=c=>has(c)||c==='π'||c==='e';
+      // „4ac” = 4·a·c, „πr^2” = π·r², ale dłuższa nieznana nazwa to raczej słowo
+      if(has&&!has(v)&&!C_FUN.has(v)&&v!=='pi'&&ch.length>1&&ch.length<=3&&ch.every(c=>/\p{L}/u.test(c))&&ch.some(one))ch.forEach(c=>t.push({k:'id',v:c}));
+      else t.push({k:'id',v});
+      i+=v.length;continue;
+    }
+    if('+-−–*·×÷/:^()!°%\'√|'.includes(c)){t.push({k:'op',v:c==='−'||c==='–'?'-':c==='·'||c==='×'?'*':c===':'||c==='÷'?'/':c});i++;continue}
+    throw new CalcErr(c);
+  }
+  return t;
+}
+// drzewo wyrażenia: {t:'num',v} {t:'var',n} {t:'bin',o,a,b} {t:'neg',a} {t:'call',f,a} {t:'mat',rows} {t:'post',o,a} {t:'pow',a,b}
+function calcParse(tokens,has){
+  let p=0;const peek=()=>tokens[p],is=v=>peek()&&peek().k==='op'&&peek().v===v;
+  const expr=()=>{let a=term();while(is('+')||is('-')){const o=tokens[p++].v;a={t:'bin',o,a,b:term()}}return a};
+  const startsFactor=()=>{const x=peek();return x&&(x.k==='num'||x.k==='frac'||x.k==='id'||x.k==='mat'||(x.k==='op'&&(x.v==='('||x.v==='√')))};
+  const term=()=>{
+    let a=unary();
+    for(;;){
+      if(is('*')||is('/')){const o=tokens[p++].v;a={t:'bin',o,a,b:unary()};continue}
+      // mnożenie bez znaku: 2x, 2(3), (1+2)(3), xy; ale nie „x 2” ani „5 2” (to raczej tekst)
+      const prev=tokens[p-1],x=peek();
+      if(prev&&startsFactor()&&!((x.k==='num'||x.k==='frac')&&(prev.k==='id'||prev.k==='num'||prev.k==='frac'))&&!(prev.k==='id'&&C_FUN.has(prev.v))){a={t:'bin',o:'*',a,b:unary()};continue}
+      return a;
+    }
+  };
+  const unary=()=>{if(is('-')){p++;return {t:'neg',a:unary()}}if(is('+')){p++;return unary()}return power()};
+  const power=()=>{
+    const a=post();
+    if(is('^')){p++;
+      if(peek()&&peek().k==='id'&&peek().v==='T'){p++;return postLoop({t:'post',o:'T',a})}
+      return {t:'pow',a,b:unary()};
+    }
+    return a;
+  };
+  const postLoop=a=>{for(;;){if(is('!')||is('°')||is('%')){a={t:'post',o:tokens[p++].v,a}}else if(is("'")){p++;a={t:'post',o:'T',a}}else return a}};
+  const post=()=>postLoop(primary());
+  // wiersz macierzy: przecinek dzieli elementy, gdy stoi przed spacją albo w wierszu nie ma spacji; „1,5 2,5” to dwie liczby dziesiętne
+  const cells=r=>(/,\s/.test(r)||!/\s/.test(r)?r.split(','):r.split(/\s+/)).map(e=>e.trim()).filter(Boolean).map(e=>calcParse(calcTokens(e,has),has));
+  const primary=()=>{
+    const x=tokens[p++];if(!x)throw new CalcErr('end');
+    if(x.k==='num')return x.raw?{t:'num',v:x.v,raw:x.raw}:{t:'num',v:x.v};
+    if(x.k==='frac')return {t:'bin',o:'/',a:{t:'num',v:x.a},b:{t:'num',v:x.b},tight:true};
+    if(x.k==='mat')return {t:'mat',rows:x.v.split(';').map(r=>r.trim()).filter(Boolean).map(cells)};
+    if(x.k==='op'&&x.v==='('){const a=expr();if(!is(')'))throw new CalcErr(')');p++;return a}
+    if(x.k==='op'&&x.v==='|'){const a=expr();if(!is('|'))throw new CalcErr('|');p++;return {t:'call',f:'abs',a}}
+    if(x.k==='op'&&x.v==='√')return {t:'call',f:'sqrt',a:post()};
+    if(x.k==='id'){
+      if(C_FUN.has(x.v)){
+        if(is('(')){p++;const a=expr();if(!is(')'))throw new CalcErr(')');p++;return {t:'call',f:x.v,a}}
+        return {t:'call',f:x.v,a:post()};
+      }
+      return {t:'var',n:x.v};
+    }
+    throw new CalcErr(x.v);
+  };
+  const a=expr();
+  if(p<tokens.length)throw new CalcErr('rest');
+  return a;
+}
+
+// ---------- wartości: ułamek Fr, liczba zmiennoprzecinkowa albo macierz {mat} ----------
+const isMat=v=>!!(v&&v.mat);
+const isFr=v=>v instanceof Fr;
+const toNum=v=>isFr(v)?v.n/v.d:v;
+const SAFE=9e15;
+const frOk=(n,d)=>Math.abs(n)<SAFE&&Math.abs(d)<SAFE;
+function cAdd(a,b,s=1){
+  if(isFr(a)&&isFr(b)&&frOk(a.n*b.d,b.n*a.d)&&frOk(a.d*b.d,1))return s>0?a.add(b):a.sub(b);
+  return toNum(a)+s*toNum(b);
+}
+function cMul(a,b){if(isFr(a)&&isFr(b)&&frOk(a.n*b.n,a.d*b.d))return a.mul(b);return toNum(a)*toNum(b)}
+function cDiv(a,b){
+  if(isFr(b)?b.z:b===0)throw new CalcErr('div0');
+  if(isFr(a)&&isFr(b)&&frOk(a.n*b.d,a.d*b.n))return a.div(b);
+  return toNum(a)/toNum(b);
+}
+const cNeg=a=>isFr(a)?a.neg():-a;
+const cZero=a=>isFr(a)?a.z:Math.abs(a)<1e-12;
+function cPowS(a,b){
+  if(isFr(b)&&b.d===1&&Math.abs(b.n)<=200&&isFr(a)){
+    let r=F(1);const n=Math.abs(b.n);
+    for(let k=0;k<n;k++){const q=cMul(r,a);if(!isFr(q))return Math.pow(toNum(a),toNum(b));r=q}
+    return b.n<0?cDiv(F(1),r):r;
+  }
+  const r=Math.pow(toNum(a),toNum(b));
+  if(Number.isNaN(r))throw new CalcErr('nan');
+  return r;
+}
+function mDims(A,B,what){if(A.length!==B.length||A[0].length!==B[0].length)throw new CalcErr('dims:'+what)}
+function cMatMul(A,B){
+  if(A[0].length!==B.length)throw new CalcErr('dims:mul');
+  return A.map((r,i)=>B[0].map((_,j)=>r.reduce((s,x,k)=>cAdd(s,cMul(x,B[k][j])),F(0))));
+}
+const cT=A=>A[0].map((_,j)=>A.map(r=>r[j]));
+// eliminacja: na ułamkach dokładnie, na liczbach dziesiętnych z wyborem największego elementu
+function cElim(A0,full){
+  const A=A0.map(r=>r.slice()),m=A.length,n=A[0].length;let row=0,sign=1;const piv=[];
+  for(let j=0;j<n&&row<m;j++){
+    let best=-1;
+    for(let i=row;i<m;i++)if(!cZero(A[i][j])&&(best<0||Math.abs(toNum(A[i][j]))>Math.abs(toNum(A[best][j]))))best=i;
+    if(best<0)continue;
+    if(best!==row){[A[row],A[best]]=[A[best],A[row]];sign=-sign}
+    const pv=A[row][j];
+    if(full){A[row]=A[row].map(x=>cDiv(x,pv))}
+    for(let i=full?0:row+1;i<m;i++){if(i===row||cZero(A[i][j]))continue;const f=cDiv(A[i][j],A[row][j]);A[i]=A[i].map((x,k)=>cAdd(x,cMul(f,A[row][k]),-1))}
+    piv.push(j);row++;
+  }
+  return {A,rank:row,sign,piv};
+}
+function cDet(A){
+  if(A.length!==A[0].length)throw new CalcErr('square');
+  const e=cElim(A,false);if(e.rank<A.length)return F(0);
+  let d=e.sign>0?F(1):F(-1);for(let i=0;i<A.length;i++)d=cMul(d,e.A[i][i]);return d;
+}
+function cInv(A){
+  if(A.length!==A[0].length)throw new CalcErr('square');
+  const n=A.length,e=cElim(A.map((r,i)=>[...r,...r.map((_,j)=>F(i===j?1:0))]),true);
+  if(e.piv.length<n||e.piv[n-1]!==n-1)throw new CalcErr('singular');
+  return e.A.map(r=>r.slice(n));
+}
+const unit=a=>a.map((r,i)=>r.map((_,j)=>F(i===j?1:0)));
+function cMatPow(A,b){
+  if(!isFr(b)||b.d!==1)throw new CalcErr('matpow');
+  if(A.length!==A[0].length)throw new CalcErr('square');
+  let R=unit(A),B=b.n<0?cInv(A):A;
+  for(let k=0;k<Math.abs(b.n);k++)R=cMatMul(R,B);
+  return R;
+}
+const RAD=Math.PI/180;
+function cTrig(f,x,deg){
+  const v=toNum(x),a=deg?v*RAD:v;
+  const r={sin:Math.sin,cos:Math.cos,tg:Math.tan,tan:Math.tan,ctg:t=>1/Math.tan(t),cot:t=>1/Math.tan(t)}[f](a);
+  // wartości z tabeli (0, ±1/2, ±1) dokładnie, bez śmieci po przecinku
+  const h=Math.round(r*2);if(Math.abs(r*2-h)<1e-12)return F(h,2);
+  if(!Number.isFinite(r)||Math.abs(r)>1e15)throw new CalcErr('nan');
+  return r;
+}
+function cArc(f,x,deg){
+  const v=toNum(x),r={arcsin:Math.asin,asin:Math.asin,arccos:Math.acos,acos:Math.acos,arctg:Math.atan,arctan:Math.atan,atan:Math.atan}[f](v);
+  if(Number.isNaN(r))throw new CalcErr('nan');
+  return deg?r/RAD:r;
+}
+function calcEval(n,env,o){
+  const ev=x=>calcEval(x,env,o);
+  switch(n.t){
+    case 'lit':return n.v;   // wartość już policzona (drzewo kroków w steps.js)
+    case 'num':{
+      if(/e/i.test(n.v)){const x=+n.v;return Number.isInteger(x)&&Math.abs(x)<SAFE?F(x):x}
+      const [a,b='']=n.v.split('.'),s=a+b;return frOk(+s,10**b.length)?F(parseInt(s,10),10**b.length):+n.v;
+    }
+    case 'var':{
+      if(env.has(n.n))return env.get(n.n);
+      if(n.n==='pi'||n.n==='π')return Math.PI;
+      if(n.n==='e')return Math.E;
+      throw Object.assign(new CalcErr('var'),{name:n.n});
+    }
+    case 'neg':{const a=ev(n.a);return isMat(a)?{mat:a.mat.map(r=>r.map(cNeg))}:cNeg(a)}
+    case 'bin':return calcBin(n.o,ev(n.a),ev(n.b));
+    case 'pow':{const a=ev(n.a),b=ev(n.b);if(isMat(b))throw new CalcErr('matexp');return isMat(a)?{mat:cMatPow(a.mat,b)}:cPowS(a,b)}
+    case 'post':{
+      const a=ev(n.a);
+      if(n.o==='T'){if(!isMat(a))return a;return {mat:cT(a.mat)}}
+      if(isMat(a))throw new CalcErr('scalar');
+      if(n.o==='°')return o.deg?a:cMul(a,Math.PI/180);
+      if(n.o==='%')return cDiv(a,F(100));
+      const v=toNum(a);if(v<0||v>170||Math.round(v)!==v)throw new CalcErr('fact');
+      let r=F(1);for(let k=2;k<=v;k++)r=cMul(r,F(k));return r;
+    }
+    case 'mat':{
+      const rows=n.rows.map(r=>r.map(x=>{const v=ev(x);if(isMat(v))throw new CalcErr('nested');return v}));
+      if(!rows.length||rows.some(r=>r.length!==rows[0].length))throw new CalcErr('ragged');
+      return {mat:rows};
+    }
+    case 'call':{
+      const a=ev(n.a),f=n.f;
+      if(f==='abs'&&isMat(a))return cDet(a.mat);   // |A| to wyznacznik
+      if(['det','inv','rank','rz','tr','rref'].includes(f)){
+        if(!isMat(a))throw new CalcErr('needmat');
+        if(f==='det')return cDet(a.mat);
+        if(f==='inv')return {mat:cInv(a.mat)};
+        if(f==='rank'||f==='rz')return F(cElim(a.mat,false).rank);
+        if(f==='tr'){if(a.mat.length!==a.mat[0].length)throw new CalcErr('square');return a.mat.reduce((s,r,i)=>cAdd(s,r[i]),F(0))}
+        return {mat:cElim(a.mat,true).A};
+      }
+      if(isMat(a))throw new CalcErr('scalar');
+      if(f==='abs')return isFr(a)?a.abs():Math.abs(a);
+      if(f==='sqrt'||f==='√'){
+        const v=toNum(a);if(v<0)throw new CalcErr('nan');
+        if(isFr(a)){const rn=Math.round(Math.sqrt(a.n)),rd=Math.round(Math.sqrt(a.d));if(rn*rn===a.n&&rd*rd===a.d)return F(rn,rd)}
+        return Math.sqrt(v);
+      }
+      if(['sin','cos','tg','tan','ctg','cot'].includes(f))return cTrig(f,a,o.deg&&!hasPi(n.a));
+      if(['arcsin','asin','arccos','acos','arctg','arctan','atan'].includes(f))return cArc(f,a,o.deg);
+      const v=toNum(a);
+      if(f==='exp')return Math.exp(v);
+      if(v<=0)throw new CalcErr('log');
+      if(f==='log2'){const r=Math.log2(v);return Math.abs(r-Math.round(r))<1e-12?F(Math.round(r)):r}
+      if(f==='log'||f==='lg'){const r=Math.log10(v);return Math.abs(r-Math.round(r))<1e-12?F(Math.round(r)):r}
+      return Math.log(v);
+    }
+  }
+  throw new CalcErr('?');
+}
+const hasPi=n=>!!n&&(n.t==='var'&&/π|^pi$/.test(n.n)||n.t==='lit'&&!!n.pi||['a','b'].some(k=>n[k]&&typeof n[k]==='object'&&hasPi(n[k])));
+function calcBin(op,a,b){
+  const A=isMat(a),B=isMat(b);
+  if(op==='+'||op==='-'){
+    const s=op==='+'?1:-1;
+    if(A&&B){mDims(a.mat,b.mat,'add');return {mat:a.mat.map((r,i)=>r.map((x,j)=>cAdd(x,b.mat[i][j],s)))}}
+    if(A||B)throw new CalcErr('matnum');
+    return cAdd(a,b,s);
+  }
+  if(op==='*'){
+    if(A&&B)return {mat:cMatMul(a.mat,b.mat)};
+    if(A)return {mat:a.mat.map(r=>r.map(x=>cMul(x,b)))};
+    if(B)return {mat:b.mat.map(r=>r.map(x=>cMul(a,x)))};
+    return cMul(a,b);
+  }
+  if(B)throw new CalcErr('matdiv');
+  if(A)return {mat:a.mat.map(r=>r.map(x=>cDiv(x,b)))};
+  return cDiv(a,b);
+}
+// równość z dokładnością tol (np. 0,005, gdy ktoś zaokrąglił do dwóch miejsc)
+function cSame(a,b,tol=0){
+  if(isMat(a)||isMat(b))return isMat(a)&&isMat(b)&&a.mat.length===b.mat.length&&a.mat[0].length===b.mat[0].length&&a.mat.every((r,i)=>r.every((x,j)=>cSame(x,b.mat[i][j],tol)));
+  if(isFr(a)&&isFr(b)&&a.n===b.n&&a.d===b.d)return true;
+  const x=toNum(a),y=toNum(b);
+  return Math.abs(x-y)<=tol+1e-9*Math.max(1,Math.abs(x),Math.abs(y));
+}
+
+// ---------- zapis wyniku ----------
+const cDec=s=>(LANG.cur==='en'?s:s.replace('.',',')).replace(/^-/,'−');
+// liczba całkowita, od 10 000 z odstępami między tysiącami (po angielsku przecinki)
+function cInt(n,grp){
+  const s=String(Math.abs(n)),g=grp&&s.length>4&&/^\d+$/.test(s)?s.replace(/\B(?=(\d{3})+$)/g,LANG.cur==='en'?',':' '):s;
+  return (n<0?'−':'')+g;
+}
+// liczba dziesiętna do 6 cyfr znaczących (bardzo duże i małe jako m·10^k); ex: zapis jest dokładny, więc „=”, a nie „≈”
+function cNum(x){
+  if(x===0||Object.is(x,-0))return {s:'0',ex:true};
+  const ax=Math.abs(x),close=y=>Math.abs(y-x)<=1e-12*ax;
+  if(ax>=1e9||ax<1e-4){const e=Math.floor(Math.log10(ax)),m=+(x/10**e).toPrecision(5);return {s:`${cDec(String(m))}·10<sup>${e<0?'−'+(-e):e}</sup>`,ex:close(m*10**e)}}
+  const y=+x.toPrecision(6);return {s:cDec(String(y)),ex:close(y)};
+}
+const cNumF=x=>{const q=cNum(x);return q.ex?{eq:q.s}:{ap:q.s}};
+// ułamek o skończonym rozwinięciu (mianownik 2^a·5^b), najwyżej 8 cyfr po przecinku: 981/200 → "4.905"
+function cTerm(v){
+  let d=v.d,a=0,b=0;while(d%2===0){d/=2;a++}while(d%5===0){d/=5;b++}
+  const k=Math.max(a,b);if(d!==1||k>8)return null;
+  let m=BigInt(v.n)*(10n**BigInt(k)/BigInt(v.d));const neg=m<0n;if(neg)m=-m;
+  const s=m.toString().padStart(k+1,'0');
+  return (neg?'-':'')+s.slice(0,s.length-k)+'.'+s.slice(s.length-k);
+}
+// dec: w linii są liczby dziesiętne, więc wynik też dziesiętny (bez 981/200)
+function cFmt(v,dec,grp){
+  if(isFr(v)){
+    if(v.d===1)return {eq:cInt(v.n,grp)};
+    const t=cTerm(v),fr=`${v.n<0?'−':''}${Math.abs(v.n)}/${v.d}`;
+    if(dec)return t?{eq:cDec(t)}:cNumF(v.n/v.d);
+    return t?{eq:fr,eq2:cDec(t)}:{eq:fr,ap:cDec(String(+(v.n/v.d).toPrecision(4)))};
+  }
+  if(!Number.isFinite(v))throw new CalcErr('nan');
+  const r=Math.round(v);
+  if(r!==0&&Math.abs(v-r)<1e-10*Math.abs(v)&&Math.abs(v)<1e15)return {eq:cInt(r,grp)};
+  return cNumF(v);
+}
+// short: bez dopisków (≈ 0,8333 albo = 0,25 po ułamku), do krótkich komunikatów
+function calcShow(v,dec,short){
+  if(isMat(v)){
+    let ap=false;
+    const cell=x=>{const f=cFmt(x,dec,false);if(f.eq)return f.eq;ap=true;return f.ap};
+    const body=v.mat.map(r=>r.map(cell).join(' ')).join('; ');
+    return (ap?'≈ [':'= [')+body+']';
+  }
+  const f=cFmt(v,dec,true);
+  if(!f.eq)return '≈ '+f.ap;
+  return '= '+f.eq+(short?'':(f.eq2?' = '+f.eq2:'')+(f.ap?' ≈ '+f.ap:''));
+}
+function calcErrText(e){
+  const m=e.message,k=m.split(':')[0];
+  if(k==='var')return $t(`nieznana zmienna ${e.name}`,`unknown variable ${e.name}`);
+  return {div0:$t('dzielenie przez 0','division by 0'),nan:$t('poza dziedziną','outside the domain'),log:$t('logarytm z liczby ≤ 0','logarithm of a number ≤ 0'),
+    dims:$t('wymiary macierzy nie pasują','the matrix sizes do not match'),square:$t('macierz nie jest kwadratowa','the matrix is not square'),
+    singular:$t('macierz nieodwracalna (det = 0)','the matrix is not invertible (det = 0)'),matpow:$t('potęga macierzy musi być całkowita','a matrix power must be an integer'),
+    needmat:$t('tu potrzebna jest macierz','a matrix is needed here'),scalar:$t('tu potrzebna jest liczba','a number is needed here'),
+    matnum:$t('nie dodaje się liczby do macierzy','a number cannot be added to a matrix'),matdiv:$t('nie dzieli się przez macierz','you cannot divide by a matrix'),
+    ragged:$t('wiersze macierzy mają różne długości','the matrix rows have different lengths'),fact:$t('silnia tylko z liczb 0–170','factorial only of 0–170'),
+    matexp:$t('wykładnik nie może być macierzą','the exponent cannot be a matrix'),nested:$t('element macierzy nie może być macierzą','a matrix entry cannot be a matrix'),
+    base:$t('ta cyfra nie pasuje do systemu liczby','a digit does not fit the number base'),int:$t('tu potrzebna jest liczba całkowita ≥ 0','a whole number ≥ 0 is needed here')}[k]||$t('błąd','error');
+}
+// jednostki, które mogą stać na końcu linii: 20 m/s, 72 km/h, 9,81 m/s², 4 GB
+const C_UNITS=new Set('m s g kg dag mg t km cm mm dm µm μm nm h min ms µs μs ns N kN mN J kJ MJ eV W kW MW Pa kPa hPa MPa bar Hz kHz MHz GHz V mV kV A mA Ω kΩ K mol l L ml C rad B kB KB MB GB TB KiB MiB GiB b kb Mb Gb bit bps'.split(' '));
+const cUnit=u=>u==='°C'||u.length<=14&&u.split(/[/·*]/).every(p=>C_UNITS.has(p.replace(/(\^[-−]?\d+|[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+)$/,'')));
+const C_UNIT_RE=/^(.*?[\d)\]°!%])\s*([^\s\d()[\]+\-−*·×÷/:^|'=.,]\S*)$/;
+// linie kartki; macierz pisana w kilku liniach („A = [1 2 3”, „4 5 6”, „7 8 9]”) łączy się w jedną,
+// a jej wynik stoi przy ostatniej linii. → [{src, cont}] (cont: środek macierzy, bez wyniku)
+function calcJoin(text){
+  const raw=String(text).split('\n'),clean=s=>s.replace(/(^|\s)(#|\/\/).*$/,'').trim();
+  const bal=s=>(s.match(/\[/g)||[]).length-(s.match(/\]/g)||[]).length,out=[];
+  for(let i=0;i<raw.length;i++){
+    const s=clean(raw[i]);
+    if(bal(s)>0){
+      let j=i,acc=s;
+      // kolejne wiersze to same liczby i działania; linia z „=” albo nowym „[” kończy próbę
+      while(bal(acc)>0&&j+1<raw.length&&j-i<30){const n=clean(raw[j+1]);if(/[=[]/.test(n))break;j++;if(!n)continue;acc+=(/[;[]$/.test(acc)||/^[;\]]/.test(n)?' ':'; ')+n}
+      if(bal(acc)===0&&j>i){for(let k=i;k<j;k++)out.push({src:'',cont:true});out.push({src:acc});i=j;continue}
+    }
+    out.push({src:s});
+  }
+  return out;
+}
+// cała kartka: zmienne przechodzą z linii do linii.
+// Każda linia → null albo {kind, html, cls, verdict} oraz dane do rozpisania (src, name, sides, env, dec):
+//   kind 'val' wynik, 'check' sprawdzona równość (verdict: krótko, bez wyniku), 'err' błąd, 'note' uwaga (np. wymiar macierzy)
+function calcLines(text,o={deg:true}){
+  const env=new Map(),decV=new Set();
+  const known=x=>env.has(x)||C_FUN.has(x)||x==='pi'||x==='π';
+  const isDec=s=>/\d[.,]\d/.test(s)||(s.match(C_IDS)||[]).some(x=>decV.has(x));
+  const has=x=>env.has(x);
+  const parse=s=>{try{return calcParse(calcTokens(cNorm(s),has),has)}catch(e){if(e.message==='base')throw e;return null}};
+  // wartość wyrażenia {v, unit, lit, litMat, base} albo null, gdy to raczej zwykły tekst; błąd w rachunku → wyjątek
+  const value=src=>{
+    src=src.trim();
+    const bm=src.match(/^(bin|hex|oct)(?:\s*\((.+)\)|\s+(.+))$/i);
+    if(bm){
+      const r=value(bm[2]||bm[3]);if(!r)return null;
+      if(!isFr(r.v)||r.v.d!==1||r.v.n<0)throw new CalcErr('int');
+      return {...r,base:{bin:2,hex:16,oct:8}[bm[1].toLowerCase()],lit:false,litMat:false};
+    }
+    // linia bez cyfr i działań to tekst, chyba że składa się ze znanych nazw (np. „det B”)
+    if(!/[\d+\-−*/·×÷:^()[\]√!°%|'⁰¹²³⁴⁵⁶⁷⁸⁹⁻ᵀ]/.test(src)&&!(src.match(C_IDS)||[]).every(known))return null;
+    const ast=parse(src);let err=null;
+    // sama liczba albo macierz z samych liczb: wynik powtórzyłby to, co wpisane
+    const litMat=!!ast&&ast.t==='mat'&&ast.rows.every(r=>r.every(c=>c.t==='num'||c.t==='neg'&&c.a.t==='num'));
+    if(ast){try{return {v:calcEval(ast,env,o),unit:'',lit:C_LIT.test(src),litMat,src}}catch(e){err=e}}
+    if(!ast||err.message==='var'){
+      const um=src.match(C_UNIT_RE),a2=um&&cUnit(um[2])?parse(um[1]):null;
+      if(a2)return {v:calcEval(a2,env,o),unit:um[2],lit:C_LIT.test(um[1].trim()),litMat:false,src:um[1].trim()};
+    }
+    if(!ast)return null;
+    if(err.message==='var'&&err.name&&err.name.length>=3&&!/\d/.test(err.name))return null;   // zwykłe słowo w notatce
+    throw err;
+  };
+  const show=(r,dec,short)=>{
+    if(r.base)return `= ${r.v.n.toString(r.base).toUpperCase()}<sub>${r.base}</sub>`;
+    return calcShow(r.v,dec,short)+(r.unit&&!isMat(r.v)?' '+escH(r.unit):'');
+  };
+  const dims=v=>$t(`macierz ${v.mat.length}×${v.mat[0].length}`,`${v.mat.length}×${v.mat[0].length} matrix`);
+  const fail=e=>({kind:'err',cls:'err',html:e instanceof CalcErr?calcErrText(e):$t('błąd','error')});
+  return calcJoin(text).map(L=>{
+    if(L.cont||!L.src)return null;
+    // bez numeracji „a)”, „2.”; „Pole: 3·4” liczy to, co po dwukropku
+    let line=L.src.replace(/^(?:[a-zA-Z]|\d{1,2})[).]\s+/,'');
+    const lab=line.match(/^([^:\d=()[\]]+):\s*(.+)$/);
+    if(lab&&/\p{L}{2,}/u.test(lab[1])&&!(lab[1].match(C_IDS)||[]).every(known))line=lab[2];
+    // „A[1 2; 3 4]” to też przypisanie macierzy
+    const sm=line.match(new RegExp(`^([${C_L}][${C_L}0-9]*)\\s*(\\[[^\\[\\]]*\\])$`));
+    if(sm&&!C_FUN.has(sm[1])&&!env.has(sm[1]))line=`${sm[1]} = ${sm[2]}`;
+    if(!line)return null;
+    const ctx={env:new Map(env),deg:!!o.deg};   // zmienne sprzed tej linii, do rozpisania
+    try{
+      // przypisanie: v0 = 72/3,6
+      const m=line.match(C_ASG);
+      if(m&&!C_FUN.has(m[1])){
+        let r;
+        try{r=value(m[2])}catch(e){env.delete(m[1]);throw e}
+        if(!r)return null;
+        const dec=isDec(m[2]);
+        env.set(m[1],r.v);if(dec)decV.add(m[1]);else decV.delete(m[1]);
+        if(r.litMat)return {kind:'note',cls:'note',html:dims(r.v),name:m[1],src:r.src,dec,...ctx};
+        if(r.lit)return null;   // „a = 4”: nic nowego do pokazania
+        return {kind:'val',cls:'',html:show(r,dec),name:m[1],src:r.src,unit:r.unit,base:r.base,dec,...ctx};
+      }
+      const sides=line.replace(/≈/g,'=').split('=');
+      // „2 + 2 =” liczy lewą stronę
+      if(sides.length===2&&!sides[1].trim()){
+        const r=value(sides[0]);const dec=isDec(sides[0]);
+        return r?{kind:'val',cls:'',html:show(r,dec),src:r.src,unit:r.unit,base:r.base,dec,...ctx}:null;
+      }
+      // „1/2 + 1/3 = 5/6” sprawdza równość; „10/3 = 3,33” przechodzi po zaokrągleniu
+      if(sides.length===2&&sides[0].trim()){
+        let L,Rv;
+        try{L=value(sides[0]);Rv=value(sides[1])}catch(e){if(e.message==='var')return null;throw e}   // „2x = 10”: równanie do rozwiązania, nie rachunek
+        if(!L||!Rv)return null;
+        const dec=isDec(line),lit=s=>C_LIT.test(s.trim()),kd=s=>{const q=s.trim().match(/[.,](\d+)$/);return lit(s)&&q?q[1].length:0};
+        const base={kind:'check',sides:[L.src,Rv.src],lv:L.v,rv:Rv.v,dec,...ctx};
+        if(cSame(L.v,Rv.v))return {...base,cls:'ok',ok:true,html:$t('zgadza się','correct'),verdict:$t('zgadza się','correct')};
+        const k=Math.max(kd(sides[0]),kd(sides[1]));
+        if(k&&cSame(L.v,Rv.v,0.5*10**-k))return {...base,cls:'ok',ok:true,round:k,html:$t('zgadza się po zaokrągleniu','correct after rounding'),verdict:$t('zgadza się po zaokrągleniu','correct after rounding')};
+        const tell=$t('lewa strona ','the left side ')+show(L,dec,true)+(lit(sides[1])?'':$t(', prawa ',', the right side ')+show(Rv,dec,true));
+        return {...base,cls:'bad',ok:false,html:$t('nie zgadza się: ','does not match: ')+tell,verdict:$t('nie zgadza się','does not match')};
+      }
+      if(sides.length>1)return null;
+      const r=value(line);if(!r)return null;
+      if(r.litMat)return {kind:'note',cls:'note',html:dims(r.v),src:r.src,dec:isDec(line),...ctx};
+      return r.lit?null:{kind:'val',cls:'',html:show(r,isDec(line)),src:r.src,unit:r.unit,base:r.base,dec:isDec(line),...ctx};
+    }catch(e){return fail(e)}
+  });
+}
+// do pokazania w zeszycie: {html, cls, kind, verdict} dla każdej linii
+const calcText=(text,o)=>calcLines(text,o).map(r=>r&&{html:r.html,cls:r.cls,kind:r.kind,verdict:r.verdict});
+// pierwsza strona zeszytu: krótki przykład tego, co umie kalkulator
+function calcExample(){
+  return $t('# Wynik pojawia się obok.\n1/2 + 1/3\nv0 = 72/3,6\ns = v0^2/(2·4)\nA = [2 1\n5 3]\ndet(A)\nA^-1\n2/3 + 1/4 = 11/12\n',
+    '# Results show at line ends\n1/2 + 1/3\nv0 = 72/3.6\ns = v0^2/(2·4)\nA = [2 1\n5 3]\ndet(A)\nA^-1\n2/3 + 1/4 = 11/12\n');
+}
+// przykłady z pierwszej wersji zeszytu (każdy przedmiot miał swój): takich stron nie przenosimy do wspólnego zeszytu
+const CALC_OLD_EXAMPLES=[
+  '# Wynik pojawia się obok.\n1/2 + 1/3\nA = [2 1; 5 3]\ndet(A)\nA^-1\nA*A^-1\n2/3 + 1/4 = 11/12\n',
+  '# Results show at line ends\n1/2 + 1/3\nA = [2 1; 5 3]\ndet(A)\nA^-1\nA*A^-1\n2/3 + 1/4 = 11/12\n',
+  '# Wynik pojawia się obok.\n# 72 km/h na m/s:\nv0 = 72/3,6\na = 4 m/s²\ns = v0^2/(2a)\ng = 9,81\nt = 2v0·sin(30°)/g\n',
+  '# Results show at line ends\n# 72 km/h in m/s:\nv0 = 72/3.6\na = 4 m/s²\ns = v0^2/(2a)\ng = 9.81\nt = 2v0·sin(30°)/g\n',
+  '# Prawa: r = 4, w = 2, x = 1\nr = 4\nw = 2\nx = 1\nr+w+x\nr+x\n# rwxr-xr-x jako bity:\noct(0b111101101)\n# Hosty w sieci /24:\n2^8 - 2\n',
+  '# Permissions: r=4, w=2, x=1\nr = 4\nw = 2\nx = 1\nr+w+x\nr+x\n# rwxr-xr-x as bits:\noct(0b111101101)\n# Hosts in a /24 network:\n2^8 - 2\n'];
+
+// =====================================================================
+//  „Rozpisz”: linia zeszytu krok po kroku, jako klatki odtwarzacza (play w app.js)
+// =====================================================================
+//  calcSteps(rekord z calcLines) → klatki [{sec, t, x, S, B, J, C, U}]
+//  Liczby: kolejność działań (najpierw nawiasy, potęgi, mnożenie i dzielenie, na końcu dodawanie),
+//  ułamki ze wspólnym mianownikiem i skracaniem, pierwiastki, funkcje, systemy liczbowe.
+//  Macierze: gotowe klatki silnika algebry (detFrames, invFrames, mulFrames, transFrames,
+//  scaleFrames, sumFrames, gaussFrames); wyznacznik 4×4 i większy rozwinięciem Laplace’a.
+// =====================================================================
+const stLit=(v,o={})=>({t:'lit',v,...o});
+const stName=s=>{const m=s.match(/^(\D+?)_?(\d*)$/);return m?`<i>${escH(m[1])}</i>${m[2]?`<sub>${m[2]}</sub>`:''}`:`<i>${escH(s)}</i>`};
+const stFrac=(p,q)=>q===1?cInt(p):`${p<0?'−':''}<span class="fr"><span>${Math.abs(p)}</span><span>${q}</span></span>`;
+const stIsFrM=v=>isMat(v)&&v.mat.every(r=>r.every(isFr));
+const stEq=v=>isMat(v)||isFr(v)||cNum(v).ex?'=':'≈';
+function stNum(v,dec){
+  if(isFr(v)){
+    if(v.d===1)return cInt(v.n,false);
+    if(dec){const t=cTerm(v);return t?cDec(t):cNum(v.n/v.d).s}
+    return v.html();
+  }
+  return cNum(v).s;
+}
+const stMatH=(v,dec)=>`<span class="mat" style="grid-template-columns:repeat(${v.mat[0].length},auto)">${v.mat.flat().map(x=>`<span>${stNum(x,dec)}</span>`).join('')}</span>`;
+
+// ---------- drzewo kroków: liczby, ułamki 1/2 i zmienne to od razu gotowe wartości (lit) ----------
+function stFrom(n,X){
+  switch(n.t){
+    case 'num':{
+      const v=calcEval(n,X.env,X.o);
+      if(n.raw){X.bases.push({raw:n.raw,v});return stLit(v,{txt:n.raw})}
+      return stLit(v,{txt:cDec(n.v.replace(/^\./,'0.'))});
+    }
+    case 'var':{
+      if(X.env.has(n.n)){const v=X.env.get(n.n);if(isMat(v))return stLit(v,{lab:stName(n.n)});X.subs.set(n.n,v);return stLit(v,{name:n.n})}
+      if(n.n==='pi'||n.n==='π')return stLit(Math.PI,{txt:'π',pi:true});
+      if(n.n==='e')return stLit(Math.E,{txt:'e'});
+      throw Object.assign(new CalcErr('var'),{name:n.n});
+    }
+    case 'bin':{
+      const a=stFrom(n.a,X),b=stFrom(n.b,X);
+      // 1/2 wpisane jako skrócony ułamek to liczba, a nie dzielenie do rozpisania
+      if(n.o==='/'&&a.txt&&b.txt&&isFr(a.v)&&isFr(b.v)&&a.v.d===1&&b.v.d===1&&b.v.n>1&&gcd(a.v.n,b.v.n)===1&&!/[.,xbo]/i.test(a.txt+b.txt))return stLit(a.v.div(b.v),{frac:true});
+      return {t:'bin',o:n.o,a,b};
+    }
+    case 'neg':{
+      const a=stFrom(n.a,X);
+      if(a.t==='lit'&&!isMat(a.v)&&(a.txt&&!a.pi||a.frac))return stLit(cNeg(a.v),a.txt?{txt:'−'+a.txt}:{frac:true});
+      return {t:'neg',a};
+    }
+    case 'pow':return {t:'pow',a:stFrom(n.a,X),b:stFrom(n.b,X)};
+    case 'post':return {t:'post',o:n.o,a:stFrom(n.a,X)};
+    case 'call':return {t:'call',f:n.f,a:stFrom(n.a,X)};
+    case 'mat':{
+      const rows=n.rows.map(r=>r.map(c=>stFrom(c,X)));
+      if(rows.every(r=>r.every(c=>c.t==='lit'&&!isMat(c.v))))return stLit({mat:rows.map(r=>r.map(c=>c.v))});
+      return {t:'mat',rows};
+    }
+  }
+  throw new CalcErr('?');
+}
+const stKids=n=>n.t==='bin'||n.t==='pow'?[n.a,n.b]:n.t==='mat'?n.rows.flat():n.t==='lit'?[]:[n.a];
+const stNeg=n=>n.t==='neg'||n.t==='lit'&&!isMat(n.v)&&!n.name&&toNum(n.v)<0;
+// pojedynczy „atom”: nie potrzebuje nawiasu jako podstawa potęgi albo argument funkcji
+const stAtom=n=>n.t==='lit'&&(isMat(n.v)||n.lab||!stNeg(n)&&(!isFr(n.v)||n.v.d===1||n.txt))||n.t==='call';
+const ST_FN={sqrt:'√',sin:'sin',cos:'cos',tg:'tg',tan:'tg',ctg:'ctg',cot:'ctg',arcsin:'arcsin',asin:'arcsin',arccos:'arccos',acos:'arccos',arctg:'arctg',arctan:'arctg',atan:'arctg',ln:'ln',log:'log',lg:'log',log2:'log<sub>2</sub>',exp:'exp',det:'det',rz:'rz',rank:'rz',tr:'tr',rref:'rref'};
+function stH(n,mk,o){
+  const prec=x=>x.t==='bin'?(x.o==='+'||x.o==='-'?1:2):stNeg(x)?3:x.t==='pow'?4:x.t==='post'?5:9;
+  const sub=(c,need)=>{const h=stH(c,mk,o);return need?`(${h})`:h};
+  let h;
+  if(n.t==='lit'){
+    if(n.lab)h=n.lab;
+    else if(isMat(n.v))h=stMatH(n.v,o.dec);
+    else if(o.names&&n.name)h=stName(n.name);
+    else if(n.txt)h=escH(n.txt);
+    else h=stNum(n.v,o.dec);
+  }else if(n.t==='bin'){
+    // kreska ułamkowa dla prostych liczb; gdy w liczniku albo mianowniku jest już ułamek, piszemy „:”
+    const frq=x=>x.t==='lit'&&!isMat(x.v)&&isFr(x.v)&&x.v.d!==1&&!o.dec||x.t==='bin'&&x.o==='/'||x.t==='lit'&&isMat(x.v);
+    if(n.o==='/'&&!frq(n.a)&&!frq(n.b))h=`<span class="fr"><span>${stH(n.a,mk,o)}</span><span>${stH(n.b,mk,o)}</span></span>`;
+    else{
+      const p=n.o==='+'||n.o==='-'?1:2;
+      h=`${sub(n.a,prec(n.a)<p)} ${{'+':'+','-':'−','*':'·','/':':'}[n.o]} ${sub(n.b,prec(n.b)<p||prec(n.b)===p&&(n.o==='-'||n.o==='/')||stNeg(n.b))}`;
+    }
+  }else if(n.t==='neg')h='−'+sub(n.a,prec(n.a)<=3);
+  else if(n.t==='pow')h=sub(n.a,!stAtom(n.a))+`<sup>${stH(n.b,mk,o)}</sup>`;
+  else if(n.t==='post')h=sub(n.a,!stAtom(n.a))+{'!':'!','°':'°','%':'%',T:'<sup>T</sup>'}[n.o];
+  else if(n.t==='call'){
+    const a=stH(n.a,mk,o);
+    if(n.f==='abs')h=`|${a}|`;
+    else if(n.f==='inv')h=sub(n.a,!stAtom(n.a))+'<sup>−1</sup>';
+    else if(n.f==='sqrt'||n.f==='√')h='√'+(stAtom(n.a)?a:`(${a})`);
+    else if(['det','rz','rank','tr'].includes(n.f))h=`${ST_FN[n.f]} ${stAtom(n.a)?a:`(${a})`}`;
+    else h=`${ST_FN[n.f]||n.f}(${a})`;
+  }else if(n.t==='mat')h=`<span class="mat" style="grid-template-columns:repeat(${n.rows[0].length},auto)">${n.rows.flat().map(c=>`<span>${stH(c,mk,o)}</span>`).join('')}</span>`;
+  const c=mk&&mk.get(n);
+  return c?`<span class="${c}">${h}</span>`:h;
+}
+// węzły gotowe do policzenia: wszystkie ich dzieci to już wartości (od lewej do prawej)
+function stReady(n,out=[]){if(n.t==='lit')return out;const k=stKids(n);if(k.every(c=>c.t==='lit'))out.push(n);else k.forEach(c=>stReady(c,out));return out}
+function stSwap(n,map){
+  if(map.has(n))return map.get(n);
+  if(n.t==='lit')return n;
+  if(n.t==='bin'||n.t==='pow')return {...n,a:stSwap(n.a,map),b:stSwap(n.b,map)};
+  if(n.t==='mat')return {...n,rows:n.rows.map(r=>r.map(c=>stSwap(c,map)))};
+  return {...n,a:stSwap(n.a,map)};
+}
+const stCount=n=>n.t==='lit'?0:1+stKids(n).reduce((s,c)=>s+stCount(c),0);
+const stHasMat=n=>n.t==='lit'?isMat(n.v):stKids(n).some(stHasMat);
+const stHasAdd=n=>n.t==='bin'&&(n.o==='+'||n.o==='-')||stKids(n).some(stHasAdd);
+
+// ---------- jeden krok na liczbach: {cls, t, x, C} (C: linie rachunku), quiet: bez osobnej klatki ----------
+const ST_TRIG={0:['0','1','0'],30:['1/2','√3/2','√3/3'],45:['√2/2','√2/2','1'],60:['√3/2','1/2','√3'],90:['1','0','—']};
+function stOp(n,r,X){
+  const dec=X.dec,N=v=>stNum(v,dec),a=n.a&&n.a.v,b=n.b&&n.b.v,P=v=>!isMat(v)&&toNum(v)<0?`(${N(v)})`:N(v);
+  const fr=v=>isFr(v)&&!dec;
+  if(n.t==='neg')return {cls:'neg',quiet:true};
+  if(n.t==='bin'&&(n.o==='+'||n.o==='-')){
+    const add=n.o==='+',sg=add?'+':'−';
+    if(fr(a)&&fr(b)&&(a.d!==1||b.d!==1)){
+      const L=lcmN(a.d,b.d),pa=a.n*(L/a.d),pb=b.n*(L/b.d),s=add?pa+pb:pa-pb,C=[];
+      if(a.d!==L)C.push(`${N(a)} = ${stFrac(pa,L)}`);
+      if(b.d!==L)C.push(`${N(b)} = ${stFrac(pb,L)}`);
+      C.push(`${stFrac(pa,L)} ${sg} ${pb<0?`(${stFrac(pb,L)})`:stFrac(pb,L)} = ${stFrac(s,L)}`);
+      const g=gcd(s,L);if(g>1&&s!==0)C.push(`${stFrac(s,L)} = ${N(r)}`+$t(` (skracamy przez ${g})`,` (cancel by ${g})`));
+      return {cls:'add',frac:true,C,x:$t(`Ułamki ${add?'dodajemy':'odejmujemy'}, gdy mają ten sam mianownik. Najmniejszy wspólny mianownik ${a.d} i ${b.d} to ${L}: rozszerzamy ułamki${a.d===1||b.d===1?' (liczba całkowita to ułamek o mianowniku 1)':''}, a potem ${add?'dodajemy':'odejmujemy'} liczniki.`,`Fractions are ${add?'added':'subtracted'} once they have the same denominator. The lowest common denominator of ${a.d} and ${b.d} is ${L}: expand the fractions${a.d===1||b.d===1?' (a whole number is a fraction with denominator 1)':''}, then ${add?'add':'subtract'} the numerators.`)};
+    }
+    return {cls:'add',C:[`${N(a)} ${sg} ${P(b)} ${stEq(r)} ${N(r)}`]};
+  }
+  if(n.t==='bin'&&n.o==='*'){
+    if(fr(a)&&fr(b)&&(a.d!==1||b.d!==1)){
+      const p=a.n*b.n,q=a.d*b.d,C=[`${P(a)} · ${P(b)} = ${stFrac(p,q)}`];
+      const g=gcd(p,q);if(g>1&&p!==0)C.push(`${stFrac(p,q)} = ${N(r)}`+$t(` (skracamy przez ${g})`,` (cancel by ${g})`));
+      return {cls:'mul',frac:true,C,x:$t('Ułamki mnożymy tak: licznik razy licznik, mianownik razy mianownik. Na końcu skracamy.','To multiply fractions, multiply the numerators and multiply the denominators. Then cancel.')};
+    }
+    return {cls:'mul',C:[`${P(a)} · ${P(b)} ${stEq(r)} ${N(r)}`]};
+  }
+  if(n.t==='bin'&&n.o==='/'){
+    if(fr(a)&&fr(b)){
+      if(a.d===1&&b.d===1){
+        if(r.d===1)return {cls:'mul',C:[`${P(a)} : ${P(b)} = ${N(r)}`]};
+        const g=gcd(a.n,b.n);
+        if(n.tight&&g>1)return {cls:'mul',frac:true,t:['Skracanie ułamka','Simplifying a fraction'],C:[`${stFrac(a.n,b.n)} = ${N(r)}`+$t(` (dzielimy licznik i mianownik przez ${g})`,` (divide the numerator and the denominator by ${g})`)]};
+        return {cls:'mul',frac:true,C:[`${P(a)} : ${P(b)} = ${stFrac(a.n,b.n)}`+(g>1?` = ${N(r)}`+$t(` (skracamy przez ${g})`,` (cancel by ${g})`):'')],x:$t('Dzielenie, które nie wychodzi równo, zapisujemy jako ułamek.','A division that does not come out even is written as a fraction.')};
+      }
+      const ib=F(1).div(b),p=a.n*ib.n,q=a.d*ib.d,g=gcd(p,q);
+      const C=[`${P(a)} : ${P(b)} = ${P(a)} · ${P(ib)}`,`${P(a)} · ${P(ib)} = ${stFrac(p,q)}`+(g>1?` = ${N(r)}`:'')];
+      return {cls:'mul',frac:true,C,x:$t(`Dzielenie przez ułamek to mnożenie przez jego odwrotność: ${N(b)} odwracamy na ${N(ib)}.`,`Dividing by a fraction means multiplying by its reciprocal: ${N(b)} turns into ${N(ib)}.`)};
+    }
+    return {cls:'mul',C:[`${P(a)} : ${P(b)} ${stEq(r)} ${N(r)}`]};
+  }
+  if(n.t==='pow'){
+    const t=$t('Potęga','Power');
+    if(isFr(b)&&b.d===1&&isFr(r)){
+      const k=b.n,base=P(a);
+      if(k===0)return {cls:'pow',C:[`${base}<sup>0</sup> = 1`],x:$t('Każda liczba różna od zera do potęgi 0 daje 1.','Any nonzero number to the power 0 is 1.')};
+      if(k<0)return {cls:'pow',C:[`${base}<sup>−${-k}</sup> = 1 : ${base}<sup>${-k}</sup> = ${N(r)}`],x:$t('Potęga o ujemnym wykładniku to odwrotność potęgi o dodatnim wykładniku.','A negative exponent means the reciprocal of the positive power.')};
+      if(k>=2&&k<=6)return {cls:'pow',C:[`${base}<sup>${k}</sup> = ${Array(k).fill(base).join(' · ')} = ${N(r)}`],x:isFr(a)&&a.d!==1?$t('Ułamek podnosimy do potęgi, podnosząc licznik i mianownik.','A fraction is raised to a power by raising its numerator and denominator.'):''};
+      return {cls:'pow',C:[`${base}<sup>${k}</sup> = ${N(r)}`],x:k>6?$t(`To iloczyn ${k} jednakowych czynników.`,`That is a product of ${k} equal factors.`):''};
+    }
+    return {cls:'pow',C:[`${P(a)}<sup>${N(b)}</sup> ≈ ${N(r)}`],x:$t('Wykładnik nie jest liczbą całkowitą, więc wynik jest przybliżony.','The exponent is not a whole number, so the result is approximate.')};
+  }
+  if(n.t==='post'){
+    if(n.o==='T')return {cls:'post',quiet:true};
+    if(n.o==='°')return X.o.deg?{cls:'post',quiet:true}:{cls:'post',C:[`${N(a)}° = ${N(a)} · π : 180 ≈ ${N(r)}`],x:$t('Kąt w stopniach zamieniamy na radiany: mnożymy przez π i dzielimy przez 180.','Degrees become radians: multiply by π and divide by 180.')};
+    if(n.o==='%')return {cls:'post',C:[`${N(a)}% = ${N(a)} : 100 = ${N(r)}`],x:$t('Procent to setna część.','A percent is one hundredth.')};
+    const k=toNum(a);
+    return {cls:'post',C:[`${N(a)}! = ${k<2?'1':Array.from({length:k},(_,i)=>i+1).slice(0,10).join(' · ')+(k>10?' · …':'')} = ${N(r)}`],x:$t('Silnia to iloczyn kolejnych liczb od 1 do danej liczby.','A factorial is the product of the numbers from 1 up to the given number.')};
+  }
+  if(n.t==='call'){
+    const f=n.f,A=N(a);
+    if(f==='abs')return {cls:'call',C:[`|${A}| = ${N(r)}`],x:$t('Wartość bezwzględna to liczba bez znaku minus.','The absolute value is the number without its minus sign.')};
+    if(f==='sqrt'||f==='√'){
+      if(isFr(r))return {cls:'call',C:[`√${stAtom(n.a)?A:`(${A})`} = ${N(r)}`],x:$t(`Bo ${P(r)}<sup>2</sup> = ${A}.`,`Because ${P(r)}<sup>2</sup> = ${A}.`)};
+      return {cls:'call',C:[`√${stAtom(n.a)?A:`(${A})`} ≈ ${N(r)}`],x:$t(`${A} nie jest kwadratem liczby wymiernej, więc pierwiastek podajemy w przybliżeniu.`,`${A} is not the square of a rational number, so the root is approximate.`)};
+    }
+    if(['sin','cos','tg','tan','ctg','cot'].includes(f)){
+      const deg=X.o.deg&&!hasPi(n.a),ang=deg?toNum(a):toNum(a)/RAD,k=['sin','cos','tg','tan','ctg','cot'].indexOf(f),idx=k<2?k:2;
+      const exact=Math.abs(ang-Math.round(ang))<1e-9&&ST_TRIG[Math.round(ang)]&&k<4?ST_TRIG[Math.round(ang)][idx]:null;
+      const lab=`${ST_FN[f]}(${deg?A+'°':A})`;
+      return {cls:'call',C:[exact&&exact!=='—'?`${lab} = ${exact}${/√/.test(exact)?` ≈ ${N(r)}`:''}`:`${lab} ${stEq(r)} ${N(r)}`],
+        x:exact?$t(`${Math.round(ang)}° to kąt z tabeli wartości funkcji trygonometrycznych.`,`${Math.round(ang)}° is in the table of trigonometric values.`):deg?'':$t('Kąt jest w radianach.','The angle is in radians.')};
+    }
+    if(['arcsin','asin','arccos','acos','arctg','arctan','atan'].includes(f)){
+      const g={arcsin:'sin',asin:'sin',arccos:'cos',acos:'cos'}[f]||'tg';
+      return {cls:'call',C:[`${ST_FN[f]}(${A}) ${stEq(r)} ${N(r)}${X.o.deg?'°':''}`],x:$t(`Szukamy kąta, którego ${g} wynosi ${A}.`,`We look for the angle whose ${g==='tg'?'tan':g} is ${A}.`)};
+    }
+    if(['log','lg','log2','ln'].includes(f)){
+      const B=f==='log2'?'2':f==='ln'?'e':'10';
+      if(isFr(r))return {cls:'call',C:[`${ST_FN[f]}(${A}) = ${N(r)}`],x:$t(`Bo ${B}<sup>${N(r)}</sup> = ${A}.`,`Because ${B}<sup>${N(r)}</sup> = ${A}.`)};
+      return {cls:'call',C:[`${ST_FN[f]}(${A}) ≈ ${N(r)}`],x:$t(`Szukamy wykładnika, do którego trzeba podnieść ${B}, żeby dostać ${A}.`,`We look for the exponent that turns ${B} into ${A}.`)};
+    }
+    if(f==='exp')return {cls:'call',C:[`e<sup>${A}</sup> ≈ ${N(r)}`]};
+  }
+  return {cls:'other',C:[`= ${isMat(r)?stMatH(r,dec):N(r)}`]};
+}
+const ST_TITLE={add:['Dodawanie i odejmowanie','Addition and subtraction'],mul:['Mnożenie i dzielenie','Multiplication and division'],pow:['Potęgi','Powers'],post:['Silnia, procent, stopnie','Factorial, percent, degrees'],call:['Funkcje','Functions'],other:['Rachunek','Working']};
+const ST_TITLE_FR={add:['Dodawanie ułamków','Adding fractions'],mul:['Mnożenie i dzielenie ułamków','Multiplying and dividing fractions']};
+
+// ---------- działania na macierzach: klatki silnika algebry ----------
+function stDet(A,lab,sec,detailed=true){
+  const n=A.length;
+  if(n<=3)return detFrames(A,lab,sec,detailed&&n===3);
+  // Laplace: rozwijamy względem wiersza albo kolumny z największą liczbą zer
+  let best={z:-1};
+  for(let i=0;i<n;i++){const z=A[i].filter(x=>x.z).length;if(z>best.z)best={z,row:true,k:i}}
+  for(let j=0;j<n;j++){const z=A.filter(r=>r[j].z).length;if(z>best.z)best={z,row:false,k:j}}
+  const k=best.k,el=i=>best.row?A[k][i]:A[i][k],minor=i=>{const r=best.row?k:i,c=best.row?i:k;return A.filter((_,a)=>a!==r).map(x=>x.filter((_,b)=>b!==c))};
+  const terms=[],fr=[];let sum=F(0);
+  for(let i=0;i<n;i++){
+    if(el(i).z)continue;
+    const r=best.row?k:i,c=best.row?i:k,sg=(r+c)%2?-1:1,ml=`<i>M</i><sub>${r+1}${c+1}</sub>`,d=detF(minor(i));
+    terms.push({sg,a:el(i),ml,d,r,c});sum=sum.add(el(i).mul(d).mul(F(sg)));
+  }
+  const where=best.row?$t(`wiersza ${k+1}`,`row ${k+1}`):$t(`kolumny ${k+1}`,`column ${k+1}`);
+  const hl=best.row?{rows:{[k]:'src'}}:{cols:{[k]:'src'}};
+  fr.push({sec,t:$t(`${lab}: rozwinięcie Laplace’a względem ${where}`,`${lab}: Laplace expansion along ${where}`),
+    x:$t(`Bierzemy ${where} z największą liczbą zer. Każdy jej element mnożymy przez (−1)<sup><i>i</i>+<i>j</i></sup> i wyznacznik macierzy bez jego wiersza i kolumny (minor <i>M</i><sub><i>ij</i></sub>). Zera pomijamy.`,`Take ${where}, which has the most zeros. Each of its entries is multiplied by (−1)<sup><i>i</i>+<i>j</i></sup> and by the determinant of the matrix without its row and column (the minor <i>M</i><sub><i>ij</i></sub>). Zeros are skipped.`),
+    B:[bd(A,{det:true,lab,hl})],C:[{h:`${lab} = ${terms.map((t,q)=>`${q?(t.sg>0?' + ':' − '):(t.sg>0?'':'−')}${fmt(t.a)} · det ${t.ml}`).join('')}`,full:true}],U:[{t:.5,line:0}]});
+  for(const t of terms)fr.push(...stDet(minor(best.row?t.c:t.r),`det ${t.ml}`,sec,false));
+  fr.push({sec,t:`${lab} = ${sum.html()}`,x:$t('Wstawiamy policzone minory.','Put the computed minors in.'),B:[bd(A,{det:true,lab})],
+    C:[{h:`${lab} = ${terms.map((t,q)=>`${q?(t.sg>0?' + ':' − '):(t.sg>0?'':'−')}${fmt(t.a)} · ${fmt(t.d)}`).join('')} = <b>${sum.html()}</b>`,full:true}],U:[{t:.5,line:0}]});
+  return fr;
+}
+let stM=0;
+const stMLab=()=>`<i>M</i><sub>${++stM}</sub>`;
+const stPar=l=>/[ +−]/.test(l.replace(/<[^>]+>/g,''))?`(${l})`:l;
+// → {frames, lab} albo null, gdy to nie działanie na macierzach
+function stMatOp(n,r,X){
+  const sec=$t('Macierze','Matrices'),A=n.a&&n.a.v,B=n.b&&n.b.v;
+  const lbl=x=>x&&x.t==='lit'&&isMat(x.v)?(x.lab||stMatH(x.v,X.dec)):'',la=lbl(n.a),lb=lbl(n.b);
+  const ok=[A,B,r].filter(isMat).every(stIsFrM)&&[A,B].every(v=>v===undefined||isMat(v)||isFr(v));
+  const done=(frames,lab)=>({frames,lab});
+  const fallback=lab=>done([{sec,t:lab,x:$t('Wynik działania na macierzach.','The result of the matrix operation.'),S:`<div class="eq">${lab} = ${stMatH(r,X.dec)}</div>`}],lab);
+  if(n.t==='call'&&n.f==='det'){
+    const lab=`det ${stPar(la)}`;
+    return {frames:ok?stDet(A.mat,lab,sec):[{sec,t:lab,S:`<div class="eq">${lab} ${isFr(r)?'=':'≈'} ${stNum(r,X.dec)}</div>`}],scalar:true};
+  }
+  if(n.t==='call'&&n.f==='abs'&&isMat(A))return stMatOp({...n,f:'det'},r,X);
+  if(n.t==='call'&&(n.f==='rz'||n.f==='rank')){
+    const lab=`rz ${stPar(la)}`;
+    if(!ok)return {frames:[{sec,t:`${lab} = ${stNum(r,X.dec)}`}],scalar:true};
+    const g=gaussFrames(A.mat,A.mat[0].length,{mode:'rank',lab:la,sec});
+    g.frames.push({sec,t:`${lab} = ${stNum(r,X.dec)}`,x:$t(`Rząd to liczba niezerowych wierszy w postaci schodkowej: ${stNum(r,X.dec)}.`,`The rank is the number of nonzero rows in row echelon form: ${stNum(r,X.dec)}.`),B:[bd(g.A,{lab:la})]});
+    return {frames:g.frames,scalar:true};
+  }
+  if(n.t==='call'&&n.f==='tr'){
+    const lab=`tr ${stPar(la)}`,d=A.mat.map((row,i)=>row[i]);
+    return {frames:[{sec,t:`${lab} = ${stNum(r,X.dec)}`,x:$t('Ślad to suma liczb na przekątnej.','The trace is the sum of the diagonal.'),B:ok?[bd(A.mat,{lab:la,hl:{cells:Object.fromEntries(d.map((_,i)=>[i+','+i,'res']))}})]:undefined,
+      C:[{h:`${lab} = ${d.map(x=>stNum(x,X.dec)).join(' + ')} = <b>${stNum(r,X.dec)}</b>`,full:true}],U:[{t:.5,line:0}]}],scalar:true};
+  }
+  if(!isMat(r))return null;
+  if(!ok)return fallback(stMLab());
+  if(n.t==='call'&&n.f==='inv'||n.t==='pow'&&isFr(B)&&B.n===-1&&B.d===1){const lab=`${stPar(la)}<sup>−1</sup>`;return done(invFrames(A.mat,la,lab,sec).frames,lab)}
+  if(n.t==='post'&&n.o==='T'){const lab=`${stPar(la)}<sup>T</sup>`;return done(transFrames(A.mat,la,lab,sec),lab)}
+  if(n.t==='pow'&&isFr(B)&&B.d===1&&B.n>=2&&B.n<=5){
+    const fr=[];let P=A.mat,lp=la;
+    for(let k=2;k<=B.n;k++){const lab=`${stPar(la)}<sup>${k}</sup>`,m=mulFrames(P,A.mat,{a:lp,b:la,c:lab},sec);fr.push(...m.frames);P=m.R;lp=lab}
+    return done(fr,lp);
+  }
+  if(n.t==='bin'&&n.o==='*'){
+    if(isMat(A)&&isMat(B)){const lab=n.a.lab&&n.b.lab?la+lb:stMLab();const m=mulFrames(A.mat,B.mat,{a:stPar(la),b:stPar(lb),c:lab},sec);return done(m.frames,lab)}
+    const k=isMat(A)?B:A,M_=isMat(A)?A:B,lm=isMat(A)?la:lb,lab=`${stNum(k,false)}${stPar(lm)}`;
+    return done(scaleFrames(k,M_.mat,lm,lab,sec),lab);
+  }
+  if(n.t==='bin'&&n.o==='/'&&isMat(A)&&isFr(B)){const k=F(1).div(B),lab=`${stPar(la)} : ${stNum(B,false)}`;return done(scaleFrames(k,A.mat,la,lab,sec),lab)}
+  if(n.t==='bin'&&(n.o==='+'||n.o==='-')){const lab=`${la} ${n.o==='+'?'+':'−'} ${stPar(lb)}`;return done(sumFrames(A.mat,B.mat,n.o==='+'?1:-1,la,lb,lab),lab)}
+  if(n.t==='neg'){const lab='−'+stPar(la);return done(scaleFrames(F(-1),A.mat,la,lab,sec),lab)}
+  return fallback(stMLab());
+}
+
+// ---------- systemy liczbowe ----------
+const stDigit=d=>d<10?String(d):String.fromCharCode(55+d);
+function stBaseIn(raw,v){
+  const base={b:2,x:16,o:8}[raw[1].toLowerCase()],ds=[...raw.slice(2)].map(c=>parseInt(c,16)),k=ds.length;
+  const name={2:$t('dwójkowym','binary'),8:$t('ósemkowym','octal'),16:$t('szesnastkowym','hexadecimal')}[base];
+  const terms=ds.map((d,i)=>`${base===16&&d>9?`${stDigit(d)}(${d})`:d}·${base}<sup>${k-1-i}</sup>`);
+  return {sec:$t('Systemy liczbowe','Number bases'),t:$t(`${escH(raw)} w systemie dziesiętnym`,`${escH(raw)} in decimal`),
+    x:$t(`Zapis w systemie ${name}: każda cyfra mnoży kolejną potęgę ${base}, licząc od prawej od ${base}<sup>0</sup>.`,`In ${name} each digit multiplies the next power of ${base}, counting from the right from ${base}<sup>0</sup>.`),
+    C:[{h:`${escH(raw)} = ${terms.join(' + ')}`,full:true},{h:`= ${ds.map((d,i)=>d*base**(k-1-i)).join(' + ')} = <b>${cInt(toNum(v))}</b>`,full:true}],U:[{t:.4,line:0},{t:1.4,line:1}]};
+}
+function stBaseOut(n,base){
+  const name={2:$t('dwójkowy','binary'),8:$t('ósemkowy','octal'),16:$t('szesnastkowy','hexadecimal')}[base],C=[],U=[];let x=n;
+  if(x===0)C.push('0');
+  while(x>0&&C.length<40){const q=Math.floor(x/base),d=x%base;C.push(`${x} : ${base} = ${q}, ${$t('reszta','remainder')} ${d}${d>9?` (${stDigit(d)})`:''}`);x=q}
+  C.forEach((_,k)=>U.push({t:.4+k*.5,line:k}));
+  C.push({h:$t('reszty czytane od dołu: ','remainders read from the bottom: ')+`<b>${n.toString(base).toUpperCase()}<sub>${base}</sub></b>`,full:true});U.push({t:.4+C.length*.5,line:C.length-1});
+  return {sec:$t('Systemy liczbowe','Number bases'),t:$t(`${n} na system ${name}`,`${n} to ${name}`),x:$t(`Dzielimy przez ${base}, dopóki nie zostanie 0, i zapisujemy reszty. Reszty czytane od ostatniej do pierwszej to cyfry wyniku.`,`Divide by ${base} until 0 is left, writing down the remainders. Read from the last to the first, they are the digits of the result.`),C,U};
+}
+
+// ---------- całe wyrażenie ----------
+function stExpr(src,X,sec){
+  const has=x=>X.env.has(x),ast=calcParse(calcTokens(cNorm(src),has),has);
+  X.subs=new Map();X.bases=[];
+  let tree=stFrom(ast,X);
+  const fr=[],ops=stCount(tree);
+  const intro=[];
+  if(ops>1&&!stHasMat(tree))intro.push($t('Kolejność: najpierw nawiasy, potem potęgi i funkcje, potem mnożenie i dzielenie, na końcu dodawanie i odejmowanie. Działania tego samego rodzaju liczymy od lewej.','Order: brackets first, then powers and functions, then multiplication and division, and addition and subtraction last. Operations of the same kind go from left to right.'));
+  if(X.subs.size)intro.push($t('Podstawiamy wartości zmiennych: ','We substitute the variables: ')+[...X.subs].map(([k,v])=>`${stName(k)} = ${stNum(v,X.dec)}`).join(', ')+'.');
+  if(intro.length)fr.push({sec,t:X.subs.size?$t('Podstawiamy','Substituting'):$t('Zapisujemy działanie','Writing it down'),x:intro.join(' '),
+    S:`<div class="eq">${stH(tree,null,{dec:X.dec,names:true})}</div>`+(X.subs.size?`<div class="eq" data-show="1">= ${stH(tree,null,{dec:X.dec})}</div>`:''),U:X.subs.size?[{t:1,show:1}]:undefined});
+  X.bases.forEach(b=>fr.push(stBaseIn(b.raw,b.v)));
+  for(let guard=0;tree.t!=='lit'&&guard<200;guard++){
+    const ready=stReady(tree),first=ready[0];
+    // działanie na macierzach: osobno, klatkami silnika
+    const isM=x=>stKids(x).some(c=>isMat(c.v))||(x.t==='call'&&['det','rz','rank','tr','inv','rref'].includes(x.f));
+    if(isM(first)){
+      const r=calcEval(first,X.env,X.o),m=stMatOp(first,r,X);
+      const lit=isMat(r)?stLit(r,{lab:m&&m.lab}):stLit(r);
+      if(m)fr.push(...m.frames);
+      tree=stSwap(tree,new Map([[first,lit]]));
+      continue;
+    }
+    // liczby: wszystkie gotowe działania tego samego rodzaju naraz (np. oba iloczyny w 2·3 + 4·5)
+    const info=new Map();
+    const cls0=stOp(first,calcEval(first,X.env,X.o),X).cls;
+    for(const n of ready){
+      if(isM(n))continue;
+      const r=calcEval(n,X.env,X.o),o=stOp(n,r,X);
+      if(o.cls!==cls0)continue;
+      info.set(n,{r,o,lit:stLit(r,{pi:hasPi(n)})});
+    }
+    const map=new Map([...info].map(([n,i])=>[n,i.lit])),next=stSwap(tree,map),items=[...info.values()];
+    if(items.every(i=>i.o.quiet)){tree=next;continue}
+    const before=new Map([...info.keys()].map(n=>[n,'st-a'])),after=new Map(items.map(i=>[i.lit,'st-b']));
+    const C=items.flatMap(i=>i.o.C||[]),U=C.map((_,k)=>({t:.4+k*.8,line:k}));U.push({t:.5+C.length*.8,show:1});
+    const fracT=items.every(i=>i.o.t)?items[0].o.t:items.some(i=>i.o.frac)&&ST_TITLE_FR[cls0];
+    let x=items.map(i=>i.o.x).filter(Boolean).filter((v,k,a)=>a.indexOf(v)===k).join(' ');
+    if(!x&&(cls0==='mul'||cls0==='pow'||cls0==='call')&&stHasAdd(tree))x=$t('To liczymy przed dodawaniem i odejmowaniem.','This comes before addition and subtraction.');
+    fr.push({sec,t:$t(...(fracT||ST_TITLE[cls0])),x,
+      S:`<div class="eq">${stH(tree,before,{dec:X.dec})}</div><div class="eq" data-show="1">= ${stH(next,after,{dec:X.dec})}</div>`,C,U});
+    tree=next;
+  }
+  return {frames:fr,v:tree.v,lab:tree.lab};
+}
+// rekord linii z calcLines → klatki odtwarzacza; src: inne wyrażenie z tej linii (zaznaczony fragment)
+function calcSteps(rec,src){
+  stM=0;
+  const X={env:rec.env||new Map(),o:{deg:rec.deg!==false},dec:!!rec.dec};
+  const sec=$t('Rozpisanie','Working');
+  const res=(v,dec)=>isMat(v)?stMatH(v,dec):`${isFr(v)?'':'≈ '}${stNum(v,dec)}`.replace(/^≈ /,'≈ ');
+  const eqTxt=v=>isMat(v)?`= ${stMatH(v,X.dec)}`:(isFr(v)?'= ':'≈ ')+stNum(v,X.dec)+(isFr(v)&&v.d!==1&&!X.dec?` ≈ ${cNum(v.n/v.d).s}`:'');
+  if(src!==undefined){
+    const e=stExpr(src,X,sec);
+    e.frames.push({sec,t:$t('Wynik','Result'),S:`<div class="eq">${stH(stFrom(calcParse(calcTokens(cNorm(src),x=>X.env.has(x)),x=>X.env.has(x)),{...X,subs:new Map(),bases:[]}),null,{dec:X.dec,names:true})} ${eqTxt(e.v)}</div>`});
+    return e.frames;
+  }
+  if(rec.kind==='check'){
+    const L=stExpr(rec.sides[0],X,$t('Lewa strona','Left side'));
+    const rLit=C_LIT.test(rec.sides[1].trim()),R=rLit?{frames:[],v:rec.rv}:stExpr(rec.sides[1],X,$t('Prawa strona','Right side'));
+    const fr=[...L.frames,...R.frames],lv=L.v,rv=R.v,ok=rec.ok;
+    const x=ok?(rec.round?$t(`Lewa strona to ${stNum(lv,X.dec)}${isFr(lv)&&lv.d!==1?` ≈ ${cNum(toNum(lv)).s}`:''}; po zaokrągleniu do ${rec.round} ${pl(rec.round,'miejsca','miejsc','miejsc')} po przecinku wychodzi tyle, ile po prawej.`,`The left side is ${stNum(lv,X.dec)}${isFr(lv)&&lv.d!==1?` ≈ ${cNum(toNum(lv)).s}`:''}; rounded to ${rec.round} decimal ${rec.round===1?'place':'places'} it matches the right side.`)
+      :$t('Obie strony dają tę samą liczbę.','Both sides give the same number.')):$t('Strony dają różne liczby, więc trzeba poprawić rachunek.','The sides give different numbers, so the working needs fixing.');
+    fr.push({sec:$t('Sprawdzenie','Check'),t:ok?$t('Zgadza się','Correct'):$t('Nie zgadza się','Does not match'),x,
+      S:`<div class="eq">${$t('lewa','left')}: ${res(lv,X.dec)} &nbsp; ${ok?(rec.round?'≈':'='):'≠'} &nbsp; ${$t('prawa','right')}: ${res(rv,X.dec)}</div>`});
+    return fr;
+  }
+  const e=stExpr(rec.src,X,sec),fr=e.frames;
+  if(rec.base)fr.push(stBaseOut(e.v.n,rec.base));
+  const left=rec.name?stName(rec.name):stH(stFrom(calcParse(calcTokens(cNorm(rec.src),x=>X.env.has(x)),x=>X.env.has(x)),{...X,subs:new Map(),bases:[]}),null,{dec:X.dec,names:true});
+  const tail=rec.base?`= ${e.v.n.toString(rec.base).toUpperCase()}<sub>${rec.base}</sub>`:eqTxt(e.v)+(rec.unit?' '+escH(rec.unit):'');
+  fr.push({sec,t:$t('Wynik','Result'),x:rec.name?$t(`Ta wartość trafia do zmiennej ${stName(rec.name)}; można jej używać w następnych liniach.`,`This value goes into the variable ${stName(rec.name)}; you can use it in the following lines.`):'',S:`<div class="eq">${left} ${tail}</div>`});
+  return fr;
+}
+
+// Wagi sieci, która czyta pismo w zeszycie (cyfry i + − × / ( ) =). Plik generuje tools/hw_train.py,
+// nie edytuj go ręcznie. Cyfry uczone na MNIST (paczka npm mnist, MIT), znaki działań wygenerowane.
+// Trafność na próbkach kontrolnych: 99.2%.
+const HW_MODEL={"classes":"0123456789+-*/()=","r":1.2,"c1":{"s":0.00810164,"q":"/b7byz6Z8O4wN5nwHBX2DxkXGxbpRCYtDw3a2vPeKirF8wURDM/9Tg4B4mX6CRwGDaP9twG+BEfdAdPX/fofCdsNCPUAHh8nMhkjJFMJ787yKcrjtjYaDOzzAzXK7dwjWALWAAsnEhcg8BMvO1EOIRoowf4P9s/j6wvL3MznB9UJAR747xXqEMgCAgcS6h9MGvcAzPzxPflbAckaGC6BwywjAIIj4eywtxTxvcUIH9gEQTAsL+oHQCwUBrkoKq/SGQcc27O23/a2ye8Q+dcE0tWtHPu0tbhDWybY/kQQITYN4bwRFhjnqmTn+e/s9g8d0AbKUhPa8zLIGeX1LAfV9ggBVt/JFvIOxdkObhTPIAEh5Psc+eLH7uAqFMrJ/9j2+vLgIv9UJ9QDWRQk","b":[0.0027,-0.04846,-0.06089,-0.00367,0.00331,-0.01136,-0.00189,-0.00245,-0.00461,-0.05395,-0.32258,-0.00466]},"c2":{"s":0.00488299,"q":"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","b":[-0.08802,0.01299,0.01989,0.01061,-0.08063,-0.14062,-0.09097,-0.00916,-0.26396,0.14316,-0.06106,0.03376,-0.01282,0.00202,0.05749,-0.00982,-0.11036,-0.02845,-0.09347,0.01384,-0.02845,-0.04255,-0.00705,-0.15856]},"d1":{"s":0.00455786,"q":"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","b":[-0.09536,0.13421,0.03688,-0.15616,-0.01757,-0.0361,0.10576,-0.04937,0.27918,-0.0308,0.11024,0.12141,-0.04377,-0.05313,-0.04094,0.04177,-0.03872,0.04059,-0.00428,0.00213,-0.06282,-0.02956,0.03622,0.11526,-0.13541,-0.05068,0.02642,0.0832,-0.03762,-0.0245,-0.06486,-0.05237,0.03767,-0.04174,0.16631,-0.00437,0.01781,0.06611,-0.0349,-0.07255,-0.01205,0.0072,-0.03875,-0.04845,-0.08563,-0.02999,-0.03514,-0.0433,-0.0312,0.03231,-0.03929,0.00353,0.04524,-0.16722,-0.02782,0.05082,0.058,0.09182,-0.0374,0.04525,0.03159,-0.04491,-0.02757,0.1519]},"d2":{"s":0.00640126,"q":"/PoW4RfGAd3ZxhQJIh/FwLAyIvcqExsBBCgo3/jy0NbVwegKAe0PHgYw/f7dK8Ll3On5/tzy69Taygjx2jg4wOYr2RXz8gHs8+Dr8hkF2D4f+QP/9AAAAf8AAAD/AQAAAAAAAAAAJi/pyu8bMeQk6hfUzdYzzMYeGPD15Om2F+cT9OHJIfsfvBgc9/0hCSbcGRrX0cKQtOfTBQX3+wD18QAR9gAA9ADzAAsiBBkd5SEo7wPtzBO3j/y1HvoCICAKDrQgExsTw7aijxHiAAEAAAAAAAAAAP4AAP8AAAAt2RLl0RIv3jHqG9Ul+iq7vQoM7yz6BO4VEeTm7h7rCu0q50H87u8JEwvX4rr99K0CqDz//wAA/wD/AAAAAAAAAgAAAOwi48If0Obt5hzo1NsnISTk+/fjyx8hD/n9Et4xzgH6/Acduxjw6d0IFAcgufHRxebAIcYaGuMW5cg249kczjkMKDUwFfnrBQoMAP4EAPru9QoA6wDwoua5CwQP2goBFhXY3eng3v4DIRYc58geHyWs+yLP46HXxhf4wQLy0gXL8zM6NDcUuy0AAAAAAAH/AAEAAAAAAAAAANQa8xwnGdz0GCkoyvnUKiXcEBISANoTH8Mb0szTFsgfHPgABP0H/APs/gr8AQD/AP3//sQuGiAA9fMk2O78H+I2IjG+8u4fHunf8xQBoh8c/NC9KCXx++b+B/7vDucE+PcAAPkB9fv19hIdF+Hs7yft+cXS4csb/+3sFeoB6fzx5gMn8Pvw7eYHMC0u9voiHB7ar+bWzL6o97wYuAPKIAHjAvi67OshHCDY1f0k0xza7P4m6+nkIRzr2f3cBwq3G7EU/t7WHsP/AgjD2uXSCRPy+fsG8wv2AfoQB/ULAfv9/wII/gD6+vz4/gIC/w3evtYi5Cgh+hUYt/0TEOvD4w/g7A/mEBXx8PfP59Pt6tzmE+jwIh4C+Pb+CvH9HQcDEPo19Sb16AX14hvysfEW5h8n5wD69QYCAAgE+vUAAPwEAf8A+QAC//8FAP4ABQAACAABAP0BAf/4/AIEAPcAAAMD/wIAAPj8+wUUCP4TAgf/C/YEBvwBAAD8AAEAAAAAAAAA/gACAAHp/unxObIdN9gp/+ro1ug/GsIVHAbZHPDM4Qoq/MXq5S3orx3N/wkgABX0zhUOIdorjiMWy98PNzkw5vHzH+TLqcG+FiH89ecmBAAV6RzewDUrJ9ErD/oC9Ob8Be0D+fMH+//79wDl//X+EO4mFRkkF869+x+B1ML28xcTGevkGhLT8yEZscbg6igZ4d7qGAkO2tD0Ki7jEsbryCb1A9Lg0eDOxv/s/f3oIx8WHRsPzdoaFREizd0huyOxIvUhBdkkAiD6FPXU4srLxQwV99b+7Oz67/AO7fv78gvs+ebBFR3LDrccDRj11xvNzhMi9h3j9A0Z5yQl+TU4Ia+Q2w4=","b":[0.05636,0.25082,0.05059,-0.01804,0.14024,0.01785,0.07514,0.01547,0.0982,-0.12805,-0.16974,-0.03458,-0.29141,-0.06117,-0.19529,-0.10276,-0.21632]}};
+
+// =====================================================================
+//  Czytanie pisma w zeszycie: kreski pióra → tekst działania
+// =====================================================================
+//  hwRead(kreski) → [{text, box, ids, syms, conf}]: jedno działanie na pozycję (linia pisma albo jej część)
+//  1. linie: kreski rozdzielone wyraźną przerwą w pionie,
+//  2. ułamki piętrowe: pozioma kreska z czymś nad nią i pod nią,
+//  3. znaki: kreski zachodzące na siebie w poziomie (+, =, 4 i × to kilka kresek),
+//  4. kropki: przecinek dziesiętny, mnożenie „·”, dzielenie „:”; potęgi: mały znak wyżej,
+//  5. każdy znak czyta mała sieć splotowa (HW_MODEL z hw-model.js, tools/hw_train.py).
+//  Obraz znaku (hwRaster) musi powstawać dokładnie tak jak raster() w tools/hw_train.py.
+//  Poprawki użytkownika (hwLearn) zapisują jego wersję znaku; podobny znak czyta się potem tak samo.
+// =====================================================================
+let HW_NET=null,HW_CACHE=null;   // HW_CACHE: odczytane znaki według identyfikatorów kresek (kreska się nie zmienia)
+function hwNet(){
+  if(HW_NET)return HW_NET;
+  const dq=L=>{const s=atob(L.q),w=new Float32Array(s.length);for(let i=0;i<s.length;i++)w[i]=(s.charCodeAt(i)<<24>>24)*L.s;return {w,b:Float32Array.from(L.b)}};
+  HW_NET={c1:dq(HW_MODEL.c1),c2:dq(HW_MODEL.c2),d1:dq(HW_MODEL.d1),d2:dq(HW_MODEL.d2),cls:HW_MODEL.classes};
+  return HW_NET;
+}
+// obraz 28×28 jak w MNIST: znak w ramce 20×20 z zachowaniem proporcji, środek ciężkości w środku
+function hwRaster(strokes,r=HW_MODEL.r){
+  let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;
+  for(const p of strokes)for(let i=0;i<p.length;i+=2){x1=Math.min(x1,p[i]);x2=Math.max(x2,p[i]);y1=Math.min(y1,p[i+1]);y2=Math.max(y2,p[i+1])}
+  const w=x2-x1,h=y2-y1,s=(20-2*r)/Math.max(w,h,1e-6),ox=(28-w*s)/2,oy=(28-h*s)/2,seg=[];
+  for(const p of strokes){
+    const q=[];for(let i=0;i<p.length;i+=2)q.push([(p[i]-x1)*s+ox,(p[i+1]-y1)*s+oy]);
+    if(q.length===1)q.push(q[0]);
+    for(let i=0;i+1<q.length;i++)seg.push([q[i][0],q[i][1],q[i+1][0],q[i+1][1]]);
+  }
+  const draw=(dx,dy)=>{
+    const img=new Float32Array(784);
+    for(let py=0;py<28;py++)for(let px=0;px<28;px++){
+      const gx=px+.5,gy=py+.5;let d=1e9;
+      for(const [ax0,ay0,bx0,by0] of seg){
+        const ax=ax0+dx,ay=ay0+dy,ex=bx0-ax0,ey=by0-ay0,L=ex*ex+ey*ey;
+        let t=L>0?((gx-ax)*ex+(gy-ay)*ey)/L:0;t=t<0?0:t>1?1:t;
+        const qx=gx-(ax+t*ex),qy=gy-(ay+t*ey),dd=qx*qx+qy*qy;if(dd<d)d=dd;
+      }
+      const v=r+.5-Math.sqrt(d);img[py*28+px]=v<0?0:v>1?1:v;
+    }
+    return img;
+  };
+  let img=draw(0,0),m=0,cx=0,cy=0;
+  for(let i=0;i<784;i++){m+=img[i];cx+=img[i]*(i%28+.5);cy+=img[i]*((i/28|0)+.5)}
+  if(m>0)img=draw(14-cx/m,14-cy/m);
+  return img;
+}
+// sieć: conv 5×5 (12) → pool → conv 5×5 (24) → pool → 64 → klasy; zwraca prawdopodobieństwa i warstwę ukrytą
+function hwForward(img){
+  const N=hwNet(),a1=new Float32Array(12*144),a2=new Float32Array(24*16),h=new Float32Array(64),o=new Float32Array(N.cls.length);
+  const c1=new Float32Array(576);
+  for(let f=0;f<12;f++){
+    const w=N.c1.w,b=N.c1.b[f];
+    for(let y=0;y<24;y++)for(let x=0;x<24;x++){let s=b;for(let ky=0;ky<5;ky++)for(let kx=0;kx<5;kx++)s+=w[f*25+ky*5+kx]*img[(y+ky)*28+x+kx];c1[y*24+x]=s>0?s:0}
+    for(let y=0;y<12;y++)for(let x=0;x<12;x++){const i=2*y*24+2*x;a1[f*144+y*12+x]=Math.max(c1[i],c1[i+1],c1[i+24],c1[i+25])}
+  }
+  const c2=new Float32Array(64);
+  for(let f=0;f<24;f++){
+    const w=N.c2.w,b=N.c2.b[f];
+    for(let y=0;y<8;y++)for(let x=0;x<8;x++){let s=b;for(let c=0;c<12;c++)for(let ky=0;ky<5;ky++){const wo=f*300+c*25+ky*5,io=c*144+(y+ky)*12+x;for(let kx=0;kx<5;kx++)s+=w[wo+kx]*a1[io+kx]}c2[y*8+x]=s>0?s:0}
+    for(let y=0;y<4;y++)for(let x=0;x<4;x++){const i=2*y*8+2*x;a2[f*16+y*4+x]=Math.max(c2[i],c2[i+1],c2[i+8],c2[i+9])}
+  }
+  for(let j=0;j<64;j++){let s=N.d1.b[j];for(let i=0;i<384;i++)s+=a2[i]*N.d1.w[i*64+j];h[j]=s>0?s:0}
+  const nc=o.length;let mx=-1e9;
+  for(let k=0;k<nc;k++){let s=N.d2.b[k];for(let j=0;j<64;j++)s+=h[j]*N.d2.w[j*nc+k];o[k]=s;if(s>mx)mx=s}
+  let z=0;for(let k=0;k<nc;k++){o[k]=Math.exp(o[k]-mx);z+=o[k]}for(let k=0;k<nc;k++)o[k]/=z;
+  return {p:o,h};
+}
+// ---------- własne wersje znaków (z poprawek): najbliższy sąsiad w warstwie ukrytej sieci ----------
+const HW_ME={list:null,key:'kratka-pismo-v1'};
+function hwMine(){
+  if(HW_ME.list)return HW_ME.list;
+  let d=null;try{d=JSON.parse(localStorage.getItem(HW_ME.key)||'null')}catch(e){d=null}
+  HW_ME.list=d&&d.m===HW_MODEL.c1.q.slice(0,24)&&Array.isArray(d.s)?d.s:[];
+  return HW_ME.list;
+}
+function hwLearn(h,ch){
+  const L=hwMine(),v=Array.from(h,x=>Math.round(x*100)/100);
+  L.push({c:ch,h:v});if(L.length>300)L.splice(0,L.length-300);
+  try{localStorage.setItem(HW_ME.key,JSON.stringify({m:HW_MODEL.c1.q.slice(0,24),s:L}))}catch(e){}
+}
+const hwCos=(a,b)=>{let s=0,na=0,nb=0;for(let i=0;i<a.length;i++){s+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i]}return s/Math.sqrt(na*nb+1e-9)};
+function hwClassify(strokes){
+  const img=hwRaster(strokes),f=hwForward(img),N=hwNet(),p=Array.from(f.p);
+  for(const s of hwMine()){const sim=hwCos(f.h,s.h);if(sim>.9){const k=N.cls.indexOf(s.c);if(k>=0)p[k]+=(sim-.9)*8}}
+  const ord=p.map((v,k)=>[v,k]).sort((a,b)=>b[0]-a[0]),z=p.reduce((s,v)=>s+v,0);
+  return {ch:N.cls[ord[0][1]],p:ord[0][0]/z,alt:N.cls[ord[1][1]],pAlt:ord[1][0]/z,h:f.h};
+}
+
+// ---------- układ kresek: linie, ułamki, znaki, kropki, potęgi ----------
+const hwBox=ps=>{let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;for(const p of ps)for(let i=0;i<p.length;i+=2){x1=Math.min(x1,p[i]);x2=Math.max(x2,p[i]);y1=Math.min(y1,p[i+1]);y2=Math.max(y2,p[i+1])}return {x1,y1,x2,y2,w:x2-x1,h:y2-y1,cx:(x1+x2)/2,cy:(y1+y2)/2}};
+const hwMed=a=>{if(!a.length)return 0;const s=a.slice().sort((x,y)=>x-y);return s[s.length>>1]};
+// it: {k (indeks kreski), p (punkty), b (ramka)}
+function hwLines(items){
+  // wielkość pisma: wysokość kresek, a dla płaskich (−, =) ich szerokość
+  const med=Math.max(12,hwMed(items.map(t=>Math.max(t.b.h,t.b.w)))),gap=Math.max(8,med*.6);
+  const ord=items.slice().sort((a,b)=>a.b.y1-b.b.y1),lines=[];
+  for(const t of ord){const L=lines[lines.length-1];if(L&&t.b.y1<=L.y2+gap){L.items.push(t);L.y2=Math.max(L.y2,t.b.y2)}else lines.push({items:[t],y2:t.b.y2})}
+  return lines.map(L=>L.items);
+}
+// tekst jednej linii (albo licznika, mianownika): → {text, syms, conf} | null
+function hwParse(items,depth=0){
+  if(!items.length)return null;
+  // wielkość pisma do wykrywania kropek i kresek ułamkowych (płaskie kreski liczą się szerokością)
+  const medH=Math.max(10,hwMed(items.map(t=>Math.max(t.b.h,t.b.w))));
+  const isDot=t=>Math.max(t.b.w,t.b.h)<Math.max(medH*.2,4);
+  const isBar=t=>t.b.w>=medH*.55&&t.b.h<=Math.max(t.b.w*.3,3)&&t.b.h<=medH*.35;
+  const used=new Set(),tokens=[];
+  // ułamki piętrowe (najszersza kreska pierwsza)
+  for(const bar of items.filter(isBar).sort((a,b)=>b.b.w-a.b.w)){
+    if(used.has(bar)||depth>2)continue;
+    const inX=t=>t.b.cx>=bar.b.x1-bar.b.w*.15&&t.b.cx<=bar.b.x2+bar.b.w*.15;
+    const up=items.filter(t=>t!==bar&&!used.has(t)&&inX(t)&&t.b.y2<=bar.b.cy+medH*.15&&t.b.cy<bar.b.cy-medH*.1);
+    const dn=items.filter(t=>t!==bar&&!used.has(t)&&inX(t)&&t.b.y1>=bar.b.cy-medH*.15&&t.b.cy>bar.b.cy+medH*.1);
+    const real=a=>a.filter(t=>!isDot(t)&&!(isBar(t)&&Math.abs(t.b.w-bar.b.w)<bar.b.w*.35));
+    if(!real(up).length||!real(dn).length){
+      // ÷: kropka nad kreską i pod nią
+      if(up.length&&dn.length&&up.every(isDot)&&dn.every(isDot)){[bar,...up,...dn].forEach(t=>used.add(t));tokens.push({x:bar.b.x1,x2:bar.b.x2,text:':',show:':',items:[bar,...up,...dn],conf:1})}
+      continue;
+    }
+    const N=hwParse(up,depth+1),D=hwParse(dn,depth+1);if(!N||!D)continue;
+    [bar,...up,...dn].forEach(t=>used.add(t));
+    const wrap=s=>/^[−-]?[\d.,]+$/.test(s)?s:`(${s})`;
+    tokens.push({x:bar.b.x1,x2:bar.b.x2,text:`${wrap(N.text)}/${wrap(D.text)}`,show:`${wrap(N.show)}/${wrap(D.show)}`,syms:[...N.syms,...D.syms],items:[bar,...up,...dn],conf:Math.min(N.conf,D.conf)});
+  }
+  // znaki: kreski zachodzące na siebie w poziomie
+  const rest=items.filter(t=>!used.has(t)),dots=rest.filter(isDot),strokes=rest.filter(t=>!isDot(t)).sort((a,b)=>a.b.x1-b.b.x1),groups=[];
+  for(const t of strokes){
+    const g=groups[groups.length-1];
+    if(g){const ov=Math.min(g.x2,t.b.x2)-Math.max(g.x1,t.b.x1),mw=Math.min(g.x2-g.x1,t.b.w);
+      if(ov>Math.max(mw*.35,1)||t.b.cx>=g.x1&&t.b.cx<=g.x2||(g.x1+g.x2)/2>=t.b.x1&&(g.x1+g.x2)/2<=t.b.x2){g.items.push(t);g.x1=Math.min(g.x1,t.b.x1);g.x2=Math.max(g.x2,t.b.x2);continue}}
+    groups.push({items:[t],x1:t.b.x1,x2:t.b.x2});
+  }
+  const lineTop=Math.min(...items.map(t=>t.b.y1)),lineBot=Math.max(...items.map(t=>t.b.y2));
+  // wysokość znaku z gotowych znaków (bez płaskich −, =): do potęg i podstawy linii
+  const gh=groups.map(g=>hwBox(g.items.map(t=>t.p))).filter(b=>b.h>b.w*.45).map(b=>b.h);
+  const symH=Math.max(10,gh.length?Math.max(...gh)*.5+hwMed(gh)*.5:medH);
+  for(const g of groups){
+    const key=HW_CACHE&&g.items.every(t=>t.id)?g.items.map(t=>t.id).sort().join(','):null;
+    let c=key&&HW_CACHE.get(key);if(!c){c=hwClassify(g.items.map(t=>t.p));if(key)HW_CACHE.set(key,c)}
+    const b=hwBox(g.items.map(t=>t.p));
+    tokens.push({x:g.x1,x2:g.x2,ch:c.ch,cls:c,b,items:g.items,conf:c.p});
+  }
+  // kropki: dwie jedna nad drugą to „:”, przy dole linii przecinek, w środku mnożenie
+  const dsort=dots.slice().sort((a,b)=>a.b.cx-b.b.cx);
+  for(let i=0;i<dsort.length;i++){
+    const d=dsort[i],e=dsort[i+1];
+    if(e&&Math.abs(e.b.cx-d.b.cx)<medH*.35&&Math.abs(e.b.cy-d.b.cy)>medH*.25){tokens.push({x:Math.min(d.b.x1,e.b.x1),x2:Math.max(d.b.x2,e.b.x2),ch:':',items:[d,e],conf:1,dot:true});i++;continue}
+    tokens.push({x:d.b.x1,x2:d.b.x2,ch:'dot',b:d.b,items:[d],conf:1,dot:true});
+  }
+  tokens.sort((a,b)=>a.x-b.x);
+  // podstawa linii: dolna krawędź zwykłych cyfr
+  const digs=tokens.filter(t=>t.ch&&/\d/.test(t.ch)&&t.b&&t.b.h>symH*.7),base=digs.length?hwMed(digs.map(t=>t.b.y2)):lineBot,mid=digs.length?hwMed(digs.map(t=>t.b.cy)):(lineTop+lineBot)/2;
+  const out=[];let conf=1;const syms=[];
+  for(let i=0;i<tokens.length;i++){
+    const t=tokens[i],prev=out[out.length-1],next=tokens[i+1];
+    if(t.text!==undefined){out.push({text:t.text,show:t.show,num:true});conf=Math.min(conf,t.conf);syms.push(...(t.syms||[]));continue}
+    let ch=t.ch;
+    if(ch==='dot'){
+      const between=prev&&prev.num&&next&&next.ch&&/\d/.test(next.ch);
+      ch=between&&t.b.cy>mid+symH*.25?'.':'·';
+      if(!prev)continue;
+    }
+    // „/” i „1” wyglądają podobnie: dzielenie musi stać między liczbami
+    if(t.cls&&(ch==='/'||ch==='1')&&t.cls.alt===(ch==='/'?'1':'/')&&t.cls.pAlt>.05){
+      const canDiv=prev&&(prev.num||prev.text===')')&&next&&(next.text!==undefined||next.ch&&/[\d(]/.test(next.ch));
+      if(ch==='/'&&!canDiv)ch='1';
+    }
+    // potęga: wyraźnie mniejszy znak, podniesiony nad podstawę
+    const sup=t.b&&prev&&(prev.num||prev.text===')'||prev.sup)&&t.b.h<symH*.72&&t.b.cy<mid-symH*.3&&t.b.y2<base-symH*.3&&/[\d(−-]/.test(ch);
+    const show=ch==='*'?'·':ch==='-'?'−':ch;
+    const text=ch==='*'?'·':ch==='-'?'−':ch;
+    if(sup){const last=out[out.length-1];if(last&&last.sup)last.supText+=text;else out.push({sup:true,supText:text})}
+    else out.push({text,show,num:/[\d.]/.test(ch)});
+    conf=Math.min(conf,t.conf);
+    if(t.cls)syms.push({ch,h:t.cls.h,items:t.items});
+  }
+  // potęgi w tekście: 2^3, 10^(−3)
+  const parts=out.map(o=>o.sup?(o.supText.length>1?`^(${o.supText})`:`^${o.supText}`):o.text);
+  const shows=out.map(o=>o.sup?`^${o.supText}`:o.show);
+  const text=parts.join('');
+  return text?{text,show:shows.join(''),syms,conf,tokens}:null;
+}
+// cała strona: linie pisma, a w linii osobne działania, gdy dzieli je duża przerwa
+function hwRead(strokes,cache){
+  HW_CACHE=cache||null;
+  const items=strokes.map((s,k)=>({k,id:s.id,p:s.p,b:hwBox([s.p])})).filter(t=>t.p.length>=2);
+  if(!items.length)return [];
+  const res=[];
+  for(const line of hwLines(items)){
+    const medH=Math.max(12,hwMed(line.map(t=>t.b.h)));
+    const ord=line.slice().sort((a,b)=>a.b.x1-b.b.x1),chunks=[];let cur=[],right=-1e9;
+    for(const t of ord){if(cur.length&&t.b.x1-right>medH*2.6){chunks.push(cur);cur=[]}cur.push(t);right=Math.max(right,t.b.x2)}
+    if(cur.length)chunks.push(cur);
+    for(const ch of chunks){
+      // bardzo duże kreski (rysunki, obwódki) nie są pismem
+      if(ch.length===1&&ch[0].b.h>medH*3)continue;
+      const r=hwParse(ch);if(!r)continue;
+      const b=hwBox(ch.map(t=>t.p));
+      res.push({...r,box:[b.x1,b.y1,b.x2,b.y2],ks:ch.map(t=>t.k)});
+    }
+  }
+  return res;
 }
 
 // =====================================================================
@@ -4712,6 +6000,7 @@ const plain=h=>String(h).replace(/<[^>]+>/g,'');
 // nazwa tematu bez znaczników (do <option>): wykładniki jako znaki Unicode
 const txt=h=>plain(String(h).replace(/<sup>−1<\/sup>/g,'⁻¹').replace(/<sup>T<\/sup>/g,'ᵀ').replace(/<sup>2<\/sup>/g,'²').replace(/<sub>(\d)<\/sub>/g,(m,d)=>'₀₁₂₃₄₅₆₇₈₉'[d])).replace(/&nbsp;/g,' ');
 const pctS=x=>Math.round(x*100)+'%';
+const ICON_PEN='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 16.5l.9-3.6 9.4-9.4a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1l-9.4 9.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.3 5l2.7 2.7" stroke="currentColor" stroke-width="1.5"/></svg>';
 function ansMark(id,res){for(const [k,ok] of Object.entries(res.marks||{})){const el=document.getElementById(id+'-'+k);if(el){el.classList.toggle('ok',!!ok);el.classList.toggle('bad',!ok)}}}
 
 // ================= Nawigacja =================
@@ -4726,6 +6015,8 @@ function viewsOf(S){
 const OLD_HASH={liczby:'liczby',rownania:'rownania',uklady:'uklady',cwiczenia:'cwiczenia',dzialania:'cwiczenia',sprawdzian:'sprawdzian',blad:'blad',postep:'postep',sciaga:'sciaga'};
 function route(){
   const h=location.hash.slice(1);
+  // zeszyt to osobna część, wspólna dla przedmiotów (dawniej #algebra-zeszyt itd.)
+  if(h==='zeszyt'||/^[a-z]+-zeszyt$/.test(h))return goNotebook();
   if(OLD_HASH[h])return go('algebra',OLD_HASH[h]);
   const [s,v,...rest]=h.split('-');
   if(subjById(s))return go(s,v,rest.join('-')||null);
@@ -4749,13 +6040,26 @@ function go(subj,view,topic){
   if(location.hash!==h)history.replaceState(null,'',h);
   if(moved)window.scrollTo(0,0);
 }
+function goNotebook(){
+  const moved=R.view!=='zeszyt',S=subjById(R.subj)||subjById(store.get('kratka-przedmiot'))||SUBJECTS[0];
+  R.subj=S.id;R.view='zeszyt';
+  document.documentElement.dataset.subj='zeszyt';
+  $$('#main>section').forEach(sec=>{sec.hidden=sec.dataset.view!=='zeszyt'});
+  navRender();
+  HOOKS.view.forEach(f=>f(S,'zeszyt'));
+  if(location.hash!=='#zeszyt')history.replaceState(null,'','#zeszyt');
+  if(moved)window.scrollTo(0,0);
+}
 window.addEventListener('hashchange',route);
 const viewHref=(S,id)=>'#'+S.id+'-'+id;
+// przy zmianie przedmiotu zostajemy w tym samym widoku (np. Sprawdzian), jeśli nowy przedmiot go ma
+const keepView=s=>viewsOf(s).some(v=>v.id===R.view&&!v.tool)?R.view:viewsOf(s)[0].id;
+const inNotebook=()=>R.view==='zeszyt';
 function navRender(){
-  const S=subjById(R.subj),vs=viewsOf(S);
-  const keep=s=>viewsOf(s).some(v=>v.id===R.view&&!v.tool)?R.view:viewsOf(s)[0].id;
-  $('#subjTabs').innerHTML=SUBJECTS.map(s=>`<a href="${viewHref(s,keep(s))}"${s===S?' class="on" aria-current="page"':''}>${sName(s)}</a>`).join('');
-  $('#subjSel').innerHTML=SUBJECTS.map(s=>`<option value="${s.id}"${s===S?' selected':''}>${txt(sName(s))}</option>`).join('');
+  const S=subjById(R.subj),vs=viewsOf(S),nb=inNotebook();
+  $('#subjTabs').innerHTML=`<a href="#zeszyt" class="nb-tab${nb?' on':''}"${nb?' aria-current="page"':''}>${ICON_PEN}<span>${$t('Zeszyt','Notebook')}</span></a><span class="subj-sep" aria-hidden="true"></span>`+
+    SUBJECTS.map(s=>`<a href="${viewHref(s,keepView(s))}"${s===S&&!nb?' class="on" aria-current="page"':''}>${sName(s)}</a>`).join('');
+  $('#subjBtnName').innerHTML=nb?$t('Zeszyt','Notebook'):sName(S);
   const link=v=>`<a href="${viewHref(S,v.id)}"${v.id===R.view?' class="on" aria-current="page"':''}>${tName(v)}</a>`;
   $('#viewTabs').innerHTML=vs.map(link).join('');
   const main=vs.filter(v=>!v.tool),tools=vs.filter(v=>v.tool);
@@ -4768,7 +6072,44 @@ function tocHtml(S){
   return '<div class="toc">'+S.sections.map(sec=>`<div class="toc-sec">${secName(sec)}</div>`+S.topics.filter(t=>t.sec===sec).map(t=>
     `<a href="#${S.id}-cwiczenia-${t.id}" class="toc-t${t.id===cur?' on':''}"${t.id===cur?' aria-current="true"':''}><span class="toc-n">${tName(t)}</span>${sqHtml(t.id,5,true)}</a>`).join('')).join('')+'</div>';
 }
-$('#subjSel').addEventListener('change',e=>{const s=subjById(e.target.value);location.hash=viewHref(s,viewsOf(s).some(v=>v.id===R.view&&!v.tool)?R.view:'cwiczenia')});
+// ---- panel od dołu (telefon): lista tematów i przedmiotów zamiast systemowej listy <select> ----
+const BS={opener:null};
+function bsOpen(title,html,opener){
+  BS.opener=opener||null;
+  $('#bsT').innerHTML=title;$('#bsBody').innerHTML=html;
+  $('#bs').hidden=false;document.body.style.overflow='hidden';
+  if(opener)opener.setAttribute('aria-expanded','true');
+  const cur=$('#bsBody .on')||$('#bsBody a');
+  if(cur){cur.scrollIntoView({block:'center'});cur.focus({preventScroll:true})}
+}
+function bsClose(){
+  if($('#bs').hidden)return;
+  $('#bs').hidden=true;document.body.style.overflow='';
+  if(BS.opener){BS.opener.setAttribute('aria-expanded','false');BS.opener.focus({preventScroll:true})}
+}
+$('#bs').addEventListener('click',e=>{if(e.target.closest('[data-close]')||e.target.closest('#bsBody a'))bsClose()});
+document.addEventListener('keydown',e=>{
+  if($('#bs').hidden)return;
+  if(e.key==='Escape'){bsClose();e.preventDefault();return}
+  if(e.key==='Tab'){const f=$$('#bs a,#bs button'),k=f.indexOf(document.activeElement);
+    if(e.shiftKey&&k<=0){f[f.length-1].focus();e.preventDefault()}else if(!e.shiftKey&&k===f.length-1){f[0].focus();e.preventDefault()}}
+});
+function topicSheet(S){
+  const cur=PRACT[S.id]?PRACT[S.id].topic:null;
+  return S.sections.map(sec=>`<div class="bs-sec">${secName(sec)}</div>`+S.topics.filter(t=>t.sec===sec).map(t=>
+    `<a href="#${S.id}-cwiczenia-${t.id}" class="bs-t${t.id===cur?' on':''}"${t.id===cur?' aria-current="true"':''}><span class="toc-n">${tName(t)}</span>${sqHtml(t.id,5,true)}</a>`).join('')).join('');
+}
+function subjSheet(){
+  const nb=inNotebook();
+  return `<a href="#zeszyt" class="bs-t bs-s bs-nb${nb?' on':''}"${nb?' aria-current="true"':''}>${ICON_PEN}<span class="toc-n"><b>${$t('Zeszyt','Notebook')}</b><small>${$t('kartka na rachunki i notatki, piórem albo z klawiatury','paper for working and notes, with a pen or the keyboard')}</small></span></a>`+
+    SUBJECTS.map(s=>{const n=s.topics.length,on=s.id===R.subj&&!nb;
+    return `<a href="${viewHref(s,keepView(s))}" class="bs-t bs-s${on?' on':''}"${on?' aria-current="true"':''}><span class="toc-n"><b>${sName(s)}</b><small>${n} ${$t(pl(n,'temat','tematy','tematów'),n===1?'topic':'topics')}${s.tools.length?' · '+s.tools.map(tName).join(', '):''}</small></span></a>`}).join('');
+}
+$('#subjBtn').addEventListener('click',e=>bsOpen($t('Przedmiot','Subject'),subjSheet(),e.currentTarget));
+$('#topicBtn').addEventListener('click',e=>{const S=subjById(R.subj);bsOpen(`${$t('Tematy','Topics')} · ${sName(S)}`,topicSheet(S),e.currentTarget)});
+function topicStep(d){const S=subjById(R.subj),ids=S.topics.map(t=>t.id),k=ids.indexOf(PRACT[S.id].topic)+d;if(k>=0&&k<ids.length)location.hash='#'+S.id+'-cwiczenia-'+ids[k]}
+$('#topicPrev').addEventListener('click',()=>topicStep(-1));
+$('#topicNext').addEventListener('click',()=>topicStep(1));
 $('#brand').addEventListener('click',e=>{e.preventDefault();location.hash=viewHref(subjById(R.subj),'cwiczenia')});
 
 // ================= Odtwarzacz „krok po kroku” =================
@@ -4887,6 +6228,7 @@ function makePractice(root,o){
 <button type="button" class="btn ghost" id="${id}Hint">${bi('Podpowiedź','Hint')}</button>
 <button type="button" class="btn ghost play" id="${id}Play">${bi('Krok po kroku','Step by step')}</button>
 <button type="button" class="btn ghost" id="${id}Sol" aria-expanded="false">${bi('Rozwiązanie','Solution')}</button>
+<button type="button" class="btn ghost pad" data-pad="${id}" aria-pressed="false">${ICON_PEN}${bi('Brudnopis','Scratch pad')}</button>
 <button type="button" class="btn link" id="${id}New">${bi('Następne zadanie','Next task')}</button>
 </div>
 <div class="msg" id="${id}Msg" role="status"></div>
@@ -4938,12 +6280,12 @@ function practiceShow(S,topic){
 function practiceHead(S){
   const t=topicById(PRACT[S.id].topic);
   $('#cwSec').innerHTML=sName(S)+' · '+secName(t.sec);$('#cwTitle').innerHTML=tName(t);
-  $('#topicSel').innerHTML=S.sections.map(sec=>`<optgroup label="${escH(txt(secName(sec)))}">`+S.topics.filter(x=>x.sec===sec).map(x=>`<option value="${x.id}">${escH(txt(tName(x)))}</option>`).join('')+'</optgroup>').join('');
-  $('#topicSel').value=t.id;
+  const k=S.topics.indexOf(t),n=S.topics.length;
+  $('#topicCount').textContent=`${k+1} / ${n}`;
+  $('#topicPrev').disabled=k===0;$('#topicNext').disabled=k===n-1;
   $('#cwOpts').innerHTML=S.opts?S.opts():'';$('#cwOpts').hidden=!S.opts;
   syncNoFrac();
 }
-$('#topicSel').addEventListener('change',e=>{location.hash='#'+R.subj+'-cwiczenia-'+e.target.value});
 function tocRefresh(){if(R.subj)navRender()}
 
 // ================= Postęp i powtórki =================
@@ -5114,12 +6456,13 @@ function setLang(l,rerender){
   if(!rerender)return;
   // treści z JS powstają od nowa w nowym języku (postęp i ustawienia zostają)
   if(!$('#pl').hidden)plClose();
+  bsClose();
   Object.values(PRACT).forEach(P=>P.inst.next());
   if(PRP)PRP.next();
   if(EX&&!EX.done&&R.view==='sprawdzian')exShow(EX.k);
   if(EX&&EX.done)exResults();
   HOOKS.lang.forEach(f=>f());
-  go(R.subj,R.view);
+  if(inNotebook())goNotebook();else go(R.subj,R.view);
 }
 document.querySelector('.lang').addEventListener('click',e=>{const b=e.target.closest('[data-lang]');if(b&&b.dataset.lang!==LANG.cur)setLang(b.dataset.lang,true)});
 
@@ -5146,6 +6489,541 @@ function kratkaStart(){
   setLang(LANG.cur,false);syncNoFrac();
   route();
 }
+
+// =====================================================================
+//  Zeszyt: kartka w kratkę do pisania palcem (rysikiem, myszą) albo z klawiatury
+// =====================================================================
+//  Jeden zeszyt dla wszystkich przedmiotów (#zeszyt): strony z tekstem i kreskami, zapisane w przeglądarce
+//  (localStorage, klucz kratka-zeszyt; strony z dawnych zeszytów przedmiotów przenoszą się do niego same).
+//  Klawiatura: <textarea> z przezroczystymi literami leży nad <pre>, który pokazuje ten sam tekst
+//  i wynik każdej linii (calcText z calc.js). Oba mają tę samą czcionkę i wysokość linii (24 px = kratka).
+//  Pióro: kreski na <canvas> nad tekstem. Jeden palec pisze, dwa przewijają; gdy w grze jest rysik,
+//  palec tylko przewija, żeby dłoń oparta o ekran nie pisała.
+//  Pismo piórem czyta hw.js: odczyt i wynik stają obok linii, a kliknięty odczyt można poprawić.
+//  Wyniki można wyłączyć (liczysz sam); Rozpisz pokazuje rachunek krok po kroku (steps.js) w odtwarzaczu.
+//  Ten sam zeszyt otwiera się jako Brudnopis obok zadania (Ćwiczenia, Powtórka, Sprawdzian).
+// =====================================================================
+const NB_CELL=24,NB_PAD=58,NB_MAX_H=12000;   // NB_PAD: lewy odstęp tekstu (padding-left .nb-text w style.css)
+const NB={d:null,res:[],recs:[],mode:'type',tool:'pen',undo:[],redo:[],txt:null,saveT:0,liveT:0,draw:null,erase:null,
+  touches:new Map(),pan:false,sawPen:false,dpr:1,W:0,H:0,where:'home',at:null,opener:null,
+  show:true,shown:new Set(),read:true,hw:[],hwT:0,hwCache:new Map(),hwOpen:-1};
+const NB_TOOLS={pen:{c:'--pen',w:2.2},ink:{c:'--ink',w:2.2},red:{c:'--red',w:2.2},hl:{c:'--nb-hl',w:16}};
+const NB_KEY='kratka-zeszyt';
+const nbId=()=>Math.random().toString(36).slice(2,9);
+const nbPage=()=>NB.d.pages[NB.d.page];
+const nbTa=$('#nbText'),nbCv=$('#nbInk'),nbSc=$('#nbScroll');
+const nbNarrow=()=>window.matchMedia('(max-width:979px)').matches;
+
+// ---------- zapis w przeglądarce ----------
+const nbJson=k=>{try{return JSON.parse(store.get(k,'null'))}catch(e){return null}};
+function nbLoad(){
+  let d=nbJson(NB_KEY);
+  if(!d||!Array.isArray(d.pages)){
+    // pierwsze otwarcie wspólnego zeszytu: przenosimy strony z dawnych zeszytów przedmiotów (bez nietkniętych przykładów)
+    const old=['algebra','fizyka','so'].flatMap(id=>{const o=nbJson('kratka-zeszyt-'+id);return o&&Array.isArray(o.pages)?o.pages:[]})
+      .filter(p=>p&&((p.strokes||[]).length||String(p.text||'').trim()&&!CALC_OLD_EXAMPLES.includes(p.text)));
+    d={pages:old.length?old:[{text:calcExample(),strokes:[]}],page:0,deg:true};
+  }
+  d.pages=d.pages.filter(p=>p&&typeof p==='object').map(p=>({text:String(p.text||''),
+    strokes:(Array.isArray(p.strokes)?p.strokes:[]).filter(s=>s&&NB_TOOLS[s.c]&&Array.isArray(s.p)&&s.p.length>=2&&s.p.every(Number.isFinite)).map(s=>(s.id||(s.id=nbId()),s)),
+    hw:p.hw&&typeof p.hw==='object'?p.hw:{}}));
+  if(!d.pages.length)d.pages=[{text:'',strokes:[],hw:{}}];
+  d.page=Math.min(Math.max(0,d.page|0),d.pages.length-1);d.deg=d.deg!==false;
+  return d;
+}
+function nbSave(){
+  clearTimeout(NB.saveT);NB.saveT=0;if(!NB.d)return;
+  let ok=true;try{localStorage.setItem(NB_KEY,JSON.stringify(NB.d))}catch(e){ok=false}
+  $('#nbWarn').hidden=ok;
+  if(ok)['algebra','fizyka','so'].forEach(id=>{try{localStorage.removeItem('kratka-zeszyt-'+id)}catch(e){}});
+}
+const nbSaveSoon=()=>{clearTimeout(NB.saveT);NB.saveT=setTimeout(nbSave,500)};
+window.addEventListener('pagehide',()=>{nbTxtCommit();nbSave()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')nbSave()});
+
+// ---------- otwieranie, strony, nagłówek ----------
+function nbOpen(){
+  if(NB.d){nbLayout();return}
+  NB.d=nbLoad();NB.undo=[];NB.redo=[];
+  nbShowPage(true);
+}
+function nbShowPage(top){
+  nbTa.value=nbPage().text;
+  NB.hwCache.clear();nbHwMenuClose();
+  nbHead();nbCalc();NB.H=0;nbLayout();nbDraw();nbHwRun();
+  if(top){nbSc.scrollTop=0;nbSc.scrollLeft=0}
+}
+function nbHead(){
+  const k=NB.d.page,n=NB.d.pages.length;
+  $('#nbPageN').innerHTML=$t(`strona <b>${k+1}</b> z ${n}`,`page <b>${k+1}</b> of ${n}`);
+  $('#nbPrev').disabled=k===0;$('#nbNext').disabled=k===n-1;$('#nbDel').hidden=n===1;
+  $$('#nbDeg [data-deg]').forEach(b=>{const on=(b.dataset.deg==='1')===NB.d.deg;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+  nbBtns();
+}
+function nbBtns(){
+  const pg=NB.d.page;
+  $('#nbUndo').disabled=!(NB.txt&&NB.txt.page===pg)&&!NB.undo.some(x=>x.page===pg);
+  $('#nbRedo').disabled=!NB.redo.some(x=>x.page===pg);
+}
+function nbGo(k){nbTxtCommit();NB.d.page=k;nbShowPage(true);nbSaveSoon()}
+$('#nbPrev').onclick=()=>{if(NB.d.page>0)nbGo(NB.d.page-1)};
+$('#nbNext').onclick=()=>{if(NB.d.page<NB.d.pages.length-1)nbGo(NB.d.page+1)};
+$('#nbAdd').onclick=()=>{
+  nbTxtCommit();const k=NB.d.page;
+  NB.d.pages.splice(k+1,0,{text:'',strokes:[],hw:{}});
+  [...NB.undo,...NB.redo].forEach(x=>{if(x.page>k)x.page++});
+  nbGo(k+1);nbSave();
+  if(NB.mode==='type')nbTa.focus({preventScroll:true});
+};
+function nbAsk(msg,yes,fn){
+  const m=$('#nbMsg');
+  show(m,'bad',`${msg}<div class="actions"><button type="button" class="btn small danger" data-ask="1">${yes}</button><button type="button" class="btn ghost small" data-ask="0">${$t('Anuluj','Cancel')}</button></div>`);
+  m.onclick=e=>{const b=e.target.closest('[data-ask]');if(!b)return;m.className='msg';m.onclick=null;if(b.dataset.ask==='1')fn()};
+  m.querySelector('[data-ask="0"]').focus({preventScroll:true});
+}
+$('#nbClear').onclick=()=>{
+  const P=nbPage();if(!P.text&&!P.strokes.length)return;
+  nbAsk($t('Wyczyścić tę stronę? Tekst i rysunki znikną, ale przycisk Cofnij je przywróci.','Clear this page? The text and the drawings go away, but Undo brings them back.'),$t('Wyczyść','Clear'),()=>{
+    nbTxtCommit();const P=nbPage();nbHist({page:NB.d.page,op:'clear',strokes:P.strokes.slice(),text:P.text});
+    P.strokes=[];P.text='';nbShowPage(false);nbSave();
+  });
+};
+$('#nbDel').onclick=()=>nbAsk($t('Usunąć tę stronę razem z rysunkami? Tego nie da się cofnąć.','Delete this page with its drawings? This cannot be undone.'),$t('Usuń stronę','Delete the page'),()=>{
+  nbTxtCommit();const k=NB.d.page;NB.d.pages.splice(k,1);
+  const fix=a=>a.filter(x=>x.page!==k).map(x=>{if(x.page>k)x.page--;return x});
+  NB.undo=fix(NB.undo);NB.redo=fix(NB.redo);
+  NB.d.page=Math.min(k,NB.d.pages.length-1);nbShowPage(true);nbSave();
+});
+
+// ---------- tekst i wyniki ----------
+// wynik linii do pokazania: wszystko, gdy wyniki są włączone; inaczej błędy, uwagi, samo „zgadza się / nie”
+// i wyniki linii odsłoniętych przyciskiem Wynik
+const nbLineKey=(i,l)=>i+':'+l;
+function nbShowRes(r,key){
+  if(!r)return '';
+  if(NB.show||NB.shown.has(key)||r.kind==='err'||r.kind==='note')return `<span class="nb-r${r.cls?' '+r.cls:''}">${r.html}</span>`;
+  if(r.kind==='check')return `<span class="nb-r ${r.cls}">${r.verdict}</span>`;
+  return '<span class="nb-r hid">?</span>';
+}
+function nbCalc(){
+  const t=nbPage().text,recs=calcLines(t,{deg:NB.d.deg}),lines=t.split('\n');NB.recs=recs;NB.res=recs;
+  $('#nbMirror').innerHTML=lines.map((l,i)=>{
+    const c=l.search(/(^|\s)(#|\/\/)/);
+    const txt=c<0?escH(l):escH(l.slice(0,c))+`<span class="nb-c">${escH(l.slice(c))}</span>`;
+    return txt+nbShowRes(recs[i],nbLineKey(i,l));
+  }).join('\n')+'\n';
+}
+// zmiany tekstu trafiają do historii paczkami: to, co wpisane bez dłuższej przerwy, cofa się naraz
+function nbTxtCommit(){
+  const T=NB.txt;if(!T)return;clearTimeout(T.t);NB.txt=null;
+  const P=NB.d&&NB.d.pages[T.page];if(P&&P.text!==T.a)nbHist({page:T.page,op:'text',a:T.a,b:P.text});
+  if(NB.d)nbBtns();
+}
+nbTa.addEventListener('input',()=>{
+  const P=nbPage(),pg=NB.d.page;
+  if(!NB.txt){NB.txt={page:pg,a:P.text,t:0};NB.redo=NB.redo.filter(x=>x.page!==pg)}
+  P.text=nbTa.value;clearTimeout(NB.txt.t);NB.txt.t=setTimeout(nbTxtCommit,1000);
+  nbCalc();nbLayout();nbBtns();nbSaveSoon();
+  // przeglądarka sama przewija kartkę za kursorem; po powrocie do krótkiej linii wracamy do marginesu
+  const v=nbTa.value.slice(0,nbTa.selectionEnd),col=v.length-v.lastIndexOf('\n')-1;
+  if(nbSc.scrollLeft&&NB_PAD+col*nbCw()+NB_CELL<nbSc.clientWidth)nbSc.scrollLeft=0;
+  clearTimeout(NB.liveT);NB.liveT=setTimeout(nbAnnounce,700);
+});
+// szerokość znaku czcionki kartki (stała, bo czcionka jest o stałej szerokości)
+function nbCw(){
+  if(!NB.cw){const m=document.createElement('span');m.textContent='0'.repeat(20);$('#nbMirror').appendChild(m);NB.cw=m.getBoundingClientRect().width/20||9.6;m.remove()}
+  return NB.cw;
+}
+// czytnik ekranu: wynik linii, w której stoi kursor
+function nbAnnounce(){
+  if(document.activeElement!==nbTa)return;
+  const r=NB.res[nbTa.value.slice(0,nbTa.selectionStart).split('\n').length-1];
+  $('#nbLive').textContent=r?plain(r.html):'';
+}
+// pole tekstowe jest tak duże jak kartka, więc samo nie przewija; przewija się kartka
+nbTa.addEventListener('scroll',()=>{if(nbTa.scrollTop||nbTa.scrollLeft){nbTa.scrollTop=0;nbTa.scrollLeft=0}});
+nbTa.addEventListener('beforeinput',e=>{if(e.inputType==='historyUndo'||e.inputType==='historyRedo'){e.preventDefault();nbUndo(e.inputType==='historyRedo')}});
+// rząd klawiszy z symbolami, których nie ma na klawiaturze telefonu; nie zabiera kursora z kartki
+['pointerdown','mousedown'].forEach(ev=>$('#nbKeys').addEventListener(ev,e=>{if(e.target.closest('[data-k]'))e.preventDefault()}));
+$('#nbKeys').addEventListener('click',e=>{
+  const b=e.target.closest('[data-k]');if(!b)return;
+  const k=b.dataset.k;
+  if(document.activeElement!==nbTa)nbTa.focus({preventScroll:true});
+  let done=false;try{done=document.execCommand('insertText',false,k)}catch(_){done=false}
+  if(!done){nbTa.setRangeText(k,nbTa.selectionStart,nbTa.selectionEnd,'end');nbTa.dispatchEvent(new Event('input'))}
+  if(/\(\)$|\[\]$/.test(k)){const p=nbTa.selectionEnd-1;nbTa.setSelectionRange(p,p)}
+});
+
+// ---------- wymiary kartki ----------
+function nbBox(s){
+  if(!s.bb){let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;for(let i=0;i<s.p.length;i+=2){x1=Math.min(x1,s.p[i]);x2=Math.max(x2,s.p[i]);y1=Math.min(y1,s.p[i+1]);y2=Math.max(y2,s.p[i+1])}
+    Object.defineProperty(s,'bb',{value:[x1,y1,x2,y2],enumerable:false,writable:true,configurable:true})}
+  return s.bb;
+}
+function nbLayout(){
+  if(!NB.d||!nbSc.clientWidth)return;
+  const P=nbPage(),lines=P.text.split('\n').length;
+  let mx=0,my=0;for(const s of P.strokes){const b=nbBox(s);if(b[2]>mx)mx=b[2];if(b[3]>my)my=b[3]}
+  const up=v=>Math.ceil(v/NB_CELL)*NB_CELL;
+  const W=up(Math.max(nbSc.clientWidth,$('#nbMirror').offsetWidth+NB_CELL*6,mx+NB_CELL*2));
+  // piórem trzeba mieć dokąd przewinąć, więc kartka jest trochę wyższa niż okno
+  const H=Math.min(NB_MAX_H,up(Math.max(nbSc.clientHeight+(NB.mode==='pen'?NB_CELL*6:0),(lines+7)*NB_CELL,my+NB_CELL*8,NB.H||0)));
+  if(W!==NB.W||H!==NB.H){
+    NB.W=W;NB.H=H;
+    $('#nbPage').style.width=W+'px';$('#nbPage').style.height=H+'px';nbTa.style.width=W+'px';nbTa.style.height=H+'px';
+    let dpr=Math.min(2,window.devicePixelRatio||1);if(W*H*dpr*dpr>16e6)dpr=Math.max(1,Math.sqrt(16e6/(W*H)));NB.dpr=dpr;
+    nbCv.width=Math.round(W*dpr);nbCv.height=Math.round(H*dpr);nbCv.style.width=W+'px';nbCv.style.height=H+'px';
+    nbDraw();
+  }
+  if(nbTa.scrollTop||nbTa.scrollLeft){nbTa.scrollTop=0;nbTa.scrollLeft=0}
+}
+let nbRT=0;
+window.addEventListener('resize',()=>{clearTimeout(nbRT);nbRT=setTimeout(()=>{if(NB.d&&$('#nb').offsetParent){NB.H=0;nbLayout()}nbVV()},120)});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{NB.cw=0;if(NB.d)nbLayout()});
+let nbHwST=0;nbSc.addEventListener('scroll',()=>{if(NB.hw.length){clearTimeout(nbHwST);nbHwST=setTimeout(nbHwPaint,120)}},{passive:true});
+// w trybie pióra kartka rośnie, gdy przewijasz do jej końca
+nbSc.addEventListener('scroll',()=>{
+  if(NB.mode==='pen'&&NB.d&&NB.H<NB_MAX_H&&nbSc.scrollTop+nbSc.clientHeight>NB.H-NB_CELL*3){NB.H+=NB_CELL*12;nbLayout()}
+},{passive:true});
+
+// ---------- rysowanie ----------
+const nbCss=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim()||'#2343b5';
+function nbStroke(ctx,s,col){
+  const p=s.p,w=s.w||NB_TOOLS[s.c].w;
+  ctx.strokeStyle=ctx.fillStyle=col[s.c];ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';
+  if(p.length<=2){ctx.beginPath();ctx.arc(p[0],p[1],w/2,0,7);ctx.fill();return}
+  ctx.beginPath();ctx.moveTo(p[0],p[1]);
+  // gładka linia: łuki przez środki kolejnych odcinków
+  for(let i=2;i<p.length-2;i+=2)ctx.quadraticCurveTo(p[i],p[i+1],(p[i]+p[i+2])/2,(p[i+1]+p[i+3])/2);
+  ctx.lineTo(p[p.length-2],p[p.length-1]);ctx.stroke();
+}
+function nbDraw(){
+  const ctx=nbCv.getContext('2d');if(!ctx||!NB.d)return;
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,nbCv.width,nbCv.height);ctx.setTransform(NB.dpr,0,0,NB.dpr,0,0);
+  const col={};for(const k in NB_TOOLS)col[k]=nbCss(NB_TOOLS[k].c);
+  const st=nbPage().strokes;
+  // zakreślacz pod tuszem
+  for(const s of st)if(s.c==='hl')nbStroke(ctx,s,col);
+  if(NB.draw&&NB.draw.s.c==='hl')nbStroke(ctx,NB.draw.s,col);
+  for(const s of st)if(s.c!=='hl')nbStroke(ctx,s,col);
+  if(NB.draw&&NB.draw.s.c!=='hl')nbStroke(ctx,NB.draw.s,col);
+}
+if(window.matchMedia)matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(NB.d)nbDraw()});
+function nbPt(e){const r=nbCv.getBoundingClientRect();return [Math.round((e.clientX-r.left)*10)/10,Math.round((e.clientY-r.top)*10)/10]}
+// mniej punktów w zapisie (Ramer–Douglas–Peucker), kształt zostaje
+function nbSimplify(p,eps){
+  const n=p.length/2;if(n<3)return p;
+  const keep=new Uint8Array(n);keep[0]=keep[n-1]=1;const st=[[0,n-1]];
+  while(st.length){
+    const [a,b]=st.pop(),ax=p[2*a],ay=p[2*a+1],dx=p[2*b]-ax,dy=p[2*b+1]-ay,L=Math.hypot(dx,dy);let md=0,mi=-1;
+    for(let i=a+1;i<b;i++){const x=p[2*i]-ax,y=p[2*i+1]-ay,d=L<1e-6?Math.hypot(x,y):Math.abs(dx*y-dy*x)/L;if(d>md){md=d;mi=i}}
+    if(md>eps){keep[mi]=1;st.push([a,mi],[mi,b])}
+  }
+  const out=[];for(let i=0;i<n;i++)if(keep[i])out.push(p[2*i],p[2*i+1]);return out;
+}
+function nbHist(op){NB.undo.push(op);if(NB.undo.length>400)NB.undo.shift();NB.redo=NB.redo.filter(x=>x.page!==op.page);nbBtns()}
+function nbEraseAt(x,y){
+  const st=nbPage().strokes,R=10;let hit=false;
+  for(let i=st.length-1;i>=0;i--){
+    const s=st[i],b=nbBox(s),w=(s.w||NB_TOOLS[s.c].w)/2+R;
+    if(x<b[0]-w||x>b[2]+w||y<b[1]-w||y>b[3]+w)continue;
+    for(let k=0;k<s.p.length;k+=2)if(Math.hypot(s.p[k]-x,s.p[k+1]-y)<=w){NB.erase.del.push({i,s});st.splice(i,1);hit=true;break}
+  }
+  if(hit)nbDraw();
+}
+function nbEraseEnd(){
+  const E=NB.erase;NB.erase=null;if(!E||!E.del.length)return;
+  nbHist({page:NB.d.page,op:'del',items:E.del});nbSaveSoon();nbHwSoon();
+}
+nbCv.addEventListener('pointerdown',e=>{
+  if(NB.mode!=='pen'||!NB.d)return;
+  if(e.pointerType==='mouse'&&e.button!==0)return;
+  if(e.pointerType==='pen')NB.sawPen=true;
+  if(e.pointerType==='touch'){
+    NB.touches.set(e.pointerId,[e.clientX,e.clientY]);
+    // dwa palce przewijają; przy rysiku palec zawsze tylko przewija
+    if(NB.sawPen||NB.touches.size>=2){
+      if(NB.draw&&NB.draw.touch){NB.draw=null;nbDraw()}
+      if(NB.erase&&NB.erase.touch)nbEraseEnd();
+      NB.pan=true;e.preventDefault();return;
+    }
+  }
+  e.preventDefault();
+  try{nbCv.setPointerCapture(e.pointerId)}catch(_){}
+  const [x,y]=nbPt(e);
+  if(NB.tool==='erase'||e.pointerType==='pen'&&(e.button===5||(e.buttons&32))){NB.erase={id:e.pointerId,touch:e.pointerType==='touch',del:[]};nbEraseAt(x,y);return}
+  NB.draw={id:e.pointerId,touch:e.pointerType==='touch',s:{c:NB.tool,p:[x,y],id:nbId()},x0:e.clientX,y0:e.clientY,t0:performance.now()};
+  $('#nbHw').classList.add('dim');   // odczyty bledną, żeby dało się pisać dalej, także po nich
+  nbDraw();
+});
+nbCv.addEventListener('pointermove',e=>{
+  if(NB.mode!=='pen'||!NB.d)return;
+  if(e.pointerType==='touch'){
+    const q=NB.touches.get(e.pointerId);
+    if(q&&NB.pan){const n=NB.touches.size;nbSc.scrollLeft-=(e.clientX-q[0])/n;nbSc.scrollTop-=(e.clientY-q[1])/n;NB.touches.set(e.pointerId,[e.clientX,e.clientY]);e.preventDefault();return}
+    if(q)NB.touches.set(e.pointerId,[e.clientX,e.clientY]);
+  }
+  let evs=e.getCoalescedEvents?e.getCoalescedEvents():[];if(!evs.length)evs=[e];
+  if(NB.erase&&NB.erase.id===e.pointerId){for(const ev of evs){const [x,y]=nbPt(ev);nbEraseAt(x,y)}return}
+  const D=NB.draw;if(!D||D.id!==e.pointerId)return;
+  const p=D.s.p,ctx=nbCv.getContext('2d'),t=NB_TOOLS[D.s.c];let moved=false;
+  ctx.setTransform(NB.dpr,0,0,NB.dpr,0,0);ctx.strokeStyle=nbCss(t.c);ctx.lineWidth=t.w;ctx.lineCap='round';ctx.lineJoin='round';
+  for(const ev of evs){
+    const [x,y]=nbPt(ev),lx=p[p.length-2],ly=p[p.length-1];if(Math.hypot(x-lx,y-ly)<0.8)continue;
+    p.push(x,y);moved=true;
+    // tusz rysujemy od razu kawałkami; półprzezroczysty zakreślacz trzeba rysować w całości
+    if(D.s.c!=='hl'){ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(x,y);ctx.stroke()}
+  }
+  if(moved&&D.s.c==='hl'&&!D.raf)D.raf=requestAnimationFrame(()=>{D.raf=0;if(NB.draw===D)nbDraw()});
+});
+function nbUp(e){
+  if(e.pointerType==='touch'){NB.touches.delete(e.pointerId);if(!NB.touches.size)NB.pan=false}
+  if(NB.erase&&NB.erase.id===e.pointerId){nbEraseEnd();return}
+  const D=NB.draw;if(!D||D.id!==e.pointerId)return;
+  NB.draw=null;const s=D.s;$('#nbHw').classList.remove('dim');
+  if(e.type==='pointercancel'&&s.p.length<8){nbDraw();return}
+  // krótkie stuknięcie w odczyt (bez ruchu) otwiera go, zamiast stawiać kropkę
+  if(e.type==='pointerup'&&Math.hypot(e.clientX-D.x0,e.clientY-D.y0)<6&&performance.now()-D.t0<400){
+    const k=[...$$('#nbHw .nb-hwc')].findIndex(c=>{const r=c.getBoundingClientRect();return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom});
+    if(k>=0){nbDraw();nbHwMenuOpen(k);return}
+  }
+  s.p=nbSimplify(s.p,0.35);
+  nbPage().strokes.push(s);nbHist({page:NB.d.page,op:'add',s});
+  if(nbBox(s)[3]>NB.H-NB_CELL*6)NB.H+=NB_CELL*12;
+  nbLayout();nbDraw();nbSaveSoon();nbHwSoon();
+}
+nbCv.addEventListener('pointerup',nbUp);nbCv.addEventListener('pointercancel',nbUp);
+nbCv.addEventListener('lostpointercapture',e=>{if(NB.draw&&NB.draw.id===e.pointerId)nbUp(e)});
+
+// ---------- cofnij i ponów (osobno dla każdej strony) ----------
+function nbApply(op,back){
+  const P=NB.d.pages[op.page];if(!P)return;const st=P.strokes;
+  if(op.op==='add'){if(back){const k=st.lastIndexOf(op.s);if(k>=0)st.splice(k,1)}else st.push(op.s)}
+  else if(op.op==='del'){if(back)op.items.slice().reverse().forEach(x=>st.splice(Math.min(x.i,st.length),0,x.s));else op.items.forEach(x=>{const k=st.indexOf(x.s);if(k>=0)st.splice(k,1)})}
+  else if(op.op==='text')P.text=back?op.a:op.b;
+  else if(op.op==='clear'){if(back){P.strokes=op.strokes.slice();P.text=op.text}else{P.strokes=[];P.text=''}}
+}
+// miejsce kursora po cofnięciu: koniec zmienionego fragmentu
+const nbChangeEnd=(a,b)=>{let i=0;while(i<a.length&&i<b.length&&a[i]===b[i])i++;let j=0;while(j<a.length-i&&j<b.length-i&&a[a.length-1-j]===b[b.length-1-j])j++;return b.length-j};
+function nbUndo(redo){
+  if(!NB.d)return;nbTxtCommit();
+  const pg=NB.d.page,from=redo?NB.redo:NB.undo,to=redo?NB.undo:NB.redo;
+  let k=from.length-1;while(k>=0&&from[k].page!==pg)k--;
+  if(k<0)return;
+  const op=from.splice(k,1)[0];nbApply(op,!redo);to.push(op);
+  const P=nbPage();
+  if(nbTa.value!==P.text){const c=nbChangeEnd(nbTa.value,P.text);nbTa.value=P.text;if(document.activeElement===nbTa)nbTa.setSelectionRange(c,c)}
+  NB.H=0;nbCalc();nbLayout();nbDraw();nbBtns();nbSaveSoon();nbHwSoon();
+}
+$('#nbUndo').onclick=()=>nbUndo(false);$('#nbRedo').onclick=()=>nbUndo(true);
+document.addEventListener('keydown',e=>{
+  if(!NB.d||!(e.ctrlKey||e.metaKey)||e.altKey||e.defaultPrevented)return;
+  const k=(e.key||'').toLowerCase();if(k!=='z'&&k!=='y')return;
+  const t=e.target;
+  if(t!==nbTa&&t.closest&&t.closest('input,textarea,select,[contenteditable]'))return;   // inne pola cofają po swojemu
+  if(!$('#nb').offsetParent)return;
+  e.preventDefault();nbUndo(k==='y'||e.shiftKey);
+});
+
+// ---------- tryb, przybory, kąty ----------
+function nbMode(m,user){
+  m=m==='pen'?'pen':'type';NB.mode=m;
+  $('#nb').classList.toggle('nb-pen',m==='pen');
+  $$('#nbMode [data-nbm]').forEach(b=>{const on=b.dataset.nbm===m;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+  nbTa.tabIndex=m==='pen'?-1:0;
+  if(m==='pen'){nbTxtCommit();if(document.activeElement===nbTa)nbTa.blur()}
+  if(NB.d)nbLayout();
+  if(user){store.set('kratka-zeszyt-tryb',m);if(m==='type')nbTa.focus({preventScroll:true})}
+  // na ekranie dotykowym raz mówimy, jak przewijać kartkę, kiedy pisze się palcem
+  if(user&&m==='pen'&&window.matchMedia('(pointer:coarse)').matches&&store.get('kratka-zeszyt-palce')!=='1'){
+    store.set('kratka-zeszyt-palce','1');
+    show($('#nbMsg'),'info',$t('Jednym palcem piszesz, a dwoma przewijasz kartkę. Zeszyt czyta cyfry i znaki działań; odczyt i wynik pojawią się obok.','Write with one finger and scroll the page with two. The notebook reads digits and operation signs; the reading and the result appear next to them.'));
+  }
+}
+$('#nbMode').addEventListener('click',e=>{const b=e.target.closest('[data-nbm]');if(b)nbMode(b.dataset.nbm,true)});
+$('#nbTools').addEventListener('click',e=>{
+  const b=e.target.closest('[data-tool]');if(!b)return;
+  NB.tool=b.dataset.tool;$('#nb').dataset.tool=NB.tool;
+  $$('#nbTools [data-tool]').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on)});
+});
+$('#nbDeg').addEventListener('click',e=>{const b=e.target.closest('[data-deg]');if(!b||!NB.d)return;NB.d.deg=b.dataset.deg==='1';nbHead();nbCalc();nbLayout();nbSaveSoon()});
+
+// ---------- Brudnopis: ten sam zeszyt obok zadania ----------
+function nbDrawerOpen(task,opener){
+  nbOpen();
+  NB.opener=opener||null;
+  $('#nbdTask').hidden=!task;
+  if(task){$('#nbdTaskBody').innerHTML=`<div class="task-q">${task.q}</div>${task.body||''}`;$('#nbdTask').open=true}
+  $('#nbdHost').appendChild($('#nb'));NB.where='drawer';
+  $('#nbd').hidden=false;document.documentElement.classList.add('nbd-open');
+  $$('[data-pad]').forEach(b=>{b.classList.add('on');b.setAttribute('aria-pressed','true')});
+  if(nbNarrow())document.body.style.overflow='hidden';
+  // pisze się od nowej linii pod tym, co już jest na stronie
+  const P=nbPage();if(P.text&&!P.text.endsWith('\n')){P.text+='\n';nbTa.value=P.text;nbCalc();nbSaveSoon()}
+  nbVV();NB.H=0;nbLayout();
+  const end=nbTa.value.length;nbTa.setSelectionRange(end,end);
+  nbSc.scrollTop=Math.max(0,(nbTa.value.split('\n').length+3)*NB_CELL-nbSc.clientHeight);
+  if(!nbNarrow()&&NB.mode==='type')nbTa.focus({preventScroll:true});else $('#nbdClose').focus({preventScroll:true});
+}
+function nbDrawerClose(){
+  if($('#nbd').hidden)return;
+  nbTxtCommit();nbSave();
+  $('#nbd').hidden=true;document.documentElement.classList.remove('nbd-open');document.body.style.overflow='';
+  $('#nbHome').appendChild($('#nb'));NB.where='home';nbVV();
+  $$('[data-pad]').forEach(b=>{b.classList.remove('on');b.setAttribute('aria-pressed','false')});
+  if(NB.opener&&document.contains(NB.opener)&&NB.opener.offsetParent)NB.opener.focus({preventScroll:true});
+  NB.opener=null;
+}
+$('#nbdClose').onclick=nbDrawerClose;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!e.defaultPrevented&&!$('#nbd').hidden&&$('#pl').hidden&&$('#bs').hidden){nbDrawerClose();e.preventDefault()}});
+document.addEventListener('click',e=>{
+  const b=e.target.closest&&e.target.closest('[data-pad]');if(!b)return;
+  if(!$('#nbd').hidden){nbDrawerClose();return}
+  const id=b.dataset.pad,q=document.getElementById(id+'Q'),body=document.getElementById(id+'Body');
+  nbDrawerOpen(q?{q:q.innerHTML,body:body?body.innerHTML:''}:null,b);
+});
+// telefon z otwartą klawiaturą: panel ma wysokość widocznej części ekranu
+function nbVV(){
+  const d=$('#nbd'),v=window.visualViewport;
+  if(d.hidden||!v||!nbNarrow()){d.style.top=d.style.height=d.style.bottom='';d.classList.remove('nbd-kb');return}
+  d.style.top=v.offsetTop+'px';d.style.height=v.height+'px';d.style.bottom='auto';
+  d.classList.toggle('nbd-kb',v.height<window.innerHeight*0.75);
+}
+if(window.visualViewport){visualViewport.addEventListener('resize',nbVV);visualViewport.addEventListener('scroll',nbVV)}
+
+// ---------- podpięcie do szkieletu ----------
+HOOKS.start.push(()=>nbMode(store.get('kratka-zeszyt-tryb')==='pen'?'pen':'type',false));
+HOOKS.view.push((S,view)=>{
+  const at=view==='zeszyt'?'zeszyt':S.id+'-'+view;
+  if(NB.at&&NB.at!==at)nbDrawerClose();
+  NB.at=at;
+  $$('#nb [aria-label]').forEach(b=>{b.title=b.getAttribute('aria-label')});
+  if(view==='zeszyt'){nbOpen();requestAnimationFrame(()=>{NB.H=0;nbLayout()})}
+});
+HOOKS.lang.push(()=>{if(NB.d){nbHead();nbCalc();nbLayout();nbHwRun()}});
+
+// ---------- wyniki: od razu albo na żądanie; Rozpisz ----------
+function nbShowMode(on,user){
+  NB.show=!!on;$('#nbShow').setAttribute('aria-pressed',NB.show);$('#nbShow').classList.toggle('on',!NB.show);
+  $('#nbReveal').hidden=NB.show;
+  if(user)store.set('kratka-zeszyt-wyniki',NB.show?'1':'0');
+  if(NB.d){nbCalc();nbLayout();nbHwPaint()}
+}
+$('#nbShow').onclick=()=>nbShowMode(!NB.show,true);
+// linia z kursorem (dla macierzy w kilku liniach: linia, w której się kończy)
+function nbCaretLine(){
+  const t=nbTa.value,i=t.slice(0,nbTa.selectionStart).split('\n').length-1,J=calcJoin(t);
+  let k=i;while(k<J.length-1&&J[k]&&J[k].cont)k++;
+  return k;
+}
+['pointerdown','mousedown'].forEach(ev=>['#nbExplain','#nbReveal'].forEach(id=>$(id).addEventListener(ev,e=>e.preventDefault())));
+$('#nbReveal').onclick=()=>{
+  if(!NB.d)return;nbTxtCommit();
+  const k=nbCaretLine(),lines=nbPage().text.split('\n'),r=NB.recs[k];
+  if(!r){show($('#nbMsg'),'info',$t('W tej linii nie ma wyniku do pokazania. Ustaw kursor w linii z działaniem.','There is no result on this line. Put the cursor on a line with a calculation.'));return}
+  NB.shown.add(nbLineKey(k,lines[k]));nbCalc();nbLayout();
+};
+function nbExplain(rec,src,name){
+  try{
+    const fr=calcSteps(rec,src);
+    if(!fr||!fr.length)throw new Error('');
+    play(()=>calcSteps(rec,src),escH(name).slice(0,80),$('#nbMsg'));
+  }catch(e){show($('#nbMsg'),'bad',$t('Tej linii nie da się rozpisać.','This line cannot be explained.'))}
+}
+$('#nbExplain').onclick=()=>{
+  if(!NB.d)return;nbTxtCommit();
+  const t=nbTa.value,a=nbTa.selectionStart,b=nbTa.selectionEnd,k=nbCaretLine(),rec=NB.recs[k],line=t.split('\n')[k]||'';
+  // zaznaczony fragment jednej linii: rozpisujemy tylko jego (np. 3·4 z 2 + 3·4)
+  const sel=t.slice(a,b).trim();
+  if(sel&&!sel.includes('\n')&&/[\d)]/.test(sel)){
+    const L=t.slice(0,a).split('\n').length-1,R0=NB.recs.find((r,j)=>r&&j>=L)||{};
+    const env=NB.recs.slice(0,L+1).reverse().find(r=>r&&r.env);
+    try{calcSteps({env:env?env.env:new Map(),deg:NB.d.deg,dec:/\d[.,]\d/.test(sel)},sel)}catch(e){show($('#nbMsg'),'bad',$t('Zaznaczony fragment nie jest pełnym działaniem.','The selection is not a complete calculation.'));return}
+    nbExplain({env:env?env.env:new Map(),deg:NB.d.deg,dec:/\d[.,]\d/.test(sel)},sel,sel);return;
+  }
+  if(!rec||rec.kind==='err'||rec.kind==='note'){show($('#nbMsg'),'info',rec&&rec.kind==='err'?$t('W tej linii jest błąd: ','This line has an error: ')+rec.html:$t('Ustaw kursor w linii z działaniem (albo zaznacz działanie) i kliknij Rozpisz.','Put the cursor on a line with a calculation (or select one) and click Explain.'));return}
+  nbExplain(rec,undefined,line.replace(/(^|\s)(#|\/\/).*$/,'').trim());
+};
+
+// ---------- pismo piórem: odczyt, wynik obok, poprawianie ----------
+function nbReadMode(on,user){
+  NB.read=!!on;$('#nbRead').setAttribute('aria-pressed',NB.read);$('#nbRead').classList.toggle('on',NB.read);
+  if(user)store.set('kratka-zeszyt-pismo',NB.read?'1':'0');
+  if(NB.d)nbHwRun();
+}
+$('#nbRead').onclick=()=>nbReadMode(!NB.read,true);
+const nbHwSoon=()=>{clearTimeout(NB.hwT);NB.hwT=setTimeout(nbHwRun,700)};
+// odczyt działania: liczymy go osobno (bez zmiennych z kartki); bez działania albo „=” to nie rachunek
+function nbHwEval(text){
+  if(!/[+\-−·*×/:^=]/.test(text.replace(/^[−-]/,'')))return null;
+  const r=calcLines(text,{deg:NB.d.deg})[0];
+  return r&&r.kind!=='note'?r:null;
+}
+function nbHwRun(){
+  clearTimeout(NB.hwT);NB.hw=[];
+  if(!NB.d)return;
+  const P=nbPage(),st=P.strokes.filter(s=>s.c!=='hl');
+  if(NB.read&&st.length){
+    let found=[];try{found=hwRead(st,NB.hwCache)}catch(e){found=[]}
+    for(const f of found){
+      const key=f.ks.map(k=>st[k].id).sort().join(','),fix=P.hw[key];
+      const text=fix||f.text,rec=nbHwEval(text);
+      if(!rec)continue;
+      NB.hw.push({...f,key,text,show:fix||f.show,fixed:!!fix,rec});
+    }
+  }
+  nbHwPaint();
+}
+// wynik w dymku: krótko, bo dymek stoi na kartce („nie zgadza się, wychodzi 28”)
+function nbHwRes(r,open){
+  if(r.kind==='err')return r.html;
+  if(r.kind==='check')return open&&!r.ok?`${r.verdict}, ${$t('wychodzi','it is')} ${calcShow(r.lv,r.dec,true).replace(/^[=≈] /,'')}`:r.verdict;
+  return open?r.html:'?';
+}
+function nbHwPaint(){
+  const L=$('#nbHw');if(!L)return;
+  if(NB.hwOpen>=NB.hw.length)nbHwMenuClose();
+  L.innerHTML=NB.hw.map((h,k)=>{
+    const r=h.rec,res=nbHwRes(r,NB.show||NB.shown.has('hw:'+h.key));
+    return `<button type="button" class="nb-hwc${h.fixed?' fixed':''}" data-hw="${k}" aria-label="${escH($t('Odczyt: ','Reading: ')+plain(h.show))}"><span class="nb-hwt">${escH(h.show)}</span><span class="nb-r ${r.cls||''}${res==='?'?' hid':''}">${res}</span></button>`;
+  }).join('');
+  // dymek stoi za działaniem; gdy się tam nie mieści (w widocznej części kartki), idzie pod nie
+  const vis=nbSc.scrollLeft+nbSc.clientWidth-6;
+  [...L.children].forEach((c,k)=>{
+    const h=NB.hw[k],w=c.offsetWidth,right=h.box[2]+12;
+    if(right+w<=vis){c.style.left=right+'px';c.style.top=Math.max(0,(h.box[1]+h.box[3])/2-c.offsetHeight/2)+'px'}
+    else{c.style.left=Math.max(4,Math.min(h.box[0],vis-w))+'px';c.style.top=(h.box[3]+4)+'px'}
+  });
+}
+function nbHwMenuClose(){NB.hwOpen=-1;const m=$('#nbHwMenu');if(m)m.hidden=true}
+function nbHwMenuOpen(k){
+  const h=NB.hw[k];if(!h)return;
+  NB.hwOpen=k;const m=$('#nbHwMenu'),inp=$('#nbHwIn');
+  inp.value=h.text;$('#nbHwSave').hidden=true;
+  const r=h.rec,open=NB.show||NB.shown.has('hw:'+h.key);$('#nbHwRes').innerHTML=open||r.kind!=='val'?`<span class="nb-r ${r.cls||''}">${open||r.kind==='err'?r.html:r.verdict}</span>`:'';
+  $('#nbHwShow').hidden=NB.show||NB.shown.has('hw:'+h.key)||r.kind==='err';
+  m.style.left=Math.max(4,Math.min(h.box[0],NB.W-300))+'px';m.style.top=(h.box[3]+8)+'px';m.hidden=false;
+  // całe okienko ma być widać: przewijamy kartkę, jeśli wystaje pod jej dolną krawędź
+  const bot=m.offsetTop+m.offsetHeight+8;if(bot>nbSc.scrollTop+nbSc.clientHeight)nbSc.scrollTop=bot-nbSc.clientHeight;
+  inp.focus({preventScroll:true});
+}
+$('#nbHw').addEventListener('click',e=>{const b=e.target.closest('[data-hw]');if(b)nbHwMenuOpen(+b.dataset.hw)});
+$('#nbHw').addEventListener('pointerdown',e=>e.stopPropagation());
+$('#nbHwClose').onclick=nbHwMenuClose;
+$('#nbHwIn').addEventListener('input',()=>{const h=NB.hw[NB.hwOpen];$('#nbHwSave').hidden=!h||$('#nbHwIn').value.trim()===h.text});
+$('#nbHwIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(!$('#nbHwSave').hidden)$('#nbHwSave').click();else nbHwMenuClose()}if(e.key==='Escape'){e.preventDefault();e.stopPropagation();nbHwMenuClose()}});
+$('#nbHwShow').onclick=()=>{const h=NB.hw[NB.hwOpen];if(!h)return;NB.shown.add('hw:'+h.key);const k=NB.hwOpen;nbHwPaint();nbHwMenuOpen(k)};
+$('#nbHwExplain').onclick=()=>{const h=NB.hw[NB.hwOpen];if(h)nbExplain(h.rec,undefined,h.text)};
+// poprawka odczytu: zapamiętujemy ją dla tych kresek i uczymy się kształtu każdego źle odczytanego znaku
+$('#nbHwSave').onclick=()=>{
+  const h=NB.hw[NB.hwOpen];if(!h)return;
+  const v=$('#nbHwIn').value.trim().replace(/\*/g,'·').replace(/-/g,'−');if(!v)return;
+  const P=nbPage();P.hw[h.key]=v;
+  const cls=HW_MODEL.classes,norm=c=>c==='·'||c==='×'?'*':c==='−'?'-':c,chars=[...v.replace(/[\s^]/g,'')].map(norm),syms=h.syms||[];
+  if(chars.length===syms.length)syms.forEach((s,i)=>{const c=chars[i],was=norm(s.ch);if(c!==was&&cls.includes(c)&&s.h)hwLearn(s.h,c)});
+  NB.hwCache.clear();nbSave();nbHwMenuClose();nbHwRun();
+};
+HOOKS.start.push(()=>{nbShowMode(store.get('kratka-zeszyt-wyniki')!=='0',false);nbReadMode(store.get('kratka-zeszyt-pismo')!=='0',false)});
 
 // =====================================================================
 //  ALGEBRA: narzędzia (X na liczbach, X na literach, układy równań, znajdź błąd) i ściąga

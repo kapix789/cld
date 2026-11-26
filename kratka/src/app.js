@@ -25,6 +25,7 @@ const plain=h=>String(h).replace(/<[^>]+>/g,'');
 // nazwa tematu bez znaczników (do <option>): wykładniki jako znaki Unicode
 const txt=h=>plain(String(h).replace(/<sup>−1<\/sup>/g,'⁻¹').replace(/<sup>T<\/sup>/g,'ᵀ').replace(/<sup>2<\/sup>/g,'²').replace(/<sub>(\d)<\/sub>/g,(m,d)=>'₀₁₂₃₄₅₆₇₈₉'[d])).replace(/&nbsp;/g,' ');
 const pctS=x=>Math.round(x*100)+'%';
+const ICON_PEN='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 16.5l.9-3.6 9.4-9.4a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1l-9.4 9.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.3 5l2.7 2.7" stroke="currentColor" stroke-width="1.5"/></svg>';
 function ansMark(id,res){for(const [k,ok] of Object.entries(res.marks||{})){const el=document.getElementById(id+'-'+k);if(el){el.classList.toggle('ok',!!ok);el.classList.toggle('bad',!ok)}}}
 
 // ================= Nawigacja =================
@@ -39,6 +40,8 @@ function viewsOf(S){
 const OLD_HASH={liczby:'liczby',rownania:'rownania',uklady:'uklady',cwiczenia:'cwiczenia',dzialania:'cwiczenia',sprawdzian:'sprawdzian',blad:'blad',postep:'postep',sciaga:'sciaga'};
 function route(){
   const h=location.hash.slice(1);
+  // zeszyt to osobna część, wspólna dla przedmiotów (dawniej #algebra-zeszyt itd.)
+  if(h==='zeszyt'||/^[a-z]+-zeszyt$/.test(h))return goNotebook();
   if(OLD_HASH[h])return go('algebra',OLD_HASH[h]);
   const [s,v,...rest]=h.split('-');
   if(subjById(s))return go(s,v,rest.join('-')||null);
@@ -62,13 +65,26 @@ function go(subj,view,topic){
   if(location.hash!==h)history.replaceState(null,'',h);
   if(moved)window.scrollTo(0,0);
 }
+function goNotebook(){
+  const moved=R.view!=='zeszyt',S=subjById(R.subj)||subjById(store.get('kratka-przedmiot'))||SUBJECTS[0];
+  R.subj=S.id;R.view='zeszyt';
+  document.documentElement.dataset.subj='zeszyt';
+  $$('#main>section').forEach(sec=>{sec.hidden=sec.dataset.view!=='zeszyt'});
+  navRender();
+  HOOKS.view.forEach(f=>f(S,'zeszyt'));
+  if(location.hash!=='#zeszyt')history.replaceState(null,'','#zeszyt');
+  if(moved)window.scrollTo(0,0);
+}
 window.addEventListener('hashchange',route);
 const viewHref=(S,id)=>'#'+S.id+'-'+id;
+// przy zmianie przedmiotu zostajemy w tym samym widoku (np. Sprawdzian), jeśli nowy przedmiot go ma
+const keepView=s=>viewsOf(s).some(v=>v.id===R.view&&!v.tool)?R.view:viewsOf(s)[0].id;
+const inNotebook=()=>R.view==='zeszyt';
 function navRender(){
-  const S=subjById(R.subj),vs=viewsOf(S);
-  const keep=s=>viewsOf(s).some(v=>v.id===R.view&&!v.tool)?R.view:viewsOf(s)[0].id;
-  $('#subjTabs').innerHTML=SUBJECTS.map(s=>`<a href="${viewHref(s,keep(s))}"${s===S?' class="on" aria-current="page"':''}>${sName(s)}</a>`).join('');
-  $('#subjSel').innerHTML=SUBJECTS.map(s=>`<option value="${s.id}"${s===S?' selected':''}>${txt(sName(s))}</option>`).join('');
+  const S=subjById(R.subj),vs=viewsOf(S),nb=inNotebook();
+  $('#subjTabs').innerHTML=`<a href="#zeszyt" class="nb-tab${nb?' on':''}"${nb?' aria-current="page"':''}>${ICON_PEN}<span>${$t('Zeszyt','Notebook')}</span></a><span class="subj-sep" aria-hidden="true"></span>`+
+    SUBJECTS.map(s=>`<a href="${viewHref(s,keepView(s))}"${s===S&&!nb?' class="on" aria-current="page"':''}>${sName(s)}</a>`).join('');
+  $('#subjBtnName').innerHTML=nb?$t('Zeszyt','Notebook'):sName(S);
   const link=v=>`<a href="${viewHref(S,v.id)}"${v.id===R.view?' class="on" aria-current="page"':''}>${tName(v)}</a>`;
   $('#viewTabs').innerHTML=vs.map(link).join('');
   const main=vs.filter(v=>!v.tool),tools=vs.filter(v=>v.tool);
@@ -81,7 +97,44 @@ function tocHtml(S){
   return '<div class="toc">'+S.sections.map(sec=>`<div class="toc-sec">${secName(sec)}</div>`+S.topics.filter(t=>t.sec===sec).map(t=>
     `<a href="#${S.id}-cwiczenia-${t.id}" class="toc-t${t.id===cur?' on':''}"${t.id===cur?' aria-current="true"':''}><span class="toc-n">${tName(t)}</span>${sqHtml(t.id,5,true)}</a>`).join('')).join('')+'</div>';
 }
-$('#subjSel').addEventListener('change',e=>{const s=subjById(e.target.value);location.hash=viewHref(s,viewsOf(s).some(v=>v.id===R.view&&!v.tool)?R.view:'cwiczenia')});
+// ---- panel od dołu (telefon): lista tematów i przedmiotów zamiast systemowej listy <select> ----
+const BS={opener:null};
+function bsOpen(title,html,opener){
+  BS.opener=opener||null;
+  $('#bsT').innerHTML=title;$('#bsBody').innerHTML=html;
+  $('#bs').hidden=false;document.body.style.overflow='hidden';
+  if(opener)opener.setAttribute('aria-expanded','true');
+  const cur=$('#bsBody .on')||$('#bsBody a');
+  if(cur){cur.scrollIntoView({block:'center'});cur.focus({preventScroll:true})}
+}
+function bsClose(){
+  if($('#bs').hidden)return;
+  $('#bs').hidden=true;document.body.style.overflow='';
+  if(BS.opener){BS.opener.setAttribute('aria-expanded','false');BS.opener.focus({preventScroll:true})}
+}
+$('#bs').addEventListener('click',e=>{if(e.target.closest('[data-close]')||e.target.closest('#bsBody a'))bsClose()});
+document.addEventListener('keydown',e=>{
+  if($('#bs').hidden)return;
+  if(e.key==='Escape'){bsClose();e.preventDefault();return}
+  if(e.key==='Tab'){const f=$$('#bs a,#bs button'),k=f.indexOf(document.activeElement);
+    if(e.shiftKey&&k<=0){f[f.length-1].focus();e.preventDefault()}else if(!e.shiftKey&&k===f.length-1){f[0].focus();e.preventDefault()}}
+});
+function topicSheet(S){
+  const cur=PRACT[S.id]?PRACT[S.id].topic:null;
+  return S.sections.map(sec=>`<div class="bs-sec">${secName(sec)}</div>`+S.topics.filter(t=>t.sec===sec).map(t=>
+    `<a href="#${S.id}-cwiczenia-${t.id}" class="bs-t${t.id===cur?' on':''}"${t.id===cur?' aria-current="true"':''}><span class="toc-n">${tName(t)}</span>${sqHtml(t.id,5,true)}</a>`).join('')).join('');
+}
+function subjSheet(){
+  const nb=inNotebook();
+  return `<a href="#zeszyt" class="bs-t bs-s bs-nb${nb?' on':''}"${nb?' aria-current="true"':''}>${ICON_PEN}<span class="toc-n"><b>${$t('Zeszyt','Notebook')}</b><small>${$t('kartka na rachunki i notatki, piórem albo z klawiatury','paper for working and notes, with a pen or the keyboard')}</small></span></a>`+
+    SUBJECTS.map(s=>{const n=s.topics.length,on=s.id===R.subj&&!nb;
+    return `<a href="${viewHref(s,keepView(s))}" class="bs-t bs-s${on?' on':''}"${on?' aria-current="true"':''}><span class="toc-n"><b>${sName(s)}</b><small>${n} ${$t(pl(n,'temat','tematy','tematów'),n===1?'topic':'topics')}${s.tools.length?' · '+s.tools.map(tName).join(', '):''}</small></span></a>`}).join('');
+}
+$('#subjBtn').addEventListener('click',e=>bsOpen($t('Przedmiot','Subject'),subjSheet(),e.currentTarget));
+$('#topicBtn').addEventListener('click',e=>{const S=subjById(R.subj);bsOpen(`${$t('Tematy','Topics')} · ${sName(S)}`,topicSheet(S),e.currentTarget)});
+function topicStep(d){const S=subjById(R.subj),ids=S.topics.map(t=>t.id),k=ids.indexOf(PRACT[S.id].topic)+d;if(k>=0&&k<ids.length)location.hash='#'+S.id+'-cwiczenia-'+ids[k]}
+$('#topicPrev').addEventListener('click',()=>topicStep(-1));
+$('#topicNext').addEventListener('click',()=>topicStep(1));
 $('#brand').addEventListener('click',e=>{e.preventDefault();location.hash=viewHref(subjById(R.subj),'cwiczenia')});
 
 // ================= Odtwarzacz „krok po kroku” =================
@@ -200,6 +253,7 @@ function makePractice(root,o){
 <button type="button" class="btn ghost" id="${id}Hint">${bi('Podpowiedź','Hint')}</button>
 <button type="button" class="btn ghost play" id="${id}Play">${bi('Krok po kroku','Step by step')}</button>
 <button type="button" class="btn ghost" id="${id}Sol" aria-expanded="false">${bi('Rozwiązanie','Solution')}</button>
+<button type="button" class="btn ghost pad" data-pad="${id}" aria-pressed="false">${ICON_PEN}${bi('Brudnopis','Scratch pad')}</button>
 <button type="button" class="btn link" id="${id}New">${bi('Następne zadanie','Next task')}</button>
 </div>
 <div class="msg" id="${id}Msg" role="status"></div>
@@ -251,12 +305,12 @@ function practiceShow(S,topic){
 function practiceHead(S){
   const t=topicById(PRACT[S.id].topic);
   $('#cwSec').innerHTML=sName(S)+' · '+secName(t.sec);$('#cwTitle').innerHTML=tName(t);
-  $('#topicSel').innerHTML=S.sections.map(sec=>`<optgroup label="${escH(txt(secName(sec)))}">`+S.topics.filter(x=>x.sec===sec).map(x=>`<option value="${x.id}">${escH(txt(tName(x)))}</option>`).join('')+'</optgroup>').join('');
-  $('#topicSel').value=t.id;
+  const k=S.topics.indexOf(t),n=S.topics.length;
+  $('#topicCount').textContent=`${k+1} / ${n}`;
+  $('#topicPrev').disabled=k===0;$('#topicNext').disabled=k===n-1;
   $('#cwOpts').innerHTML=S.opts?S.opts():'';$('#cwOpts').hidden=!S.opts;
   syncNoFrac();
 }
-$('#topicSel').addEventListener('change',e=>{location.hash='#'+R.subj+'-cwiczenia-'+e.target.value});
 function tocRefresh(){if(R.subj)navRender()}
 
 // ================= Postęp i powtórki =================
@@ -427,12 +481,13 @@ function setLang(l,rerender){
   if(!rerender)return;
   // treści z JS powstają od nowa w nowym języku (postęp i ustawienia zostają)
   if(!$('#pl').hidden)plClose();
+  bsClose();
   Object.values(PRACT).forEach(P=>P.inst.next());
   if(PRP)PRP.next();
   if(EX&&!EX.done&&R.view==='sprawdzian')exShow(EX.k);
   if(EX&&EX.done)exResults();
   HOOKS.lang.forEach(f=>f());
-  go(R.subj,R.view);
+  if(inNotebook())goNotebook();else go(R.subj,R.view);
 }
 document.querySelector('.lang').addEventListener('click',e=>{const b=e.target.closest('[data-lang]');if(b&&b.dataset.lang!==LANG.cur)setLang(b.dataset.lang,true)});
 
