@@ -361,6 +361,34 @@ $('#nbDeg').addEventListener('click',e=>{const b=e.target.closest('[data-deg]');
 // ---------- Brudnopis: ten sam zeszyt obok zadania ----------
 function nbGiven(html){
   const d=document.createElement('div');d.innerHTML=html.replace(/<\/(li|div|p|td)>/g,' $&');
+  const pre=[],seenM=new Set(),num=s=>s.replace(/−/g,'-').replace(/\s+/g,''),cols=e=>+(((e.getAttribute('style')||'').match(/repeat\((\d+)/)||[])[1]||0);
+  // ułamki piętrowe → a/b
+  d.querySelectorAll('.fr').forEach(f=>{const [a,b]=[...f.children].map(x=>x.textContent.trim());f.replaceWith(document.createTextNode(`${a}/${b}`))});
+  // macierze z nazwą: A = [1 2; 3 4]
+  d.querySelectorAll('.gv').forEach(g=>{
+    const m=g.querySelector('.mat');if(!m)return;
+    const lab=(g.textContent.split('=')[0]||'').trim(),n=cols(m),c=[...m.children].map(x=>num(x.textContent));
+    if(!/^[A-Za-z]\w*$/.test(lab)||!n||!c.length||c.some(x=>!x))return;
+    const rows=[];for(let i=0;i<c.length;i+=n)rows.push(c.slice(i,i+n).join(' '));
+    if(!seenM.has(lab)){seenM.add(lab);pre.push(`${lab} = [${rows.join('; ')}]`)}
+    g.remove();
+  });
+  // układ równań: współczynniki A i prawa strona b (kolumny: x, y, z albo x1, x2, …)
+  d.querySelectorAll('.sys').forEach(sy=>{
+    const n=cols(sy),c=[...sy.children].map(x=>x.textContent.trim());if(!n)return;
+    const rows=[],names=[];
+    for(let i=0;i<c.length;i+=n){
+      const [l,r]=num(c.slice(i,i+n).join(' ')).split('=');if(r===undefined)return;
+      const co={},re=/([+-]?)(\d+(?:[.,]\d+)?(?:\/\d+)?)?([a-z]\d*)/g;let m;
+      while((m=re.exec(l))){co[m[3]]=(m[1]==='-'?'-':'')+(m[2]||'1');if(!names.includes(m[3]))names.push(m[3])}
+      rows.push({co,r});
+    }
+    if(!rows.length||!names.length)return;
+    const ord=['x','y','z','t'];names.sort((a,b)=>{const ia=ord.indexOf(a),ib=ord.indexOf(b);return ia>=0&&ib>=0?ia-ib:a.localeCompare(b,undefined,{numeric:true})});
+    const A=seenM.has('A')?'M':'A';
+    pre.push(`# ${$t('kolumny','columns')}: ${names.join(', ')}`,`${A} = [${rows.map(r=>names.map(x=>r.co[x]||'0').join(' ')).join('; ')}]`,`b = [${rows.map(r=>r.r).join('; ')}]`);
+    (sy.closest('.sysbox')||sy).remove();
+  });
   d.querySelectorAll('sup').forEach(x=>{x.textContent='^'+x.textContent});
   const t=d.textContent.replace(/−/g,'-').replace(/\s+/g,' '),out=[],seen=new Set();
   const re=/(^|[\s(,;:])([A-Za-zα-ωΔ][A-Za-z0-9]{0,3})\s*=\s*(-?\d+(?:[.,]\d+)?(?:·10\^-?\d+)?)(?:\s*([^\s,;.)]+))?/g;
@@ -370,7 +398,7 @@ function nbGiven(html){
     const u=m[4]&&cUnit(m[4])?' '+m[4]:'';
     out.push(`${m[2]} = ${m[3]}${u}`);
   }
-  return out;
+  return [...pre,...out];
 }
 function nbDrawerOpen(task,opener){
   nbOpen();
