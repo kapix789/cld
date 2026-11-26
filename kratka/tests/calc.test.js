@@ -57,6 +57,11 @@ for(const [text,want] of [
   ['A = [1 2\n# komentarz w środku\n3 4]\ndet A',[null,null,'note: macierz 2×2','= −2']],
   ['[1 2\nx = 3\n2x',[null,null,'= 6']],
   ['det[1 2; 3 4]',['= −2']],
+  // „A =” w osobnej linii, macierz od następnej
+  ['A =\n[4 2 1\n4 3 2\n1 4 5\n]\ndet(A)',[null,null,null,null,'note: macierz 3×3','= 5']],
+  ['B =\n[1 2; 3 4]\nB^T',[null,'note: macierz 2×2','= [1 3; 2 4]']],
+  ['C =\n\n[1 0\n0 1]\ndet C',[null,null,null,'note: macierz 2×2','= 1']],
+  ['x =\n5',[null,null]],
 ])eq(text,want);
 
 // ---------- kąty w radianach ----------
