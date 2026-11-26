@@ -64,7 +64,7 @@ function nbShowPage(top){
 function nbHead(){
   const k=NB.d.page,n=NB.d.pages.length;
   const nm=NB.d.pages[k].name;
-  $('#nbPageN').innerHTML=$t(`strona <b>${k+1}</b> z ${n}`,`page <b>${k+1}</b> of ${n}`)+(nm?`<span class="nb-pname">${escH(nm)}</span>`:'');
+  $('#nbPageN').innerHTML=`<span>${$t(`strona <b>${k+1}</b> z ${n}`,`page <b>${k+1}</b> of ${n}`)}</span>`+(nm?`<span class="nb-pname">${escH(nm)}</span>`:'');
   $('#nbPageN').title=$t('Kliknij, żeby nazwać stronę','Click to name the page');
   $('#nbPrev').disabled=k===0;$('#nbNext').disabled=k===n-1;$('#nbDel').hidden=n===1;
   $$('#nbDeg [data-deg]').forEach(b=>{const on=(b.dataset.deg==='1')===NB.d.deg;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
@@ -431,12 +431,28 @@ if(window.visualViewport){visualViewport.addEventListener('resize',nbVV);visualV
 HOOKS.start.push(()=>nbMode(store.get('kratka-zeszyt-tryb')==='pen'?'pen':'type',false));
 HOOKS.view.push((S,view)=>{
   const at=view==='zeszyt'?'zeszyt':S.id+'-'+view;
-  if(NB.at&&NB.at!==at)nbDrawerClose();
+  if(NB.at&&NB.at!==at){nbDrawerClose();if(NB.full)nbFull(false)}
   NB.at=at;
   $$('#nb [aria-label]').forEach(b=>{b.title=b.getAttribute('aria-label')});
   if(view==='zeszyt'){nbOpen();requestAnimationFrame(()=>{NB.H=0;nbLayout()})}
 });
 HOOKS.lang.push(()=>{if(NB.d){nbHead();nbCalc();nbLayout();nbHwRun()}});
+
+// ---------- kartka na cały ekran (pasek zeszytu zostaje, reszta strony się chowa) ----------
+function nbFull(on){
+  NB.full=!!on;$('#nb').classList.toggle('nb-full',NB.full);document.documentElement.classList.toggle('nb-full-on',NB.full);
+  $('#nbFull').setAttribute('aria-pressed',NB.full);$('#nbFull').classList.toggle('on',NB.full);
+  const de=document.documentElement;
+  // na telefonie chowa też pasek adresu przeglądarki, jeśli przeglądarka pozwala
+  if(NB.full&&!document.fullscreenElement&&de.requestFullscreen)de.requestFullscreen({navigationUI:'hide'}).catch(()=>{});
+  if(!NB.full&&document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+  if(!$('#nbd').hidden)return;
+  document.body.style.overflow=NB.full?'hidden':'';
+  NB.H=0;requestAnimationFrame(()=>{nbLayout();nbHwPaint()});
+}
+$('#nbFull').onclick=()=>nbFull(!NB.full);
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&NB.full)nbFull(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&NB.full&&!e.defaultPrevented&&$('#pl').hidden){nbFull(false);e.preventDefault()}});
 
 // ---------- wyniki: od razu albo na żądanie; Rozpisz ----------
 function nbShowMode(on,user){

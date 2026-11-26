@@ -10,7 +10,7 @@
 //  Obraz znaku (hwRaster) musi powstawać dokładnie tak jak raster() w tools/hw_train.py.
 //  Poprawki użytkownika (hwLearn) zapisują jego wersję znaku; podobny znak czyta się potem tak samo.
 // =====================================================================
-let HW_NET=null,HW_CACHE=null,HW_DEF=null;   // HW_DEF: litery, które są zmiennymi (null: wszystkie)   // HW_CACHE: odczytane znaki według identyfikatorów kresek (kreska się nie zmienia)
+let HW_NET=null,HW_CACHE=null,HW_DEF=null,HW_CELL=false;   // HW_CELL: czytamy komórkę macierzy (same liczby)   // HW_DEF: litery, które są zmiennymi (null: wszystkie)   // HW_CACHE: odczytane znaki według identyfikatorów kresek (kreska się nie zmienia)
 function hwNet(){
   if(HW_NET)return HW_NET;
   const dq=L=>{const s=atob(L.q),w=new Float32Array(s.length);for(let i=0;i<s.length;i++)w[i]=(s.charCodeAt(i)<<24>>24)*L.s;return {w,b:Float32Array.from(L.b)}};
@@ -121,7 +121,7 @@ function hwMatrices(items,depth){
       const h=Math.max(8,hwMed(row.map(t=>Math.max(t.b.h,t.b.w*.6)))),ord=row.slice().sort((a,b)=>a.b.x1-b.b.x1),cells=[];let cur=[],right=-1e9;
       for(const t of ord){if(cur.length&&t.b.x1-right>h*.55){cells.push(cur);cur=[]}cur.push(t);right=Math.max(right,t.b.x2)}
       if(cur.length)cells.push(cur);
-      const txt=cells.map(c=>hwParse(c,depth+1)).filter(Boolean);
+      const was=HW_CELL;HW_CELL=true;const txt=cells.map(c=>hwParse(c,depth+1)).filter(Boolean);HW_CELL=was;
       if(txt.length)rows.push(txt);
     }
     if(!rows.length)continue;
@@ -160,10 +160,16 @@ function hwParse(items,depth=0){
   }
   // znaki: kreski zachodzące na siebie w poziomie
   const rest=items.filter(t=>!used.has(t)),dots=rest.filter(isDot),strokes=rest.filter(t=>!isDot(t)).sort((a,b)=>a.b.x1-b.b.x1),groups=[];
+  // B (i podobne): kreska, która zaczyna się i kończy na pionowej kresce, należy do tego samego znaku
+  const hug=(v,t)=>{
+    if(v.b.w>v.b.h*.3||t.b.x1>v.b.x2+4)return false;
+    const p=t.p,n=p.length,r=v.b.h*.25,near=(x,y,Y)=>Math.abs(x-v.b.cx)<r&&Math.abs(y-Y)<r;
+    return near(p[0],p[1],v.b.y1)&&near(p[n-2],p[n-1],v.b.y2)||near(p[0],p[1],v.b.y2)&&near(p[n-2],p[n-1],v.b.y1);
+  };
   for(const t of strokes){
     const g=groups[groups.length-1];
     if(g){const ov=Math.min(g.x2,t.b.x2)-Math.max(g.x1,t.b.x1),mw=Math.min(g.x2-g.x1,t.b.w);
-      if(ov>Math.max(mw*.35,1)||t.b.cx>=g.x1-3&&t.b.cx<=g.x2+3||(g.x1+g.x2)/2>=t.b.x1&&(g.x1+g.x2)/2<=t.b.x2){g.items.push(t);g.x1=Math.min(g.x1,t.b.x1);g.x2=Math.max(g.x2,t.b.x2);continue}}
+      if(g.items.length===1&&hug(g.items[0],t)||ov>Math.max(mw*.35,1)||t.b.cx>=g.x1-3&&t.b.cx<=g.x2+3||(g.x1+g.x2)/2>=t.b.x1&&(g.x1+g.x2)/2<=t.b.x2){g.items.push(t);g.x1=Math.min(g.x1,t.b.x1);g.x2=Math.max(g.x2,t.b.x2);continue}}
     groups.push({items:[t],x1:t.b.x1,x2:t.b.x2});
   }
   const lineTop=Math.min(...items.map(t=>t.b.y1)),lineBot=Math.max(...items.map(t=>t.b.y2));
@@ -192,7 +198,7 @@ function hwParse(items,depth=0){
     if(t.text!==undefined){out.push({text:t.text,show:t.show,num:true});conf=Math.min(conf,t.conf);syms.push(...(t.syms||[]));continue}
     let ch=t.ch;
     // litera A, B, C zostaje literą tylko jako zmienna przypisana na tej stronie (B = ...); inaczej to cyfra (8, 4, 0)
-    if(/[ABC]/.test(ch)&&HW_DEF&&!HW_DEF.has(ch))ch=t.cls&&/\d/.test(t.cls.alt)?t.cls.alt:{A:'4',B:'8',C:'0'}[ch];
+    if(/[ABC]/.test(ch)&&(HW_CELL||HW_DEF&&!HW_DEF.has(ch)))ch=t.cls&&/\d/.test(t.cls.alt)?t.cls.alt:{A:'4',B:'8',C:'0'}[ch];
     if(ch==='dot'){
       const between=prev&&prev.num&&next&&next.ch&&/\d/.test(next.ch);
       ch=between&&t.b.cy>mid+symH*.25?'.':'·';
@@ -229,6 +235,18 @@ function hwRead(strokes,cache,defined){
   HW_DEF=def;
   const res=hwRead1(strokes);HW_DEF=null;return res;
 }
+// „A = […]   B = […]” w jednym rzędzie to dwa przypisania: tniemy przed literą, po której stoi „=”
+function hwSplitAssign(items){
+  const r=hwParse(items),tk=(r&&r.tokens)||[];let eq=false;
+  for(let i=1;i<tk.length-1;i++){
+    if(tk[i-1].ch==='=')eq=true;
+    if(eq&&tk[i].ch&&/^[A-C]$/.test(tk[i].ch)&&tk[i+1].ch==='='){
+      const x=tk[i].x,L=items.filter(t=>t.b.cx<x),R=items.filter(t=>t.b.cx>=x);
+      if(L.length&&R.length)return [L,...hwSplitAssign(R)];
+    }
+  }
+  return [items];
+}
 function hwRead1(strokes){
   const items=strokes.map((s,k)=>({k,id:s.id,p:s.p,b:hwBox([s.p])})).filter(t=>t.p.length>=2);
   if(!items.length)return [];
@@ -241,9 +259,11 @@ function hwRead1(strokes){
     for(const ch of chunks){
       // bardzo duże kreski (rysunki, obwódki) nie są pismem
       if(ch.length===1&&ch[0].b.h>medH*3)continue;
-      const r=hwParse(ch);if(!r)continue;
-      const b=hwBox(ch.map(t=>t.p));
-      res.push({...r,box:[b.x1,b.y1,b.x2,b.y2],ks:ch.map(t=>t.k)});
+      for(const part of hwSplitAssign(ch)){
+        const r=hwParse(part);if(!r)continue;
+        const b=hwBox(part.map(t=>t.p));
+        res.push({...r,box:[b.x1,b.y1,b.x2,b.y2],ks:part.map(t=>t.k)});
+      }
     }
   }
   return res;

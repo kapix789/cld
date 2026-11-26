@@ -611,3 +611,11 @@ html[data-subj="start"] .side,html[data-subj="start"] .views{display:none!import
 .home-pdf .home-po{flex:1;margin:0 0 4px}
 .home mark{background:var(--hl-y);color:inherit;padding:0 1px}
 @media (max-width:639px){.home-paper{padding:20px 12px 28px 40px;background-image:linear-gradient(90deg,transparent 24px,var(--nb-margin) 24px,var(--nb-margin) 25.5px,transparent 25.5px),linear-gradient(var(--nb-grid) 1px,transparent 1px),linear-gradient(90deg,var(--nb-grid) 1px,transparent 1px)}}
+
+/* kartka na cały ekran: zeszyt przykrywa stronę, zostaje jego pasek i stopka */
+.nb.nb-full{position:fixed;inset:0;z-index:46;height:100vh!important;height:100dvh!important;min-height:0!important;border:0;border-radius:0;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+html.nb-full-on .top{visibility:hidden}
+#nbFull .ic-out,#nbFull.on .ic-in{display:none}
+#nbFull.on .ic-out{display:inline}
+#nbFull.on{border-color:var(--pen);background:var(--pen-soft);color:var(--pen)}
+@media (max-width:420px){.nb-hist{gap:4px}.nb-hist .nb-ic{width:36px}}
