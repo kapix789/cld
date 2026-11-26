@@ -34,8 +34,11 @@ function calcTokens(s,has){
     if(m){
       const base={b:2,x:16,o:8}[m[1].toLowerCase()];
       if(![...m[2]].every(d=>parseInt(d,16)<base))throw new CalcErr('base');
-      t.push({k:'num',v:String(parseInt(m[2],base))});i+=m[0].length;continue;
+      t.push({k:'num',v:String(parseInt(m[2],base)),raw:m[0]});i+=m[0].length;continue;
     }
+    // „2/3” zapisane ciasno to jeden ułamek: 2/3 : 4/5 = (2/3) : (4/5)
+    m=r.match(/^(\d+)\/(\d+)(?![\d.,eE])/);
+    if(m&&!(t.length&&t[t.length-1].k==='op'&&t[t.length-1].v==='^')){t.push({k:'frac',a:m[1],b:m[2]});i+=m[0].length;continue}
     m=r.match(C_NUM);
     if(m){t.push({k:'num',v:m[1].replace(',','.')});i+=m[1].length;continue}
     m=r.match(C_ID);
@@ -55,14 +58,14 @@ function calcTokens(s,has){
 function calcParse(tokens,has){
   let p=0;const peek=()=>tokens[p],is=v=>peek()&&peek().k==='op'&&peek().v===v;
   const expr=()=>{let a=term();while(is('+')||is('-')){const o=tokens[p++].v;a={t:'bin',o,a,b:term()}}return a};
-  const startsFactor=()=>{const x=peek();return x&&(x.k==='num'||x.k==='id'||x.k==='mat'||(x.k==='op'&&(x.v==='('||x.v==='√')))};
+  const startsFactor=()=>{const x=peek();return x&&(x.k==='num'||x.k==='frac'||x.k==='id'||x.k==='mat'||(x.k==='op'&&(x.v==='('||x.v==='√')))};
   const term=()=>{
     let a=unary();
     for(;;){
       if(is('*')||is('/')){const o=tokens[p++].v;a={t:'bin',o,a,b:unary()};continue}
       // mnożenie bez znaku: 2x, 2(3), (1+2)(3), xy; ale nie „x 2” ani „5 2” (to raczej tekst)
       const prev=tokens[p-1],x=peek();
-      if(prev&&startsFactor()&&!(x.k==='num'&&(prev.k==='id'||prev.k==='num'))&&!(prev.k==='id'&&C_FUN.has(prev.v))){a={t:'bin',o:'*',a,b:unary()};continue}
+      if(prev&&startsFactor()&&!((x.k==='num'||x.k==='frac')&&(prev.k==='id'||prev.k==='num'||prev.k==='frac'))&&!(prev.k==='id'&&C_FUN.has(prev.v))){a={t:'bin',o:'*',a,b:unary()};continue}
       return a;
     }
   };
@@ -81,7 +84,8 @@ function calcParse(tokens,has){
   const cells=r=>(/,\s/.test(r)||!/\s/.test(r)?r.split(','):r.split(/\s+/)).map(e=>e.trim()).filter(Boolean).map(e=>calcParse(calcTokens(e,has),has));
   const primary=()=>{
     const x=tokens[p++];if(!x)throw new CalcErr('end');
-    if(x.k==='num')return {t:'num',v:x.v};
+    if(x.k==='num')return x.raw?{t:'num',v:x.v,raw:x.raw}:{t:'num',v:x.v};
+    if(x.k==='frac')return {t:'bin',o:'/',a:{t:'num',v:x.a},b:{t:'num',v:x.b},tight:true};
     if(x.k==='mat')return {t:'mat',rows:x.v.split(';').map(r=>r.trim()).filter(Boolean).map(cells)};
     if(x.k==='op'&&x.v==='('){const a=expr();if(!is(')'))throw new CalcErr(')');p++;return a}
     if(x.k==='op'&&x.v==='|'){const a=expr();if(!is('|'))throw new CalcErr('|');p++;return {t:'call',f:'abs',a}}
@@ -172,7 +176,10 @@ const RAD=Math.PI/180;
 function cTrig(f,x,deg){
   const v=toNum(x),a=deg?v*RAD:v;
   const r={sin:Math.sin,cos:Math.cos,tg:Math.tan,tan:Math.tan,ctg:t=>1/Math.tan(t),cot:t=>1/Math.tan(t)}[f](a);
-  return Math.abs(r)<1e-13?0:Math.abs(r-Math.round(r))<1e-13?Math.round(r):r;
+  // wartości z tabeli (0, ±1/2, ±1) dokładnie, bez śmieci po przecinku
+  const h=Math.round(r*2);if(Math.abs(r*2-h)<1e-12)return F(h,2);
+  if(!Number.isFinite(r)||Math.abs(r)>1e15)throw new CalcErr('nan');
+  return r;
 }
 function cArc(f,x,deg){
   const v=toNum(x),r={arcsin:Math.asin,asin:Math.asin,arccos:Math.acos,acos:Math.acos,arctg:Math.atan,arctan:Math.atan,atan:Math.atan}[f](v);
@@ -182,6 +189,7 @@ function cArc(f,x,deg){
 function calcEval(n,env,o){
   const ev=x=>calcEval(x,env,o);
   switch(n.t){
+    case 'lit':return n.v;   // wartość już policzona (drzewo kroków w steps.js)
     case 'num':{
       if(/e/i.test(n.v)){const x=+n.v;return Number.isInteger(x)&&Math.abs(x)<SAFE?F(x):x}
       const [a,b='']=n.v.split('.'),s=a+b;return frOk(+s,10**b.length)?F(parseInt(s,10),10**b.length):+n.v;
@@ -239,7 +247,7 @@ function calcEval(n,env,o){
   }
   throw new CalcErr('?');
 }
-const hasPi=n=>!!n&&(n.t==='var'&&/π|^pi$/.test(n.n)||['a','b'].some(k=>n[k]&&typeof n[k]==='object'&&hasPi(n[k])));
+const hasPi=n=>!!n&&(n.t==='var'&&/π|^pi$/.test(n.n)||n.t==='lit'&&!!n.pi||['a','b'].some(k=>n[k]&&typeof n[k]==='object'&&hasPi(n[k])));
 function calcBin(op,a,b){
   const A=isMat(a),B=isMat(b);
   if(op==='+'||op==='-'){
@@ -330,31 +338,50 @@ function calcErrText(e){
 const C_UNITS=new Set('m s g kg dag mg t km cm mm dm µm μm nm h min ms µs μs ns N kN mN J kJ MJ eV W kW MW Pa kPa hPa MPa bar Hz kHz MHz GHz V mV kV A mA Ω kΩ K mol l L ml C rad B kB KB MB GB TB KiB MiB GiB b kb Mb Gb bit bps'.split(' '));
 const cUnit=u=>u==='°C'||u.length<=14&&u.split(/[/·*]/).every(p=>C_UNITS.has(p.replace(/(\^[-−]?\d+|[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+)$/,'')));
 const C_UNIT_RE=/^(.*?[\d)\]°!%])\s*([^\s\d()[\]+\-−*·×÷/:^|'=.,]\S*)$/;
-// cała kartka: zmienne przechodzą z linii do linii
-function calcText(text,o={deg:true}){
+// linie kartki; macierz pisana w kilku liniach („A = [1 2 3”, „4 5 6”, „7 8 9]”) łączy się w jedną,
+// a jej wynik stoi przy ostatniej linii. → [{src, cont}] (cont: środek macierzy, bez wyniku)
+function calcJoin(text){
+  const raw=String(text).split('\n'),clean=s=>s.replace(/(^|\s)(#|\/\/).*$/,'').trim();
+  const bal=s=>(s.match(/\[/g)||[]).length-(s.match(/\]/g)||[]).length,out=[];
+  for(let i=0;i<raw.length;i++){
+    const s=clean(raw[i]);
+    if(bal(s)>0){
+      let j=i,acc=s;
+      // kolejne wiersze to same liczby i działania; linia z „=” albo nowym „[” kończy próbę
+      while(bal(acc)>0&&j+1<raw.length&&j-i<30){const n=clean(raw[j+1]);if(/[=[]/.test(n))break;j++;if(!n)continue;acc+=(/[;[]$/.test(acc)||/^[;\]]/.test(n)?' ':'; ')+n}
+      if(bal(acc)===0&&j>i){for(let k=i;k<j;k++)out.push({src:'',cont:true});out.push({src:acc});i=j;continue}
+    }
+    out.push({src:s});
+  }
+  return out;
+}
+// cała kartka: zmienne przechodzą z linii do linii.
+// Każda linia → null albo {kind, html, cls, verdict} oraz dane do rozpisania (src, name, sides, env, dec):
+//   kind 'val' wynik, 'check' sprawdzona równość (verdict: krótko, bez wyniku), 'err' błąd, 'note' uwaga (np. wymiar macierzy)
+function calcLines(text,o={deg:true}){
   const env=new Map(),decV=new Set();
   const known=x=>env.has(x)||C_FUN.has(x)||x==='pi'||x==='π';
   const isDec=s=>/\d[.,]\d/.test(s)||(s.match(C_IDS)||[]).some(x=>decV.has(x));
   const has=x=>env.has(x);
   const parse=s=>{try{return calcParse(calcTokens(cNorm(s),has),has)}catch(e){if(e.message==='base')throw e;return null}};
-  // wartość wyrażenia {v, unit, lit, base} albo null, gdy to raczej zwykły tekst; błąd w rachunku → wyjątek
+  // wartość wyrażenia {v, unit, lit, litMat, base} albo null, gdy to raczej zwykły tekst; błąd w rachunku → wyjątek
   const value=src=>{
     src=src.trim();
     const bm=src.match(/^(bin|hex|oct)(?:\s*\((.+)\)|\s+(.+))$/i);
     if(bm){
       const r=value(bm[2]||bm[3]);if(!r)return null;
       if(!isFr(r.v)||r.v.d!==1||r.v.n<0)throw new CalcErr('int');
-      return {...r,base:{bin:2,hex:16,oct:8}[bm[1].toLowerCase()],lit:false};
+      return {...r,base:{bin:2,hex:16,oct:8}[bm[1].toLowerCase()],lit:false,litMat:false};
     }
     // linia bez cyfr i działań to tekst, chyba że składa się ze znanych nazw (np. „det B”)
     if(!/[\d+\-−*/·×÷:^()[\]√!°%|'⁰¹²³⁴⁵⁶⁷⁸⁹⁻ᵀ]/.test(src)&&!(src.match(C_IDS)||[]).every(known))return null;
     const ast=parse(src);let err=null;
     // sama liczba albo macierz z samych liczb: wynik powtórzyłby to, co wpisane
-    const litMat=ast&&ast.t==='mat'&&ast.rows.every(r=>r.every(c=>c.t==='num'||c.t==='neg'&&c.a.t==='num'));
-    if(ast){try{return {v:calcEval(ast,env,o),unit:'',lit:C_LIT.test(src)||litMat}}catch(e){err=e}}
+    const litMat=!!ast&&ast.t==='mat'&&ast.rows.every(r=>r.every(c=>c.t==='num'||c.t==='neg'&&c.a.t==='num'));
+    if(ast){try{return {v:calcEval(ast,env,o),unit:'',lit:C_LIT.test(src),litMat,src}}catch(e){err=e}}
     if(!ast||err.message==='var'){
       const um=src.match(C_UNIT_RE),a2=um&&cUnit(um[2])?parse(um[1]):null;
-      if(a2)return {v:calcEval(a2,env,o),unit:um[2],lit:C_LIT.test(um[1].trim())};
+      if(a2)return {v:calcEval(a2,env,o),unit:um[2],lit:C_LIT.test(um[1].trim()),litMat:false,src:um[1].trim()};
     }
     if(!ast)return null;
     if(err.message==='var'&&err.name&&err.name.length>=3&&!/\d/.test(err.name))return null;   // zwykłe słowo w notatce
@@ -364,13 +391,19 @@ function calcText(text,o={deg:true}){
     if(r.base)return `= ${r.v.n.toString(r.base).toUpperCase()}<sub>${r.base}</sub>`;
     return calcShow(r.v,dec,short)+(r.unit&&!isMat(r.v)?' '+escH(r.unit):'');
   };
-  const fail=e=>e instanceof CalcErr?{html:calcErrText(e),cls:'err'}:{html:$t('błąd','error'),cls:'err'};
-  return String(text).split('\n').map(raw=>{
-    // bez komentarza i bez numeracji „a)”, „2.”; „Pole: 3·4” liczy to, co po dwukropku
-    let line=raw.replace(/(^|\s)(#|\/\/).*$/,'').trim().replace(/^(?:[a-zA-Z]|\d{1,2})[).]\s+/,'');
+  const dims=v=>$t(`macierz ${v.mat.length}×${v.mat[0].length}`,`${v.mat.length}×${v.mat[0].length} matrix`);
+  const fail=e=>({kind:'err',cls:'err',html:e instanceof CalcErr?calcErrText(e):$t('błąd','error')});
+  return calcJoin(text).map(L=>{
+    if(L.cont||!L.src)return null;
+    // bez numeracji „a)”, „2.”; „Pole: 3·4” liczy to, co po dwukropku
+    let line=L.src.replace(/^(?:[a-zA-Z]|\d{1,2})[).]\s+/,'');
     const lab=line.match(/^([^:\d=()[\]]+):\s*(.+)$/);
     if(lab&&/\p{L}{2,}/u.test(lab[1])&&!(lab[1].match(C_IDS)||[]).every(known))line=lab[2];
+    // „A[1 2; 3 4]” to też przypisanie macierzy
+    const sm=line.match(new RegExp(`^([${C_L}][${C_L}0-9]*)\\s*(\\[[^\\[\\]]*\\])$`));
+    if(sm&&!C_FUN.has(sm[1])&&!env.has(sm[1]))line=`${sm[1]} = ${sm[2]}`;
     if(!line)return null;
+    const ctx={env:new Map(env),deg:!!o.deg};   // zmienne sprzed tej linii, do rozpisania
     try{
       // przypisanie: v0 = 72/3,6
       const m=line.match(C_ASG);
@@ -380,38 +413,48 @@ function calcText(text,o={deg:true}){
         if(!r)return null;
         const dec=isDec(m[2]);
         env.set(m[1],r.v);if(dec)decV.add(m[1]);else decV.delete(m[1]);
-        return r.lit?null:{html:show(r,dec),cls:''};   // „a = 4”: nic nowego do pokazania
+        if(r.litMat)return {kind:'note',cls:'note',html:dims(r.v),name:m[1],src:r.src,dec,...ctx};
+        if(r.lit)return null;   // „a = 4”: nic nowego do pokazania
+        return {kind:'val',cls:'',html:show(r,dec),name:m[1],src:r.src,unit:r.unit,base:r.base,dec,...ctx};
       }
       const sides=line.replace(/≈/g,'=').split('=');
       // „2 + 2 =” liczy lewą stronę
-      if(sides.length===2&&!sides[1].trim()){const r=value(sides[0]);return r?{html:show(r,isDec(sides[0])),cls:''}:null}
+      if(sides.length===2&&!sides[1].trim()){
+        const r=value(sides[0]);const dec=isDec(sides[0]);
+        return r?{kind:'val',cls:'',html:show(r,dec),src:r.src,unit:r.unit,base:r.base,dec,...ctx}:null;
+      }
       // „1/2 + 1/3 = 5/6” sprawdza równość; „10/3 = 3,33” przechodzi po zaokrągleniu
       if(sides.length===2&&sides[0].trim()){
         let L,Rv;
         try{L=value(sides[0]);Rv=value(sides[1])}catch(e){if(e.message==='var')return null;throw e}   // „2x = 10”: równanie do rozwiązania, nie rachunek
         if(!L||!Rv)return null;
         const dec=isDec(line),lit=s=>C_LIT.test(s.trim()),kd=s=>{const q=s.trim().match(/[.,](\d+)$/);return lit(s)&&q?q[1].length:0};
-        if(cSame(L.v,Rv.v))return {html:$t('zgadza się','correct'),cls:'ok'};
+        const base={kind:'check',sides:[L.src,Rv.src],lv:L.v,rv:Rv.v,dec,...ctx};
+        if(cSame(L.v,Rv.v))return {...base,cls:'ok',ok:true,html:$t('zgadza się','correct'),verdict:$t('zgadza się','correct')};
         const k=Math.max(kd(sides[0]),kd(sides[1]));
-        if(k&&cSame(L.v,Rv.v,0.5*10**-k))return {html:$t('zgadza się po zaokrągleniu','correct after rounding'),cls:'ok'};
+        if(k&&cSame(L.v,Rv.v,0.5*10**-k))return {...base,cls:'ok',ok:true,round:k,html:$t('zgadza się po zaokrągleniu','correct after rounding'),verdict:$t('zgadza się po zaokrągleniu','correct after rounding')};
         const tell=$t('lewa strona ','the left side ')+show(L,dec,true)+(lit(sides[1])?'':$t(', prawa ',', the right side ')+show(Rv,dec,true));
-        return {html:$t('nie zgadza się: ','does not match: ')+tell,cls:'bad'};
+        return {...base,cls:'bad',ok:false,html:$t('nie zgadza się: ','does not match: ')+tell,verdict:$t('nie zgadza się','does not match')};
       }
       if(sides.length>1)return null;
-      const r=value(line);
-      return r&&!r.lit?{html:show(r,isDec(line)),cls:''}:null;
+      const r=value(line);if(!r)return null;
+      if(r.litMat)return {kind:'note',cls:'note',html:dims(r.v),src:r.src,dec:isDec(line),...ctx};
+      return r.lit?null:{kind:'val',cls:'',html:show(r,isDec(line)),src:r.src,unit:r.unit,base:r.base,dec:isDec(line),...ctx};
     }catch(e){return fail(e)}
   });
 }
-// pierwsza strona zeszytu: krótki przykład tego, co umie kalkulator, osobno dla każdego przedmiotu
-function calcExample(subj){
-  const ex={
-    algebra:['# Wynik pojawia się obok.\n1/2 + 1/3\nA = [2 1; 5 3]\ndet(A)\nA^-1\nA*A^-1\n2/3 + 1/4 = 11/12\n',
-             '# Results show at line ends\n1/2 + 1/3\nA = [2 1; 5 3]\ndet(A)\nA^-1\nA*A^-1\n2/3 + 1/4 = 11/12\n'],
-    fizyka:['# Wynik pojawia się obok.\n# 72 km/h na m/s:\nv0 = 72/3,6\na = 4 m/s²\ns = v0^2/(2a)\ng = 9,81\nt = 2v0·sin(30°)/g\n',
-            '# Results show at line ends\n# 72 km/h in m/s:\nv0 = 72/3.6\na = 4 m/s²\ns = v0^2/(2a)\ng = 9.81\nt = 2v0·sin(30°)/g\n'],
-    so:['# Prawa: r = 4, w = 2, x = 1\nr = 4\nw = 2\nx = 1\nr+w+x\nr+x\n# rwxr-xr-x jako bity:\noct(0b111101101)\n# Hosty w sieci /24:\n2^8 - 2\n',
-        '# Permissions: r=4, w=2, x=1\nr = 4\nw = 2\nx = 1\nr+w+x\nr+x\n# rwxr-xr-x as bits:\noct(0b111101101)\n# Hosts in a /24 network:\n2^8 - 2\n']
-  };
-  const e=ex[subj];return e?$t(e[0],e[1]):'';
+// do pokazania w zeszycie: {html, cls, kind, verdict} dla każdej linii
+const calcText=(text,o)=>calcLines(text,o).map(r=>r&&{html:r.html,cls:r.cls,kind:r.kind,verdict:r.verdict});
+// pierwsza strona zeszytu: krótki przykład tego, co umie kalkulator
+function calcExample(){
+  return $t('# Wynik pojawia się obok.\n1/2 + 1/3\nv0 = 72/3,6\ns = v0^2/(2·4)\nA = [2 1\n5 3]\ndet(A)\nA^-1\n2/3 + 1/4 = 11/12\n',
+    '# Results show at line ends\n1/2 + 1/3\nv0 = 72/3.6\ns = v0^2/(2·4)\nA = [2 1\n5 3]\ndet(A)\nA^-1\n2/3 + 1/4 = 11/12\n');
 }
+// przykłady z pierwszej wersji zeszytu (każdy przedmiot miał swój): takich stron nie przenosimy do wspólnego zeszytu
+const CALC_OLD_EXAMPLES=[
+  '# Wynik pojawia się obok.\n1/2 + 1/3\nA = [2 1; 5 3]\ndet(A)\nA^-1\nA*A^-1\n2/3 + 1/4 = 11/12\n',
+  '# Results show at line ends\n1/2 + 1/3\nA = [2 1; 5 3]\ndet(A)\nA^-1\nA*A^-1\n2/3 + 1/4 = 11/12\n',
+  '# Wynik pojawia się obok.\n# 72 km/h na m/s:\nv0 = 72/3,6\na = 4 m/s²\ns = v0^2/(2a)\ng = 9,81\nt = 2v0·sin(30°)/g\n',
+  '# Results show at line ends\n# 72 km/h in m/s:\nv0 = 72/3.6\na = 4 m/s²\ns = v0^2/(2a)\ng = 9.81\nt = 2v0·sin(30°)/g\n',
+  '# Prawa: r = 4, w = 2, x = 1\nr = 4\nw = 2\nx = 1\nr+w+x\nr+x\n# rwxr-xr-x jako bity:\noct(0b111101101)\n# Hosty w sieci /24:\n2^8 - 2\n',
+  '# Permissions: r=4, w=2, x=1\nr = 4\nw = 2\nx = 1\nr+w+x\nr+x\n# rwxr-xr-x as bits:\noct(0b111101101)\n# Hosts in a /24 network:\n2^8 - 2\n'];

@@ -31,17 +31,17 @@ function ansMark(id,res){for(const [k,ok] of Object.entries(res.marks||{})){cons
 // ================= Nawigacja =================
 const R={subj:null,view:null};
 const BASE_VIEWS=[{id:'cwiczenia',name:'Ćwiczenia',en:'Practice'},{id:'sprawdzian',name:'Sprawdzian',en:'Test'},{id:'postep',name:'Postęp',en:'Progress'}];
-// zeszyt (notebook.js) jest w każdym przedmiocie; keep: po zmianie przedmiotu zostajemy w zeszycie
-const NOTEBOOK_VIEW={id:'zeszyt',name:'Zeszyt',en:'Notebook',tool:true,keep:true};
 function viewsOf(S){
   const v=S.topics.length?BASE_VIEWS.slice():[];
   if(S.sheet)v.push({id:'sciaga',name:S.sheet.name,en:S.sheet.en});
-  return v.concat([NOTEBOOK_VIEW],S.tools.map(t=>({...t,tool:true})));
+  return v.concat(S.tools.map(t=>({...t,tool:true})));
 }
 // stare adresy z czasów trenera algebry (#uklady, #sprawdzian…) otwierają te same widoki
 const OLD_HASH={liczby:'liczby',rownania:'rownania',uklady:'uklady',cwiczenia:'cwiczenia',dzialania:'cwiczenia',sprawdzian:'sprawdzian',blad:'blad',postep:'postep',sciaga:'sciaga'};
 function route(){
   const h=location.hash.slice(1);
+  // zeszyt to osobna część, wspólna dla przedmiotów (dawniej #algebra-zeszyt itd.)
+  if(h==='zeszyt'||/^[a-z]+-zeszyt$/.test(h))return goNotebook();
   if(OLD_HASH[h])return go('algebra',OLD_HASH[h]);
   const [s,v,...rest]=h.split('-');
   if(subjById(s))return go(s,v,rest.join('-')||null);
@@ -65,14 +65,26 @@ function go(subj,view,topic){
   if(location.hash!==h)history.replaceState(null,'',h);
   if(moved)window.scrollTo(0,0);
 }
+function goNotebook(){
+  const moved=R.view!=='zeszyt',S=subjById(R.subj)||subjById(store.get('kratka-przedmiot'))||SUBJECTS[0];
+  R.subj=S.id;R.view='zeszyt';
+  document.documentElement.dataset.subj='zeszyt';
+  $$('#main>section').forEach(sec=>{sec.hidden=sec.dataset.view!=='zeszyt'});
+  navRender();
+  HOOKS.view.forEach(f=>f(S,'zeszyt'));
+  if(location.hash!=='#zeszyt')history.replaceState(null,'','#zeszyt');
+  if(moved)window.scrollTo(0,0);
+}
 window.addEventListener('hashchange',route);
 const viewHref=(S,id)=>'#'+S.id+'-'+id;
 // przy zmianie przedmiotu zostajemy w tym samym widoku (np. Sprawdzian), jeśli nowy przedmiot go ma
-const keepView=s=>viewsOf(s).some(v=>v.id===R.view&&(!v.tool||v.keep))?R.view:viewsOf(s)[0].id;
+const keepView=s=>viewsOf(s).some(v=>v.id===R.view&&!v.tool)?R.view:viewsOf(s)[0].id;
+const inNotebook=()=>R.view==='zeszyt';
 function navRender(){
-  const S=subjById(R.subj),vs=viewsOf(S);
-  $('#subjTabs').innerHTML=SUBJECTS.map(s=>`<a href="${viewHref(s,keepView(s))}"${s===S?' class="on" aria-current="page"':''}>${sName(s)}</a>`).join('');
-  $('#subjBtnName').innerHTML=sName(S);
+  const S=subjById(R.subj),vs=viewsOf(S),nb=inNotebook();
+  $('#subjTabs').innerHTML=`<a href="#zeszyt" class="nb-tab${nb?' on':''}"${nb?' aria-current="page"':''}>${ICON_PEN}<span>${$t('Zeszyt','Notebook')}</span></a><span class="subj-sep" aria-hidden="true"></span>`+
+    SUBJECTS.map(s=>`<a href="${viewHref(s,keepView(s))}"${s===S&&!nb?' class="on" aria-current="page"':''}>${sName(s)}</a>`).join('');
+  $('#subjBtnName').innerHTML=nb?$t('Zeszyt','Notebook'):sName(S);
   const link=v=>`<a href="${viewHref(S,v.id)}"${v.id===R.view?' class="on" aria-current="page"':''}>${tName(v)}</a>`;
   $('#viewTabs').innerHTML=vs.map(link).join('');
   const main=vs.filter(v=>!v.tool),tools=vs.filter(v=>v.tool);
@@ -113,8 +125,10 @@ function topicSheet(S){
     `<a href="#${S.id}-cwiczenia-${t.id}" class="bs-t${t.id===cur?' on':''}"${t.id===cur?' aria-current="true"':''}><span class="toc-n">${tName(t)}</span>${sqHtml(t.id,5,true)}</a>`).join('')).join('');
 }
 function subjSheet(){
-  return SUBJECTS.map(s=>{const n=s.topics.length;
-    return `<a href="${viewHref(s,keepView(s))}" class="bs-t bs-s${s.id===R.subj?' on':''}"${s.id===R.subj?' aria-current="true"':''}><span class="toc-n"><b>${sName(s)}</b><small>${n} ${$t(pl(n,'temat','tematy','tematów'),n===1?'topic':'topics')}${s.tools.length?' · '+s.tools.map(tName).join(', '):''}</small></span></a>`}).join('');
+  const nb=inNotebook();
+  return `<a href="#zeszyt" class="bs-t bs-s bs-nb${nb?' on':''}"${nb?' aria-current="true"':''}>${ICON_PEN}<span class="toc-n"><b>${$t('Zeszyt','Notebook')}</b><small>${$t('kartka na rachunki i notatki, piórem albo z klawiatury','paper for working and notes, with a pen or the keyboard')}</small></span></a>`+
+    SUBJECTS.map(s=>{const n=s.topics.length,on=s.id===R.subj&&!nb;
+    return `<a href="${viewHref(s,keepView(s))}" class="bs-t bs-s${on?' on':''}"${on?' aria-current="true"':''}><span class="toc-n"><b>${sName(s)}</b><small>${n} ${$t(pl(n,'temat','tematy','tematów'),n===1?'topic':'topics')}${s.tools.length?' · '+s.tools.map(tName).join(', '):''}</small></span></a>`}).join('');
 }
 $('#subjBtn').addEventListener('click',e=>bsOpen($t('Przedmiot','Subject'),subjSheet(),e.currentTarget));
 $('#topicBtn').addEventListener('click',e=>{const S=subjById(R.subj);bsOpen(`${$t('Tematy','Topics')} · ${sName(S)}`,topicSheet(S),e.currentTarget)});
@@ -473,7 +487,7 @@ function setLang(l,rerender){
   if(EX&&!EX.done&&R.view==='sprawdzian')exShow(EX.k);
   if(EX&&EX.done)exResults();
   HOOKS.lang.forEach(f=>f());
-  go(R.subj,R.view);
+  if(inNotebook())goNotebook();else go(R.subj,R.view);
 }
 document.querySelector('.lang').addEventListener('click',e=>{const b=e.target.closest('[data-lang]');if(b&&b.dataset.lang!==LANG.cur)setLang(b.dataset.lang,true)});
 

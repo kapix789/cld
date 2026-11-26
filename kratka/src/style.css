@@ -487,7 +487,7 @@ ol.steps>li{margin:10px 0}
 .nb-sep{flex:none;width:1px;height:22px;background:var(--rule);margin:0 3px}
 .nb-dot{display:block;width:14px;height:14px;border-radius:50%;background:var(--c)}
 .nb-hint{flex:none;margin-left:6px;font-size:13px;color:var(--ink-3);white-space:nowrap}
-@media (pointer:fine){.nb-hint{display:none}}
+@media (pointer:fine),(max-width:560px){.nb-hint{display:none}}
 .nb:not(.nb-pen) .nb-tools,.nb.nb-pen .nb-keys{display:none}
 /* z myszą i zwykłą klawiaturą zostają tylko symbole, których na niej nie ma */
 @media (pointer:fine){.nb-keys>.kb{display:none}}
@@ -552,3 +552,40 @@ html.nbd-open .main{padding-right:calc(min(560px,46vw) + 32px)}
   .nb-view .lead{display:none}
 }
 @supports (height:100dvh){@media (max-width:639px){.nb-view .nb{height:calc(100dvh - var(--top-h) - 150px)}}}
+
+/* ---------- zeszyt jako osobna część: zakładka na początku, pełna szerokość ---------- */
+.subjects a.nb-tab{gap:7px}
+.subjects a.nb-tab svg{width:16px;height:16px;flex:none}
+.subj-sep{align-self:center;width:1px;height:22px;background:var(--rule);margin:0 6px;flex:none}
+.bs-nb{gap:14px}
+.bs-nb>svg{width:20px;height:20px;flex:none;color:var(--pen)}
+html[data-subj="zeszyt"] .layout{grid-template-columns:minmax(0,1fr)}
+html[data-subj="zeszyt"] .side,html[data-subj="zeszyt"] .views{display:none!important}
+html[data-subj="zeszyt"] .main{padding-left:max(16px,env(safe-area-inset-left,0px))}
+@media (min-width:980px){html[data-subj="zeszyt"] .main{padding-left:40px}}
+html[data-subj="zeszyt"] .main>section.nb-view{max-width:1120px;margin:0 auto}
+/* oko: wyniki od razu (otwarte) albo na żądanie (przekreślone) */
+.ic-eye .ic-slash{display:none}
+#nbShow.on .ic-eye .ic-slash{display:inline}
+.nb-keys>button.act{font:600 14px/1 var(--f-ui);color:var(--pen);border-color:var(--pen);background:var(--pen-soft)}
+.nb-r.hid{color:var(--ink-3);font-weight:600}
+.nb-r.note{color:var(--ink-3);font-size:15px}
+/* pismo: odczyt z wynikiem obok linii i okienko poprawiania */
+.nb-hwl{position:absolute;left:0;top:0;width:0;height:0}
+.nb-hwc{position:absolute;display:inline-flex;align-items:center;gap:10px;max-width:min(420px,80vw);min-height:30px;padding:2px 10px;border:1px solid var(--rule);border-radius:15px;background:var(--paper);color:var(--ink);box-shadow:0 2px 8px rgba(14,21,35,.08);cursor:pointer;white-space:nowrap;overflow:hidden;font:15px var(--f-code)}
+.nb-hwc:hover{border-color:var(--ink-3)}
+/* w trybie pióra odczyt nie łapie dotyku (pisze się po nim), a otwiera go krótkie stuknięcie (notebook.js) */
+.nb-pen .nb-hwc{pointer-events:none}
+.nb-hwl .nb-hwc{transition:opacity .15s}
+.nb-hwl.dim .nb-hwc{opacity:.25}
+.nb-hwc.fixed{border-style:dashed}
+.nb-hwc .nb-hwt{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis}
+.nb-hwc .nb-r{display:inline;height:auto;margin:0;line-height:1.3;font-size:16px}
+.nb-hwm{position:absolute;z-index:3;width:min(300px,86vw);padding:10px 12px;border:1px solid var(--rule);border-radius:4px;background:var(--paper);box-shadow:0 10px 30px rgba(14,21,35,.18)}
+.nb-hwm-l{display:block;font-size:12.5px;color:var(--ink-2);margin-bottom:4px}
+.nb-hwm .code{font-size:17px;padding:6px 9px}
+.nb-hwm-res{margin-top:6px;font:16px var(--f-math);min-height:4px}
+.nb-hwm-res .nb-r{display:inline;height:auto;margin:0}
+.nb-hwm .actions{margin-top:8px;gap:6px}
+.nb-read.on{border-color:var(--pen);background:var(--pen-soft);color:var(--pen)}
+@media (max-width:420px){.nb-bar .seg>button svg{display:none}}
