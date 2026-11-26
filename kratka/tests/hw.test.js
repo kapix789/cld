@@ -124,6 +124,19 @@ ok(good / tot >= .85, `działania czytane za słabo: ${good} z ${tot}`);
   console.log(`macierze i litery: dobrze ${good} z ${tot}`);
   ok(good / tot >= .75, `macierze i litery czytane za słabo: ${good} z ${tot}`);
 }
+// ---------- 3c. rysunek z telefonu: „=” tuż przy [ i dwójka przy długim haczyku ] nie są haczykami nawiasów ----------
+{
+  const seg = (a, b, n = 8) => Array.from({ length: n + 1 }, (_, k) => [a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n]);
+  const poly = pts => ({ c: 'pen', p: pts.slice(1).reduce((acc, q, i) => acc.concat(seg(pts[i], q).flat()), []) });
+  let good = 0;
+  for (let k = 0; k < 10; k++) {
+    const S = [...write('A=', 60, 50, 48), poly([[160, 58], [150, 58], [150, 170], [195, 170]]),
+      ...write('2', 200, 60, 32), ...write('2', 268, 62, 32), ...write('2', 205, 110, 34), ...write('2', 252, 115, 32),
+      poly([[318, 65], [385, 62], [345, 190], [302, 190]])];
+    const r = read(S);if (r.length === 1 && r[0] === 'A=[2 2; 2 2]') good++; else if (!k) console.log('  odczyt rysunku z telefonu →', JSON.stringify(r));
+  }
+  ok(good >= 8, `rysunek z telefonu A = [2 2; 2 2]: dobrze ${good} z 10`);
+}
 // ---------- 4. wynik z kalkulatora dla odczytanego działania ----------
 {
   K.LANG.cur = 'pl';

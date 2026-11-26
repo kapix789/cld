@@ -34,7 +34,7 @@ function nbLoad(){
   }
   d.pages=d.pages.filter(p=>p&&typeof p==='object').map(p=>({text:String(p.text||''),
     strokes:(Array.isArray(p.strokes)?p.strokes:[]).filter(s=>s&&NB_TOOLS[s.c]&&Array.isArray(s.p)&&s.p.length>=2&&s.p.every(Number.isFinite)).map(s=>(s.id||(s.id=nbId()),s)),
-    hw:p.hw&&typeof p.hw==='object'?p.hw:{},name:p.name?String(p.name):'',task:p.task||''}));
+    hw:p.hw&&typeof p.hw==='object'?p.hw:{},name:p.name?String(p.name):'',task:p.task||'',given:p.given?1:0}));
   if(!d.pages.length)d.pages=[{text:'',strokes:[],hw:{}}];
   d.page=Math.min(Math.max(0,d.page|0),d.pages.length-1);d.deg=d.deg!==false;
   return d;
@@ -417,11 +417,15 @@ function nbDrawerOpen(task,opener){
     if(k<0){
       const cur=nbPage(),empty=!cur.text.trim()&&!cur.strokes.length&&!cur.task;
       const add=nbGiven(task.q+' '+(task.body||''));
-      const pg={text:add.length?`# ${$t('dane z zadania','given')}\n${add.join('\n')}\n`:'',strokes:[],hw:{},task:key,name:q.length>40?q.slice(0,38)+'…':q};
+      const pg={text:add.length?`# ${$t('dane z zadania','given')}\n${add.join('\n')}\n`:'',strokes:[],hw:{},task:key,name:q.length>40?q.slice(0,38)+'…':q,given:1};
       nbTxtCommit();
       if(empty){NB.d.pages[NB.d.page]=pg;k=NB.d.page}else{NB.d.pages.push(pg);k=NB.d.pages.length-1}
     }
-    if(k!==NB.d.page||true){NB.d.page=k;nbShowPage(false);nbSave()}
+    // strona zadania z wcześniejszej wersji zeszytu (bez danych z treści): dopisujemy je raz
+    const T=NB.d.pages[k];
+    if(!T.given){T.given=1;const have=T.text.split('\n'),add=nbGiven(task.q+' '+(task.body||'')).filter(l=>!have.includes(l));
+      if(add.length)T.text=`# ${$t('dane z zadania','given')}\n${add.join('\n')}\n`+(T.text.trim()?T.text:'')}
+    NB.d.page=k;nbShowPage(false);nbSave();
   }
   const P=nbPage();if(P.text&&!P.text.endsWith('\n')){P.text+='\n';nbTa.value=P.text;nbCalc();nbSaveSoon()}
   nbVV();NB.H=0;nbLayout();
