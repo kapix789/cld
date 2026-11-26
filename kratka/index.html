@@ -602,6 +602,26 @@ html[data-subj="zeszyt"] .main>section.nb-view{max-width:1120px;margin:0 auto}
 @media (max-width:420px){.nb-bar .seg>button svg{display:none}}
 .nb-pn{cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.2}
 .nb-pname{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--ink-3)}
+
+/* ---------- strona startowa: kartka notatnika ---------- */
+html[data-subj="start"] .layout{grid-template-columns:minmax(0,1fr)}
+html[data-subj="start"] .side,html[data-subj="start"] .views{display:none!important}
+.main>section.home{max-width:1000px;margin:0 auto}
+.home-paper{position:relative;padding:28px 24px 40px 72px;border:1px solid var(--rule);border-radius:3px;background-color:var(--paper);background-image:linear-gradient(90deg,transparent 48px,var(--nb-margin) 48px,var(--nb-margin) 49.5px,transparent 49.5px),linear-gradient(var(--nb-grid) 1px,transparent 1px),linear-gradient(90deg,var(--nb-grid) 1px,transparent 1px);background-size:100% 100%,24px 24px,24px 24px}
+.home-paper h1{font-size:30px}
+.home-q{margin:18px 0 8px;font:17px var(--f-ui);max-width:560px;display:block}
+.home-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px 32px;margin-top:10px}
+.home-h{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:16px;margin:16px 0 6px}
+.home-pg,.home-po{display:flex;gap:12px;align-items:baseline;width:100%;padding:8px 10px;margin:0 0 4px;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);text-decoration:none;text-align:left;font:inherit;cursor:pointer}
+.home-pg:hover,.home-po:hover{border-color:var(--pen)}
+.home-pn{flex:none;min-width:24px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.home-pt,.home-po{flex-direction:column;gap:2px;min-width:0}
+.home-pt{display:flex}
+.home-pt small,.home-po small{color:var(--ink-2);font:13px var(--f-code);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.home-pdf{display:flex;align-items:center;gap:6px}
+.home-pdf .home-po{flex:1;margin:0 0 4px}
+.home mark{background:var(--hl-y);color:inherit;padding:0 1px}
+@media (max-width:639px){.home-paper{padding:20px 12px 28px 40px;background-image:linear-gradient(90deg,transparent 24px,var(--nb-margin) 24px,var(--nb-margin) 25.5px,transparent 25.5px),linear-gradient(var(--nb-grid) 1px,transparent 1px),linear-gradient(90deg,var(--nb-grid) 1px,transparent 1px)}}
 </style>
 </head>
 <body>
@@ -747,6 +767,19 @@ html[data-subj="zeszyt"] .main>section.nb-view{max-width:1120px;margin:0 auto}
 <dt><b>Pen</b></dt><dd>The notebook reads handwritten digits and the signs + − · × : / ( ) =, stacked fractions and powers. The reading and the result appear next to it. Click the reading to fix it: the notebook remembers how you write.</dd>
 </dl></div>
 </details>
+</section>
+
+<!-- ===================== START (logo): notatnik z wyszukiwarką i własnymi PDF-ami ===================== -->
+<section data-view="start" class="home" hidden>
+<div class="home-paper">
+<h1><span data-ln="pl">Notatnik</span><span data-ln="en">Notes</span></h1>
+<p class="lead"><span data-ln="pl">Wszystko, co masz w zeszycie, i twoje PDF-y w jednym miejscu. Pliki i strony zostają w tej przeglądarce.</span><span data-ln="en">Everything in your notebook and your own PDFs in one place. Files and pages stay in this browser.</span></p>
+<input class="code home-q" id="homeQ" type="search" aria-label="Szukaj" data-al-pl="Szukaj" data-al-en="Search" autocomplete="off">
+<div class="home-cols">
+<div><h2 class="home-h"><span data-ln="pl">Strony zeszytu</span><span data-ln="en">Notebook pages</span> <a class="btn link small" href="#zeszyt"><span data-ln="pl">Otwórz zeszyt</span><span data-ln="en">Open the notebook</span></a></h2><div id="homePages"></div></div>
+<div><h2 class="home-h"><span data-ln="pl">Moje PDF-y</span><span data-ln="en">My PDFs</span> <button type="button" class="btn ghost small" id="homeAdd">+ <span data-ln="pl">Dodaj PDF</span><span data-ln="en">Add a PDF</span></button></h2><input type="file" id="homeFile" accept="application/pdf,.pdf" multiple hidden><div id="homePdfs"></div><div class="msg" id="homeMsg" role="status"></div></div>
+</div>
+</div>
 </section>
 
 <!-- ===================== ALGEBRA: X NA LICZBACH ===================== -->
@@ -6019,6 +6052,7 @@ function route(){
   const h=location.hash.slice(1);
   // zeszyt to osobna część, wspólna dla przedmiotów (dawniej #algebra-zeszyt itd.)
   if(h==='zeszyt'||/^[a-z]+-zeszyt$/.test(h))return goNotebook();
+  if(h==='start')return goNotebook('start');
   if(OLD_HASH[h])return go('algebra',OLD_HASH[h]);
   const [s,v,...rest]=h.split('-');
   if(subjById(s))return go(s,v,rest.join('-')||null);
@@ -6042,14 +6076,15 @@ function go(subj,view,topic){
   if(location.hash!==h)history.replaceState(null,'',h);
   if(moved)window.scrollTo(0,0);
 }
-function goNotebook(){
-  const moved=R.view!=='zeszyt',S=subjById(R.subj)||subjById(store.get('kratka-przedmiot'))||SUBJECTS[0];
-  R.subj=S.id;R.view='zeszyt';
-  document.documentElement.dataset.subj='zeszyt';
-  $$('#main>section').forEach(sec=>{sec.hidden=sec.dataset.view!=='zeszyt'});
+// części poza przedmiotami: zeszyt (#zeszyt) i strona startowa pod logo (#start)
+function goNotebook(view='zeszyt'){
+  const moved=R.view!==view,S=subjById(R.subj)||subjById(store.get('kratka-przedmiot'))||SUBJECTS[0];
+  R.subj=S.id;R.view=view;
+  document.documentElement.dataset.subj=view;
+  $$('#main>section').forEach(sec=>{sec.hidden=sec.dataset.view!==view});
   navRender();
-  HOOKS.view.forEach(f=>f(S,'zeszyt'));
-  if(location.hash!=='#zeszyt')history.replaceState(null,'','#zeszyt');
+  HOOKS.view.forEach(f=>f(S,view));
+  if(location.hash!=='#'+view)history.replaceState(null,'','#'+view);
   if(moved)window.scrollTo(0,0);
 }
 window.addEventListener('hashchange',route);
@@ -6060,8 +6095,8 @@ const inNotebook=()=>R.view==='zeszyt';
 function navRender(){
   const S=subjById(R.subj),vs=viewsOf(S),nb=inNotebook();
   $('#subjTabs').innerHTML=`<a href="#zeszyt" class="nb-tab${nb?' on':''}"${nb?' aria-current="page"':''}>${ICON_PEN}<span>${$t('Zeszyt','Notebook')}</span></a><span class="subj-sep" aria-hidden="true"></span>`+
-    SUBJECTS.map(s=>`<a href="${viewHref(s,keepView(s))}"${s===S&&!nb?' class="on" aria-current="page"':''}>${sName(s)}</a>`).join('');
-  $('#subjBtnName').innerHTML=nb?$t('Zeszyt','Notebook'):sName(S);
+    SUBJECTS.map(s=>`<a href="${viewHref(s,keepView(s))}"${s===S&&!nb&&R.view!=='start'?' class="on" aria-current="page"':''}>${sName(s)}</a>`).join('');
+  $('#subjBtnName').innerHTML=nb?$t('Zeszyt','Notebook'):R.view==='start'?'Start':sName(S);
   const link=v=>`<a href="${viewHref(S,v.id)}"${v.id===R.view?' class="on" aria-current="page"':''}>${tName(v)}</a>`;
   $('#viewTabs').innerHTML=vs.map(link).join('');
   const main=vs.filter(v=>!v.tool),tools=vs.filter(v=>v.tool);
@@ -6112,7 +6147,7 @@ $('#topicBtn').addEventListener('click',e=>{const S=subjById(R.subj);bsOpen(`${$
 function topicStep(d){const S=subjById(R.subj),ids=S.topics.map(t=>t.id),k=ids.indexOf(PRACT[S.id].topic)+d;if(k>=0&&k<ids.length)location.hash='#'+S.id+'-cwiczenia-'+ids[k]}
 $('#topicPrev').addEventListener('click',()=>topicStep(-1));
 $('#topicNext').addEventListener('click',()=>topicStep(1));
-$('#brand').addEventListener('click',e=>{e.preventDefault();location.hash=viewHref(subjById(R.subj),'cwiczenia')});
+$('#brand').addEventListener('click',e=>{e.preventDefault();location.hash='#start'});
 
 // ================= Odtwarzacz „krok po kroku” =================
 // Klatka: {sec, t (tytuł), x (wyjaśnienie), S (dowolny HTML), B (plansze z macierzami), J (znaki między planszami),
@@ -6464,7 +6499,7 @@ function setLang(l,rerender){
   if(EX&&!EX.done&&R.view==='sprawdzian')exShow(EX.k);
   if(EX&&EX.done)exResults();
   HOOKS.lang.forEach(f=>f());
-  if(inNotebook())goNotebook();else go(R.subj,R.view);
+  if(inNotebook()||R.view==='start')goNotebook(R.view);else go(R.subj,R.view);
 }
 document.querySelector('.lang').addEventListener('click',e=>{const b=e.target.closest('[data-lang]');if(b&&b.dataset.lang!==LANG.cur)setLang(b.dataset.lang,true)});
 
@@ -7108,6 +7143,63 @@ $('#nbPageN').addEventListener('click',()=>{
   if(!NB.d)return;const P=nbPage(),v=prompt($t('Nazwa strony:','Page name:'),P.name||'');
   if(v===null)return;P.name=v.trim().slice(0,60);nbHead();nbSave();
 });
+
+// =====================================================================
+//  Strona startowa (#start, logo Kratka): notatnik z wyszukiwarką stron zeszytu i własnymi PDF-ami
+// =====================================================================
+//  Strony zeszytu czytamy z tego samego zapisu co notebook.js (kratka-zeszyt w localStorage).
+//  PDF-y trzymamy w przeglądarce w IndexedDB (baza kratka-pdf), bo localStorage jest na nie za mały.
+// =====================================================================
+const PDFDB={p:null};
+function pdfDb(){
+  return PDFDB.p||(PDFDB.p=new Promise((ok,no)=>{
+    if(!window.indexedDB)return no(new Error('idb'));
+    const r=indexedDB.open('kratka-pdf',1);
+    r.onupgradeneeded=()=>r.result.createObjectStore('f',{keyPath:'id'});
+    r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);
+  }));
+}
+const pdfReq=(mode,f)=>pdfDb().then(db=>new Promise((ok,no)=>{const q=f(db.transaction('f',mode).objectStore('f'));q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)}));
+const pdfAll=()=>pdfReq('readonly',s=>s.getAll());
+const pdfPut=rec=>pdfReq('readwrite',s=>s.put(rec));
+const pdfDel=id=>pdfReq('readwrite',s=>s.delete(id));
+const HOME={pdfs:[]};
+const homeSize=b=>b>1048576?(b/1048576).toFixed(1).replace('.',LANG.cur==='en'?'.':',')+' MB':Math.max(1,Math.round(b/1024))+' KB';
+const homeMark=(s,q)=>{const h=escH(s);if(!q)return h;const i=s.toLowerCase().indexOf(q);return i<0?h:escH(s.slice(0,i))+'<mark>'+escH(s.slice(i,i+q.length))+'</mark>'+escH(s.slice(i+q.length))};
+function homeRender(){
+  $('#homeQ').placeholder=$t('Szukaj w zeszycie i PDF-ach…','Search the notebook and PDFs…');
+  const q=$('#homeQ').value.trim().toLowerCase(),d=NB.d||nbLoad();
+  const pages=d.pages.map((p,k)=>{
+    const name=p.name||$t(`Strona ${k+1}`,`Page ${k+1}`),lines=p.text.split('\n').map(l=>l.trim()).filter(Boolean);
+    const hitLine=q?lines.find(l=>l.toLowerCase().includes(q)):lines.find(l=>!/^(#|\/\/)/.test(l))||lines[0];
+    return {k,name,line:hitLine||'',strokes:p.strokes.length,hit:!q||name.toLowerCase().includes(q)||!!(q&&hitLine)};
+  }).filter(p=>p.hit);
+  $('#homePages').innerHTML=pages.length?pages.map(p=>`<a href="#zeszyt" class="home-pg" data-page="${p.k}"><span class="home-pn">${p.k+1}</span><span class="home-pt"><b>${homeMark(p.name,q)}</b><small>${homeMark(p.line,q)||$t('pusta strona','empty page')}${p.strokes?' · '+$t('pismo','handwriting'):''}</small></span></a>`).join('')
+    :`<p class="note">${q?$t('Nic nie znaleziono w zeszycie.','Nothing found in the notebook.'):$t('Zeszyt jest jeszcze pusty.','The notebook is still empty.')}</p>`;
+  const f=HOME.pdfs.filter(x=>!q||x.name.toLowerCase().includes(q));
+  $('#homePdfs').innerHTML=f.length?f.map(x=>`<div class="home-pdf"><button type="button" class="home-po" data-open="${x.id}"><b>${homeMark(x.name,q)}</b><small>${homeSize(x.size)} · ${new Date(x.t).toLocaleDateString(LANG.cur==='en'?'en-GB':'pl-PL')}</small></button><button type="button" class="btn link small" data-del="${x.id}">${$t('Usuń','Delete')}</button></div>`).join('')
+    :`<p class="note">${q&&HOME.pdfs.length?$t('Żaden PDF nie pasuje.','No PDF matches.'):$t('Nie ma jeszcze żadnych PDF-ów. Dodane pliki zostają w tej przeglądarce.','No PDFs yet. Added files stay in this browser.')}</p>`;
+}
+function homeLoad(){pdfAll().then(a=>{HOME.pdfs=a.map(x=>({id:x.id,name:x.name,size:x.size,t:x.t})).sort((a,b)=>b.t-a.t);homeRender()}).catch(()=>{HOME.pdfs=[];homeRender();$('#homeAdd').disabled=true})}
+$('#homeQ').addEventListener('input',homeRender);
+$('#homePages').addEventListener('click',e=>{const a=e.target.closest('[data-page]');if(a)NB.goto=+a.dataset.page});
+$('#homeFile').addEventListener('change',async e=>{
+  const files=[...e.target.files].filter(f=>/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name));e.target.value='';
+  try{for(const f of files)await pdfPut({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:f.name,size:f.size,t:Date.now(),blob:f})}
+  catch(err){show($('#homeMsg'),'bad',$t('Nie udało się zapisać pliku w przeglądarce (za mało miejsca albo okno prywatne).','The file could not be saved in this browser (no space or a private window).'))}
+  homeLoad();
+});
+$('#homeAdd').onclick=()=>$('#homeFile').click();
+$('#homePdfs').addEventListener('click',async e=>{
+  const o=e.target.closest('[data-open]'),d=e.target.closest('[data-del]');
+  if(o){const r=await pdfReq('readonly',s=>s.get(o.dataset.open));if(!r)return;const u=URL.createObjectURL(r.blob),a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)}
+  if(d){const x=HOME.pdfs.find(p=>p.id===d.dataset.del);if(x&&confirm($t(`Usunąć „${x.name}”?`,`Delete “${x.name}”?`))){await pdfDel(x.id);homeLoad()}}
+});
+HOOKS.view.push((S,view)=>{
+  if(view==='start')homeLoad();
+  if(view==='zeszyt'&&NB.goto!=null&&NB.d){const k=NB.goto;NB.goto=null;if(k<NB.d.pages.length)nbGo(k)}
+});
+HOOKS.lang.push(()=>{if(R.view==='start')homeRender()});
 
 // =====================================================================
 //  ALGEBRA: narzędzia (X na liczbach, X na literach, układy równań, znajdź błąd) i ściąga

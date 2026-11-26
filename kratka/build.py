@@ -64,7 +64,7 @@ def parts():
     libs = lambda s: sorted(p.name for p in (SRC / s).glob("*.js") if p.name not in ("topics.js", "tools.js"))
     scripts = (["core.js", "engine.js", "calc.js", "steps.js", "hw-model.js", "hw.js"]
                + [f"{s}/{n}" for s in SUBJECTS for n in libs(s) + ["topics.js"]]
-               + ["app.js", "notebook.js"] + [f"{s}/tools.js" for s in SUBJECTS if (SRC / s / "tools.js").exists()])
+               + ["app.js", "notebook.js", "home.js"] + [f"{s}/tools.js" for s in SUBJECTS if (SRC / s / "tools.js").exists()])
     js = "\n".join(read(n) for n in scripts) + "\nkratkaStart();\n"
     return css, page, js
 

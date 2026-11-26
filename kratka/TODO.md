@@ -1,6 +1,6 @@
 # Do zrobienia (prośby użytkownika)
 
-1. **Strona startowa po kliknięciu logo Kratka** (najważniejsze): wygląda jak notatnik.
+1. ~~Zrobione~~ **Strona startowa po kliknięciu logo Kratka** (najważniejsze): wygląda jak notatnik.
    Można na niej dodać własne pliki PDF i przeszukiwać strony zeszytu
    (te z zeszytu i brudnopisu, zapisane w przeglądarce).
 2. **Macierze pisane piórem**: nawiasy `[ ]`, liczby w wierszach i kolumnach jako macierz,
