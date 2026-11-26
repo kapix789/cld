@@ -142,6 +142,19 @@
 </details>
 </section>
 
+<!-- ===================== START (logo): notatnik z wyszukiwarką i własnymi PDF-ami ===================== -->
+<section data-view="start" class="home" hidden>
+<div class="home-paper">
+<h1>⟪Notatnik⫽Notes⟫</h1>
+<p class="lead">⟪Wszystko, co masz w zeszycie, i twoje PDF-y w jednym miejscu. Pliki i strony zostają w tej przeglądarce.⫽Everything in your notebook and your own PDFs in one place. Files and pages stay in this browser.⟫</p>
+<input class="code home-q" id="homeQ" type="search" aria-label="⟪Szukaj⫽Search⟫" autocomplete="off">
+<div class="home-cols">
+<div><h2 class="home-h">⟪Strony zeszytu⫽Notebook pages⟫ <a class="btn link small" href="#zeszyt">⟪Otwórz zeszyt⫽Open the notebook⟫</a></h2><div id="homePages"></div></div>
+<div><h2 class="home-h">⟪Moje PDF-y⫽My PDFs⟫ <button type="button" class="btn ghost small" id="homeAdd">+ ⟪Dodaj PDF⫽Add a PDF⟫</button></h2><input type="file" id="homeFile" accept="application/pdf,.pdf" multiple hidden><div id="homePdfs"></div><div class="msg" id="homeMsg" role="status"></div></div>
+</div>
+</div>
+</section>
+
 <!-- @przedmioty -->
 
 </main>
