@@ -4,7 +4,7 @@
 <div class="top-in">
 <a class="brand" href="#" id="brand" aria-label="Kratka"><svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 1.8v16.4M13 1.8v16.4M1.8 7h16.4M1.8 13h16.4" stroke="currentColor" stroke-width="1"/><rect x="7.6" y="7.6" width="4.8" height="4.8" class="brand-fill"/></svg><span>Kratka</span></a>
 <nav class="subjects" id="subjTabs" aria-label="⟪Przedmiot⫽Subject⟫"></nav>
-<label class="subj-pick" for="subjSel"><span class="vh-only">⟪Przedmiot⫽Subject⟫</span><select id="subjSel"></select></label>
+<button type="button" class="subj-btn" id="subjBtn" aria-haspopup="dialog" aria-expanded="false"><span class="vh-only">⟪Przedmiot:⫽Subject:⟫ </span><span class="subj-btn-n" id="subjBtnName"></span></button>
 <div class="lang" role="group" aria-label="Język / Language"><button type="button" data-lang="pl" lang="pl" title="Polski">PL</button><button type="button" data-lang="en" lang="en" title="English">EN</button></div>
 </div>
 <nav class="views" id="viewTabs" aria-label="⟪Widoki⫽Views⟫"></nav>
@@ -19,7 +19,11 @@
 <div class="vh">
 <div class="vh-row"><div><div class="eyebrow" id="cwSec"></div><h1 id="cwTitle"></h1></div></div>
 <div class="vh-tools">
-<label class="topic-pick" for="topicSel"><span>⟪Temat⫽Topic⟫</span><select id="topicSel"></select></label>
+<div class="topic-nav">
+<button type="button" class="tn-arrow tn-prev" id="topicPrev" aria-label="⟪Poprzedni temat⫽Previous topic⟫"></button>
+<button type="button" class="tn-open" id="topicBtn" aria-haspopup="dialog" aria-expanded="false"><span class="tn-l">⟪Wszystkie tematy⫽All topics⟫</span><span class="tn-c" id="topicCount"></span></button>
+<button type="button" class="tn-arrow tn-next" id="topicNext" aria-label="⟪Następny temat⫽Next topic⟫"></button>
+</div>
 <div class="opts" id="cwOpts"></div>
 </div>
 </div>
@@ -89,5 +93,14 @@
 <div class="seg small" id="plSpd" role="group" aria-label="⟪Tempo⫽Speed⟫"><button type="button" data-spd="1.7">⟪wolno⫽slow⟫</button><button type="button" data-spd="1" class="on">⟪normalnie⫽normal⟫</button><button type="button" data-spd="0.55">⟪szybko⫽fast⟫</button></div>
 </div>
 </div>
+</div>
+</div>
+
+<!-- ===================== PANEL OD DOŁU: wybór tematu i przedmiotu na telefonie ===================== -->
+<div class="bs" id="bs" hidden role="dialog" aria-modal="true" aria-labelledby="bsT">
+<div class="bs-scrim" data-close></div>
+<div class="bs-panel">
+<div class="bs-head"><h2 id="bsT"></h2><button type="button" class="pl-close" data-close aria-label="⟪Zamknij⫽Close⟫">×</button></div>
+<div class="bs-body" id="bsBody"></div>
 </div>
 </div>

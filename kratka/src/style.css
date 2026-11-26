@@ -46,8 +46,9 @@ html[data-lang="en"] [data-ln="pl"],html:not([data-lang="en"]) [data-ln="en"]{di
 .subjects a{display:flex;align-items:center;padding:0 12px;color:var(--ink-2);font-weight:500;font-size:15px;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
 .subjects a:hover{color:var(--ink)}
 .subjects a.on{color:var(--ink);border-bottom-color:var(--pen)}
-.subj-pick{display:none;align-items:center}
-.subj-pick select{font:600 15px var(--f-ui);color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:3px;padding:6px 8px;width:100%;max-width:240px;min-width:0}
+.subj-btn{display:none;align-self:center;align-items:center;gap:8px;min-width:0;max-width:240px;flex:0 1 auto;height:36px;padding:0 10px;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);font:600 15px var(--f-ui);cursor:pointer}
+.subj-btn-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.subj-btn::after,.tn-open::after{content:"";flex:none;width:7px;height:7px;border:solid var(--ink-2);border-width:0 2px 2px 0;transform:translateY(-2px) rotate(45deg)}
 .lang{display:flex;align-self:center;margin-left:auto;border:1px solid var(--rule);border-radius:3px;overflow:hidden;flex:none}
 .lang button{border:0;background:none;color:var(--ink-3);font:600 12.5px var(--f-ui);letter-spacing:.06em;padding:6px 10px;cursor:pointer}
 .lang button+button{border-left:1px solid var(--rule)}
@@ -90,8 +91,34 @@ h3{font-size:13px;margin:18px 0 6px;color:var(--ink-2);text-transform:uppercase;
 .vh-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
 .vh-tools{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;margin-top:12px}
 .vh-tools:empty{display:none}
-.topic-pick{display:none;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-2);flex:1 1 280px}
-.topic-pick select{flex:1;min-width:0;font:500 15px var(--f-ui);color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:3px;padding:7px 8px}
+.topic-nav{display:none;align-items:stretch;gap:6px;flex:1 1 100%}
+.tn-open{flex:1;min-width:0;display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);font:600 15px var(--f-ui);cursor:pointer;text-align:left}
+.tn-l{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tn-c{color:var(--ink-3);font-weight:500;font-size:13.5px;font-variant-numeric:tabular-nums}
+.tn-arrow{flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);cursor:pointer}
+.tn-arrow::before{content:"";width:9px;height:9px;border:solid currentColor;border-width:0 0 2px 2px}
+.tn-prev::before{transform:translateX(2px) rotate(45deg)}
+.tn-next::before{transform:translateX(-2px) rotate(-135deg)}
+.tn-arrow:disabled{opacity:.35;cursor:default}
+/* panel od dołu (telefon) */
+.bs{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;justify-content:flex-end}
+.bs-scrim{position:absolute;inset:0;background:var(--scrim)}
+.bs-panel{position:relative;display:flex;flex-direction:column;max-height:86vh;background:var(--paper);color:var(--ink);border-top:1px solid var(--rule);border-radius:10px 10px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.25);padding-bottom:env(safe-area-inset-bottom,0px);animation:bsUp .2s ease-out}
+@keyframes bsUp{from{transform:translateY(28px);opacity:.5}to{transform:none;opacity:1}}
+.bs-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px max(12px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--rule)}
+.bs-head h2{margin:0;font-size:17px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bs-body{overflow-y:auto;overscroll-behavior:contain;padding-bottom:12px}
+.bs-sec{position:sticky;top:0;z-index:1;padding:8px max(16px,env(safe-area-inset-right,0px)) 7px max(16px,env(safe-area-inset-left,0px));background:var(--side);border-bottom:1px solid var(--grid);font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2)}
+.bs-t{display:flex;align-items:center;gap:12px;min-height:52px;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--grid);color:var(--ink);text-decoration:none;font-size:16px;line-height:1.35}
+.bs-t:active{background:var(--grid)}
+.bs-t.on{background:var(--pen-soft);color:var(--pen);font-weight:600}
+.bs-t .toc-n{white-space:normal}
+.bs-t i{font-family:var(--f-math)}
+.bs-t .sq i{width:9px;height:9px}
+.bs-s .toc-n{display:flex;flex-direction:column;gap:2px}
+.bs-s small{font-size:13px;font-weight:400;color:var(--ink-2)}
+.bs-t.on small{color:var(--pen)}
+@media (prefers-reduced-motion:reduce){.bs-panel{animation:none}}
 .opts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
 .rule-h{margin-top:34px;padding-top:16px;border-top:1px solid var(--rule)}
 p{margin:6px 0}
@@ -380,13 +407,13 @@ sup{font-size:.68em;line-height:0}
   .side{display:none}
   .views{display:flex}
   .main{padding:20px max(16px,env(safe-area-inset-right,0px)) 80px max(16px,env(safe-area-inset-left,0px))}
-  .topic-pick{display:flex}
+  .topic-nav{display:flex}
 }
 @media (max-width:639px){
   :root{--top-h:50px}
   .top-in{gap:12px}
   .subjects{display:none}
-  .subj-pick{display:flex;flex:1 1 auto;min-width:0}
+  .subj-btn{display:inline-flex}
   .lang button{padding:6px 8px}
   h1{font-size:24px}
   .field{grid-template-columns:1fr;gap:6px}

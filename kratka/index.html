@@ -57,8 +57,9 @@ html[data-lang="en"] [data-ln="pl"],html:not([data-lang="en"]) [data-ln="en"]{di
 .subjects a{display:flex;align-items:center;padding:0 12px;color:var(--ink-2);font-weight:500;font-size:15px;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
 .subjects a:hover{color:var(--ink)}
 .subjects a.on{color:var(--ink);border-bottom-color:var(--pen)}
-.subj-pick{display:none;align-items:center}
-.subj-pick select{font:600 15px var(--f-ui);color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:3px;padding:6px 8px;width:100%;max-width:240px;min-width:0}
+.subj-btn{display:none;align-self:center;align-items:center;gap:8px;min-width:0;max-width:240px;flex:0 1 auto;height:36px;padding:0 10px;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);font:600 15px var(--f-ui);cursor:pointer}
+.subj-btn-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.subj-btn::after,.tn-open::after{content:"";flex:none;width:7px;height:7px;border:solid var(--ink-2);border-width:0 2px 2px 0;transform:translateY(-2px) rotate(45deg)}
 .lang{display:flex;align-self:center;margin-left:auto;border:1px solid var(--rule);border-radius:3px;overflow:hidden;flex:none}
 .lang button{border:0;background:none;color:var(--ink-3);font:600 12.5px var(--f-ui);letter-spacing:.06em;padding:6px 10px;cursor:pointer}
 .lang button+button{border-left:1px solid var(--rule)}
@@ -101,8 +102,34 @@ h3{font-size:13px;margin:18px 0 6px;color:var(--ink-2);text-transform:uppercase;
 .vh-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
 .vh-tools{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;margin-top:12px}
 .vh-tools:empty{display:none}
-.topic-pick{display:none;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-2);flex:1 1 280px}
-.topic-pick select{flex:1;min-width:0;font:500 15px var(--f-ui);color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:3px;padding:7px 8px}
+.topic-nav{display:none;align-items:stretch;gap:6px;flex:1 1 100%}
+.tn-open{flex:1;min-width:0;display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);font:600 15px var(--f-ui);cursor:pointer;text-align:left}
+.tn-l{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tn-c{color:var(--ink-3);font-weight:500;font-size:13.5px;font-variant-numeric:tabular-nums}
+.tn-arrow{flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);cursor:pointer}
+.tn-arrow::before{content:"";width:9px;height:9px;border:solid currentColor;border-width:0 0 2px 2px}
+.tn-prev::before{transform:translateX(2px) rotate(45deg)}
+.tn-next::before{transform:translateX(-2px) rotate(-135deg)}
+.tn-arrow:disabled{opacity:.35;cursor:default}
+/* panel od dołu (telefon) */
+.bs{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;justify-content:flex-end}
+.bs-scrim{position:absolute;inset:0;background:var(--scrim)}
+.bs-panel{position:relative;display:flex;flex-direction:column;max-height:86vh;background:var(--paper);color:var(--ink);border-top:1px solid var(--rule);border-radius:10px 10px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.25);padding-bottom:env(safe-area-inset-bottom,0px);animation:bsUp .2s ease-out}
+@keyframes bsUp{from{transform:translateY(28px);opacity:.5}to{transform:none;opacity:1}}
+.bs-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px max(12px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--rule)}
+.bs-head h2{margin:0;font-size:17px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bs-body{overflow-y:auto;overscroll-behavior:contain;padding-bottom:12px}
+.bs-sec{position:sticky;top:0;z-index:1;padding:8px max(16px,env(safe-area-inset-right,0px)) 7px max(16px,env(safe-area-inset-left,0px));background:var(--side);border-bottom:1px solid var(--grid);font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2)}
+.bs-t{display:flex;align-items:center;gap:12px;min-height:52px;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--grid);color:var(--ink);text-decoration:none;font-size:16px;line-height:1.35}
+.bs-t:active{background:var(--grid)}
+.bs-t.on{background:var(--pen-soft);color:var(--pen);font-weight:600}
+.bs-t .toc-n{white-space:normal}
+.bs-t i{font-family:var(--f-math)}
+.bs-t .sq i{width:9px;height:9px}
+.bs-s .toc-n{display:flex;flex-direction:column;gap:2px}
+.bs-s small{font-size:13px;font-weight:400;color:var(--ink-2)}
+.bs-t.on small{color:var(--pen)}
+@media (prefers-reduced-motion:reduce){.bs-panel{animation:none}}
 .opts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
 .rule-h{margin-top:34px;padding-top:16px;border-top:1px solid var(--rule)}
 p{margin:6px 0}
@@ -391,13 +418,13 @@ sup{font-size:.68em;line-height:0}
   .side{display:none}
   .views{display:flex}
   .main{padding:20px max(16px,env(safe-area-inset-right,0px)) 80px max(16px,env(safe-area-inset-left,0px))}
-  .topic-pick{display:flex}
+  .topic-nav{display:flex}
 }
 @media (max-width:639px){
   :root{--top-h:50px}
   .top-in{gap:12px}
   .subjects{display:none}
-  .subj-pick{display:flex;flex:1 1 auto;min-width:0}
+  .subj-btn{display:inline-flex}
   .lang button{padding:6px 8px}
   h1{font-size:24px}
   .field{grid-template-columns:1fr;gap:6px}
@@ -451,7 +478,7 @@ ol.steps>li{margin:10px 0}
 <div class="top-in">
 <a class="brand" href="#" id="brand" aria-label="Kratka"><svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 1.8v16.4M13 1.8v16.4M1.8 7h16.4M1.8 13h16.4" stroke="currentColor" stroke-width="1"/><rect x="7.6" y="7.6" width="4.8" height="4.8" class="brand-fill"/></svg><span>Kratka</span></a>
 <nav class="subjects" id="subjTabs" aria-label="Przedmiot" data-al-pl="Przedmiot" data-al-en="Subject"></nav>
-<label class="subj-pick" for="subjSel"><span class="vh-only"><span data-ln="pl">Przedmiot</span><span data-ln="en">Subject</span></span><select id="subjSel"></select></label>
+<button type="button" class="subj-btn" id="subjBtn" aria-haspopup="dialog" aria-expanded="false"><span class="vh-only"><span data-ln="pl">Przedmiot:</span><span data-ln="en">Subject:</span> </span><span class="subj-btn-n" id="subjBtnName"></span></button>
 <div class="lang" role="group" aria-label="Język / Language"><button type="button" data-lang="pl" lang="pl" title="Polski">PL</button><button type="button" data-lang="en" lang="en" title="English">EN</button></div>
 </div>
 <nav class="views" id="viewTabs" aria-label="Widoki" data-al-pl="Widoki" data-al-en="Views"></nav>
@@ -466,7 +493,11 @@ ol.steps>li{margin:10px 0}
 <div class="vh">
 <div class="vh-row"><div><div class="eyebrow" id="cwSec"></div><h1 id="cwTitle"></h1></div></div>
 <div class="vh-tools">
-<label class="topic-pick" for="topicSel"><span><span data-ln="pl">Temat</span><span data-ln="en">Topic</span></span><select id="topicSel"></select></label>
+<div class="topic-nav">
+<button type="button" class="tn-arrow tn-prev" id="topicPrev" aria-label="Poprzedni temat" data-al-pl="Poprzedni temat" data-al-en="Previous topic"></button>
+<button type="button" class="tn-open" id="topicBtn" aria-haspopup="dialog" aria-expanded="false"><span class="tn-l"><span data-ln="pl">Wszystkie tematy</span><span data-ln="en">All topics</span></span><span class="tn-c" id="topicCount"></span></button>
+<button type="button" class="tn-arrow tn-next" id="topicNext" aria-label="Następny temat" data-al-pl="Następny temat" data-al-en="Next topic"></button>
+</div>
 <div class="opts" id="cwOpts"></div>
 </div>
 </div>
@@ -1276,6 +1307,15 @@ x - y + 2z = 5
 <div class="seg small" id="plSpd" role="group" aria-label="Tempo" data-al-pl="Tempo" data-al-en="Speed"><button type="button" data-spd="1.7"><span data-ln="pl">wolno</span><span data-ln="en">slow</span></button><button type="button" data-spd="1" class="on"><span data-ln="pl">normalnie</span><span data-ln="en">normal</span></button><button type="button" data-spd="0.55"><span data-ln="pl">szybko</span><span data-ln="en">fast</span></button></div>
 </div>
 </div>
+</div>
+</div>
+
+<!-- ===================== PANEL OD DOŁU: wybór tematu i przedmiotu na telefonie ===================== -->
+<div class="bs" id="bs" hidden role="dialog" aria-modal="true" aria-labelledby="bsT">
+<div class="bs-scrim" data-close></div>
+<div class="bs-panel">
+<div class="bs-head"><h2 id="bsT"></h2><button type="button" class="pl-close" data-close aria-label="Zamknij" data-al-pl="Zamknij" data-al-en="Close">×</button></div>
+<div class="bs-body" id="bsBody"></div>
 </div>
 </div>
 <script>
@@ -4751,11 +4791,12 @@ function go(subj,view,topic){
 }
 window.addEventListener('hashchange',route);
 const viewHref=(S,id)=>'#'+S.id+'-'+id;
+// przy zmianie przedmiotu zostajemy w tym samym widoku (np. Sprawdzian), jeśli nowy przedmiot go ma
+const keepView=s=>viewsOf(s).some(v=>v.id===R.view&&!v.tool)?R.view:viewsOf(s)[0].id;
 function navRender(){
   const S=subjById(R.subj),vs=viewsOf(S);
-  const keep=s=>viewsOf(s).some(v=>v.id===R.view&&!v.tool)?R.view:viewsOf(s)[0].id;
-  $('#subjTabs').innerHTML=SUBJECTS.map(s=>`<a href="${viewHref(s,keep(s))}"${s===S?' class="on" aria-current="page"':''}>${sName(s)}</a>`).join('');
-  $('#subjSel').innerHTML=SUBJECTS.map(s=>`<option value="${s.id}"${s===S?' selected':''}>${txt(sName(s))}</option>`).join('');
+  $('#subjTabs').innerHTML=SUBJECTS.map(s=>`<a href="${viewHref(s,keepView(s))}"${s===S?' class="on" aria-current="page"':''}>${sName(s)}</a>`).join('');
+  $('#subjBtnName').innerHTML=sName(S);
   const link=v=>`<a href="${viewHref(S,v.id)}"${v.id===R.view?' class="on" aria-current="page"':''}>${tName(v)}</a>`;
   $('#viewTabs').innerHTML=vs.map(link).join('');
   const main=vs.filter(v=>!v.tool),tools=vs.filter(v=>v.tool);
@@ -4768,7 +4809,42 @@ function tocHtml(S){
   return '<div class="toc">'+S.sections.map(sec=>`<div class="toc-sec">${secName(sec)}</div>`+S.topics.filter(t=>t.sec===sec).map(t=>
     `<a href="#${S.id}-cwiczenia-${t.id}" class="toc-t${t.id===cur?' on':''}"${t.id===cur?' aria-current="true"':''}><span class="toc-n">${tName(t)}</span>${sqHtml(t.id,5,true)}</a>`).join('')).join('')+'</div>';
 }
-$('#subjSel').addEventListener('change',e=>{const s=subjById(e.target.value);location.hash=viewHref(s,viewsOf(s).some(v=>v.id===R.view&&!v.tool)?R.view:'cwiczenia')});
+// ---- panel od dołu (telefon): lista tematów i przedmiotów zamiast systemowej listy <select> ----
+const BS={opener:null};
+function bsOpen(title,html,opener){
+  BS.opener=opener||null;
+  $('#bsT').innerHTML=title;$('#bsBody').innerHTML=html;
+  $('#bs').hidden=false;document.body.style.overflow='hidden';
+  if(opener)opener.setAttribute('aria-expanded','true');
+  const cur=$('#bsBody .on')||$('#bsBody a');
+  if(cur){cur.scrollIntoView({block:'center'});cur.focus({preventScroll:true})}
+}
+function bsClose(){
+  if($('#bs').hidden)return;
+  $('#bs').hidden=true;document.body.style.overflow='';
+  if(BS.opener){BS.opener.setAttribute('aria-expanded','false');BS.opener.focus({preventScroll:true})}
+}
+$('#bs').addEventListener('click',e=>{if(e.target.closest('[data-close]')||e.target.closest('#bsBody a'))bsClose()});
+document.addEventListener('keydown',e=>{
+  if($('#bs').hidden)return;
+  if(e.key==='Escape'){bsClose();e.preventDefault();return}
+  if(e.key==='Tab'){const f=$$('#bs a,#bs button'),k=f.indexOf(document.activeElement);
+    if(e.shiftKey&&k<=0){f[f.length-1].focus();e.preventDefault()}else if(!e.shiftKey&&k===f.length-1){f[0].focus();e.preventDefault()}}
+});
+function topicSheet(S){
+  const cur=PRACT[S.id]?PRACT[S.id].topic:null;
+  return S.sections.map(sec=>`<div class="bs-sec">${secName(sec)}</div>`+S.topics.filter(t=>t.sec===sec).map(t=>
+    `<a href="#${S.id}-cwiczenia-${t.id}" class="bs-t${t.id===cur?' on':''}"${t.id===cur?' aria-current="true"':''}><span class="toc-n">${tName(t)}</span>${sqHtml(t.id,5,true)}</a>`).join('')).join('');
+}
+function subjSheet(){
+  return SUBJECTS.map(s=>{const n=s.topics.length;
+    return `<a href="${viewHref(s,keepView(s))}" class="bs-t bs-s${s.id===R.subj?' on':''}"${s.id===R.subj?' aria-current="true"':''}><span class="toc-n"><b>${sName(s)}</b><small>${n} ${$t(pl(n,'temat','tematy','tematów'),n===1?'topic':'topics')}${s.tools.length?' · '+s.tools.map(tName).join(', '):''}</small></span></a>`}).join('');
+}
+$('#subjBtn').addEventListener('click',e=>bsOpen($t('Przedmiot','Subject'),subjSheet(),e.currentTarget));
+$('#topicBtn').addEventListener('click',e=>{const S=subjById(R.subj);bsOpen(`${$t('Tematy','Topics')} · ${sName(S)}`,topicSheet(S),e.currentTarget)});
+function topicStep(d){const S=subjById(R.subj),ids=S.topics.map(t=>t.id),k=ids.indexOf(PRACT[S.id].topic)+d;if(k>=0&&k<ids.length)location.hash='#'+S.id+'-cwiczenia-'+ids[k]}
+$('#topicPrev').addEventListener('click',()=>topicStep(-1));
+$('#topicNext').addEventListener('click',()=>topicStep(1));
 $('#brand').addEventListener('click',e=>{e.preventDefault();location.hash=viewHref(subjById(R.subj),'cwiczenia')});
 
 // ================= Odtwarzacz „krok po kroku” =================
@@ -4938,12 +5014,12 @@ function practiceShow(S,topic){
 function practiceHead(S){
   const t=topicById(PRACT[S.id].topic);
   $('#cwSec').innerHTML=sName(S)+' · '+secName(t.sec);$('#cwTitle').innerHTML=tName(t);
-  $('#topicSel').innerHTML=S.sections.map(sec=>`<optgroup label="${escH(txt(secName(sec)))}">`+S.topics.filter(x=>x.sec===sec).map(x=>`<option value="${x.id}">${escH(txt(tName(x)))}</option>`).join('')+'</optgroup>').join('');
-  $('#topicSel').value=t.id;
+  const k=S.topics.indexOf(t),n=S.topics.length;
+  $('#topicCount').textContent=`${k+1} / ${n}`;
+  $('#topicPrev').disabled=k===0;$('#topicNext').disabled=k===n-1;
   $('#cwOpts').innerHTML=S.opts?S.opts():'';$('#cwOpts').hidden=!S.opts;
   syncNoFrac();
 }
-$('#topicSel').addEventListener('change',e=>{location.hash='#'+R.subj+'-cwiczenia-'+e.target.value});
 function tocRefresh(){if(R.subj)navRender()}
 
 // ================= Postęp i powtórki =================
@@ -5114,6 +5190,7 @@ function setLang(l,rerender){
   if(!rerender)return;
   // treści z JS powstają od nowa w nowym języku (postęp i ustawienia zostają)
   if(!$('#pl').hidden)plClose();
+  bsClose();
   Object.values(PRACT).forEach(P=>P.inst.next());
   if(PRP)PRP.next();
   if(EX&&!EX.done&&R.view==='sprawdzian')exShow(EX.k);
