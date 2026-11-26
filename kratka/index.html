@@ -517,6 +517,8 @@ ol.steps>li{margin:10px 0}
 .nb-pen[data-tool="erase"] .nb-ink{cursor:cell}
 .nb-c{color:var(--ink-3)}
 .nb-r{display:inline-block;height:24px;vertical-align:top;margin-left:18px;color:var(--pen);font:17px/24px var(--f-math);white-space:pre}
+/* w lustrze kartki wynik nigdy nie zmienia wysokości linii (klasy z reszty strony, np. .note, mają marginesy) */
+.nb-mirror .nb-r{margin:0 0 0 18px}
 .nb-r.err,.nb-r.bad{color:var(--red)}
 .nb-r.ok{color:var(--green)}
 .nb-r sub{font-size:.68em;line-height:0}
@@ -580,7 +582,7 @@ html[data-subj="zeszyt"] .main>section.nb-view{max-width:1120px;margin:0 auto}
 #nbShow.on .ic-eye .ic-slash{display:inline}
 .nb-keys>button.act{font:600 14px/1 var(--f-ui);color:var(--pen);border-color:var(--pen);background:var(--pen-soft)}
 .nb-r.hid{color:var(--ink-3);font-weight:600}
-.nb-r.note{color:var(--ink-3);font-size:15px}
+.nb-r.note{color:var(--ink-3);font-size:15px;margin:0 0 0 18px}   /* .note z reszty strony ma margines 8 px, który przesuwał linie zeszytu */
 /* pismo: odczyt z wynikiem obok linii i okienko poprawiania */
 .nb-hwl{position:absolute;left:0;top:0;width:0;height:0}
 .nb-hwc{position:absolute;display:inline-flex;align-items:center;gap:10px;max-width:min(420px,80vw);min-height:30px;padding:2px 10px;border:1px solid var(--rule);border-radius:15px;background:var(--paper);color:var(--ink);box-shadow:0 2px 8px rgba(14,21,35,.08);cursor:pointer;white-space:nowrap;overflow:hidden;font:15px var(--f-code)}
