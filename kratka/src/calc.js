@@ -365,15 +365,18 @@ const C_UNIT_RE=/^(.*?[\d)\]°!%])\s*([^\s\d()[\]+\-−*·×÷/:^|'=.,]\S*)$/;
 function calcJoin(text){
   const raw=String(text).split('\n'),clean=s=>s.replace(/(^|\s)(#|\/\/).*$/,'').trim();
   const bal=s=>(s.match(/\[/g)||[]).length-(s.match(/\]/g)||[]).length,out=[];
+  const nameEq=new RegExp(`^[${C_L}][${C_L}0-9]*\\s*=$`);
   for(let i=0;i<raw.length;i++){
-    const s=clean(raw[i]);
-    if(bal(s)>0){
-      let j=i,acc=s;
+    let s=clean(raw[i]),j0=i;
+    // „A =” w osobnej linii, a macierz od następnej („[4 2 1” …): też jedno przypisanie
+    if(nameEq.test(s)){let k=i+1;while(k<raw.length&&!clean(raw[k]))k++;if(k<raw.length&&clean(raw[k]).startsWith('[')){s+=' '+clean(raw[k]);j0=k}}
+    if(bal(s)>0||j0>i){
+      let j=j0,acc=s;
       // kolejne wiersze to same liczby i działania; linia z „=” albo nowym „[” kończy próbę
       while(bal(acc)>0&&j+1<raw.length&&j-i<30){const n=clean(raw[j+1]);if(/[=[]/.test(n))break;j++;if(!n)continue;acc+=(/[;[]$/.test(acc)||/^[;\]]/.test(n)?' ':'; ')+n}
       if(bal(acc)===0&&j>i){for(let k=i;k<j;k++)out.push({src:'',cont:true});out.push({src:acc});i=j;continue}
     }
-    out.push({src:s});
+    out.push({src:clean(raw[i])});
   }
   return out;
 }
