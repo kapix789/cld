@@ -600,6 +600,8 @@ html[data-subj="zeszyt"] .main>section.nb-view{max-width:1120px;margin:0 auto}
 .nb-hwm .actions{margin-top:8px;gap:6px}
 .nb-read.on{border-color:var(--pen);background:var(--pen-soft);color:var(--pen)}
 @media (max-width:420px){.nb-bar .seg>button svg{display:none}}
+.nb-pn{cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.2}
+.nb-pname{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--ink-3)}
 </style>
 </head>
 <body>
@@ -6526,7 +6528,7 @@ function nbLoad(){
   }
   d.pages=d.pages.filter(p=>p&&typeof p==='object').map(p=>({text:String(p.text||''),
     strokes:(Array.isArray(p.strokes)?p.strokes:[]).filter(s=>s&&NB_TOOLS[s.c]&&Array.isArray(s.p)&&s.p.length>=2&&s.p.every(Number.isFinite)).map(s=>(s.id||(s.id=nbId()),s)),
-    hw:p.hw&&typeof p.hw==='object'?p.hw:{}}));
+    hw:p.hw&&typeof p.hw==='object'?p.hw:{},name:p.name?String(p.name):'',task:p.task||''}));
   if(!d.pages.length)d.pages=[{text:'',strokes:[],hw:{}}];
   d.page=Math.min(Math.max(0,d.page|0),d.pages.length-1);d.deg=d.deg!==false;
   return d;
@@ -6555,7 +6557,9 @@ function nbShowPage(top){
 }
 function nbHead(){
   const k=NB.d.page,n=NB.d.pages.length;
-  $('#nbPageN').innerHTML=$t(`strona <b>${k+1}</b> z ${n}`,`page <b>${k+1}</b> of ${n}`);
+  const nm=NB.d.pages[k].name;
+  $('#nbPageN').innerHTML=$t(`strona <b>${k+1}</b> z ${n}`,`page <b>${k+1}</b> of ${n}`)+(nm?`<span class="nb-pname">${escH(nm)}</span>`:'');
+  $('#nbPageN').title=$t('Kliknij, żeby nazwać stronę','Click to name the page');
   $('#nbPrev').disabled=k===0;$('#nbNext').disabled=k===n-1;$('#nbDel').hidden=n===1;
   $$('#nbDeg [data-deg]').forEach(b=>{const on=(b.dataset.deg==='1')===NB.d.deg;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
   nbBtns();
@@ -6850,7 +6854,7 @@ $('#nbDeg').addEventListener('click',e=>{const b=e.target.closest('[data-deg]');
 
 // ---------- Brudnopis: ten sam zeszyt obok zadania ----------
 function nbGiven(html){
-  const d=document.createElement('div');d.innerHTML=html;
+  const d=document.createElement('div');d.innerHTML=html.replace(/<\/(li|div|p|td)>/g,' $&');
   d.querySelectorAll('sup').forEach(x=>{x.textContent='^'+x.textContent});
   const t=d.textContent.replace(/−/g,'-').replace(/\s+/g,' '),out=[],seen=new Set();
   const re=/(^|[\s(,;:])([A-Za-zα-ωΔ][A-Za-z0-9]{0,3})\s*=\s*(-?\d+(?:[.,]\d+)?(?:·10\^-?\d+)?)(?:\s*([^\s,;.)]+))?/g;
@@ -6872,10 +6876,20 @@ function nbDrawerOpen(task,opener){
   $$('[data-pad]').forEach(b=>{b.classList.add('on');b.setAttribute('aria-pressed','true')});
   if(nbNarrow())document.body.style.overflow='hidden';
   // pisze się od nowej linii pod tym, co już jest na stronie
+  // każde zadanie ma swoją stronę: wracając do zadania wracasz do jego strony, nowe zadanie to nowa strona
+  if(task){
+    const d=document.createElement('div');d.innerHTML=task.q;const q=d.textContent.replace(/\s+/g,' ').trim();
+    const key=q.slice(0,200);let k=NB.d.pages.findIndex(x=>x.task===key);
+    if(k<0){
+      const cur=nbPage(),empty=!cur.text.trim()&&!cur.strokes.length&&!cur.task;
+      const add=nbGiven(task.q+' '+(task.body||''));
+      const pg={text:add.length?`# ${$t('dane z zadania','given')}\n${add.join('\n')}\n`:'',strokes:[],hw:{},task:key,name:q.length>40?q.slice(0,38)+'…':q};
+      nbTxtCommit();
+      if(empty){NB.d.pages[NB.d.page]=pg;k=NB.d.page}else{NB.d.pages.push(pg);k=NB.d.pages.length-1}
+    }
+    if(k!==NB.d.page||true){NB.d.page=k;nbShowPage(false);nbSave()}
+  }
   const P=nbPage();if(P.text&&!P.text.endsWith('\n')){P.text+='\n';nbTa.value=P.text;nbCalc();nbSaveSoon()}
-  // dane z treści zadania (t = 1 s, v0 = 20 m/s) od razu jako zmienne
-  if(task){const have=P.text.split('\n'),add=nbGiven(task.q+' '+(task.body||'')).filter(l=>!have.includes(l));
-    if(add.length){P.text+=`# ${$t('dane z zadania','given')}\n${add.join('\n')}\n`;nbTa.value=P.text;nbCalc();nbSaveSoon()}}
   nbVV();NB.H=0;nbLayout();
   const end=nbTa.value.length;nbTa.setSelectionRange(end,end);
   nbSc.scrollTop=Math.max(0,(nbTa.value.split('\n').length+3)*NB_CELL-nbSc.clientHeight);
@@ -7089,6 +7103,11 @@ $('#nbPdf').onclick=()=>{
   show(m,'info',$t('Pobierz jako PDF:','Download as PDF:')+`<div class="actions"><button type="button" class="btn small" data-pdf="0">${$t('Ta strona','This page')}</button><button type="button" class="btn ghost small" data-pdf="1">${$t('Wszystkie strony','All pages')} (${NB.d.pages.length})</button></div>`);
   m.onclick=e=>{const b=e.target.closest('[data-pdf]');if(!b)return;m.className='msg';m.onclick=null;nbPdfSave(b.dataset.pdf==='1')};
 };
+
+$('#nbPageN').addEventListener('click',()=>{
+  if(!NB.d)return;const P=nbPage(),v=prompt($t('Nazwa strony:','Page name:'),P.name||'');
+  if(v===null)return;P.name=v.trim().slice(0,60);nbHead();nbSave();
+});
 
 // =====================================================================
 //  ALGEBRA: narzędzia (X na liczbach, X na literach, układy równań, znajdź błąd) i ściąga
