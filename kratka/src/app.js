@@ -7,7 +7,7 @@ const store={
 {const v=store.get('kratka-lang',store.get('algebra-lang'));if(v==='pl'||v==='en')LANG.cur=v}
 if(store.get('kratka-bez-ulamkow',store.get('algebra-bez-ulamkow'))==='0')OPT.noFrac=false;
 if(store.get('kratka-g')==='10')OPT.g=10;
-if(store.get('kratka-wyznacznik')==='laplace')OPT.det='laplace';
+{const d=store.get('kratka-wyznacznik');if(d==='sarrus'||d==='laplace')OPT.det=d}
 document.documentElement.dataset.lang=LANG.cur;document.documentElement.lang=LANG.cur;
 
 const HOOKS={start:[],lang:[],noFrac:[],g:[],view:[]};
@@ -175,7 +175,7 @@ function plRender(anim){
   if(!live)$('#plStage').querySelectorAll('[data-show]').forEach(el=>el.classList.add('vis'));
   const hid=new Set(live?U.filter(u=>u.line!==undefined).map(u=>u.line):[]),calc=$('#plCalc');
   calc.className='pl-calc'+(f.Cb?' big':'');
-  calc.innerHTML=(f.C||[]).map((l,k)=>{const o=typeof l==='string'?{h:l}:l;return `<div class="${[o.full?'full':'',hid.has(k)?'hid':''].join(' ').trim()}" data-l="${k}">${o.h}</div>`}).join('');
+  calc.innerHTML=(f.C||[]).map((l,k)=>{const o=typeof l==='string'?{h:l}:l;return `<div class="${[o.full?'full':'',o.wrap?'wrap':'',hid.has(k)?'hid':''].filter(Boolean).join(' ')}" data-l="${k}">${o.h}</div>`}).join('');
   $('#plBody').scrollTop=0;
   $('#plPrev').disabled=PL.k===0;
   $('#plNext').textContent=PL.k===N-1?$t('Zakończ','Finish'):$t('Dalej','Next');

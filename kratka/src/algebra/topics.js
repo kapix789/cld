@@ -17,6 +17,7 @@ function genDet4(){
   for(;;){
     const A=M.make(4,4,()=>F(rich(-3,4,.15))),k=rnd(0,3),row=Math.random()<.6;
     [0,1,2,3].sort(()=>Math.random()-.5).slice(0,2).forEach(q=>{if(row)A[k][q]=F(0);else A[q][k]=F(0)});
+    for(let e=Math.random()<.8?2:1;e>0;e--){const i=rnd(0,3),j=rnd(0,3);if((row?i:j)!==k)A[i][j]=F(0)}
     if(Math.abs(detF(A).n)<=150)return A;
   }
 }

@@ -184,6 +184,7 @@ const ST_TITLE_FR={add:['Dodawanie ułamków','Adding fractions'],mul:['Mnożeni
 function stDet(A,lab,sec,detailed=true){
   const n=A.length;
   if(n<=3)return detFrames(A,lab,sec,detailed&&n===3);
+  if(n===4)return laplaceFrames(A,lab,sec);
   // Laplace wzdłuż linii z największą liczbą zer
   let best={z:-1};
   for(let i=0;i<n;i++){const z=A[i].filter(x=>x.z).length;if(z>best.z)best={z,row:true,k:i}}

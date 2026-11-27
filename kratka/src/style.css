@@ -339,6 +339,8 @@ sup{font-size:.68em;line-height:0}
 .pl-calc>div{transition:opacity .35s,transform .35s;white-space:nowrap}
 .pl-calc>.full{flex-basis:100%;text-align:center;overflow-x:auto}
 .pl-calc>.hid{opacity:0;transform:translateY(5px)}
+.pl-calc>.wrap{white-space:normal}
+.nw{white-space:nowrap}
 .pl-calc.big{font-size:20px}
 [data-show]{opacity:0;transition:opacity .5s}
 [data-show].vis{opacity:1}

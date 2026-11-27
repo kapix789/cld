@@ -924,35 +924,57 @@ function laplaceTerms(A){
   }
   return {L,t};
 }
-const lapTerm=o=>`(−1)<sup>${o.i+1}+${o.j+1}</sup> · ${fmt(o.a)} · ${fmt(o.dm)}`;
-function laplaceHtml(A,lab='det <i>A</i>'){
-  const {L,t}=laplaceTerms(A),v=detF(A);
-  let h=L.z?'':$t('<p>Nie ma zer, więc bierzemy dowolny wiersz, np. pierwszy.</p>','<p>There are no zeros, so any row will do, e.g. the first one.</p>');
-  h+=L.z===0?'':$t(`<p>Rozwijamy względem ${L.row?'wiersza':'kolumny'} ${L.k+1}, bo ma najwięcej zer (${L.z}), więc liczenia jest najmniej. Każdy niezerowy element mnożymy przez znak (−1)<sup><i>i</i>+<i>j</i></sup> i wyznacznik minora, czyli macierzy bez wiersza i kolumny tego elementu.</p>`,`<p>We expand along ${L.row?'row':'column'} ${L.k+1} because it has the most zeros (${L.z}), so there is the least computing. Each nonzero entry is multiplied by the sign (−1)<sup><i>i</i>+<i>j</i></sup> and the determinant of its minor, the matrix without that entry’s row and column.</p>`);
-  if(!L.z)h+=$t('<p class="mute">Każdy element mnożymy przez znak (−1)<sup><i>i</i>+<i>j</i></sup> i wyznacznik minora (macierz bez wiersza i kolumny tego elementu).</p>','<p class="mute">Each entry is multiplied by the sign (−1)<sup><i>i</i>+<i>j</i></sup> and the determinant of its minor (the matrix without that entry’s row and column).</p>');
-  t.forEach(o=>{
-    h+=`<div class="line">(−1)<sup>${o.i+1}+${o.j+1}</sup> · ${fmt(o.a)} · ${matH(o.Mi,{det:true})}</div>`;
-    h+=`<details><summary>Minor <i>M</i><sub>${o.i+1}${o.j+1}</sub>${o.Mi.length===3&&OPT.det!=='laplace'?' (Sarrus)':''}</summary>${detText(o.Mi,`det <i>M</i><sub>${o.i+1}${o.j+1}</sub>`)}</details>`;
-    h+=`<div class="line">= ${lapTerm(o)} = <b>${o.v.html()}</b></div>`;
-  });
-  return h+`<div class="line res">${lab} = ${t.map(o=>fmt(o.v)).join(' + ')||'0'} = ${v.html()}</div>`;
+const sgH=o=>`(−1)<sup>${o.i+1}+${o.j+1}</sup>`;
+const nw=s=>`<span class="nw">${s}</span>`;
+const lapTerm=o=>nw(`${sgH(o)} · ${fmt(o.a)} · ${fmt(o.dm)}`);
+const lapInner=o=>o.Mi.length===3&&OPT.det==='laplace'?laplaceTerms(o.Mi).t:null;
+function lapWhy(L,nt){
+  if(!L.z)return $t('Nie ma zer, więc rozwijamy względem pierwszego wiersza.','There are no zeros, so we expand along the first row.');
+  const w=L.row?$t(`wiersza ${L.k+1}`,`row ${L.k+1}`):$t(`kolumny ${L.k+1}`,`column ${L.k+1}`);
+  return $t(`Rozwijamy względem ${w}, bo ma najwięcej zer (${L.z}). Składnik z zerem jest zerem, więc liczymy tylko ${nt} ${pl(nt,'składnik','składniki','składników')}.`,`We expand along ${w} because it has the most zeros (${L.z}). A term with a zero entry is zero, so we only compute ${nt} ${nt===1?'term':'terms'}.`);
 }
-function laplaceFrames(A,lab='det <i>A</i>',sec=$t("Rozwinięcie Laplace'a","Laplace expansion")){
-  const {L,t}=laplaceTerms(A),v=detF(A),fr=[];
-  fr.push({sec,t:$t(`Wybór: ${L.row?'wiersz':'kolumna'} ${L.k+1}`,`Choosing ${L.row?'row':'column'} ${L.k+1}`),x:!L.z?$t('Rozwinięcie Laplace’a: nie ma zer, więc bierzemy dowolny wiersz, np. pierwszy. Każdy element mnożymy przez znak i wyznacznik minora, potem dodajemy.','Laplace expansion: there are no zeros, so any row will do, e.g. the first one. Each entry is multiplied by its sign and the determinant of its minor, then everything is added.'):$t(`Rozwijamy względem wiersza albo kolumny z największą liczbą zer; tu ${L.row?'wiersz':'kolumna'} ${L.k+1} ma ${L.z} ${pl(L.z,'zero','zera','zer')}. Składnik z zerem jest zerem, więc liczymy tylko ${t.length} ${pl(t.length,'składnik','składniki','składników')}.`,`We expand along the row or column with the most zeros; here ${L.row?'row':'column'} ${L.k+1} has ${L.z} ${L.z===1?'zero':'zeros'}. A term with a zero entry is zero, so we only compute ${t.length} ${t.length===1?'term':'terms'}.`),
+function laplaceHtml(A,lab='det <i>A</i>'){
+  const {L,t}=laplaceTerms(A),v=detF(A),mn=o=>`<i>M</i><sub>${o.i+1}${o.j+1}</sub>`;
+  let h=`<p>${lapWhy(L,t.length)}</p>`;
+  if(!t.length)return h+`<div class="line res">${lab} = 0</div>`;
+  if(A.length===3){
+    const cross=m=>`(${fmt(m[0][0])}·${fmt(m[1][1])} − ${fmt(m[0][1])}·${fmt(m[1][0])})`;
+    h+=`<div class="line">${lab} = ${t.map(o=>nw(`${sgH(o)} · ${fmt(o.a)} · ${matH(o.Mi,{det:true})}`)).join(' + ')}</div>`;
+    h+=`<div class="line">= ${t.map(o=>nw(`${sgH(o)} · ${fmt(o.a)} · ${cross(o.Mi)}`)).join(' + ')}</div>`;
+    h+=`<div class="line">= ${t.map(lapTerm).join(' + ')}</div>`;
+    return h+`<div class="line res">${lab} = ${t.map(o=>fmt(o.v)).join(' + ')} = ${v.html()}</div>`;
+  }
+  h+=`<div class="line">${lab} = ${t.map(o=>nw(`${sgH(o)} · ${fmt(o.a)} · det ${mn(o)}`)).join(' + ')}</div>`;
+  t.forEach(o=>{
+    h+=`<h3>Minor ${mn(o)}</h3><div class="line">det ${mn(o)} = ${matH(o.Mi,{det:true})}</div>`;
+    h+=lapInner(o)?laplaceHtml(o.Mi,`det ${mn(o)}`):detLines(o.Mi);
+  });
+  h+=$t('<h3>Razem</h3>','<h3>All together</h3>');
+  t.forEach(o=>{const inn=lapInner(o);h+=`<div class="line">${nw(`${sgH(o)} · ${fmt(o.a)} ·`)} ${inn?`[${inn.map(lapTerm).join(' + ')||'0'}] = ${nw(`${sgH(o)} · ${fmt(o.a)} · ${fmt(o.dm)}`)}`:fmt(o.dm)} = ${o.v.html()}</div>`});
+  return h+`<div class="line res">${lab} = ${t.map(o=>fmt(o.v)).join(' + ')} = ${v.html()}</div>`;
+}
+function laplaceFrames(A,lab='det <i>A</i>',sec=$t("Rozwinięcie Laplace'a","Laplace expansion"),pre=''){
+  const {L,t}=laplaceTerms(A),v=detF(A),fr=[],N=pre?'N':'M';
+  fr.push({sec,t:pre+$t(`Wybór: ${L.row?'wiersz':'kolumna'} ${L.k+1}`,`Choosing ${L.row?'row':'column'} ${L.k+1}`),
+    x:lapWhy(L,t.length)+(pre?'':$t(' Każdy element mnożymy przez znak (−1)<sup><i>i</i>+<i>j</i></sup> i wyznacznik minora, czyli macierzy bez jego wiersza i kolumny.',' Each entry is multiplied by the sign (−1)<sup><i>i</i>+<i>j</i></sup> and the determinant of its minor, the matrix without its row and column.')),
     B:[bd(A,{det:true,lab,hl:L.row?{rows:{[L.k]:'src'}}:{cols:{[L.k]:'src'}}})]});
   t.forEach((o,k)=>{
-    const ml=`<i>M</i><sub>${o.i+1}${o.j+1}</sub>`;
-    fr.push({sec,t:$t(`Składnik ${k+1}: element ${o.a.html()}`,`Term ${k+1}: the entry ${o.a.html()}`),x:$t(`Element stoi w wierszu ${o.i+1} i kolumnie ${o.j+1}. Skreślamy ten wiersz i tę kolumnę; zostaje minor ${ml}. Znak: (−1)<sup>${o.i+1}+${o.j+1}</sup> = ${o.s>0?'+1':'−1'}.`,`The entry is in row ${o.i+1} and column ${o.j+1}. Cross out this row and this column; the minor ${ml} remains. Sign: (−1)<sup>${o.i+1}+${o.j+1}</sup> = ${o.s>0?'+1':'−1'}.`),
-      B:[bd(A,{det:true,lab,hl:{rows:{[o.i]:'dim'},cols:{[o.j]:'dim'},cells:{[o.i+','+o.j]:'piv'}}}),bd(o.Mi,{det:true,lab:ml})],J:['→']});
+    const ml=`<i>${N}</i><sub>${o.i+1}${o.j+1}</sub>`;
+    const f={sec,t:pre+$t(`Składnik ${k+1}: element ${o.a.html()}`,`Term ${k+1}: the entry ${o.a.html()}`),x:$t(`Element stoi w wierszu ${o.i+1} i kolumnie ${o.j+1}. Skreślamy ten wiersz i tę kolumnę; zostaje minor ${ml}. Znak: (−1)<sup>${o.i+1}+${o.j+1}</sup> = ${o.s>0?'+1':'−1'}.`,`The entry is in row ${o.i+1} and column ${o.j+1}. Cross out this row and this column; the minor ${ml} remains. Sign: (−1)<sup>${o.i+1}+${o.j+1}</sup> = ${o.s>0?'+1':'−1'}.`),
+      B:[bd(A,{det:true,lab,hl:{rows:{[o.i]:'dim'},cols:{[o.j]:'dim'},cells:{[o.i+','+o.j]:'piv'}}}),bd(o.Mi,{det:true,lab:ml})],J:['→']};
+    fr.push(f);
     if(o.Mi.length===2){
-      const m=o.Mi,f=fr[fr.length-1];
+      const m=o.Mi;
       f.C=[{h:`det ${ml} = ${fmt(m[0][0])}·${fmt(m[1][1])} − ${fmt(m[0][1])}·${fmt(m[1][0])} = ${o.dm.html()}`,full:true},{h:`${lapTerm(o)} = <b>${o.v.html()}</b>`,full:true}];
       f.U=[{t:1,line:0},{t:2.2,line:1}];
       return;
     }
-    fr.push(...detFrames(o.Mi,'det '+ml,sec,false));
-    fr.push({sec,t:$t(`Składnik ${k+1} = ${o.v.html()}`,`Term ${k+1} = ${o.v.html()}`),x:$t('Znak · element · wyznacznik minora:','Sign · entry · determinant of the minor:'),C:[{h:`${lapTerm(o)} = <b>${o.v.html()}</b>`,full:true}],U:[{t:.4,line:0}]});
+    const inn=lapInner(o);
+    fr.push(...(inn?laplaceFrames(o.Mi,'det '+ml,sec,ml+' · '):detFrames(o.Mi,'det '+ml,sec,false)));
+    const C=[...(inn?[{h:`${nw(`${sgH(o)} · ${fmt(o.a)} ·`)} [${inn.map(lapTerm).join(' + ')||'0'}]`,full:true,wrap:true}]:[]),{h:`${inn?'= ':''}${lapTerm(o)} = <b>${o.v.html()}</b>`,full:true}];
+    fr.push({sec,t:pre+$t(`Składnik ${k+1} = ${o.v.html()}`,`Term ${k+1} = ${o.v.html()}`),
+      x:inn?$t(`Znak · element · det ${ml}, a det ${ml} to suma: znak · element · wyznacznik 2×2.`,`Sign · entry · det ${ml}, where det ${ml} is a sum of sign · entry · 2×2 determinant.`):$t('Znak · element · wyznacznik minora:','Sign · entry · determinant of the minor:'),
+      C,U:C.map((_,q)=>({t:.4+q*1.2,line:q}))});
   });
   fr.push({sec,t:`${lab} = ${v.html()}`,x:$t('Dodajemy wszystkie składniki.','Add up all the terms.'),B:[bd(A,{det:true,lab})],C:[{h:`${lab} = ${t.map(o=>fmt(o.v)).join(' + ')||'0'} = <b>${v.html()}</b>`,full:true}],U:[{t:.5,line:0}]});
   return fr;

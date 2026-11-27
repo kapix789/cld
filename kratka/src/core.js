@@ -1,6 +1,6 @@
 const LANG={cur:'pl'};
 const $t=(pl,en)=>LANG.cur==='en'?en:pl;
-const OPT={noFrac:true,g:9.81,det:'sarrus'};
+const OPT={noFrac:true,g:9.81,det:'laplace'};
 
 const SUBJECTS=[];
 const SEC_EN={};
