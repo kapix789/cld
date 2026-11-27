@@ -12,7 +12,7 @@ Działa w przeglądarce, na komputerze i na telefonie. Nie trzeba się logować,
 
 ### Algebra liniowa
 
-25 typów zadań: działania na macierzach, macierz odwrotna, równania macierzowe (wzór na *X* i liczby), układy równań (Gauss, metoda macierzowa, Cramer, z parametrem, 4×4 „jeśli to możliwe” jak na kolokwium), wyznaczniki (2×2, Sarrus, Laplace, własności) i rząd.
+28 typów zadań: działania na macierzach, macierz odwrotna, równania macierzowe (wzór na *X* i liczby), układy równań (Gauss, metoda macierzowa, z parametrem, 4×4 „jeśli to możliwe” jak na kolokwium), wyznaczniki (2×2, Sarrus, Laplace, własności, równanie z wyznacznikiem), wzory Cramera (2×2, 3×3, tylko jedna niewiadoma) i rząd.
 
 - Wszystko liczy się na ułamkach zwykłych, bez zaokrągleń.
 - Eliminacja idzie bez ułamków, tak jak na kartce: jedynka powstaje z kombinacji wierszy, a dzieli się dopiero na końcu. Można to wyłączyć.
@@ -122,16 +122,18 @@ Temat to jeden obiekt w tablicy tematów przedmiotu (np. `TOPICS` w `src/algebra
       ans: { kind: 'num', v: tr, lab: 'tr <i>A</i>' },
       sol: $t('<p>Ślad to suma liczb na przekątnej.</p>', '<p>The trace is the sum of the diagonal.</p>'),
       hint: $t('Dodaj liczby na przekątnej.', 'Add up the diagonal.'),
-      // fr: () => [...]  klatki „krok po kroku” (format opisany w app.js)
+      // fr: () => [...]  klatki „krok po kroku”
     };
 }},
 ```
 
-`id` musi być stałe, bo pod nim zapisuje się postęp. Teksty pisze się w obu językach przez `$t('po polsku', 'in English')`, a w plikach HTML jako `⟪po polsku⫽in English⟫`. Gotowe rodzaje odpowiedzi to `mat`, `num`, `formula`, `sys`, `param` (algebra), `qty` (liczba z jednostką i tolerancją), `cmd` (polecenia sprawdzane w symulatorze), `choice` i `fill`. Nowy rodzaj dopisuje się do `KINDS`.
+`id` musi być stałe, bo pod nim zapisuje się postęp. Teksty pisze się w obu językach przez `$t('po polsku', 'in English')`, a w plikach HTML jako `⟪po polsku⫽in English⟫`. Gotowe rodzaje odpowiedzi to `mat`, `num`, `formula`, `sys`, `param` (algebra), `qty` (liczba z jednostką i tolerancją), `cmd` (polecenia sprawdzane w symulatorze), `choice` i `fill`. Nowy rodzaj dopisuje się do `KINDS` (`html`, `check`, `show`, `inp`, `fields`).
+
+Klatka odtwarzacza to `{sec, t, x, S, B, J, C, U}`: dział, tytuł, opis, dowolny HTML, plansze z macierzami (`bd(...)`), znaki między nimi, linie rachunku i zmiany w czasie.
 
 ### Nowy przedmiot
 
-1. Folder `src/<id>/` z plikiem `topics.js`, który na końcu wywołuje `addSubject({ id, name, en, topics, secEn, prKey, sheet, tools })` (opis pól jest w `src/core.js`).
+1. Folder `src/<id>/` z plikiem `topics.js`, który na końcu wywołuje `addSubject({ id, name, en, topics, secEn, prKey, sheet, tools })` (`prKey` to klucz zapisu postępu, `sheet` nazwa ściągi, `tools` dodatkowe widoki, opcjonalnie `start` i `opts`).
 2. Opcjonalnie `page.html` ze ściągą (`<section data-view="sciaga" data-subj="<id>">`) i widokami narzędzi oraz `tools.js` z ich kodem.
 3. `<id>` na listę `SUBJECTS` w `build.py` i w `tests/load.js`, test w `tests/<id>.test.js`.
 

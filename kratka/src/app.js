@@ -1,34 +1,23 @@
-// =====================================================================
-//  Kratka: interfejs wspólny dla przedmiotów
-// =====================================================================
-//  Nawigacja (przedmiot → widok → temat), Ćwiczenia, Sprawdzian, Postęp z powtórką
-//  i odtwarzacz „krok po kroku”. Widoki jednego przedmiotu (np. kalkulatory algebry)
-//  są w <przedmiot>/tools.js i podpinają się przez HOOKS.
-// =====================================================================
 const $=s=>document.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={
   get(k,d=null){try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}},
   set(k,v){try{localStorage.setItem(k,String(v))}catch(e){}}
 };
-// język i ustawienia zapamiętane w przeglądarce (klucze z czasów, gdy Kratka była trenerem algebry, też działają)
 {const v=store.get('kratka-lang',store.get('algebra-lang'));if(v==='pl'||v==='en')LANG.cur=v}
 if(store.get('kratka-bez-ulamkow',store.get('algebra-bez-ulamkow'))==='0')OPT.noFrac=false;
 if(store.get('kratka-g')==='10')OPT.g=10;
 document.documentElement.dataset.lang=LANG.cur;document.documentElement.lang=LANG.cur;
 
-// start: uruchomienie narzędzi przedmiotów; lang/noFrac/g: odświeżenie treści po zmianie ustawienia
 const HOOKS={start:[],lang:[],noFrac:[],g:[],view:[]};
 const show=(el,cls,html)=>{if(!el)return;el.className='msg '+cls;el.innerHTML=html};
 const bi=(pl,en)=>`<span data-ln="pl">${pl}</span><span data-ln="en">${en}</span>`;
 const plain=h=>String(h).replace(/<[^>]+>/g,'');
-// nazwa tematu bez znaczników (do <option>): wykładniki jako znaki Unicode
 const txt=h=>plain(String(h).replace(/<sup>−1<\/sup>/g,'⁻¹').replace(/<sup>T<\/sup>/g,'ᵀ').replace(/<sup>2<\/sup>/g,'²').replace(/<sub>(\d)<\/sub>/g,(m,d)=>'₀₁₂₃₄₅₆₇₈₉'[d])).replace(/&nbsp;/g,' ');
 const pctS=x=>Math.round(x*100)+'%';
 const ICON_PEN='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 16.5l.9-3.6 9.4-9.4a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1l-9.4 9.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12.3 5l2.7 2.7" stroke="currentColor" stroke-width="1.5"/></svg>';
 function ansMark(id,res){for(const [k,ok] of Object.entries(res.marks||{})){const el=document.getElementById(id+'-'+k);if(el){el.classList.toggle('ok',!!ok);el.classList.toggle('bad',!ok)}}}
 
-// ================= Nawigacja =================
 const R={subj:null,view:null};
 const BASE_VIEWS=[{id:'cwiczenia',name:'Ćwiczenia',en:'Practice'},{id:'sprawdzian',name:'Sprawdzian',en:'Test'},{id:'postep',name:'Postęp',en:'Progress'}];
 function viewsOf(S){
@@ -36,11 +25,9 @@ function viewsOf(S){
   if(S.sheet)v.push({id:'sciaga',name:S.sheet.name,en:S.sheet.en});
   return v.concat(S.tools.map(t=>({...t,tool:true})));
 }
-// stare adresy z czasów trenera algebry (#uklady, #sprawdzian…) otwierają te same widoki
 const OLD_HASH={liczby:'liczby',rownania:'rownania',uklady:'uklady',cwiczenia:'cwiczenia',dzialania:'cwiczenia',sprawdzian:'sprawdzian',blad:'blad',postep:'postep',sciaga:'sciaga'};
 function route(){
   const h=location.hash.slice(1);
-  // zeszyt to osobna część, wspólna dla przedmiotów (dawniej #algebra-zeszyt itd.)
   if(h==='zeszyt'||/^[a-z]+-zeszyt$/.test(h))return goNotebook();
   if(h==='start')return goNotebook('start');
   if(OLD_HASH[h])return go('algebra',OLD_HASH[h]);
@@ -66,7 +53,6 @@ function go(subj,view,topic){
   if(location.hash!==h)history.replaceState(null,'',h);
   if(moved)window.scrollTo(0,0);
 }
-// części poza przedmiotami: zeszyt (#zeszyt) i strona startowa pod logo (#start)
 function goNotebook(view='zeszyt'){
   const moved=R.view!==view,S=subjById(R.subj)||subjById(store.get('kratka-przedmiot'))||SUBJECTS[0];
   R.subj=S.id;R.view=view;
@@ -79,7 +65,6 @@ function goNotebook(view='zeszyt'){
 }
 window.addEventListener('hashchange',route);
 const viewHref=(S,id)=>'#'+S.id+'-'+id;
-// przy zmianie przedmiotu zostajemy w tym samym widoku (np. Sprawdzian), jeśli nowy przedmiot go ma
 const keepView=s=>viewsOf(s).some(v=>v.id===R.view&&!v.tool)?R.view:viewsOf(s)[0].id;
 const inNotebook=()=>R.view==='zeszyt';
 function navRender(){
@@ -99,7 +84,6 @@ function tocHtml(S){
   return '<div class="toc">'+S.sections.map(sec=>`<div class="toc-sec">${secName(sec)}</div>`+S.topics.filter(t=>t.sec===sec).map(t=>
     `<a href="#${S.id}-cwiczenia-${t.id}" class="toc-t${t.id===cur?' on':''}"${t.id===cur?' aria-current="true"':''}><span class="toc-n">${tName(t)}</span>${sqHtml(t.id,5,true)}</a>`).join('')).join('')+'</div>';
 }
-// ---- panel od dołu (telefon): lista tematów i przedmiotów zamiast systemowej listy <select> ----
 const BS={opener:null};
 function bsOpen(title,html,opener){
   BS.opener=opener||null;
@@ -139,9 +123,6 @@ $('#topicPrev').addEventListener('click',()=>topicStep(-1));
 $('#topicNext').addEventListener('click',()=>topicStep(1));
 $('#brand').addEventListener('click',e=>{e.preventDefault();location.hash='#start'});
 
-// ================= Odtwarzacz „krok po kroku” =================
-// Klatka: {sec, t (tytuł), x (wyjaśnienie), S (dowolny HTML), B (plansze z macierzami), J (znaki między planszami),
-//          C (linie rachunków), Cb (większe rachunki), U (zmiany w czasie: {t, b,i,j, v|add|clear|swap|line})}
 const PL={fr:[],k:0,tm:[],play:false,busy:false,spd:1,opener:null,make:null};
 {const v=+store.get('kratka-tempo',store.get('macierze-tempo'));if(v>0)PL.spd=v}
 $$('#plSpd button').forEach(c=>c.classList.toggle('on',+c.dataset.spd===PL.spd));
@@ -235,14 +216,12 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='ArrowLeft'){plPrev();e.preventDefault()}
   else if(e.key===' '&&!(e.target.closest&&e.target.closest('button'))){$('#plPlay').click();e.preventDefault()}
 });
-// make: () => klatki (liczone od nowa, gdy zmieni się ustawienie „bez ułamków”)
 function play(make,name,msgEl,o={}){
   PL.make=make;
   let fr;try{fr=make()}catch(e){if(msgEl)show(msgEl,'bad',e.message);return}
   if(fr&&fr.length)plOpen(fr,name,o);
 }
 
-// ================= Karta zadania (Ćwiczenia i Powtórka) =================
 function makePractice(root,o){
   const id=o.id,$i=s=>document.getElementById(id+s),sc={ok:0,all:0};let topic=null,task=null,counted=false;
   root.innerHTML=`<div class="task">
@@ -289,7 +268,6 @@ function makePractice(root,o){
   return {next,refresh(){if(task)$i('SolBox').innerHTML=task.sol;scoreText()},get topic(){return topic}};
 }
 
-// ================= Ćwiczenia =================
 const PRACT={};
 function practiceShow(S,topic){
   let P=PRACT[S.id];
@@ -315,7 +293,6 @@ function practiceHead(S){
 }
 function tocRefresh(){if(R.subj)navRender()}
 
-// ================= Postęp i powtórki =================
 const PRS={};
 function prData(S){
   if(!PRS[S.id]){let d={};try{d=JSON.parse(store.get(S.prKey,'{}'))||{}}catch(e){d={}}PRS[S.id]=d}
@@ -333,7 +310,6 @@ function rec(id,score){
 const prAcc=id=>{const r=prGet(id);return r&&r.h.length?r.h.reduce((a,b)=>a+b,0)/r.h.length:null};
 function prStatus(id){const a=prAcc(id);return a===null?['new',$t('nowy','new')]:a<.5?['bad',$t('słabo','weak')]:a<.8?['mid',$t('średnio','fair')]:['good',$t('dobrze','good')]}
 function prWeight(id){const a=prAcc(id);if(a===null)return 1.3;return .2+(1-a)*2.2+Math.min(.6,(Date.now()-prGet(id).t)/864e6)}
-// kwadraciki z wynikami ostatnich prób: pełny = dobrze, połowa = częściowo, czerwony = źle
 function sqHtml(id,n=10,compact){
   const r=prGet(id),h=r?r.h.slice(-n):[];
   if(compact&&!h.length)return '';
@@ -383,7 +359,6 @@ $('#prReset').onclick=()=>{
   $('#prNo').onclick=()=>{m.className='msg'};
 };
 
-// ================= Sprawdzian =================
 const EXSEL={};let exN=8,exT=0,EX=null,exTimer=null;
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
 const mmss=ms=>{const s=Math.max(0,Math.round(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`};
@@ -440,7 +415,6 @@ $('#exEnd').onclick=()=>{
   show(m,'bad',$t(`Bez odpowiedzi: ${empty} ${pl(empty,'zadanie','zadania','zadań')}. Oddać mimo to?`,`Unanswered: ${empty} ${empty===1?'task':'tasks'}. Hand in anyway?`)+`<div class="actions"><button type="button" class="btn small" id="exYes">${$t('Tak, oceń','Yes, grade it')}</button><button type="button" class="btn ghost small" id="exNo">${$t('Wracam do zadań','Back to the tasks')}</button></div>`);
   $('#exYes').onclick=exFinish;$('#exNo').onclick=()=>{m.className='msg'};
 };
-// skala ocen: polska (2,0–5,0) albo angielska (A–F)
 const GRADES=()=>$t([[90,'5,0'],[80,'4,5'],[70,'4,0'],[60,'3,5'],[50,'3,0'],[0,'2,0']],[[90,'A'],[80,'B'],[70,'C'],[60,'D'],[0,'F']]);
 function exFinish(){
   if(!EX||EX.done)return;
@@ -472,7 +446,6 @@ $('#exRes').addEventListener('click',e=>{
   const s=e.target.closest('[data-exs2]');if(s)$('#exSol'+s.dataset.exs2).classList.toggle('on');
 });
 
-// ================= Język =================
 function setLang(l,rerender){
   LANG.cur=l==='en'?'en':'pl';
   const h=document.documentElement;h.dataset.lang=LANG.cur;h.lang=LANG.cur;store.set('kratka-lang',LANG.cur);
@@ -481,7 +454,6 @@ function setLang(l,rerender){
   $$('[data-al-en]').forEach(el=>el.setAttribute('aria-label',LANG.cur==='en'?el.dataset.alEn:el.dataset.alPl));
   plSetPlay(false);
   if(!rerender)return;
-  // treści z JS powstają od nowa w nowym języku (postęp i ustawienia zostają)
   if(!$('#pl').hidden)plClose();
   bsClose();
   Object.values(PRACT).forEach(P=>P.inst.next());
@@ -493,11 +465,9 @@ function setLang(l,rerender){
 }
 document.querySelector('.lang').addEventListener('click',e=>{const b=e.target.closest('[data-lang]');if(b&&b.dataset.lang!==LANG.cur)setLang(b.dataset.lang,true)});
 
-// ================= Ustawienia przedmiotów: „bez ułamków” (algebra) i g (fizyka) =================
 function syncNoFrac(){$$('[data-nofrac]').forEach(c=>{c.checked=OPT.noFrac})}
 function setNoFrac(v){
   OPT.noFrac=!!v;store.set('kratka-bez-ulamkow',OPT.noFrac?'1':'0');syncNoFrac();
-  // te same zadania, tylko rozwiązania liczone od nowa
   Object.values(PRACT).forEach(P=>P.inst.refresh());if(PRP)PRP.refresh();
   HOOKS.noFrac.forEach(f=>f());
   if(!$('#pl').hidden&&PL.make){try{PL.fr=PL.make();PL.k=0;plSetPlay(false);plSteps();plRender(true)}catch(e){}}
@@ -510,7 +480,6 @@ function setG(v){
 }
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-g]');if(b)setG(+b.dataset.g)});
 
-// ================= Start =================
 function kratkaStart(){
   HOOKS.start.forEach(f=>f());
   setLang(LANG.cur,false);syncNoFrac();

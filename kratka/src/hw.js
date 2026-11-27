@@ -1,23 +1,11 @@
-// =====================================================================
-//  Czytanie pisma w zeszycie: kreski pióra → tekst działania
-// =====================================================================
-//  hwRead(kreski) → [{text, box, ids, syms, conf}]: jedno działanie na pozycję (linia pisma albo jej część)
-//  1. linie: kreski rozdzielone wyraźną przerwą w pionie,
-//  2. ułamki piętrowe: pozioma kreska z czymś nad nią i pod nią,
-//  3. znaki: kreski zachodzące na siebie w poziomie (+, =, 4 i × to kilka kresek),
-//  4. kropki: przecinek dziesiętny, mnożenie „·”, dzielenie „:”; potęgi: mały znak wyżej,
-//  5. każdy znak czyta mała sieć splotowa (HW_MODEL z hw-model.js, tools/hw_train.py).
-//  Obraz znaku (hwRaster) musi powstawać dokładnie tak jak raster() w tools/hw_train.py.
-//  Poprawki użytkownika (hwLearn) zapisują jego wersję znaku; podobny znak czyta się potem tak samo.
-// =====================================================================
-let HW_NET=null,HW_CACHE=null,HW_DEF=null,HW_CELL=false;   // HW_CELL: czytamy komórkę macierzy (same liczby)   // HW_DEF: litery, które są zmiennymi (null: wszystkie)   // HW_CACHE: odczytane znaki według identyfikatorów kresek (kreska się nie zmienia)
+let HW_NET=null,HW_CACHE=null,HW_DEF=null,HW_CELL=false;
 function hwNet(){
   if(HW_NET)return HW_NET;
   const dq=L=>{const s=atob(L.q),w=new Float32Array(s.length);for(let i=0;i<s.length;i++)w[i]=(s.charCodeAt(i)<<24>>24)*L.s;return {w,b:Float32Array.from(L.b)}};
   HW_NET={c1:dq(HW_MODEL.c1),c2:dq(HW_MODEL.c2),d1:dq(HW_MODEL.d1),d2:dq(HW_MODEL.d2),cls:HW_MODEL.classes};
   return HW_NET;
 }
-// obraz 28×28 jak w MNIST: znak w ramce 20×20 z zachowaniem proporcji, środek ciężkości w środku
+// 28×28 jak MNIST, musi się zgadzać z raster() w tools/hw_train.py
 function hwRaster(strokes,r=HW_MODEL.r){
   let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;
   for(const p of strokes)for(let i=0;i<p.length;i+=2){x1=Math.min(x1,p[i]);x2=Math.max(x2,p[i]);y1=Math.min(y1,p[i+1]);y2=Math.max(y2,p[i+1])}
@@ -45,7 +33,7 @@ function hwRaster(strokes,r=HW_MODEL.r){
   if(m>0)img=draw(14-cx/m,14-cy/m);
   return img;
 }
-// sieć: conv 5×5 (12) → pool → conv 5×5 (24) → pool → 64 → klasy; zwraca prawdopodobieństwa i warstwę ukrytą
+// conv5(12) → pool → conv5(24) → pool → 64
 function hwForward(img){
   const N=hwNet(),a1=new Float32Array(12*144),a2=new Float32Array(24*16),h=new Float32Array(64),o=new Float32Array(N.cls.length);
   const c1=new Float32Array(576);
@@ -66,7 +54,7 @@ function hwForward(img){
   let z=0;for(let k=0;k<nc;k++){o[k]=Math.exp(o[k]-mx);z+=o[k]}for(let k=0;k<nc;k++)o[k]/=z;
   return {p:o,h};
 }
-// ---------- własne wersje znaków (z poprawek): najbliższy sąsiad w warstwie ukrytej sieci ----------
+// najbliższy sąsiad w warstwie ukrytej
 const HW_ME={list:null,key:'kratka-pismo-v1'};
 function hwMine(){
   if(HW_ME.list)return HW_ME.list;
@@ -87,36 +75,26 @@ function hwClassify(strokes){
   return {ch:N.cls[ord[0][1]],p:ord[0][0]/z,alt:N.cls[ord[1][1]],pAlt:ord[1][0]/z,h:f.h,ps:p.map(v=>v/z)};
 }
 
-// ---------- układ kresek: linie, ułamki, znaki, kropki, potęgi ----------
 const hwBox=ps=>{let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;for(const p of ps)for(let i=0;i<p.length;i+=2){x1=Math.min(x1,p[i]);x2=Math.max(x2,p[i]);y1=Math.min(y1,p[i+1]);y2=Math.max(y2,p[i+1])}return {x1,y1,x2,y2,w:x2-x1,h:y2-y1,cx:(x1+x2)/2,cy:(y1+y2)/2}};
 const hwMed=a=>{if(!a.length)return 0;const s=a.slice().sort((x,y)=>x-y);return s[s.length>>1]};
-// it: {k (indeks kreski), p (punkty), b (ramka)}
 function hwLines(items,gf=.6){
-  // wielkość pisma: wysokość kresek, a dla płaskich (−, =) ich szerokość
   const med=Math.max(12,hwMed(items.map(t=>Math.max(t.b.h,t.b.w)))),gap=Math.max(gf<.3?3:8,med*gf);
   const ord=items.slice().sort((a,b)=>a.b.y1-b.b.y1),lines=[];
   for(const t of ord){const L=lines[lines.length-1];if(L&&t.b.y1<=L.y2+gap){L.items.push(t);L.y2=Math.max(L.y2,t.b.y2)}else lines.push({items:[t],y2:t.b.y2})}
   return lines.map(L=>L.items);
 }
-// tekst jednej linii (albo licznika, mianownika): → {text, syms, conf} | null
-// macierz: para wysokich nawiasów ([ ] albo ( )), między nimi wiersze liczb → „[1 2; 3 4]”
-// haczyk nawiasu narysowany osobno: tylko przy prostej pionowej kresce, płaski, krótki i dotyka jej końca
-// (cyfry i kreski „=” obok nawiasu haczykami nie są)
 const hwHook=(B,t)=>t!==B&&B.b.w<B.b.h*.2&&t.b.h<=Math.max(t.b.w*.6,B.b.h*.08)&&t.b.w<B.b.h*.6&&
   (Math.abs(t.b.cy-B.b.y1)<B.b.h*.12||Math.abs(t.b.cy-B.b.y2)<B.b.h*.12)&&
   (Math.abs(t.b.x1-B.b.cx)<B.b.h*.1||Math.abs(t.b.x2-B.b.cx)<B.b.h*.1);
 function hwMatrices(items,depth){
-  // typowa wysokość znaku: kreski, które nie są płaskie (bez −, = i kropek)
   const hs=items.filter(t=>t.b.h>=t.b.w*.5&&t.b.h>4).map(t=>t.b.h),base=hwMed(hs);
   const tall=items.filter(t=>t.b.h>Math.max(base*1.6,24)&&t.b.w<t.b.h*.9).sort((a,b)=>a.b.x1-b.b.x1);
   const used=new Set(),tokens=[];
-  // w którą stronę otwiera się wysoka kreska: [ ( C otwierają się w prawo, ] ) w lewo
   const side=t=>{
     const p=t.p,n=p.length/2;let mx=0,c=0;
     for(let i=Math.floor(n/3);i<Math.max(Math.ceil(2*n/3),Math.floor(n/3)+1);i++){mx+=p[2*i];c++}
     const d=mx/c-(p[0]+p[p.length-2])/2;
     if(d<-t.b.h*.06)return 'L';if(d>t.b.h*.06)return 'R';
-    // prosta pionowa kreska: o stronie mówią osobno narysowane haczyki
     const hk=items.filter(h=>hwHook(t,h));
     if(hk.length){const hx=hk.reduce((s,h)=>s+h.b.cx,0)/hk.length;return hx>t.b.cx?'L':'R'}
     return '';
@@ -127,13 +105,11 @@ function hwMatrices(items,depth){
   for(const [L,R] of pairs){
     if(used.has(L)||used.has(R))continue;
     const y1=Math.min(L.b.y1,R.b.y1),y2=Math.max(L.b.y2,R.b.y2);
-    // haczyki nawiasów rysowane osobno: krótkie kreski przy końcach pionowej kreski
     const hook=hwHook;
     const hooks=items.filter(t=>!used.has(t)&&(hook(L,t)||hook(R,t)));
-    const inside=items.filter(t=>t!==L&&t!==R&&!hooks.includes(t)&&!used.has(t)&&t.b.cx>L.b.x1+Math.min(L.b.w*.3,12)&&t.b.cx<R.b.x2-Math.min(R.b.w*.3,12)&&t.b.cy>y1&&t.b.cy<y2);   // nawias może mieć długie haczyki nad cyframi
+    const inside=items.filter(t=>t!==L&&t!==R&&!hooks.includes(t)&&!used.has(t)&&t.b.cx>L.b.x1+Math.min(L.b.w*.3,12)&&t.b.cx<R.b.x2-Math.min(R.b.w*.3,12)&&t.b.cy>y1&&t.b.cy<y2);
     if(!inside.length)continue;
     const rows=[];
-    // wiersze: znaki, których środki leżą na podobnej wysokości (przerwy między wierszami macierzy bywają małe)
     const gh=hwMed(inside.map(t=>t.b.h).filter(h=>h>3))||12,byY=inside.slice().sort((a,b)=>a.b.cy-b.b.cy),rowsI=[];
     for(const t of byY){const r=rowsI[rowsI.length-1];if(r&&t.b.cy-r.cy<gh*.6){r.items.push(t);r.cy=r.items.reduce((s,x)=>s+x.b.cy,0)/r.items.length}else rowsI.push({items:[t],cy:t.b.cy})}
     for(const row of rowsI.map(r=>r.items)){
@@ -155,12 +131,10 @@ function hwParse(items,depth=0){
   const MX=depth<2?hwMatrices(items,depth):{tokens:[],used:new Set()};
   if(MX.tokens.length)items=items.filter(t=>!MX.used.has(t));
   if(!items.length&&MX.tokens.length===1)return {text:MX.tokens[0].text,show:MX.tokens[0].show,syms:MX.tokens[0].syms,conf:MX.tokens[0].conf,tokens:MX.tokens};
-  // wielkość pisma do wykrywania kropek i kresek ułamkowych (płaskie kreski liczą się szerokością)
   const medH=Math.max(10,hwMed(items.map(t=>Math.max(t.b.h,t.b.w))));
   const isDot=t=>Math.max(t.b.w,t.b.h)<Math.max(medH*.2,4);
   const isBar=t=>t.b.w>=medH*.55&&t.b.h<=Math.max(t.b.w*.3,3)&&t.b.h<=medH*.35;
   const used=new Set(),tokens=[...MX.tokens];
-  // ułamki piętrowe (najszersza kreska pierwsza)
   for(const bar of items.filter(isBar).sort((a,b)=>b.b.w-a.b.w)){
     if(used.has(bar)||depth>2)continue;
     const inX=t=>t.b.cx>=bar.b.x1-bar.b.w*.15&&t.b.cx<=bar.b.x2+bar.b.w*.15;
@@ -168,7 +142,6 @@ function hwParse(items,depth=0){
     const dn=items.filter(t=>t!==bar&&!used.has(t)&&inX(t)&&t.b.y1>=bar.b.cy-medH*.15&&t.b.cy>bar.b.cy+medH*.1);
     const real=a=>a.filter(t=>!isDot(t)&&!(isBar(t)&&Math.abs(t.b.w-bar.b.w)<bar.b.w*.35));
     if(!real(up).length||!real(dn).length){
-      // ÷: kropka nad kreską i pod nią
       if(up.length&&dn.length&&up.every(isDot)&&dn.every(isDot)){[bar,...up,...dn].forEach(t=>used.add(t));tokens.push({x:bar.b.x1,x2:bar.b.x2,text:':',show:':',items:[bar,...up,...dn],conf:1})}
       continue;
     }
@@ -177,9 +150,7 @@ function hwParse(items,depth=0){
     const wrap=s=>/^[−-]?[\d.,]+$/.test(s)?s:`(${s})`;
     tokens.push({x:bar.b.x1,x2:bar.b.x2,text:`${wrap(N.text)}/${wrap(D.text)}`,show:`${wrap(N.show)}/${wrap(D.show)}`,syms:[...N.syms,...D.syms],items:[bar,...up,...dn],conf:Math.min(N.conf,D.conf)});
   }
-  // znaki: kreski zachodzące na siebie w poziomie
   const rest=items.filter(t=>!used.has(t)),dots=rest.filter(isDot),strokes=rest.filter(t=>!isDot(t)).sort((a,b)=>a.b.x1-b.b.x1),groups=[];
-  // B (i podobne): kreska, która zaczyna się i kończy na pionowej kresce, należy do tego samego znaku
   const hug=(v,t)=>{
     if(v.b.w>v.b.h*.3||t.b.x1>v.b.x2+4)return false;
     const p=t.p,n=p.length,r=v.b.h*.25,near=(x,y,Y)=>Math.abs(x-v.b.cx)<r&&Math.abs(y-Y)<r;
@@ -192,7 +163,6 @@ function hwParse(items,depth=0){
     groups.push({items:[t],x1:t.b.x1,x2:t.b.x2});
   }
   const lineTop=Math.min(...items.map(t=>t.b.y1)),lineBot=Math.max(...items.map(t=>t.b.y2));
-  // wysokość znaku z gotowych znaków (bez płaskich −, =): do potęg i podstawy linii
   const gh=groups.map(g=>hwBox(g.items.map(t=>t.p))).filter(b=>b.h>b.w*.45).map(b=>b.h);
   const symH=Math.max(10,gh.length?Math.max(...gh)*.5+hwMed(gh)*.5:medH);
   for(const g of groups){
@@ -201,7 +171,6 @@ function hwParse(items,depth=0){
     const b=hwBox(g.items.map(t=>t.p));
     tokens.push({x:g.x1,x2:g.x2,ch:c.ch,cls:c,b,items:g.items,conf:c.p});
   }
-  // kropki: dwie jedna nad drugą to „:”, przy dole linii przecinek, w środku mnożenie
   const dsort=dots.slice().sort((a,b)=>a.b.cx-b.b.cx);
   for(let i=0;i<dsort.length;i++){
     const d=dsort[i],e=dsort[i+1];
@@ -209,7 +178,6 @@ function hwParse(items,depth=0){
     tokens.push({x:d.b.x1,x2:d.b.x2,ch:'dot',b:d.b,items:[d],conf:1,dot:true});
   }
   tokens.sort((a,b)=>a.x-b.x);
-  // podstawa linii: dolna krawędź zwykłych cyfr
   const digs=tokens.filter(t=>t.ch&&/\d/.test(t.ch)&&t.b&&t.b.h>symH*.7),base=digs.length?hwMed(digs.map(t=>t.b.y2)):lineBot,mid=digs.length?hwMed(digs.map(t=>t.b.cy)):(lineTop+lineBot)/2;
   const out=[];let conf=1;const syms=[];
   for(let i=0;i<tokens.length;i++){
@@ -218,29 +186,24 @@ function hwParse(items,depth=0){
     let ch=t.ch;
     const ps=t.cls&&t.cls.ps,P=c=>ps?ps[HW_MODEL.classes.indexOf(c)]||0:0,best=a=>a.slice().sort((x,y)=>P(y)-P(x))[0];
     if(ps&&!HW_CELL&&!/[A-C]/.test(ch)){
-      // pierwszy znak, po którym stoi „=”, to nazwa zmiennej (C = […] nie jest „( = […]”)
       const L1=best(['A','B','C']);
       if(!out.length&&next&&next.ch==='='&&/[()\/*]/.test(ch))ch=L1;
-      // litera, która jest zmienną na tej stronie, stojąca osobno (nie w środku liczby)
       else if(HW_DEF&&HW_DEF.size){
         const L2=best([...HW_DEF].filter(c=>/^[A-C]$/.test(c)));
         const alone=!(prev&&prev.num&&!prev.sup)&&!(next&&next.ch&&/\d/.test(next.ch));
         if(L2&&alone&&(ch==='('&&!tokens.slice(i+1).some(x=>x.ch===')')||/[0148]/.test(ch)&&P(L2)>.05))ch=L2;
       }
     }
-    // litera A, B, C zostaje literą tylko jako zmienna przypisana na tej stronie (B = ...); inaczej to cyfra (8, 4, 0)
     if(/[ABC]/.test(ch)&&(HW_CELL||HW_DEF&&!HW_DEF.has(ch)))ch=t.cls&&/\d/.test(t.cls.alt)?t.cls.alt:{A:'4',B:'8',C:'0'}[ch];
     if(ch==='dot'){
       const between=prev&&prev.num&&next&&next.ch&&/\d/.test(next.ch);
       ch=between&&t.b.cy>mid+symH*.25?'.':'·';
       if(!prev)continue;
     }
-    // „/” i „1” wyglądają podobnie: dzielenie musi stać między liczbami
     if(t.cls&&(ch==='/'||ch==='1')&&t.cls.alt===(ch==='/'?'1':'/')&&t.cls.pAlt>.05){
       const canDiv=prev&&(prev.num||prev.text===')')&&next&&(next.text!==undefined||next.ch&&/[\d(]/.test(next.ch));
       if(ch==='/'&&!canDiv)ch='1';
     }
-    // potęga: wyraźnie mniejszy znak, podniesiony nad podstawę
     const sup=t.b&&prev&&(prev.num||prev.text===')'||prev.sup)&&t.b.h<symH*.72&&t.b.cy<mid-symH*.3&&t.b.y2<base-symH*.3&&/[\d(−-]/.test(ch);
     const show=ch==='*'?'·':ch==='-'?'−':ch;
     const text=ch==='*'?'·':ch==='-'?'−':ch;
@@ -249,24 +212,19 @@ function hwParse(items,depth=0){
     conf=Math.min(conf,t.conf);
     if(t.cls)syms.push({ch,h:t.cls.h,items:t.items});
   }
-  // potęgi w tekście: 2^3, 10^(−3)
   const parts=out.map(o=>o.sup?(o.supText.length>1?`^(${o.supText})`:`^${o.supText}`):o.text);
   const shows=out.map(o=>o.sup?`^${o.supText}`:o.show);
   const text=parts.join('');
   return text?{text,show:shows.join(''),syms,conf,tokens}:null;
 }
-// cała strona: linie pisma, a w linii osobne działania, gdy dzieli je duża przerwa
-// defined: litery przypisane poza pismem (np. w tekście z klawiatury)
 function hwRead(strokes,cache,defined){
   HW_CACHE=cache||new Map();
-  // pierwsze czytanie znajduje przypisania „A = …”, drugie czyta resztę liter jako cyfry
   HW_DEF=null;
   const first=hwRead1(strokes),def=new Set(defined||[]);
   first.forEach(r=>{const m=r.text.match(/^([ABC])=/);if(m)def.add(m[1])});
   HW_DEF=def;
   const res=hwRead1(strokes);HW_DEF=null;return res;
 }
-// „A = […]   B = […]” w jednym rzędzie to dwa przypisania: tniemy przed literą, po której stoi „=”
 function hwSplitAssign(items){
   const r=hwParse(items),tk=(r&&r.tokens)||[];let eq=false;
   for(let i=1;i<tk.length-1;i++){
@@ -288,7 +246,6 @@ function hwRead1(strokes){
     for(const t of ord){if(cur.length&&t.b.x1-right>medH*2.6){chunks.push(cur);cur=[]}cur.push(t);right=Math.max(right,t.b.x2)}
     if(cur.length)chunks.push(cur);
     for(const ch of chunks){
-      // bardzo duże kreski (rysunki, obwódki) nie są pismem
       if(ch.length===1&&ch[0].b.h>medH*3)continue;
       for(const part of hwSplitAssign(ch)){
         const r=hwParse(part);if(!r)continue;

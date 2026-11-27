@@ -1,4 +1,3 @@
-<!-- ===================== ALGEBRA: X NA LICZBACH ===================== -->
 <section data-view="liczby" data-subj="algebra" hidden>
 <div class="vh">
 <div class="eyebrow">⟪Algebra liniowa · narzędzia⫽Linear algebra · tools⟫</div>
@@ -28,7 +27,6 @@
 </div>
 </section>
 
-<!-- ===================== ALGEBRA: X NA LITERACH ===================== -->
 <section data-view="rownania" data-subj="algebra" hidden>
 <div class="vh">
 <div class="eyebrow">⟪Algebra liniowa · narzędzia⫽Linear algebra · tools⟫</div>
@@ -79,7 +77,6 @@
 </div>
 </section>
 
-<!-- ===================== ALGEBRA: UKŁADY RÓWNAŃ ===================== -->
 <section data-view="uklady" data-subj="algebra" hidden>
 <div class="vh">
 <div class="eyebrow">⟪Algebra liniowa · narzędzia⫽Linear algebra · tools⟫</div>
@@ -119,7 +116,6 @@ x - y + 2z = 5
 </div>
 </section>
 
-<!-- ===================== ALGEBRA: ZNAJDŹ BŁĄD ===================== -->
 <section data-view="blad" data-subj="algebra" hidden>
 <div class="vh">
 <div class="eyebrow">⟪Algebra liniowa · narzędzia⫽Linear algebra · tools⟫</div>
@@ -148,7 +144,6 @@ x - y + 2z = 5
 <div id="fbOut"></div>
 </section>
 
-<!-- ===================== ALGEBRA: ŚCIĄGA ===================== -->
 <section data-view="sciaga" data-subj="algebra" hidden>
 <div class="vh">
 <div class="eyebrow">⟪Algebra liniowa⫽Linear algebra⟫</div>
@@ -324,6 +319,8 @@ x - y + 2z = 5
 <ul class="rules">
 <li><b>Macierzowa:</b> <span class="f"><i>AX</i> = <i>B</i> ⇒ <i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>. Mnożymy <b>z lewej</b>; <span class="f"><i>BA</i><sup>−1</sup></span> to błąd (zwykle nawet niewykonalny).</li>
 <li><b>Cramer:</b> <span class="f"><i>W</i> = det <i>A</i></span>, a <span class="f"><i>W<sub>x</sub></i></span> to wyznacznik <i>A</i> z kolumną przy <i>x</i> zastąpioną kolumną wyrazów wolnych. Wtedy <span class="f"><i>x</i> = <i>W<sub>x</sub></i> / <i>W</i></span>, <span class="f"><i>y</i> = <i>W<sub>y</sub></i> / <i>W</i></span> itd.</li>
+<li>Gdy pytają tylko o jedną niewiadomą, np. <i>z</i>, wystarczą dwa wyznaczniki: <span class="f"><i>W</i></span> i <span class="f"><i>W<sub>z</sub></i></span>.</li>
+<li><b>Równanie z wyznacznikiem:</b> gdy <i>x</i> stoi w jednym wierszu (kolumnie), rozwijamy względem niego. Minory są liczbami, więc wychodzi zwykłe równanie liniowe.</li>
 <li><b>Wyznacznik 2×2:</b> <span class="f"><span class="mat det" style="grid-template-columns:repeat(2,auto)"><span><i>a</i></span><span><i>b</i></span><span><i>c</i></span><span><i>d</i></span></span> = <i>ad</i> − <i>bc</i></span>.</li>
 <li><b>Wyznacznik 3×3 (Sarrus):</b> trzy iloczyny po przekątnych w prawo w dół z plusem, trzy w lewo w dół z minusem: <span class="f"><i>a</i><sub>11</sub><i>a</i><sub>22</sub><i>a</i><sub>33</sub> + <i>a</i><sub>12</sub><i>a</i><sub>23</sub><i>a</i><sub>31</sub> + <i>a</i><sub>13</sub><i>a</i><sub>21</sub><i>a</i><sub>32</sub> − <i>a</i><sub>13</sub><i>a</i><sub>22</sub><i>a</i><sub>31</sub> − <i>a</i><sub>11</sub><i>a</i><sub>23</sub><i>a</i><sub>32</sub> − <i>a</i><sub>12</sub><i>a</i><sub>21</sub><i>a</i><sub>33</sub></span>.</li>
 </ul>
@@ -333,6 +330,8 @@ x - y + 2z = 5
 <ul class="rules">
 <li><b>Matrix method:</b> <span class="f"><i>AX</i> = <i>B</i> ⇒ <i>X</i> = <i>A</i><sup>−1</sup><i>B</i></span>. Multiply <b>on the left</b>; <span class="f"><i>BA</i><sup>−1</sup></span> is a mistake (and usually not even defined).</li>
 <li><b>Cramer:</b> <span class="f"><i>D</i> = det <i>A</i></span>, and <span class="f"><i>D<sub>x</sub></i></span> is the determinant of <i>A</i> with the column of <i>x</i> replaced by the column of constants. Then <span class="f"><i>x</i> = <i>D<sub>x</sub></i> / <i>D</i></span>, <span class="f"><i>y</i> = <i>D<sub>y</sub></i> / <i>D</i></span> and so on.</li>
+<li>When only one unknown is asked for, e.g. <i>z</i>, two determinants are enough: <span class="f"><i>D</i></span> and <span class="f"><i>D<sub>z</sub></i></span>.</li>
+<li><b>Equation with a determinant:</b> when <i>x</i> is in one row (column), expand along it. The minors are numbers, so you get an ordinary linear equation.</li>
 <li><b>2×2 determinant:</b> <span class="f"><span class="mat det" style="grid-template-columns:repeat(2,auto)"><span><i>a</i></span><span><i>b</i></span><span><i>c</i></span><span><i>d</i></span></span> = <i>ad</i> − <i>bc</i></span>.</li>
 <li><b>3×3 determinant (Sarrus):</b> three diagonal products going down to the right with a plus, three going down to the left with a minus: <span class="f"><i>a</i><sub>11</sub><i>a</i><sub>22</sub><i>a</i><sub>33</sub> + <i>a</i><sub>12</sub><i>a</i><sub>23</sub><i>a</i><sub>31</sub> + <i>a</i><sub>13</sub><i>a</i><sub>21</sub><i>a</i><sub>32</sub> − <i>a</i><sub>13</sub><i>a</i><sub>22</sub><i>a</i><sub>31</sub> − <i>a</i><sub>11</sub><i>a</i><sub>23</sub><i>a</i><sub>32</sub> − <i>a</i><sub>12</sub><i>a</i><sub>21</sub><i>a</i><sub>33</sub></span>.</li>
 </ul>

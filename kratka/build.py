@@ -1,18 +1,5 @@
 #!/usr/bin/env python3
-"""Składa Kratkę z plików w src/ w jedną stronę HTML.
-
-    python3 build.py                      # tworzy index.html (GitHub Pages, otwiera się też z dysku)
-    python3 build.py --artifact out.html  # dodatkowo fragment strony dla Claude Artifacts
-
-Kolejność skryptów ma znaczenie:
-    core.js (język, rejestry) → engine.js (matematyka) → calc.js (kalkulator zeszytu) → steps.js (rozpisywanie)
-    → hw-model.js, hw.js (czytanie pisma) → <przedmiot>/topics.js → app.js (interfejs) → notebook.js (zeszyt)
-    → <przedmiot>/tools.js
-
-Przedmiot to folder src/<id>/ z plikiem topics.js (tematy, addSubject) i opcjonalnie page.html (widoki, ściąga),
-tools.js (kod tych widoków) oraz innymi plikami .js wczytywanymi przed topics.js (np. so/linux.js).
-Nowy przedmiot dopisz do listy SUBJECTS poniżej.
-"""
+"""python3 build.py [--artifact out.html]"""
 import argparse
 import pathlib
 import re
@@ -42,8 +29,6 @@ def optional(path):
 
 
 def bilingual(html, name):
-    """⟦polski⫽English⟧ → dwa bloki <div data-ln>, ⟪polski⫽English⟫ → dwa <span data-ln>; CSS pokazuje jeden język.
-    W atrybucie aria-label="⟪polski⫽English⟫" obie wersje trafiają do data-al-pl/-en, a app.js podmienia etykietę."""
     html = re.sub(r'aria-label="⟪(.*?)⫽(.*?)⟫"', lambda m: f'aria-label="{m[1]}" data-al-pl="{m[1]}" data-al-en="{m[2]}"', html)
     html = re.sub(r"⟦(.*?)⫽(.*?)⟧", lambda m: f'<div data-ln="pl">{m[1]}</div><div data-ln="en">{m[2]}</div>', html, flags=re.S)
     html = re.sub(r"⟪(.*?)⫽(.*?)⟫", lambda m: f'<span data-ln="pl">{m[1]}</span><span data-ln="en">{m[2]}</span>', html, flags=re.S)
@@ -60,7 +45,6 @@ def parts():
     if "<!-- @przedmioty -->" not in shell:
         raise SystemExit("page.html: brak znacznika <!-- @przedmioty -->")
     page = shell.replace("<!-- @przedmioty -->", pages)
-    # w folderze przedmiotu: najpierw pliki pomocnicze (alfabetycznie), potem topics.js; tools.js dopiero po app.js
     libs = lambda s: sorted(p.name for p in (SRC / s).glob("*.js") if p.name not in ("topics.js", "tools.js"))
     scripts = (["core.js", "engine.js", "calc.js", "steps.js", "hw-model.js", "hw.js"]
                + [f"{s}/{n}" for s in SUBJECTS for n in libs(s) + ["topics.js"]]
@@ -81,7 +65,6 @@ def full_page():
 
 
 def artifact_fragment():
-    # Claude Artifacts same dokładają <!doctype>, <head> i <body>.
     css, page, js = parts()
     return (
         f"<title>{TITLE}</title>\n<meta name=\"claude:viewport-fit-sides\" content=\"cover\">\n{FONTS}\n"

@@ -1,5 +1,3 @@
-// Testy czytania pisma:  node tests/hw.test.js
-// Pismo z kresek, jakie stawia człowiek (z drżeniem ręki, pochyleniem i różną wielkością), czytane przez hwRead.
 const fs = require('fs'), path = require('path');
 const SRC = path.join(__dirname, '..', 'src');
 const code = ['core.js', 'engine.js', 'calc.js', 'hw-model.js', 'hw.js'].map(f => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
@@ -8,7 +6,6 @@ const K = new Function(code + '\nreturn {hwRead,hwRaster,hwForward,HW_MODEL,calc
 let fails = 0, checks = 0; const ok = (c, m) => { checks++; if (!c) { fails++; if (fails < 25) console.log('✗', m) } };
 let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647, u = (a, b) => a + (b - a) * rnd();
 
-// ---------- „czcionka” odręczna: kreski w ramce szerokości ~0,6 i wysokości 1 ----------
 const arc = (cx, cy, rx, ry, a0, a1, n = 18) => Array.from({ length: n }, (_, k) => { const t = a0 + (a1 - a0) * k / (n - 1); return [cx + rx * Math.cos(t), cy + ry * Math.sin(t)] });
 const P = Math.PI;
 const GLYPH = {
@@ -37,9 +34,8 @@ const GLYPH = {
   ':': () => [[[.08, .3], [.1, .31]], [[.08, .72], [.1, .73]]],
 };
 const WIDTH = { '1': .45, '·': .25, ',': .25, ':': .25, '(': .45, ')': .45, '−': .6 };
-const PATH_N = 5;   // punkty co ~1/5 długości odcinka, jak przy rysowaniu palcem
+const PATH_N = 5;
 function dense(pts) { const out = []; for (let i = 0; i < pts.length - 1; i++) { const [a, b] = [pts[i], pts[i + 1]]; for (let k = 0; k < PATH_N; k++) { const t = k / PATH_N; out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]) } } out.push(pts[pts.length - 1]); return out }
-// tekst → kreski; „frac” w tekście: [licznik/mianownik] piętrowo, „^x” mniejsze i wyżej
 function write(text, x0 = 40, y0 = 40, H = 42) {
   const strokes = [], slant = u(-.12, .12);
   let x = x0;
@@ -54,15 +50,15 @@ function write(text, x0 = 40, y0 = 40, H = 42) {
   };
   const toks = text.match(/\{[^}]+\}|\[[^\]]+\]|\^.|./g);
   for (const t of toks) {
-    if (t.startsWith('{')) {                          // macierz: {1 2|3 4}, wysokie nawiasy
+    if (t.startsWith('{')) {
       const rows = t.slice(1, -1).split('|').map(r => r.split(' ')), n = rows.length, cw = Math.max(...rows.flat().map(c => c.length)) * H * .5 + H * .5;
       const top = y0 - (n - 1) * H * .45, bot = top + n * H * .9, w = rows[0].length * cw;
-      const hk = u(10, H * 1.1); strokes.push({ c: 'pen', p: dense([[x + hk, top - 4], [x, top - 4], [x, bot], [x + hk, bot]]).flat() });   // haczyki bywają długie, nad cyframi
+      const hk = u(10, H * 1.1); strokes.push({ c: 'pen', p: dense([[x + hk, top - 4], [x, top - 4], [x, bot], [x + hk, bot]]).flat() });
       rows.forEach((r, i) => r.forEach((c, j) => { let xx = x + H * .35 + j * cw; for (const ch of c) xx += put(ch, xx, top + i * H * .9, H * .7) }));
       const xr = x + w + H * .3; strokes.push({ c: 'pen', p: dense([[xr - 10, top - 4], [xr, top - 4], [xr, bot], [xr - 10, bot]]).flat() });
       x = xr + H * .45; continue;
     }
-    if (t.startsWith('[')) {                          // ułamek piętrowy
+    if (t.startsWith('[')) {
       const [n, d] = t.slice(1, -1).split('/'), w = Math.max(n.length, d.length) * H * .62;
       let xn = x + (w - n.length * H * .62) / 2; for (const c of n) xn += put(c, xn, y0 - H * .62, H * .55);
       let xd = x + (w - d.length * H * .62) / 2; for (const c of d) xd += put(c, xd, y0 + H * .55, H * .55);
@@ -77,7 +73,6 @@ function write(text, x0 = 40, y0 = 40, H = 42) {
 const read = s => K.hwRead(s).map(r => r.text.replace(/−/g, '-').replace(/·/g, '*'));
 const want = t => t.replace(/\[([^/]+)\/([^\]]+)\]/g, '$1/$2').replace(/\^(.)/g, '^$1').replace(/×|·/g, '*').replace(/−/g, '-').replace(/,/g, '.').replace(/ /g, '');
 
-// ---------- 1. pojedyncze znaki ----------
 const per = {};
 for (const ch of '0123456789+−=×/()') {
   let good = 0;
@@ -87,7 +82,6 @@ for (const ch of '0123456789+−=×/()') {
 }
 console.log('pojedyncze znaki:', Object.entries(per).map(([c, v]) => `${c} ${Math.round(v * 100)}%`).join(', '));
 
-// ---------- 2. działania ----------
 const exprs = ['2+2=4', '12+7=19', '3·4=12', '7−5', '(2+3)·4', '18/3=6', '9×8', '45−17=28', '100−1', '6·7=42', '2,5+1', '3+[1/2]', '[3/4]=0,75', '2^3=8', '10^2', '(1+2)·(3+4)=21', '56:7=8', '81/9'];
 let good = 0, tot = 0;
 for (const e of exprs) for (let k = 0; k < 12; k++) {
@@ -98,7 +92,6 @@ for (const e of exprs) for (let k = 0; k < 12; k++) {
 console.log(`działania: dobrze ${good} z ${tot} (${Math.round(100 * good / tot)}%)`);
 ok(good / tot >= .85, `działania czytane za słabo: ${good} z ${tot}`);
 
-// ---------- 3. układ strony: dwie linie, dwa działania w jednym rzędzie ----------
 {
   const s = [...write('2+3=5', 40, 40), ...write('4·4=16', 40, 140)];
   const r = K.hwRead(s);
@@ -108,23 +101,18 @@ ok(good / tot >= .85, `działania czytane za słabo: ${good} z ${tot}`);
   const one = K.hwRead(write('2+2=4'))[0];
   ok(one && one.ks.length === write('2+2=4').length, 'odczyt zna swoje kreski');
   ok(one && one.box[0] < one.box[2] && one.box[1] < one.box[3], 'ramka odczytu');
-  // duża obwódka (rysunek) nie jest czytana jako cyfra
   const circle = [{ c: 'red', p: Array.from({ length: 60 }, (_, k) => [300 + 140 * Math.cos(k / 9.4), 300 + 120 * Math.sin(k / 9.4)]).flat() }];
   ok(K.hwRead([...write('2+2=4', 40, 40), ...circle]).every(r => r.text !== '0' || true), 'obwódka');
 }
-// ---------- 3b. macierze w nawiasach i litery ----------
 {
   let good = 0, tot = 0;
-  // linie jednej strony; litera to zmienna tylko wtedy, gdy jest przypisana („B = …”), inaczej cyfra
   for (const [e, w] of [[['A={1 2|3 4}'], ['A=[1 2; 3 4]']], [['{2 4|1 2}·{1 3|5 6}'], ['[2 4; 1 2]*[1 3; 5 6]']], [['B={1 2|3 4}', 'B·4='], ['B=[1 2; 3 4]', 'B*4=']],
     [['{12 3|4 56}'], ['[12 3; 4 56]']], [['C=5', 'C+2'], ['C=5', 'C+2']], [['8+1'], ['8+1']], [['A·5=', 'A={1 2|3 4}'], ['A*5=', 'A=[1 2; 3 4]']], [['A={1 3|4 5}  B={2 3|4 8}', 'A·B'], ['A=[1 3; 4 5]', 'B=[2 3; 4 8]', 'A*B']],
-    // C pisane jak wysoki nawias: na początku przypisania to litera, a dalej zdefiniowana zmienna
     [['(={2 2|3 4}', '(·2='], ['C=[2 2; 3 4]', 'C*2=']]])
     for (let k = 0; k < 8; k++) { tot++; const r = read(e.flatMap((l, i) => write(l, 40, 60 + i * 150))); if (JSON.stringify(r) === JSON.stringify(w)) good++; else if (k < 1) console.log('  odczyt', JSON.stringify(e), '→', JSON.stringify(r)) }
   console.log(`macierze i litery: dobrze ${good} z ${tot}`);
   ok(good / tot >= .75, `macierze i litery czytane za słabo: ${good} z ${tot}`);
 }
-// ---------- 3c. rysunek z telefonu: „=” tuż przy [ i dwójka przy długim haczyku ] nie są haczykami nawiasów ----------
 {
   const seg = (a, b, n = 8) => Array.from({ length: n + 1 }, (_, k) => [a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n]);
   const poly = pts => ({ c: 'pen', p: pts.slice(1).reduce((acc, q, i) => acc.concat(seg(pts[i], q).flat()), []) });
@@ -137,7 +125,6 @@ ok(good / tot >= .85, `działania czytane za słabo: ${good} z ${tot}`);
   }
   ok(good >= 8, `rysunek z telefonu A = [2 2; 2 2]: dobrze ${good} z 10`);
 }
-// ---------- 4. wynik z kalkulatora dla odczytanego działania ----------
 {
   K.LANG.cur = 'pl';
   const r = K.hwRead(write('2+2=4'))[0], c = K.calcText(r.text)[0];

@@ -1,13 +1,3 @@
-// =====================================================================
-//  SYSTEMY OPERACYJNE: rodzaje odpowiedzi, zadania i wpis do rejestru przedmiotów
-// =====================================================================
-//  Zadania z poleceniami (kind:'cmd') sprawdza symulator z linux.js: polecenia ucznia
-//  wykonują się na świeżym systemie, a potem sprawdzany jest stan (użytkownicy, grupy,
-//  prawa, ACL, zapora) albo wynik ostatniego polecenia (grep). Przechodzi każde
-//  poprawne rozwiązanie, nie tylko wzorcowe.
-//  Pytania testowe: kind:'choice' (jedna albo kilka odpowiedzi), uzupełnianie: kind:'fill'.
-// =====================================================================
-
 const mix=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
 const pickN=(a,n)=>mix(a.slice()).slice(0,n);
 const C=s=>`<code>${escH(s)}</code>`;
@@ -18,7 +8,6 @@ const SO_G=['studenci','projekt','dev','admini','zespol','grupa1','kolo'];
 const SO_D=['zaliczam','raporty','dane','projekty_shared','wspolny','archiwum','config','public','dokumenty'];
 const SO_F=['serwer.cfg','notatki.txt','raport.txt','plan.txt','baza.db','klucz.txt'];
 
-// ---------- terminal jako HTML ----------
 function termHtml(tr,max=0){
   const L=[];
   for(const x of tr){
@@ -32,7 +21,6 @@ function termHtml(tr,max=0){
 }
 const runView=(S,cmds,max)=>termHtml(simScript(S,cmds.join('\n')),max);
 
-// ---------- rodzaje odpowiedzi ----------
 KINDS.cmd={
   note:()=>$t('Każde polecenie w osobnej linii. Polecenia wykonują się na symulowanym Ubuntu jako użytkownik <code>student</code>, który może używać <code>sudo</code>.','One command per line. The commands run on a simulated Ubuntu as the user <code>student</code>, who may use <code>sudo</code>.'),
   fields:()=>['c'],
@@ -84,8 +72,6 @@ KINDS.fill={
   inp:(a,inp)=>{let k=0;return `<div class="fill">${a.tpl.map(x=>typeof x==='string'?escH(x):`<u>${inpT(inp[k++])}</u>`).join('')}</div>`}
 };
 
-// ---------- budowanie zadań ----------
-// zadanie z poleceniami: model (wzorcowe polecenia), why (wyjaśnienie każdego), inspect (jak sprawdzić), look (na co patrzeć)
 function cmdTask(o){
   const sec=$t('Rozwiązanie w terminalu','Solution in the terminal');
   const ans={kind:'cmd',setup:o.setup,verify:o.verify,model:o.model,inspect:o.inspect,ph:o.ph||o.model[0].replace(/ .*/,' …'),rows:Math.max(3,o.model.length+1)};
@@ -108,7 +94,6 @@ function cmdTask(o){
   };
   return {q:o.q,body:(o.body||'')+start,ans,get sol(){return sol()},fr,hint:o.hint};
 }
-// pytanie testowe: q, body, opts [[pl,en] albo HTML], ok (indeksy poprawnych), expl
 function quizTask(o){
   const idx=mix(o.opts.map((_,k)=>k)),opts=idx.map(k=>T2(o.opts[k])),ok=idx.map((k,i)=>o.ok.includes(k)?i:-1).filter(i=>i>=0);
   const expl=o.expl?T2(o.expl):'';
@@ -116,19 +101,15 @@ function quizTask(o){
     sol:`<p>${ok.length>1?$t('Poprawne odpowiedzi:','Correct answers:'):$t('Poprawna odpowiedź:','Correct answer:')}</p><ul class="rules">${ok.map(k=>`<li>${opts[k]}</li>`).join('')}</ul>${expl?`<p>${expl}</p>`:''}`,
     hint:o.hint?T2(o.hint):''};
 }
-// uzupełnianie: tpl ['tekst', {acc:['odp',…], w}, 'tekst', …]
 function fillTask(o){
   const expl=o.expl?T2(o.expl):'',ans={kind:'fill',tpl:o.tpl,expl};
   return {q:T2(o.q),body:o.body?T2(o.body):'',ans,sol:KINDS.fill.show(ans)+(expl?`<p>${expl}</p>`:''),hint:o.hint?T2(o.hint):''};
 }
 
-// ---------- system startowy ----------
-// katalog domowy studenta: miasta.txt, config/, public/, projekty_shared/, serwer.cfg; użytkownik adam
 function soBase(o={}){
   return simNew({users:['adam',...(o.users||[])],groups:o.groups||[],dirs:[{name:'config',mode:0o755},{name:'public',mode:0o755},{name:'projekty_shared',mode:0o775},...(o.dirs||[])],files:[{name:'serwer.cfg',mode:0o644,text:'port=8080\n'},...(o.files||[])]});
 }
 
-// ---------- 1. użytkownicy i grupy ----------
 function soUsers(){
   const v=rnd(0,2);
   if(v===0){
@@ -184,7 +165,6 @@ const SO_USERS_Q=[
     expl:['Zamiast <code>usermod -aG</code> można też użyć <code>gpasswd -a</code> albo <code>adduser użytkownik grupa</code>.','Instead of <code>usermod -aG</code> you can also use <code>gpasswd -a</code> or <code>adduser user group</code>.']})},
 ];
 
-// ---------- 2. prawa dostępu ----------
 const OCT=m=>m.toString(8).padStart(3,'0');
 const SYMB=m=>permStr(m>>6&7)+permStr(m>>3&7)+permStr(m&7);
 function soChmod(){
@@ -242,7 +222,6 @@ function soPermQ(){
   ])();
 }
 
-// ---------- 3. ACL ----------
 function soAcl(){
   const v=rnd(0,4);
   const show=n=>[`getfacl ${n}`];
@@ -327,7 +306,6 @@ function soAclQ(){
   ])();
 }
 
-// ---------- 4. grep ----------
 const LET=(()=>{const c={};MIASTA.forEach(m=>{c[m[0]]=(c[m[0]]||0)+1});return c})();
 function grepOut(cmd){return simScript(simNew(),cmd).filter(x=>x.t==='out').map(x=>x.s)}
 function soGrep(){
@@ -371,7 +349,6 @@ function soGrepQ(){
   ])();
 }
 
-// ---------- 5. sieć i SSH ----------
 function soIp(){const a=pick([193,192,10,172]),b=a===192?168:rnd(0,250),c=rnd(0,250);return {net:`${a}.${b}.${c}`,ws:rnd(10,99),srv:1,pre:24}}
 function soNetplan(){
   const I=soIp(),ip=`${I.net}.${I.ws}`,gw=`${I.net}.${I.srv}`,ifc=pick(['enp0s3','ens33','eth0']);
@@ -430,7 +407,6 @@ function soUfw(){
   });
 }
 
-// ---------- rejestr ----------
 const SO_TOPICS=[
   {id:'so-users',sec:'Użytkownicy i grupy',name:'Tworzenie i grupy',en:'Creating users and groups',gen:soUsers},
   {id:'so-users-q',sec:'Użytkownicy i grupy',name:'Pytania',en:'Questions',gen:()=>pick(SO_USERS_Q)()},

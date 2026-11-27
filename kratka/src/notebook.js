@@ -1,17 +1,4 @@
-// =====================================================================
-//  Zeszyt: kartka w kratkę do pisania palcem (rysikiem, myszą) albo z klawiatury
-// =====================================================================
-//  Jeden zeszyt dla wszystkich przedmiotów (#zeszyt): strony z tekstem i kreskami, zapisane w przeglądarce
-//  (localStorage, klucz kratka-zeszyt; strony z dawnych zeszytów przedmiotów przenoszą się do niego same).
-//  Klawiatura: <textarea> z przezroczystymi literami leży nad <pre>, który pokazuje ten sam tekst
-//  i wynik każdej linii (calcText z calc.js). Oba mają tę samą czcionkę i wysokość linii (24 px = kratka).
-//  Pióro: kreski na <canvas> nad tekstem. Jeden palec pisze, dwa przewijają; gdy w grze jest rysik,
-//  palec tylko przewija, żeby dłoń oparta o ekran nie pisała.
-//  Pismo piórem czyta hw.js: odczyt i wynik stają obok linii, a kliknięty odczyt można poprawić.
-//  Wyniki można wyłączyć (liczysz sam); Rozpisz pokazuje rachunek krok po kroku (steps.js) w odtwarzaczu.
-//  Ten sam zeszyt otwiera się jako Brudnopis obok zadania (Ćwiczenia, Powtórka, Sprawdzian).
-// =====================================================================
-const NB_CELL=24,NB_PAD=58,NB_MAX_H=12000;   // NB_PAD: lewy odstęp tekstu (padding-left .nb-text w style.css)
+const NB_CELL=24,NB_PAD=58,NB_MAX_H=12000;
 const NB={d:null,res:[],recs:[],mode:'type',tool:'pen',undo:[],redo:[],txt:null,saveT:0,liveT:0,draw:null,erase:null,
   touches:new Map(),pan:false,sawPen:false,dpr:1,W:0,H:0,where:'home',at:null,opener:null,
   show:true,shown:new Set(),read:true,hw:[],hwT:0,hwCache:new Map(),hwOpen:-1};
@@ -22,12 +9,10 @@ const nbPage=()=>NB.d.pages[NB.d.page];
 const nbTa=$('#nbText'),nbCv=$('#nbInk'),nbSc=$('#nbScroll');
 const nbNarrow=()=>window.matchMedia('(max-width:979px)').matches;
 
-// ---------- zapis w przeglądarce ----------
 const nbJson=k=>{try{return JSON.parse(store.get(k,'null'))}catch(e){return null}};
 function nbLoad(){
   let d=nbJson(NB_KEY);
   if(!d||!Array.isArray(d.pages)){
-    // pierwsze otwarcie wspólnego zeszytu: przenosimy strony z dawnych zeszytów przedmiotów (bez nietkniętych przykładów)
     const old=['algebra','fizyka','so'].flatMap(id=>{const o=nbJson('kratka-zeszyt-'+id);return o&&Array.isArray(o.pages)?o.pages:[]})
       .filter(p=>p&&((p.strokes||[]).length||String(p.text||'').trim()&&!CALC_OLD_EXAMPLES.includes(p.text)));
     d={pages:old.length?old:[{text:calcExample(),strokes:[]}],page:0,deg:true};
@@ -49,7 +34,6 @@ const nbSaveSoon=()=>{clearTimeout(NB.saveT);NB.saveT=setTimeout(nbSave,500)};
 window.addEventListener('pagehide',()=>{nbTxtCommit();nbSave()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')nbSave()});
 
-// ---------- otwieranie, strony, nagłówek ----------
 function nbOpen(){
   if(NB.d){nbLayout();return}
   NB.d=nbLoad();NB.undo=[];NB.redo=[];
@@ -105,9 +89,6 @@ $('#nbDel').onclick=()=>nbAsk($t('Usunąć tę stronę razem z rysunkami? Tego n
   NB.d.page=Math.min(k,NB.d.pages.length-1);nbShowPage(true);nbSave();
 });
 
-// ---------- tekst i wyniki ----------
-// wynik linii do pokazania: wszystko, gdy wyniki są włączone; inaczej błędy, uwagi, samo „zgadza się / nie”
-// i wyniki linii odsłoniętych przyciskiem Wynik
 const nbLineKey=(i,l)=>i+':'+l;
 function nbShowRes(r,key){
   if(!r)return '';
@@ -123,7 +104,6 @@ function nbCalc(){
     return txt+nbShowRes(recs[i],nbLineKey(i,l));
   }).join('\n')+'\n';
 }
-// zmiany tekstu trafiają do historii paczkami: to, co wpisane bez dłuższej przerwy, cofa się naraz
 function nbTxtCommit(){
   const T=NB.txt;if(!T)return;clearTimeout(T.t);NB.txt=null;
   const P=NB.d&&NB.d.pages[T.page];if(P&&P.text!==T.a)nbHist({page:T.page,op:'text',a:T.a,b:P.text});
@@ -134,26 +114,21 @@ nbTa.addEventListener('input',()=>{
   if(!NB.txt){NB.txt={page:pg,a:P.text,t:0};NB.redo=NB.redo.filter(x=>x.page!==pg)}
   P.text=nbTa.value;clearTimeout(NB.txt.t);NB.txt.t=setTimeout(nbTxtCommit,1000);
   nbCalc();nbLayout();nbBtns();nbSaveSoon();
-  // przeglądarka sama przewija kartkę za kursorem; po powrocie do krótkiej linii wracamy do marginesu
   const v=nbTa.value.slice(0,nbTa.selectionEnd),col=v.length-v.lastIndexOf('\n')-1;
   if(nbSc.scrollLeft&&NB_PAD+col*nbCw()+NB_CELL<nbSc.clientWidth)nbSc.scrollLeft=0;
   clearTimeout(NB.liveT);NB.liveT=setTimeout(nbAnnounce,700);
 });
-// szerokość znaku czcionki kartki (stała, bo czcionka jest o stałej szerokości)
 function nbCw(){
   if(!NB.cw){const m=document.createElement('span');m.textContent='0'.repeat(20);$('#nbMirror').appendChild(m);NB.cw=m.getBoundingClientRect().width/20||9.6;m.remove()}
   return NB.cw;
 }
-// czytnik ekranu: wynik linii, w której stoi kursor
 function nbAnnounce(){
   if(document.activeElement!==nbTa)return;
   const r=NB.res[nbTa.value.slice(0,nbTa.selectionStart).split('\n').length-1];
   $('#nbLive').textContent=r?plain(r.html):'';
 }
-// pole tekstowe jest tak duże jak kartka, więc samo nie przewija; przewija się kartka
 nbTa.addEventListener('scroll',()=>{if(nbTa.scrollTop||nbTa.scrollLeft){nbTa.scrollTop=0;nbTa.scrollLeft=0}});
 nbTa.addEventListener('beforeinput',e=>{if(e.inputType==='historyUndo'||e.inputType==='historyRedo'){e.preventDefault();nbUndo(e.inputType==='historyRedo')}});
-// rząd klawiszy z symbolami, których nie ma na klawiaturze telefonu; nie zabiera kursora z kartki
 ['pointerdown','mousedown'].forEach(ev=>$('#nbKeys').addEventListener(ev,e=>{if(e.target.closest('[data-k]'))e.preventDefault()}));
 $('#nbKeys').addEventListener('click',e=>{
   const b=e.target.closest('[data-k]');if(!b)return;
@@ -164,7 +139,6 @@ $('#nbKeys').addEventListener('click',e=>{
   if(/\(\)$|\[\]$/.test(k)){const p=nbTa.selectionEnd-1;nbTa.setSelectionRange(p,p)}
 });
 
-// ---------- wymiary kartki ----------
 function nbBox(s){
   if(!s.bb){let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;for(let i=0;i<s.p.length;i+=2){x1=Math.min(x1,s.p[i]);x2=Math.max(x2,s.p[i]);y1=Math.min(y1,s.p[i+1]);y2=Math.max(y2,s.p[i+1])}
     Object.defineProperty(s,'bb',{value:[x1,y1,x2,y2],enumerable:false,writable:true,configurable:true})}
@@ -176,7 +150,6 @@ function nbLayout(){
   let mx=0,my=0;for(const s of P.strokes){const b=nbBox(s);if(b[2]>mx)mx=b[2];if(b[3]>my)my=b[3]}
   const up=v=>Math.ceil(v/NB_CELL)*NB_CELL;
   const W=up(Math.max(nbSc.clientWidth,$('#nbMirror').offsetWidth+NB_CELL*6,mx+NB_CELL*2));
-  // piórem trzeba mieć dokąd przewinąć, więc kartka jest trochę wyższa niż okno
   const H=Math.min(NB_MAX_H,up(Math.max(nbSc.clientHeight+(NB.mode==='pen'?NB_CELL*6:0),(lines+7)*NB_CELL,my+NB_CELL*8,NB.H||0)));
   if(W!==NB.W||H!==NB.H){
     NB.W=W;NB.H=H;
@@ -191,19 +164,16 @@ let nbRT=0;
 window.addEventListener('resize',()=>{clearTimeout(nbRT);nbRT=setTimeout(()=>{if(NB.d&&$('#nb').offsetParent){NB.H=0;nbLayout()}nbVV()},120)});
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{NB.cw=0;if(NB.d)nbLayout()});
 let nbHwST=0;nbSc.addEventListener('scroll',()=>{if(NB.hw.length){clearTimeout(nbHwST);nbHwST=setTimeout(nbHwPaint,120)}},{passive:true});
-// w trybie pióra kartka rośnie, gdy przewijasz do jej końca
 nbSc.addEventListener('scroll',()=>{
   if(NB.mode==='pen'&&NB.d&&NB.H<NB_MAX_H&&nbSc.scrollTop+nbSc.clientHeight>NB.H-NB_CELL*3){NB.H+=NB_CELL*12;nbLayout()}
 },{passive:true});
 
-// ---------- rysowanie ----------
 const nbCss=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim()||'#2343b5';
 function nbStroke(ctx,s,col){
   const p=s.p,w=s.w||NB_TOOLS[s.c].w;
   ctx.strokeStyle=ctx.fillStyle=col[s.c];ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';
   if(p.length<=2){ctx.beginPath();ctx.arc(p[0],p[1],w/2,0,7);ctx.fill();return}
   ctx.beginPath();ctx.moveTo(p[0],p[1]);
-  // gładka linia: łuki przez środki kolejnych odcinków
   for(let i=2;i<p.length-2;i+=2)ctx.quadraticCurveTo(p[i],p[i+1],(p[i]+p[i+2])/2,(p[i+1]+p[i+3])/2);
   ctx.lineTo(p[p.length-2],p[p.length-1]);ctx.stroke();
 }
@@ -212,7 +182,6 @@ function nbDraw(){
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,nbCv.width,nbCv.height);ctx.setTransform(NB.dpr,0,0,NB.dpr,0,0);
   const col={};for(const k in NB_TOOLS)col[k]=nbCss(NB_TOOLS[k].c);
   const st=nbPage().strokes;
-  // zakreślacz pod tuszem
   for(const s of st)if(s.c==='hl')nbStroke(ctx,s,col);
   if(NB.draw&&NB.draw.s.c==='hl')nbStroke(ctx,NB.draw.s,col);
   for(const s of st)if(s.c!=='hl')nbStroke(ctx,s,col);
@@ -220,7 +189,6 @@ function nbDraw(){
 }
 if(window.matchMedia)matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(NB.d)nbDraw()});
 function nbPt(e){const r=nbCv.getBoundingClientRect();return [Math.round((e.clientX-r.left)*10)/10,Math.round((e.clientY-r.top)*10)/10]}
-// mniej punktów w zapisie (Ramer–Douglas–Peucker), kształt zostaje
 function nbSimplify(p,eps){
   const n=p.length/2;if(n<3)return p;
   const keep=new Uint8Array(n);keep[0]=keep[n-1]=1;const st=[[0,n-1]];
@@ -251,7 +219,6 @@ nbCv.addEventListener('pointerdown',e=>{
   if(e.pointerType==='pen')NB.sawPen=true;
   if(e.pointerType==='touch'){
     NB.touches.set(e.pointerId,[e.clientX,e.clientY]);
-    // dwa palce przewijają; przy rysiku palec zawsze tylko przewija
     if(NB.sawPen||NB.touches.size>=2){
       if(NB.draw&&NB.draw.touch){NB.draw=null;nbDraw()}
       if(NB.erase&&NB.erase.touch)nbEraseEnd();
@@ -263,7 +230,7 @@ nbCv.addEventListener('pointerdown',e=>{
   const [x,y]=nbPt(e);
   if(NB.tool==='erase'||e.pointerType==='pen'&&(e.button===5||(e.buttons&32))){NB.erase={id:e.pointerId,touch:e.pointerType==='touch',del:[]};nbEraseAt(x,y);return}
   NB.draw={id:e.pointerId,touch:e.pointerType==='touch',s:{c:NB.tool,p:[x,y],id:nbId()},x0:e.clientX,y0:e.clientY,t0:performance.now()};
-  $('#nbHw').classList.add('dim');   // odczyty bledną, żeby dało się pisać dalej, także po nich
+  $('#nbHw').classList.add('dim');
   nbDraw();
 });
 nbCv.addEventListener('pointermove',e=>{
@@ -281,7 +248,6 @@ nbCv.addEventListener('pointermove',e=>{
   for(const ev of evs){
     const [x,y]=nbPt(ev),lx=p[p.length-2],ly=p[p.length-1];if(Math.hypot(x-lx,y-ly)<0.8)continue;
     p.push(x,y);moved=true;
-    // tusz rysujemy od razu kawałkami; półprzezroczysty zakreślacz trzeba rysować w całości
     if(D.s.c!=='hl'){ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(x,y);ctx.stroke()}
   }
   if(moved&&D.s.c==='hl'&&!D.raf)D.raf=requestAnimationFrame(()=>{D.raf=0;if(NB.draw===D)nbDraw()});
@@ -292,7 +258,6 @@ function nbUp(e){
   const D=NB.draw;if(!D||D.id!==e.pointerId)return;
   NB.draw=null;const s=D.s;$('#nbHw').classList.remove('dim');
   if(e.type==='pointercancel'&&s.p.length<8){nbDraw();return}
-  // krótkie stuknięcie w odczyt (bez ruchu) otwiera go, zamiast stawiać kropkę
   if(e.type==='pointerup'&&Math.hypot(e.clientX-D.x0,e.clientY-D.y0)<6&&performance.now()-D.t0<400){
     const k=[...$$('#nbHw .nb-hwc')].findIndex(c=>{const r=c.getBoundingClientRect();return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom});
     if(k>=0){nbDraw();nbHwMenuOpen(k);return}
@@ -305,7 +270,6 @@ function nbUp(e){
 nbCv.addEventListener('pointerup',nbUp);nbCv.addEventListener('pointercancel',nbUp);
 nbCv.addEventListener('lostpointercapture',e=>{if(NB.draw&&NB.draw.id===e.pointerId)nbUp(e)});
 
-// ---------- cofnij i ponów (osobno dla każdej strony) ----------
 function nbApply(op,back){
   const P=NB.d.pages[op.page];if(!P)return;const st=P.strokes;
   if(op.op==='add'){if(back){const k=st.lastIndexOf(op.s);if(k>=0)st.splice(k,1)}else st.push(op.s)}
@@ -313,7 +277,6 @@ function nbApply(op,back){
   else if(op.op==='text')P.text=back?op.a:op.b;
   else if(op.op==='clear'){if(back){P.strokes=op.strokes.slice();P.text=op.text}else{P.strokes=[];P.text=''}}
 }
-// miejsce kursora po cofnięciu: koniec zmienionego fragmentu
 const nbChangeEnd=(a,b)=>{let i=0;while(i<a.length&&i<b.length&&a[i]===b[i])i++;let j=0;while(j<a.length-i&&j<b.length-i&&a[a.length-1-j]===b[b.length-1-j])j++;return b.length-j};
 function nbUndo(redo){
   if(!NB.d)return;nbTxtCommit();
@@ -330,12 +293,11 @@ document.addEventListener('keydown',e=>{
   if(!NB.d||!(e.ctrlKey||e.metaKey)||e.altKey||e.defaultPrevented)return;
   const k=(e.key||'').toLowerCase();if(k!=='z'&&k!=='y')return;
   const t=e.target;
-  if(t!==nbTa&&t.closest&&t.closest('input,textarea,select,[contenteditable]'))return;   // inne pola cofają po swojemu
+  if(t!==nbTa&&t.closest&&t.closest('input,textarea,select,[contenteditable]'))return;
   if(!$('#nb').offsetParent)return;
   e.preventDefault();nbUndo(k==='y'||e.shiftKey);
 });
 
-// ---------- tryb, przybory, kąty ----------
 function nbMode(m,user){
   m=m==='pen'?'pen':'type';NB.mode=m;
   $('#nb').classList.toggle('nb-pen',m==='pen');
@@ -344,7 +306,6 @@ function nbMode(m,user){
   if(m==='pen'){nbTxtCommit();if(document.activeElement===nbTa)nbTa.blur()}
   if(NB.d)nbLayout();
   if(user){store.set('kratka-zeszyt-tryb',m);if(m==='type')nbTa.focus({preventScroll:true})}
-  // na ekranie dotykowym raz mówimy, jak przewijać kartkę, kiedy pisze się palcem
   if(user&&m==='pen'&&window.matchMedia('(pointer:coarse)').matches&&store.get('kratka-zeszyt-palce')!=='1'){
     store.set('kratka-zeszyt-palce','1');
     show($('#nbMsg'),'info',$t('Jednym palcem piszesz, a dwoma przewijasz kartkę. Zeszyt czyta cyfry i znaki działań; odczyt i wynik pojawią się obok.','Write with one finger and scroll the page with two. The notebook reads digits and operation signs; the reading and the result appear next to them.'));
@@ -358,13 +319,10 @@ $('#nbTools').addEventListener('click',e=>{
 });
 $('#nbDeg').addEventListener('click',e=>{const b=e.target.closest('[data-deg]');if(!b||!NB.d)return;NB.d.deg=b.dataset.deg==='1';nbHead();nbCalc();nbLayout();nbSaveSoon()});
 
-// ---------- Brudnopis: ten sam zeszyt obok zadania ----------
 function nbGiven(html){
   const d=document.createElement('div');d.innerHTML=html.replace(/<\/(li|div|p|td)>/g,' $&');
   const pre=[],seenM=new Set(),num=s=>s.replace(/−/g,'-').replace(/\s+/g,''),cols=e=>+(((e.getAttribute('style')||'').match(/repeat\((\d+)/)||[])[1]||0);
-  // ułamki piętrowe → a/b
   d.querySelectorAll('.fr').forEach(f=>{const [a,b]=[...f.children].map(x=>x.textContent.trim());f.replaceWith(document.createTextNode(`${a}/${b}`))});
-  // macierze z nazwą: A = [1 2; 3 4]
   d.querySelectorAll('.gv').forEach(g=>{
     const m=g.querySelector('.mat');if(!m)return;
     const lab=(g.textContent.split('=')[0]||'').trim(),n=cols(m),c=[...m.children].map(x=>num(x.textContent));
@@ -373,7 +331,6 @@ function nbGiven(html){
     if(!seenM.has(lab)){seenM.add(lab);pre.push(`${lab} = [${rows.join('; ')}]`)}
     g.remove();
   });
-  // układ równań: współczynniki A i prawa strona b (kolumny: x, y, z albo x1, x2, …)
   d.querySelectorAll('.sys').forEach(sy=>{
     const n=cols(sy),c=[...sy.children].map(x=>x.textContent.trim());if(!n)return;
     const rows=[],names=[];
@@ -409,8 +366,6 @@ function nbDrawerOpen(task,opener){
   $('#nbd').hidden=false;document.documentElement.classList.add('nbd-open');
   $$('[data-pad]').forEach(b=>{b.classList.add('on');b.setAttribute('aria-pressed','true')});
   if(nbNarrow())document.body.style.overflow='hidden';
-  // pisze się od nowej linii pod tym, co już jest na stronie
-  // każde zadanie ma swoją stronę: wracając do zadania wracasz do jego strony, nowe zadanie to nowa strona
   if(task){
     const d=document.createElement('div');d.innerHTML=task.q;const q=d.textContent.replace(/\s+/g,' ').trim();
     const key=q.slice(0,200);let k=NB.d.pages.findIndex(x=>x.task===key);
@@ -421,7 +376,6 @@ function nbDrawerOpen(task,opener){
       nbTxtCommit();
       if(empty){NB.d.pages[NB.d.page]=pg;k=NB.d.page}else{NB.d.pages.push(pg);k=NB.d.pages.length-1}
     }
-    // strona zadania z wcześniejszej wersji zeszytu (bez danych z treści): dopisujemy je raz
     const T=NB.d.pages[k];
     if(!T.given){T.given=1;const have=T.text.split('\n'),add=nbGiven(task.q+' '+(task.body||'')).filter(l=>!have.includes(l));
       if(add.length)T.text=`# ${$t('dane z zadania','given')}\n${add.join('\n')}\n`+(T.text.trim()?T.text:'')}
@@ -450,7 +404,6 @@ document.addEventListener('click',e=>{
   const id=b.dataset.pad,q=document.getElementById(id+'Q'),body=document.getElementById(id+'Body');
   nbDrawerOpen(q?{q:q.innerHTML,body:body?body.innerHTML:''}:null,b);
 });
-// telefon z otwartą klawiaturą: panel ma wysokość widocznej części ekranu
 function nbVV(){
   const d=$('#nbd'),v=window.visualViewport;
   if(d.hidden||!v||!nbNarrow()){d.style.top=d.style.height=d.style.bottom='';d.classList.remove('nbd-kb');return}
@@ -459,7 +412,6 @@ function nbVV(){
 }
 if(window.visualViewport){visualViewport.addEventListener('resize',nbVV);visualViewport.addEventListener('scroll',nbVV)}
 
-// ---------- podpięcie do szkieletu ----------
 HOOKS.start.push(()=>nbMode(store.get('kratka-zeszyt-tryb')==='pen'?'pen':'type',false));
 HOOKS.view.push((S,view)=>{
   const at=view==='zeszyt'?'zeszyt':S.id+'-'+view;
@@ -470,12 +422,10 @@ HOOKS.view.push((S,view)=>{
 });
 HOOKS.lang.push(()=>{if(NB.d){nbHead();nbCalc();nbLayout();nbHwRun()}});
 
-// ---------- kartka na cały ekran (pasek zeszytu zostaje, reszta strony się chowa) ----------
 function nbFull(on){
   NB.full=!!on;$('#nb').classList.toggle('nb-full',NB.full);document.documentElement.classList.toggle('nb-full-on',NB.full);
   $('#nbFull').setAttribute('aria-pressed',NB.full);$('#nbFull').classList.toggle('on',NB.full);
   const de=document.documentElement;
-  // na telefonie chowa też pasek adresu przeglądarki, jeśli przeglądarka pozwala
   if(NB.full&&!document.fullscreenElement&&de.requestFullscreen)de.requestFullscreen({navigationUI:'hide'}).catch(()=>{});
   if(!NB.full&&document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
   if(!$('#nbd').hidden)return;
@@ -486,7 +436,6 @@ $('#nbFull').onclick=()=>nbFull(!NB.full);
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&NB.full)nbFull(false)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&NB.full&&!e.defaultPrevented&&$('#pl').hidden){nbFull(false);e.preventDefault()}});
 
-// ---------- wyniki: od razu albo na żądanie; Rozpisz ----------
 function nbShowMode(on,user){
   NB.show=!!on;$('#nbShow').setAttribute('aria-pressed',NB.show);$('#nbShow').classList.toggle('on',!NB.show);
   $('#nbReveal').hidden=NB.show;
@@ -494,7 +443,6 @@ function nbShowMode(on,user){
   if(NB.d){nbCalc();nbLayout();nbHwPaint()}
 }
 $('#nbShow').onclick=()=>nbShowMode(!NB.show,true);
-// linia z kursorem (dla macierzy w kilku liniach: linia, w której się kończy)
 function nbCaretLine(){
   const t=nbTa.value,i=t.slice(0,nbTa.selectionStart).split('\n').length-1,J=calcJoin(t);
   let k=i;while(k<J.length-1&&J[k]&&J[k].cont)k++;
@@ -517,7 +465,6 @@ function nbExplain(rec,src,name){
 $('#nbExplain').onclick=()=>{
   if(!NB.d)return;nbTxtCommit();
   const t=nbTa.value,a=nbTa.selectionStart,b=nbTa.selectionEnd,k=nbCaretLine(),rec=NB.recs[k],line=t.split('\n')[k]||'';
-  // zaznaczony fragment jednej linii: rozpisujemy tylko jego (np. 3·4 z 2 + 3·4)
   const sel=t.slice(a,b).trim();
   if(sel&&!sel.includes('\n')&&/[\d)]/.test(sel)){
     const L=t.slice(0,a).split('\n').length-1,R0=NB.recs.find((r,j)=>r&&j>=L)||{};
@@ -529,7 +476,6 @@ $('#nbExplain').onclick=()=>{
   nbExplain(rec,undefined,line.replace(/(^|\s)(#|\/\/).*$/,'').trim());
 };
 
-// ---------- pismo piórem: odczyt, wynik obok, poprawianie ----------
 function nbReadMode(on,user){
   NB.read=!!on;$('#nbRead').setAttribute('aria-pressed',NB.read);$('#nbRead').classList.toggle('on',NB.read);
   if(user)store.set('kratka-zeszyt-pismo',NB.read?'1':'0');
@@ -537,7 +483,6 @@ function nbReadMode(on,user){
 }
 $('#nbRead').onclick=()=>nbReadMode(!NB.read,true);
 const nbHwSoon=()=>{clearTimeout(NB.hwT);NB.hwT=setTimeout(nbHwRun,700)};
-// odczyt działania: liczymy go osobno (bez zmiennych z kartki); bez działania albo „=” to nie rachunek
 const nbHwMath=text=>/[+\-−·*×/:^=]/.test(text.replace(/^[−-]/,''));
 function nbHwRun(){
   clearTimeout(NB.hwT);NB.hw=[];
@@ -545,16 +490,13 @@ function nbHwRun(){
   const P=nbPage(),st=P.strokes.filter(s=>s.c!=='hl');
   if(NB.read&&st.length){
     let found=[];try{found=hwRead(st,NB.hwCache,(P.text.match(/^\s*[ABC]\s*=/gm)||[]).map(x=>x.trim()[0]))}catch(e){found=[]}
-    // linie pisma od góry liczymy razem (i po tekście z klawiatury), więc A = [...] działa w następnej linii
     const rows=found.map(f=>{const key=f.ks.map(k=>st[k].id).sort().join(','),fix=P.hw[key];return {...f,key,text:fix||f.text,show:fix||f.show,fixed:!!fix}}).sort((a,b)=>a.box[1]-b.box[1]);
-    // przypisania z pisma (A = [...]) liczymy przed resztą, nawet jeśli stoją niżej na kartce
     const ord=[...rows.filter(r=>/^[A-Za-z]\w*=/.test(r.text)),...rows.filter(r=>!/^[A-Za-z]\w*=/.test(r.text))];
     const base=P.text.split('\n').length,recs=calcLines(P.text+'\n'+ord.map(r=>r.text).join('\n'),{deg:NB.d.deg});
     rows.forEach(r=>{const rec=recs[base+ord.indexOf(r)];if(rec&&nbHwMath(r.text))NB.hw.push({...r,rec})});
   }
   nbHwPaint();
 }
-// wynik w dymku: krótko, bo dymek stoi na kartce („nie zgadza się, wychodzi 28”)
 function nbHwRes(r,open){
   if(r.kind==='err')return r.html;
   if(r.kind==='check')return open&&!r.ok?`${r.verdict}, ${$t('wychodzi','it is')} ${calcShow(r.lv,r.dec,true).replace(/^[=≈] /,'')}`:r.verdict;
@@ -567,7 +509,6 @@ function nbHwPaint(){
     const r=h.rec,res=nbHwRes(r,NB.show||NB.shown.has('hw:'+h.key));
     return `<button type="button" class="nb-hwc${h.fixed?' fixed':''}" data-hw="${k}" aria-label="${escH($t('Odczyt: ','Reading: ')+plain(h.show))}"><span class="nb-hwt">${escH(h.show)}</span><span class="nb-r ${r.cls||''}${res==='?'?' hid':''}">${res}</span></button>`;
   }).join('');
-  // dymek stoi za działaniem; gdy się tam nie mieści (w widocznej części kartki), idzie pod nie
   const vis=nbSc.scrollLeft+nbSc.clientWidth-6;
   [...L.children].forEach((c,k)=>{
     const h=NB.hw[k],w=c.offsetWidth,right=h.box[2]+12;
@@ -583,7 +524,6 @@ function nbHwMenuOpen(k){
   const r=h.rec,open=NB.show||NB.shown.has('hw:'+h.key);$('#nbHwRes').innerHTML=open||r.kind!=='val'?`<span class="nb-r ${r.cls||''}">${open||r.kind==='err'?r.html:r.verdict}</span>`:'';
   $('#nbHwShow').hidden=NB.show||NB.shown.has('hw:'+h.key)||r.kind==='err';
   m.style.left=Math.max(4,Math.min(h.box[0],NB.W-300))+'px';m.style.top=(h.box[3]+8)+'px';m.hidden=false;
-  // całe okienko ma być widać: przewijamy kartkę, jeśli wystaje pod jej dolną krawędź
   const bot=m.offsetTop+m.offsetHeight+8;if(bot>nbSc.scrollTop+nbSc.clientHeight)nbSc.scrollTop=bot-nbSc.clientHeight;
   inp.focus({preventScroll:true});
 }
@@ -594,7 +534,6 @@ $('#nbHwIn').addEventListener('input',()=>{const h=NB.hw[NB.hwOpen];$('#nbHwSave
 $('#nbHwIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(!$('#nbHwSave').hidden)$('#nbHwSave').click();else nbHwMenuClose()}if(e.key==='Escape'){e.preventDefault();e.stopPropagation();nbHwMenuClose()}});
 $('#nbHwShow').onclick=()=>{const h=NB.hw[NB.hwOpen];if(!h)return;NB.shown.add('hw:'+h.key);const k=NB.hwOpen;nbHwPaint();nbHwMenuOpen(k)};
 $('#nbHwExplain').onclick=()=>{const h=NB.hw[NB.hwOpen];if(h)nbExplain(h.rec,undefined,h.text)};
-// poprawka odczytu: zapamiętujemy ją dla tych kresek i uczymy się kształtu każdego źle odczytanego znaku
 $('#nbHwSave').onclick=()=>{
   const h=NB.hw[NB.hwOpen];if(!h)return;
   const v=$('#nbHwIn').value.trim().replace(/\*/g,'·').replace(/-/g,'−');if(!v)return;
@@ -605,7 +544,6 @@ $('#nbHwSave').onclick=()=>{
 };
 HOOKS.start.push(()=>{nbShowMode(store.get('kratka-zeszyt-wyniki')!=='0',false);nbReadMode(store.get('kratka-zeszyt-pismo')!=='0',false)});
 
-// ---------- PDF: strony zeszytu jako obrazy w pliku PDF (bez bibliotek) ----------
 function nbPageImg(P){
   const C=NB_CELL,lines=P.text.split('\n'),res=calcText(P.text,{deg:NB.d.deg});
   let mx=0,my=0;P.strokes.forEach(s=>{const b=nbBox(s);mx=Math.max(mx,b[2]);my=Math.max(my,b[3])});

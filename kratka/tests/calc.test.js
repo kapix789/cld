@@ -1,4 +1,3 @@
-// Testy kalkulatora zeszytu:  node tests/calc.test.js
 const K=require('./load')(['calcText','calcLines','calcSteps','calcExample','LANG','SUBJECTS','F','M','detF','rnd']);
 let fails=0,checks=0;const ok=(c,m)=>{checks++;if(!c){fails++;if(fails<30)console.log('✗',m)}};
 const plain=h=>String(h).replace(/<sup>(.*?)<\/sup>/g,'^$1').replace(/<sub>(.*?)<\/sub>/g,'_$1').replace(/<[^>]+>/g,'').replace(/&lt;/g,'<').replace(/&amp;/g,'&').replace(/ /g,' ');
@@ -6,7 +5,6 @@ const out=r=>r===null?null:(r.cls?r.cls+': ':'')+plain(r.html);
 const run=(text,o={deg:true})=>K.calcText(text,o).map(out);
 const eq=(text,want,o)=>{const got=run(text,o);ok(JSON.stringify(got)===JSON.stringify(want),`${JSON.stringify(text)}\n   jest:     ${JSON.stringify(got)}\n   powinno:  ${JSON.stringify(want)}`)};
 
-// ---------- pojedyncze linie ----------
 K.LANG.cur='pl';
 for(const [line,want] of [
   ['2+2','= 4'],['2 + 2 =','= 4'],['1/2 + 1/3','= 5/6 ≈ 0,8333'],['1/4+1/4','= 1/2 = 0,5'],['0.1+0.2','= 0,3'],['9,81*0,5','= 4,905'],
@@ -24,15 +22,12 @@ for(const [line,want] of [
   ['10/3 = 3,34','bad: nie zgadza się: lewa strona ≈ 3,33333'],['2/3 + 1/4 = 10/12','bad: nie zgadza się: lewa strona = 11/12, prawa = 5/6'],['7/2 = 3','bad: nie zgadza się: lewa strona = 7/2'],
   ['2/3 : 4/5','= 5/6 ≈ 0,8333'],['6/2/3','= 1'],['2^1/2','= 1'],['1/2^2','= 1/4 = 0,25'],['2 / 3','= 2/3 ≈ 0,6667'],['3·1/2','= 3/2 = 1,5'],['tg(45)·2/3','= 2/3 ≈ 0,6667'],
   ['a) 3·4','= 12'],['Pole: 3*4','= 12'],['2.  7*6','= 42'],
-  // tekst zostaje tekstem
   ['Zadanie 2',null],['1. Oblicz pole',null],['do domu',null],['Wynik: dobry',null],['5 2',null],['2 jabłka',null],['2x = 10',null],['f(x) = 2x + 1',null],
   ['Odp. 12 m',null],['e',null],['# 2+2',null],['',null],['   ',null],['x == 2',null],['=',null],
-  // same liczby (także z jednostką) nie dostają wyniku
   ['5',null],['2,5',null],['−3',null],['5 kg',null],['a = 4',null],['g = 9,81 m/s²',null],
   ['2·10^3 kg','= 2000 kg'],['72 km/h / 3,6','err: nieznana zmienna km'],
 ])eq(line,[want]);
 
-// ---------- linie zależne od siebie ----------
 for(const [text,want] of [
   ['v0 = 72/3,6\na = 4 m/s²\ns = v0^2/(2a)\nt = 2v0·sin(30°)/9,81',['= 20',null,'= 50','≈ 2,03874']],
   ["A = [2 1; 5 3]\ndet(A)\n|A|\nA^-1\nA⁻¹\ninv(A)\nAᵀ\nA'\nA^T\nA*A^-1\n2A\nA+A\nA^2\nrz(A)\ntr(A)\nrref(A)",
@@ -48,7 +43,6 @@ for(const [text,want] of [
   ['v = 72 km/h\nv/3,6',[null,'= 20']],
   ['r = 4\nw = 2\nx = 1\nr+w+x\nr+x',[null,null,null,'= 7','= 5']],
   ['jabłka = 3\n2 jabłka',[null,'= 6']],
-  // macierz w kilku liniach i zapis bez „=”
   ['A = [1 2 3\n4 5 6\n7 8 10]\ndet(A)',[null,null,'note: macierz 3×3','= −3']],
   ['A = [\n1 0\n0 1\n]\nA*2',[null,null,null,'note: macierz 2×2','= [2 0; 0 2]']],
   ['B[1 2; 3 4]\nB^-1',['note: macierz 2×2','= [−2 1; 3/2 −1/2]']],
@@ -57,23 +51,19 @@ for(const [text,want] of [
   ['A = [1 2\n# komentarz w środku\n3 4]\ndet A',[null,null,'note: macierz 2×2','= −2']],
   ['[1 2\nx = 3\n2x',[null,null,'= 6']],
   ['det[1 2; 3 4]',['= −2']],
-  // „A =” w osobnej linii, macierz od następnej
   ['A =\n[4 2 1\n4 3 2\n1 4 5\n]\ndet(A)',[null,null,null,null,'note: macierz 3×3','= 5']],
   ['B =\n[1 2; 3 4]\nB^T',[null,'note: macierz 2×2','= [1 3; 2 4]']],
   ['C =\n\n[1 0\n0 1]\ndet C',[null,null,null,'note: macierz 2×2','= 1']],
   ['x =\n5',[null,null]],
 ])eq(text,want);
 
-// ---------- kąty w radianach ----------
 for(const [line,want] of [['sin(30)','≈ −0,988032'],['sin(30°)','= 1/2 = 0,5'],['sin(pi/6)','= 1/2 = 0,5'],['arctg(1)','≈ 0,785398'],['cos(π)','= −1']])eq(line,[want],{deg:false});
 
-// ---------- po angielsku ----------
 K.LANG.cur='en';
 for(const [line,want] of [['1/2 + 1/3','= 5/6 ≈ 0.8333'],['2^32','= 4,294,967,296'],['9.81*0.5','= 4.905'],['9,81*0,5','= 4.905'],['1/0','err: division by 0'],
   ['2/3 + 1/4 = 11/12','ok: correct'],['10/3 = 3.33','ok: correct after rounding'],['7/2 = 3','bad: does not match: the left side = 7/2'],['x+1','err: unknown variable x']])eq(line,[want]);
 K.LANG.cur='pl';
 
-// ---------- przykłady z pierwszej strony zeszytu: bez błędów ----------
 for(const lang of ['pl','en'])for(const S of K.SUBJECTS){
   K.LANG.cur=lang;const ex=K.calcExample(S.id),res=run(ex);
   ok(ex.length>20,`${S.id} ${lang}: brak przykładu`);
@@ -82,11 +72,10 @@ for(const lang of ['pl','en'])for(const S of K.SUBJECTS){
 }
 K.LANG.cur='pl';
 
-// ---------- losowo: macierze zgodne z silnikiem algebry ----------
 const ms=A=>'['+A.map(r=>r.map(x=>x.str()).join(' ')).join('; ')+']';
 for(let t=0;t<400;t++){
   const n=K.rnd(2,4),rank=t%4===0?n-1:n,A=K.M.make(n,n,()=>K.F(K.rnd(-6,6)));
-  if(rank<n){const k=K.rnd(0,n-1),f=K.rnd(-2,2);A[k]=A[(k+1)%n].map(x=>x.mul(K.F(f)))}   // jeden wiersz to wielokrotność innego
+  if(rank<n){const k=K.rnd(0,n-1),f=K.rnd(-2,2);A[k]=A[(k+1)%n].map(x=>x.mul(K.F(f)))}
   const d=K.detF(A),txt=`A = ${ms(A)}\ndet(A) = ${d.str()}\ndet(Aᵀ) = det(A)\n|A| = det A`;
   eq(txt,[run(`A = ${ms(A)}`)[0],'ok: zgadza się','ok: zgadza się','ok: zgadza się']);
   if(!d.z){
@@ -97,16 +86,14 @@ for(let t=0;t<400;t++){
     ok(r[1]==='err: macierz nieodwracalna (det = 0)',`odwrotna macierzy osobliwej: ${r[1]} ${ms(A)}`);
   }
 }
-// ---------- losowo: ułamki dokładnie ----------
 for(let t=0;t<500;t++){
   const a=K.F(K.rnd(-30,30),K.rnd(1,20)),b=K.F(K.rnd(-30,30),K.rnd(1,20)),s=a.add(b),p=a.mul(b);
   const A=`(${a.str()})`,B=`(${b.str()})`;
   eq(`${A} + ${B} = ${s.str()}\n${A}·${B} = ${p.str()}\n${A} - ${B} = ${a.sub(b).str()}\n${A} + ${B} = ${s.add(K.F(1,7)).str()}`,['ok: zgadza się','ok: zgadza się','ok: zgadza się',run(`${A} + ${B} = ${s.add(K.F(1,7)).str()}`)[0]]);
   ok(/^bad: /.test(run(`${A} + ${B} = ${s.add(K.F(1,7)).str()}`)[0]),'zły wynik uznany: '+`${A} + ${B} = ${s.add(K.F(1,7)).str()}`);
 }
-// ---------- „Rozpisz”: klatki dla każdej linii z wynikiem ----------
 {
-  const squash=s=>s.replace(/[\s\[\];]/g,'');   // macierz w klatce to siatka komórek, bez nawiasów i średników
+  const squash=s=>s.replace(/[\s\[\];]/g,'');
   const plainH=h=>String(h||'').replace(/<span class="fr"><span>(.*?)<\/span><span>(.*?)<\/span><\/span>/g,'$1/$2').replace(/<sup>(.*?)<\/sup>/g,'^$1').replace(/<sub>(.*?)<\/sub>/g,'_$1').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/\u202f/g,' ');
   const page=['1/2 + 1/3','2 + 3·4','(1+2)·(3+4) - 2^3','2/3 : 4/5','v0 = 72/3,6','s = v0^2/(2·4)','sin(30) + √16','10/3 = 3,33','2/3 + 1/4 = 10/12','hex(255)','0b1101 + 1','bin(5,75)','0b0.101 + 1',
     'A = [2 1','5 3]','det(A)','A^-1','B = [1 2; 3 4]','A*B + 2B','A^T','A^3','rz(A)','tr(A)','C = [1 0 2 0; 3 1 0 1; 0 2 1 0; 1 0 0 3]','det(C)','5!','20%·50','log2(1024)','ln(e)','arcsin(1/2)','2^0,5','x = -3','x^2 - 2x','|x|','B/2','-A','√2·√2'].join('\n');
@@ -125,7 +112,6 @@ for(let t=0;t<500;t++){
     });
   }
   K.LANG.cur='pl';
-  // losowe wyrażenia: rozpisanie kończy się tym samym wynikiem co kalkulator
   const ops=['+','-','·',':'];
   for(let t=0;t<300;t++){
     let e=String(K.rnd(1,9));for(let k=0;k<K.rnd(1,4);k++){const v=K.rnd(0,3)===0?`${K.rnd(1,9)}/${K.rnd(2,9)}`:String(K.rnd(1,12));e+=` ${ops[K.rnd(0,3)]} ${K.rnd(0,4)===0?'('+v+' + '+K.rnd(1,5)+')':v}`}
@@ -137,7 +123,6 @@ for(let t=0;t<500;t++){
     ok(!/undefined|NaN/.test(JSON.stringify(fr)),'rozpisz '+e+': undefined/NaN');
   }
 }
-// ---------- byle co na wejściu: bez wyjątków i bez undefined/NaN ----------
 const CH='0123456789+-*/^()[]; ,.=!%|°√πxyzAB abc sin det e # :²⁻¹ᵀ\'';
 for(let t=0;t<3000;t++){
   let s='';const L=K.rnd(1,18);for(let k=0;k<L;k++)s+=CH[K.rnd(0,CH.length-1)];

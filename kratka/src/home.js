@@ -1,9 +1,3 @@
-// =====================================================================
-//  Strona startowa (#start, logo Kratka): notatnik z wyszukiwarką stron zeszytu i własnymi PDF-ami
-// =====================================================================
-//  Strony zeszytu czytamy z tego samego zapisu co notebook.js (kratka-zeszyt w localStorage).
-//  PDF-y trzymamy w przeglądarce w IndexedDB (baza kratka-pdf), bo localStorage jest na nie za mały.
-// =====================================================================
 const PDFDB={p:null};
 function pdfDb(){
   return PDFDB.p||(PDFDB.p=new Promise((ok,no)=>{

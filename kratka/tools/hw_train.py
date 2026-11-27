@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
-"""Trenuje sieć, która czyta pismo odręczne w zeszycie Kratki (cyfry i znaki działań).
-
-    python3 tools/hw_train.py <katalog z cyframi MNIST> [--epochs 16]
-
-Cyfry: 10 000 próbek MNIST z paczki npm `mnist` (MIT): `npm pack mnist@1.1.0`, rozpakuj,
-katalog to package/src/digits z plikami 0.json … 9.json.
-Znaki + − × / ( ) = są generowane: losowe kreski przepuszczone przez to samo przygotowanie
-obrazu co w przeglądarce (hwRaster w src/hw.js), więc sieć widzi znaki tak samo jak na stronie.
-
-Wynik: src/hw-model.js (wagi 8-bitowe w base64, ok. 45 KB). Wszystko w numpy, bez innych bibliotek.
-"""
+"""python3 tools/hw_train.py <mnist/package/src/digits> [--epochs 16]"""
 import argparse
 import base64
 import json
@@ -22,15 +12,13 @@ import numpy as np
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 CLASSES = "0123456789+-*/()=ABC"
 OPS = "+-*/()=ABC"
-GEN = OPS + "17"   # do cyfr z MNIST: jedynki z daszkiem i siódemki z poprzeczką (tak pisze się w Polsce)
-R_JS = 1.2          # promień kreski w px obrazu 28×28, taki sam jak w src/hw.js
+GEN = OPS + "17"
+R_JS = 1.2
 rng = np.random.default_rng(7)
 
 
-# ---------- obraz znaku z kresek: to samo co hwRaster w src/hw.js ----------
+# musi się zgadzać z hwRaster w src/hw.js
 def raster(strokes, r=R_JS):
-    """strokes: lista tablic (n, 2) w dowolnych jednostkach → obraz 28×28 jak w MNIST:
-    znak mieści się w ramce 20×20 (z zachowaniem proporcji), a jego środek ciężkości jest w środku."""
     pts = np.concatenate(strokes)
     x1, y1 = pts.min(0)
     x2, y2 = pts.max(0)
@@ -42,12 +30,12 @@ def raster(strokes, r=R_JS):
         if len(q) == 1:
             q = np.vstack([q, q])
         segs.append(np.stack([q[:-1], q[1:]], 1))
-    segs = np.concatenate(segs)                       # (m, 2, 2)
+    segs = np.concatenate(segs)
 
     def draw(dx, dy):
         a = segs[:, 0] + [dx, dy]
         b = segs[:, 1] + [dx, dy]
-        g = np.stack(np.meshgrid(np.arange(28) + .5, np.arange(28) + .5), -1).reshape(-1, 1, 2)   # (784,1,2) środki pikseli
+        g = np.stack(np.meshgrid(np.arange(28) + .5, np.arange(28) + .5), -1).reshape(-1, 1, 2)
         ab = b - a
         L = (ab ** 2).sum(-1)
         t = np.clip(((g - a) * ab).sum(-1) / np.where(L > 0, L, 1), 0, 1)
@@ -62,7 +50,6 @@ def raster(strokes, r=R_JS):
     return img.astype(np.float32)
 
 
-# ---------- losowe znaki działań ----------
 def line(p0, p1, n=14, bend=0.0, noise=.012):
     t = np.linspace(0, 1, n)[:, None]
     p0, p1 = np.array(p0, float), np.array(p1, float)
@@ -100,10 +87,10 @@ def gen_op(ch):
               line((u(-.1, .1), g), (u(.85, 1.1), g + u(-.05, .05)), bend=u(-.06, .06))]
         st = transform(st, u(-.1, .1))
     elif ch == '*':
-        if rng.random() < .7:      # dwie ukośne kreski
+        if rng.random() < .7:
             st = [line((u(-.05, .1), u(-.05, .1)), (u(.9, 1.05), u(.9, 1.05)), bend=u(-.1, .1)),
                   line((u(.9, 1.05), u(-.05, .1)), (u(-.05, .1), u(.9, 1.05)), bend=u(-.1, .1))]
-        else:                      # x pisane łukami: „)(”
+        else:
             st = [arc(u(-.05, .1), .5, u(.4, .55), .5, -math.pi / 2, math.pi / 2),
                   arc(u(.9, 1.05), .5, u(.4, .55), .5, math.pi / 2, 3 * math.pi / 2)]
         st = transform(st, u(-.15, .15), u(.7, 1.3), u(.8, 1.2), u(-.2, .2))
@@ -115,7 +102,7 @@ def gen_op(ch):
         a = u(.55, .9) * math.pi / 2
         s = arc(0, .5, dep, .5 / math.sin(a), math.pi - a, math.pi + a) if ch == '(' else arc(0, .5, dep, .5 / math.sin(a), -a, a)
         st = transform([s], u(-.12, .12), 1, 1, u(-.15, .15))
-    elif ch == 'A':            # Λ i poprzeczka (czasem dwie osobne ukośne)
+    elif ch == 'A':
         top = (u(.3, .4), u(-.03, .05))
         if rng.random() < .7:
             st = [line((u(-.03, .05), u(.95, 1.03)), top, n=10, bend=u(-.05, .05)).tolist() + line(top, (u(.65, .75), u(.95, 1.03)), n=10, bend=u(-.05, .05)).tolist()]
@@ -125,12 +112,12 @@ def gen_op(ch):
         y = u(.5, .7)
         st.append(line((u(.12, .2), y), (u(.5, .6), y + u(-.04, .04))))
         st = transform(st, u(-.12, .12), u(.85, 1.15), 1, u(-.15, .15))
-    elif ch == 'B':            # pionowa kreska i dwa brzuszki
+    elif ch == 'B':
         m = u(.42, .52)
         bumps = np.vstack([arc(.02, m / 2, u(.32, .42), m / 2, -math.pi / 2, math.pi / 2), arc(.02, (1 + m) / 2, u(.38, .5), (1 - m) / 2, -math.pi / 2, math.pi / 2)])
         st = [line((0, 0), (0, 1)), bumps] if rng.random() < .6 else [np.vstack([line((0, 1), (0, 0)), bumps])]
         st = transform(st, u(-.12, .12), u(.85, 1.2), 1, u(-.15, .15))
-    elif ch == 'C':            # szeroki łuk otwarty w prawo
+    elif ch == 'C':
         a = u(.15, .35) * math.pi
         st = [arc(.5, .5, u(.4, .55), .5, -a, -2 * math.pi + a, n=22)]
         st = transform(st, u(-.15, .15), u(.85, 1.15), 1, u(-.1, .1))
@@ -151,7 +138,6 @@ def gen_op(ch):
     return st
 
 
-# ---------- przekształcenia cyfr MNIST (obrót, skala, przesunięcie, grubość) ----------
 def warp(img, rot, sc, sh, tx, ty):
     c, s = math.cos(rot), math.sin(rot)
     A = np.array([[c, -s], [s, c]]) @ np.array([[sc, sh], [0, sc]])
@@ -172,24 +158,23 @@ def aug_digit(img):
     u = lambda a, b: rng.uniform(a, b)
     out = warp(img, u(-.2, .2), u(.88, 1.1), u(-.2, .2), u(-1.5, 1.5), u(-1.5, 1.5))
     k = rng.random()
-    if k < .3:       # grubsza kreska
+    if k < .3:
         p = np.pad(out, 1)
         out = np.maximum.reduce([p[1 + dy:29 + dy, 1 + dx:29 + dx] for dy in (-1, 0, 1) for dx in (-1, 0, 1) if abs(dx) + abs(dy) <= 1])
-    elif k < .45:    # cieńsza
+    elif k < .45:
         out = np.clip((out - .35) / .65, 0, 1)
     return out
 
 
-# ---------- sieć: conv 5×5 (12) → pool → conv 5×5 (24) → pool → 64 → klasy ----------
 def im2col(x, k):
-    w = np.lib.stride_tricks.sliding_window_view(x, (k, k), axis=(2, 3))   # (N,C,oh,ow,k,k)
+    w = np.lib.stride_tricks.sliding_window_view(x, (k, k), axis=(2, 3))
     N, C, oh, ow = w.shape[:4]
     return w.transpose(0, 2, 3, 1, 4, 5).reshape(N * oh * ow, C * k * k), oh, ow
 
 
 def col2im(dcol, shape, k, oh, ow):
     N, C, H, W = shape
-    d = dcol.reshape(N, oh, ow, C, k, k).transpose(0, 3, 4, 5, 1, 2)       # (N,C,k,k,oh,ow)
+    d = dcol.reshape(N, oh, ow, C, k, k).transpose(0, 3, 4, 5, 1, 2)
     dx = np.zeros(shape, np.float32)
     for i in range(k):
         for j in range(k):
@@ -334,7 +319,6 @@ def main():
     worst = sorted(((conf[i, j], CLASSES[i], CLASSES[j]) for i in range(len(CLASSES)) for j in range(len(CLASSES)) if i != j), reverse=True)[:8]
     print("najczęstsze pomyłki (ile, jest, odczytane):", worst)
 
-    # zapis: wagi 8-bitowe z jedną skalą na warstwę, przesunięcia jako liczby
     def q8(w):
         s = float(np.abs(w).max()) / 127 or 1.0
         return {"s": round(s, 8), "q": base64.b64encode(np.round(w / s).astype(np.int8).tobytes()).decode()}
@@ -345,9 +329,7 @@ def main():
              "d1": {**q8(p['W3']), "b": [round(float(v), 5) for v in p['b3']]},
              "d2": {**q8(p['W4']), "b": [round(float(v), 5) for v in p['b4']]}}
     out = pathlib.Path(a.out)
-    out.write_text("// Wagi sieci, która czyta pismo w zeszycie (cyfry, + − × / ( ) = i litery A B C). Plik generuje tools/hw_train.py,\n"
-                   "// nie edytuj go ręcznie. Cyfry uczone na MNIST (paczka npm mnist, MIT), znaki działań wygenerowane.\n"
-                   f"// Trafność na próbkach kontrolnych: {acc * 100:.1f}%.\n"
+    out.write_text("// generuje tools/hw_train.py; cyfry z MNIST (npm mnist, MIT)\n"
                    f"const HW_MODEL={json.dumps(model, separators=(',', ':'))};\n", encoding="utf-8")
     np.save(pathlib.Path(a.out).with_suffix('.check.npy'), Xva[:40, 0])
     print(f"zapisano {out} ({out.stat().st_size // 1024} KB)")

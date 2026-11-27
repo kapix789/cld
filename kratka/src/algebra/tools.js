@@ -1,6 +1,3 @@
-// =====================================================================
-//  ALGEBRA: narzędzia (X na liczbach, X na literach, układy równań, znajdź błąd) i ściąga
-// =====================================================================
 const INP='autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text"';
 const grid=(r,c)=>`<span class="mat gin" style="grid-template-columns:repeat(${c},auto)">${Array.from({length:r*c},(_,k)=>`<input ${INP} aria-label="${$t('wiersz','row')} ${Math.floor(k/c)+1}, ${$t('kolumna','column')} ${k%c+1}">`).join('')}</span>`;
 function checkGrid(sel,ans){
@@ -11,10 +8,8 @@ function checkGrid(sel,ans){
 const segOn=(attr,val)=>$$(`[data-${attr}]`).forEach(b=>b.classList.toggle('on',b.dataset[attr]===String(val)));
 const scoreT=sc=>sc.all?$t(`dobrze ${sc.ok} z ${sc.all}`,`${sc.ok} of ${sc.all} correct`):'';
 const MN={get gauss(){return $t('metoda Gaussa','Gaussian elimination')},get mac(){return $t('metoda macierzowa','matrix method')},get cra(){return $t('wzory Cramera','Cramer’s rule')}};
-// rozwiązanie pokazywane pod zadaniem: przycisk „Rozwiązanie” przełącza widoczność
 function solToggle(btn,box){btn.onclick=()=>{const on=!box.classList.contains('on');box.classList.toggle('on',on);btn.setAttribute('aria-expanded',on)}}
 
-// ---------- X na liczbach ----------
 let nSize=2,nShape='sq',nTask=null,nScore={ok:0,all:0},nCounted=false;
 const eqLabel=t=>{const a=parseEq(t.eq);return (rExpr(a.L)+' = '+rExpr(a.R)).replace(/<sup>T<\/sup>/g,'ᵀ').replace(/<sup>−1<\/sup>/g,'⁻¹').replace(/<[^>]+>/g,'')};
 function buildNtSel(){
@@ -56,7 +51,6 @@ $('#nCheck').onclick=()=>{
   else show($('#nMsg'),'bad',$t(`<b>Nie zgadza się.</b> Poprawnych pól: ${r.good} z ${r.total}. Warto sprawdzić wzór (podpowiedź) albo rachunki.`,`<b>Not quite.</b> Correct fields: ${r.good} of ${r.total}. Check the formula (hint) or the arithmetic.`));
 };
 
-// ---------- X na literach ----------
 let sol=null,shown=0,lastInput=$('#eqIn'),symCounted=false;
 ['#eqIn','#ansIn'].forEach(s=>$(s).addEventListener('focus',e=>lastInput=e.target));
 $('#keys').addEventListener('click',e=>{
@@ -118,7 +112,6 @@ $('#ansBtn').onclick=checkAns;
 $('#ansIn').addEventListener('keydown',e=>{if(e.key==='Enter')checkAns()});
 $('#openEx').onclick=()=>{$('#eqIn').value='A^TB^-1XCA=(AD)^-1D';location.hash='#algebra-rownania';runSolve()};
 
-// ---------- własne macierze (X na literach → liczby) ----------
 const mxVals={};let curSrc='',curLetters=[],lastNum=null;
 const mxStr=A=>A.map(r=>r.map(x=>x.str().replace('−','-')).join(' ')).join('\n');
 function buildMx(set){
@@ -143,7 +136,6 @@ $('#numBtn').onclick=computeNum;
 $('#numRnd').onclick=()=>{const had=!sol||$('#numOut').innerHTML;curLetters.forEach(c=>{mxVals[c]=mxStr(unimod2())});buildMx(new Set(curLetters));if(had)computeNum()};
 $('#openEx2').onclick=()=>{$('#eqIn').value='AX=XA';mxVals.A='1 1\n0 1';location.hash='#algebra-rownania';runSolve();setTimeout(()=>$('#numCard').scrollIntoView(),30)};
 
-// ---------- układy równań ----------
 let sSize=3,sMode='one',sMeth='gauss',sTask=null,sScore={ok:0,all:0},sCounted=false,sysShown=false;
 const sysTid=()=>sMode==='exam'?'sysexam':sMode==='any'&&sSize!=='r'?'sysany':{2:'sys2',3:'sys3',4:'sys4',r:'sysrect'}[sSize];
 function renderSysSol(){sTask.out=sysMethodHtml(sTask.Ab,sTask.names,sMeth);$('#sSolBox').innerHTML=sTask.out.html}
@@ -193,21 +185,18 @@ function fillCheat(){
   const {Ab,names}=parseSystem('2x + y - z = 3\nx - y + 2z = 5\n3x + 2y + z = 10'),nv=names.length;
   $('#chSys').innerHTML=`${sysHtml(abRows(Ab,nv),names)} &nbsp;⇔&nbsp; <span class="m">${matH(Ab.map(r=>r.slice(0,nv)))} · ${colH(names)} = ${matH(Ab.map(r=>[r[nv]]))}</span>`;
 }
-// wybór liczby rozwiązań w odpowiedziach typu „układ” (Ćwiczenia, Sprawdzian, Układy)
 document.addEventListener('click',e=>{
   const b=e.target.closest&&e.target.closest('[data-gst]');if(!b)return;
   const box=b.closest('[data-gst-box]');box.querySelectorAll('[data-gst]').forEach(c=>c.classList.toggle('on',c===b));
   sysMode(box.dataset.gstBox,b.dataset.gst);
 });
 
-// ---------- odtwarzacz dla narzędzi ----------
 $('#nPlay').onclick=()=>play(()=>nTask.fr(),$t('X na liczbach · ','X with numbers · ')+nTask.orig,$('#nMsg'),{noFrac:true});
 $('#sPlay').onclick=()=>play(()=>sysFrames(sTask.Ab,sTask.names,sMeth),$t('Układ równań · ','System of equations · ')+MN[sMeth],$('#sMsg'),{noFrac:true});
 $('#sysPlay').onclick=()=>{$('#sysErr').className='msg';play(()=>{const {Ab,names}=parseSystem($('#sysIn').value);return sysFrames(Ab,names,sMeth)},$t('Własny układ · ','Your system · ')+MN[sMeth],$('#sysErr'),{noFrac:true})};
 $('#symPlay').onclick=()=>{if(sol)play(()=>symFrames(sol),$t('X na literach · ','X symbolically · ')+sol.orig)};
 $('#numPlay').onclick=()=>{computeNum();if(lastNum)play(()=>lastNum.fr(),$t('Na liczbach','With numbers'),$('#numMsg'),{noFrac:true})};
 
-// ---------- Znajdź błąd ----------
 function fbRun(){const m=$('#fbMsg');m.className='msg';try{$('#fbOut').innerHTML=chainReport($('#fbIn').value)}catch(e){$('#fbOut').innerHTML='';show(m,'bad',e.message)}}
 function fbMulRun(){const m=$('#fbMsg');m.className='msg';try{$('#fbOut').innerHTML=`<div class="card">${mulReport(parseMat($('#fbA').value,'A'),parseMat($('#fbB').value,'B'),parseMat($('#fbC').value,'AB'))}</div>`}catch(e){$('#fbOut').innerHTML='';show(m,'bad',e.message)}}
 $('#fbBtn').onclick=fbRun;$('#fbMulBtn').onclick=fbMulRun;
@@ -219,7 +208,6 @@ $('#fbMode').addEventListener('click',e=>{
   $('#fbGauss').hidden=!g;$('#fbMul').hidden=g;g?fbRun():fbMulRun();
 });
 
-// ---------- podpięcie do szkieletu ----------
 HOOKS.start.push(()=>{buildNtSel();newNum();runSolve();newSys();runSys();fillCheat();$('#fbIn').value=EX_CHAIN;fbRun()});
 HOOKS.lang.push(()=>{
   $('#ansIn').placeholder=$t('np. A^-1(C-B)','e.g. A^-1(C-B)');
@@ -228,7 +216,6 @@ HOOKS.lang.push(()=>{
   $('#nScore').textContent=scoreT(nScore);$('#sScore').textContent=scoreT(sScore);
 });
 HOOKS.noFrac.push(()=>{
-  // te same zadania, przeliczone rozwiązania
   if(sTask)renderSysSol();if(sysShown)runSys();
   if(nTask)$('#nSolBox').innerHTML=nTask.solHtml;
   if(lastNum&&$('#numOut').innerHTML)computeNum();

@@ -1,14 +1,3 @@
-// =====================================================================
-//  SYSTEMY OPERACYJNE: symulowany Ubuntu (bez DOM)
-// =====================================================================
-//  simNew(o)        nowy system: użytkownik student (może używać sudo), katalog domowy z miasta.txt
-//  simRun(S,line)   uruchamia jedną linię powłoki (potoki |, ; && ||, apostrofy, cudzysłowy, sudo)
-//                   → [{t:'out'|'err'|'cmd', s}] — to, co pokazałby terminal
-//  Obsługiwane polecenia: zobacz SH (na dole pliku) albo wpisz `help` w terminalu.
-//  Komunikaty systemu są po angielsku, jak w domyślnej instalacji Ubuntu.
-// =====================================================================
-
-// plik miasta.txt: nazwy miast w kolejności (mniej więcej) od największego
 const MIASTA=`Warszawa
 Kraków
 Wrocław
@@ -96,7 +85,6 @@ class ShErr extends Error{}
 const permStr=p=>(p&4?'r':'-')+(p&2?'w':'-')+(p&1?'x':'-');
 const clone=o=>JSON.parse(JSON.stringify(o));
 
-// ---------- system ----------
 function simNew(o={}){
   const S={me:'student',rootShell:false,cwd:'/home/student',users:{},groups:{},fs:{},ufw:{on:false,rules:[]},nextUid:1001,nextGid:1001,hints:[]};
   const g=(n,gid)=>{S.groups[n]={gid,members:[]}};
@@ -126,12 +114,10 @@ function addUser(S,n,o={}){
 const inGroup=(S,u,g)=>!!(S.users[u]&&(S.users[u].group===g||(S.groups[g]&&S.groups[g].members.includes(u))));
 const groupsOf=(S,u)=>{const U=S.users[u];return [U.group,...Object.keys(S.groups).filter(g=>g!==U.group&&S.groups[g].members.includes(u)).sort((a,b)=>S.groups[a].gid-S.groups[b].gid)]};
 
-// ---------- pliki ----------
 function fsMake(S,path,type,owner,group,mode,text){
   const n={type,owner,group,acl:{uobj:mode>>6&7,gobj:mode>>3&7,o:mode&7,mask:null,u:{},g:{}},dacl:null};
   if(type==='f')n.text=text||'';
   const par=S.fs[pParent(path)];
-  // domyślne ACL katalogu nadrzędnego zastępują umask (POSIX: user::, mask:: albo group::, other:: ograniczone trybem tworzenia)
   if(par&&par.dacl&&path!=='/'){
     const D=par.dacl,cm=type==='d'?0o777:0o666;
     n.acl={uobj:D.uobj&(cm>>6&7),gobj:D.gobj,o:D.o&(cm&7),mask:null,u:{...D.u},g:{...D.g}};
@@ -157,7 +143,6 @@ function fileText(S,path){
   const n=S.fs[path];return n&&n.type==='f'?n.text:null;
 }
 const fileExists=(S,p)=>!!S.fs[p]||p==='/etc/passwd'||p==='/etc/group';
-// czy użytkownik (u) ma prawo (bit: 4 r, 2 w, 1 x) do węzła n — algorytm POSIX ACL
 function access(S,u,n,bit){
   if(u==='root')return true;
   const A=n.acl,mk=p=>A.mask!=null?p&A.mask:p;
@@ -169,11 +154,9 @@ function access(S,u,n,bit){
   if(grp)return any;
   return !!(A.o&bit);
 }
-// skuteczne prawa grupy g do węzła (do sprawdzania zadań): wpis ACL albo grupa-właściciel
 function groupPerm(n,g){const A=n.acl,mk=p=>A.mask!=null?p&A.mask:p;if(A.g[g]!==undefined)return mk(A.g[g]);if(n.group===g)return mk(A.gobj);return null}
 function userPerm(n,u){const A=n.acl;if(A.u[u]===undefined)return null;return A.mask!=null?A.u[u]&A.mask:A.u[u]}
 
-// ---------- powłoka ----------
 function shLex(line){
   const toks=[];let cur=null,i=0;const s=line;
   const word=()=>cur||(cur={t:'w',v:'',q:false,tilde:false});
@@ -223,7 +206,6 @@ function simRun(S,line){
   }
   return res;
 }
-// skrypt: wiele linii → zapis terminala z poleceniami (t:'cmd')
 function simScript(S,text){
   const tr=[];
   for(const raw of String(text).split('\n')){
@@ -253,7 +235,6 @@ function runOne(S,av,input){
   try{fn(c)}catch(e){if(e instanceof ShErr){c.err.push(e.message);c.code=1}else throw e}
   r.code=c.code;return r;
 }
-// wspólne parsowanie opcji krótkich: -abc oraz -o wartość
 function opts(c,withArg=''){
   const f={},rest=[];let stop=false;
   for(let i=0;i<c.args.length;i++){
@@ -272,7 +253,6 @@ const needRoot=(c,msg)=>{if(c.root)return false;c.fail(msg||`${c.name}: Permissi
 const exists=(c,p,cmd)=>{const a=pAbs(c.S,p);if(!c.S.fs[a]){c.fail(`${cmd||c.name}: cannot access '${p}': No such file or directory`);return null}return a};
 const owns=(c,n)=>c.root||n.owner===c.user;
 
-// ---------- wyrażenia regularne grep (POSIX → JavaScript) ----------
 const POSIX_CL={alpha:'\\p{L}',upper:'\\p{Lu}',lower:'\\p{Ll}',digit:'0-9',alnum:'\\p{L}\\p{N}',space:'\\s',punct:'\\p{P}\\p{S}',blank:' \\t',xdigit:'0-9A-Fa-f'};
 const W_CH='[\\p{L}\\p{N}_]';
 function posixRe(pat,ere){
@@ -334,7 +314,6 @@ function inputLines(c,files,cmd){
   return res;
 }
 
-// ---------- ufw ----------
 function ufwRule(c,a){
   const act=a.shift(),R={act,dir:'in',port:null,proto:null,from:'any',to:'any'};
   if(a[0]==='in'||a[0]==='out')R.dir=a.shift();
@@ -354,7 +333,6 @@ function ufwRule(c,a){
 }
 const ufwShow=R=>{const p=R.port?R.port+(R.proto?'/'+R.proto:''):'Anywhere',to=R.to==='any'?p:R.to+(R.port?' '+p:'');return [R.dir==='out'?(R.to==='any'?p:to):to,(R.act.toUpperCase()+(R.dir==='out'?' OUT':'')).padEnd(11),R.from==='any'?'Anywhere':R.from]};
 
-// ---------- polecenia ----------
 const SH={
   help(c){c.out.push($t('Obsługiwane polecenia:','Supported commands:'),Object.keys(SH).filter(k=>k!=='help').sort().join(' '),$t('Potoki (|), ; && ||, sudo, apostrofy i cudzysłowy działają jak w bash.','Pipes (|), ; && ||, sudo, single and double quotes work as in bash.'))},
   clear(c){c.out.push('\f')},
@@ -518,7 +496,7 @@ const SH={
     if(needRoot(c,'fatal: Only root may add a user or group to the system.'))return;
     const {f,rest}=opts(c,'');const [n,g]=rest;
     if(!n)return c.fail('fatal: Only one or two names allowed.');
-    if(g){ // adduser użytkownik grupa
+    if(g){
       if(!c.S.users[n])return c.fail(`fatal: The user \`${n}' does not exist.`);
       if(!c.S.groups[g])return c.fail(`fatal: The group \`${g}' does not exist.`);
       if(inGroup(c.S,n,g))return c.out.push(`info: The user \`${n}' is already a member of \`${g}'.`);
@@ -628,7 +606,6 @@ const SH={
     }
     function setF(ch){({E:()=>{o.ere=true},P:()=>{o.ere=true},F:()=>{o.fixed=true},G:()=>{o.ere=false},i:()=>{o.ic=true},v:()=>{o.inv=true},c:()=>{o.cnt=true},n:()=>{o.num=true},x:()=>{o.line=true},w:()=>{o.word=true},o:()=>{o.only=true},l:()=>{o.list=true},r:()=>{}})[ch]()}
     if(!pats.length)return c.fail('Usage: grep [OPTION]... PATTERNS [FILE]...',2);
-    // podpowiedzi dla typowych pułapek
     c.args.forEach((x,k)=>{if(!c.quoted[k]&&pats.includes(x)&&/[*?[\]|$(){}<>\\ ]/.test(x))c.hint('Wzorzec ze znakami specjalnymi bez apostrofów: powłoka może go zmienić, zanim dostanie go grep. Bezpieczniej pisać np. grep \'^G\' miasta.txt.','A pattern with special characters is not quoted: the shell may change it before grep sees it. It is safer to write e.g. grep \'^G\' miasta.txt.')});
     if(!o.ere&&!o.fixed&&pats.some(p=>/\{\d+(,\d*)?\}|\|/.test(p)&&!/\\[{|]/.test(p)))c.hint('Bez opcji -E znaki { } i | są zwykłymi znakami. Do powtórzeń {6} i alternatywy | potrzebne jest grep -E (albo \\{6\\} i \\| bez -E).','Without -E the characters { } and | are literal. For repetition {6} and alternation | use grep -E (or \\{6\\} and \\| without -E).');
     const re=grepRe(pats,o),srcs=inputLines(c,files,'grep');if(!srcs)return;
@@ -706,7 +683,6 @@ function chmodApply(n,spec){
   setMode(n,m);return true;
 }
 function parsePerm(s){if(/^[0-7]$/.test(s))return +s;if(!/^[rwxX-]*$/.test(s))return null;let p=0;for(const ch of s){if(ch==='r')p|=4;if(ch==='w')p|=2;if(ch==='x'||ch==='X')p|=1}return p}
-// wpisy ACL: u:nazwa:rwx, g::r-x, m::rwx, o::r, d:u:nazwa:rwx, default:…  → {ents:[{def,type,name,perm}]} albo {err,at}
 function parseAclSpec(S,spec,forRemove){
   const ents=[];let at=1;
   for(const e of String(spec).split(',')){

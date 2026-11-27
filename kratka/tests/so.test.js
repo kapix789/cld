@@ -1,10 +1,8 @@
-// Testy systemów operacyjnych (symulator i zadania):  node tests/so.test.js
 const E=require('./load')(['SO_TOPICS','ansCheck','ansHtml','ansShow','inpShow','LANG','simNew','simRun','simScript','soBase','KINDS','SUBJECTS','MIASTA']);
 let fails=0,checks=0;const ok=(c,m)=>{checks++;if(!c){fails++;if(fails<30)console.log('✗',m)}};
 const run=(S,l)=>E.simRun(S,l);
 const out=(S,l)=>run(S,l).filter(x=>x.t==='out').map(x=>x.s);
 const err=(S,l)=>run(S,l).filter(x=>x.t==='err').map(x=>x.s).join('\n');
-// --- symulator: zadania z kolokwium ---
 {const S=E.soBase();
   ok(/Permission denied/.test(err(S,'useradd kolokwium')),'useradd bez sudo nie zgłasza błędu');
   ok(!err(S,'sudo useradd -m kolokwium')&&S.users.kolokwium&&S.fs['/home/kolokwium'],'useradd -m');
@@ -28,7 +26,6 @@ const err=(S,l)=>run(S,l).filter(x=>x.t==='err').map(x=>x.s).join('\n');
   run(S,'setfacl -b config');ok(!S.fs['/home/student/config'].acl.mask&&!Object.keys(S.fs['/home/student/config'].acl.g).length,'setfacl -b');
 }
 {const S=E.soBase({users:[{name:'anna',groups:['dev']}],groups:['web']});run(S,'sudo usermod -G web anna');ok(!out(S,'groups anna')[0].includes('dev'),'usermod -G bez -a zostawił starą grupę');}
-// --- grep ---
 {const S=E.simNew(),M=E.MIASTA;
   const eq=(cmd,exp)=>{const o=out(S,cmd);ok(JSON.stringify(o)===JSON.stringify(exp),cmd+' → '+o.slice(0,6).join(', '))};
   eq("grep '^G' miasta.txt",M.filter(m=>m.startsWith('G')));
@@ -52,9 +49,7 @@ const err=(S,l)=>run(S,l).filter(x=>x.t==='err').map(x=>x.s).join('\n');
   ok(/syntax error/.test(err(S,'grep | ')),'błąd składni potoku');
   ok(/command not found/.test(err(S,'grap x')),'nieznane polecenie');
 }
-// --- ufw ---
 {const S=E.simNew();ok(/root/.test(err(S,'ufw enable')),'ufw bez sudo');run(S,'sudo ufw allow 997/tcp');run(S,'sudo ufw allow out 997/tcp');run(S,'sudo ufw enable');const st=out(S,'sudo ufw status').join('\n');ok(/Status: active/.test(st)&&/997\/tcp\s+ALLOW OUT/.test(st)&&/997\/tcp\s+ALLOW\s+Anywhere/.test(st),'ufw status:\n'+st)}
-// --- tematy: wzorcowe odpowiedzi przechodzą, puste i złe nie ---
 function good(a){
   if(a.kind==='cmd')return [a.model.join('\n')];
   if(a.kind==='choice')return a.opts.map((_,k)=>a.ok.includes(k));
@@ -85,7 +80,6 @@ for(const lang of ['pl','en']){E.LANG.cur=lang;
   }
 }
 ok(kinds.cmd>50&&kinds.choice>20&&kinds.fill>20,'za mało zadań któregoś rodzaju '+JSON.stringify(kinds));
-// alternatywne poprawne rozwiązania też przechodzą
 E.LANG.cur='pl';
 {const T=E.SO_TOPICS.find(t=>t.id==='so-grep');let n=0;for(let i=0;i<60&&n<15;i++){const x=T.gen();const m=x.ans.model[0];let alt=null;
   if(/^grep '\^\[(\w)(\w)\]'/.test(m)){const q=m.match(/^grep '\^\[(\w)(\w)\]'/);alt=`grep -E '^(${q[1]}|${q[2]})' miasta.txt`}
