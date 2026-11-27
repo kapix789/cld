@@ -1,12 +1,3 @@
-// =====================================================================
-//  „Rozpisz”: linia zeszytu krok po kroku, jako klatki odtwarzacza (play w app.js)
-// =====================================================================
-//  calcSteps(rekord z calcLines) → klatki [{sec, t, x, S, B, J, C, U}]
-//  Liczby: kolejność działań (najpierw nawiasy, potęgi, mnożenie i dzielenie, na końcu dodawanie),
-//  ułamki ze wspólnym mianownikiem i skracaniem, pierwiastki, funkcje, systemy liczbowe.
-//  Macierze: gotowe klatki silnika algebry (detFrames, invFrames, mulFrames, transFrames,
-//  scaleFrames, sumFrames, gaussFrames); wyznacznik 4×4 i większy rozwinięciem Laplace’a.
-// =====================================================================
 const stLit=(v,o={})=>({t:'lit',v,...o});
 const stName=s=>{const m=s.match(/^(\D+?)_?(\d*)$/);return m?`<i>${escH(m[1])}</i>${m[2]?`<sub>${m[2]}</sub>`:''}`:`<i>${escH(s)}</i>`};
 const stFrac=(p,q)=>q===1?cInt(p):`${p<0?'−':''}<span class="fr"><span>${Math.abs(p)}</span><span>${q}</span></span>`;
@@ -22,7 +13,6 @@ function stNum(v,dec){
 }
 const stMatH=(v,dec)=>`<span class="mat" style="grid-template-columns:repeat(${v.mat[0].length},auto)">${v.mat.flat().map(x=>`<span>${stNum(x,dec)}</span>`).join('')}</span>`;
 
-// ---------- drzewo kroków: liczby, ułamki 1/2 i zmienne to od razu gotowe wartości (lit) ----------
 function stFrom(n,X){
   switch(n.t){
     case 'num':{
@@ -38,7 +28,6 @@ function stFrom(n,X){
     }
     case 'bin':{
       const a=stFrom(n.a,X),b=stFrom(n.b,X);
-      // 1/2 wpisane jako skrócony ułamek to liczba, a nie dzielenie do rozpisania
       if(n.o==='/'&&a.txt&&b.txt&&isFr(a.v)&&isFr(b.v)&&a.v.d===1&&b.v.d===1&&b.v.n>1&&gcd(a.v.n,b.v.n)===1&&!/[.,xbo]/i.test(a.txt+b.txt))return stLit(a.v.div(b.v),{frac:true});
       return {t:'bin',o:n.o,a,b};
     }
@@ -60,7 +49,6 @@ function stFrom(n,X){
 }
 const stKids=n=>n.t==='bin'||n.t==='pow'?[n.a,n.b]:n.t==='mat'?n.rows.flat():n.t==='lit'?[]:[n.a];
 const stNeg=n=>n.t==='neg'||n.t==='lit'&&!isMat(n.v)&&!n.name&&toNum(n.v)<0;
-// pojedynczy „atom”: nie potrzebuje nawiasu jako podstawa potęgi albo argument funkcji
 const stAtom=n=>n.t==='lit'&&(isMat(n.v)||n.lab||!stNeg(n)&&(!isFr(n.v)||n.v.d===1||n.txt))||n.t==='call';
 const ST_FN={sqrt:'√',sin:'sin',cos:'cos',tg:'tg',tan:'tg',ctg:'ctg',cot:'ctg',arcsin:'arcsin',asin:'arcsin',arccos:'arccos',acos:'arccos',arctg:'arctg',arctan:'arctg',atan:'arctg',ln:'ln',log:'log',lg:'log',log2:'log<sub>2</sub>',exp:'exp',det:'det',rz:'rz',rank:'rz',tr:'tr',rref:'rref'};
 function stH(n,mk,o){
@@ -74,7 +62,6 @@ function stH(n,mk,o){
     else if(n.txt)h=escH(n.txt);
     else h=stNum(n.v,o.dec);
   }else if(n.t==='bin'){
-    // kreska ułamkowa dla prostych liczb; gdy w liczniku albo mianowniku jest już ułamek, piszemy „:”
     const frq=x=>x.t==='lit'&&!isMat(x.v)&&isFr(x.v)&&x.v.d!==1&&!o.dec||x.t==='bin'&&x.o==='/'||x.t==='lit'&&isMat(x.v);
     if(n.o==='/'&&!frq(n.a)&&!frq(n.b))h=`<span class="fr"><span>${stH(n.a,mk,o)}</span><span>${stH(n.b,mk,o)}</span></span>`;
     else{
@@ -95,7 +82,6 @@ function stH(n,mk,o){
   const c=mk&&mk.get(n);
   return c?`<span class="${c}">${h}</span>`:h;
 }
-// węzły gotowe do policzenia: wszystkie ich dzieci to już wartości (od lewej do prawej)
 function stReady(n,out=[]){if(n.t==='lit')return out;const k=stKids(n);if(k.every(c=>c.t==='lit'))out.push(n);else k.forEach(c=>stReady(c,out));return out}
 function stSwap(n,map){
   if(map.has(n))return map.get(n);
@@ -108,7 +94,6 @@ const stCount=n=>n.t==='lit'?0:1+stKids(n).reduce((s,c)=>s+stCount(c),0);
 const stHasMat=n=>n.t==='lit'?isMat(n.v):stKids(n).some(stHasMat);
 const stHasAdd=n=>n.t==='bin'&&(n.o==='+'||n.o==='-')||stKids(n).some(stHasAdd);
 
-// ---------- jeden krok na liczbach: {cls, t, x, C} (C: linie rachunku), quiet: bez osobnej klatki ----------
 const ST_TRIG={0:['0','1','0'],30:['1/2','√3/2','√3/3'],45:['√2/2','√2/2','1'],60:['√3/2','1/2','√3'],90:['1','0','—']};
 function stOp(n,r,X){
   const dec=X.dec,N=v=>stNum(v,dec),a=n.a&&n.a.v,b=n.b&&n.b.v,P=v=>!isMat(v)&&toNum(v)<0?`(${N(v)})`:N(v);
@@ -196,11 +181,10 @@ function stOp(n,r,X){
 const ST_TITLE={add:['Dodawanie i odejmowanie','Addition and subtraction'],mul:['Mnożenie i dzielenie','Multiplication and division'],pow:['Potęgi','Powers'],post:['Silnia, procent, stopnie','Factorial, percent, degrees'],call:['Funkcje','Functions'],other:['Rachunek','Working']};
 const ST_TITLE_FR={add:['Dodawanie ułamków','Adding fractions'],mul:['Mnożenie i dzielenie ułamków','Multiplying and dividing fractions']};
 
-// ---------- działania na macierzach: klatki silnika algebry ----------
 function stDet(A,lab,sec,detailed=true){
   const n=A.length;
   if(n<=3)return detFrames(A,lab,sec,detailed&&n===3);
-  // Laplace: rozwijamy względem wiersza albo kolumny z największą liczbą zer
+  // Laplace wzdłuż linii z największą liczbą zer
   let best={z:-1};
   for(let i=0;i<n;i++){const z=A[i].filter(x=>x.z).length;if(z>best.z)best={z,row:true,k:i}}
   for(let j=0;j<n;j++){const z=A.filter(r=>r[j].z).length;if(z>best.z)best={z,row:false,k:j}}
@@ -224,7 +208,6 @@ function stDet(A,lab,sec,detailed=true){
 let stM=0;
 const stMLab=()=>`<i>M</i><sub>${++stM}</sub>`;
 const stPar=l=>/[ +−]/.test(l.replace(/<[^>]+>/g,''))?`(${l})`:l;
-// → {frames, lab} albo null, gdy to nie działanie na macierzach
 function stMatOp(n,r,X){
   const sec=$t('Macierze','Matrices'),A=n.a&&n.a.v,B=n.b&&n.b.v;
   const lbl=x=>x&&x.t==='lit'&&isMat(x.v)?(x.lab||stMatH(x.v,X.dec)):'',la=lbl(n.a),lb=lbl(n.b);
@@ -268,7 +251,6 @@ function stMatOp(n,r,X){
   return fallback(stMLab());
 }
 
-// ---------- systemy liczbowe ----------
 const stDigit=d=>d<10?String(d):String.fromCharCode(55+d);
 function stBaseIn(raw,v){
   const base={b:2,x:16,o:8}[raw[1].toLowerCase()],[ip,fp='']=raw.slice(2).split(/[.,]/),ds=[...ip].map(c=>parseInt(c,16)),k=ds.length,fs=[...fp].map(c=>parseInt(c,16));
@@ -290,7 +272,7 @@ function stBaseOut(v,base){
   return {sec:$t('Systemy liczbowe','Number bases'),t:$t(`${n} na system ${name}`,`${n} to ${name}`),x:$t(`Dzielimy przez ${base}, dopóki nie zostanie 0, i zapisujemy reszty. Reszty czytane od ostatniej do pierwszej to cyfry wyniku.`,`Divide by ${base} until 0 is left, writing down the remainders. Read from the last to the first, they are the digits of the result.`),C,U};
 }
 
-// część ułamkowa: mnożymy przez podstawę i zapisujemy część całkowitą wyniku
+// część ułamkowa: mnożymy przez podstawę
 function stBaseFrac(v,base){
   const name={2:$t('dwójkowy','binary'),8:$t('ósemkowy','octal'),16:$t('szesnastkowy','hexadecimal')}[base],x=cBaseDigits(v,base,12),C=[],U=[];
   const ip=x.ip;let f=F(v.n-ip*v.d,v.d);
@@ -303,7 +285,6 @@ function stBaseFrac(v,base){
     x:$t(`Część całkowitą zamieniamy jak zwykle (dzielenie przez ${base}). Część ułamkową mnożymy przez ${base}: część całkowita iloczynu to kolejna cyfra po przecinku, a dalej mnożymy to, co zostało po przecinku.`,`The whole part is converted as usual (dividing by ${base}). The fractional part is multiplied by ${base}: the whole part of the product is the next digit after the point, and we keep multiplying what is left after the point.`),C,U};
 }
 
-// ---------- całe wyrażenie ----------
 function stExpr(src,X,sec){
   const has=x=>X.env.has(x),ast=calcParse(calcTokens(cNorm(src),has),has);
   X.subs=new Map();X.bases=[];
@@ -317,7 +298,6 @@ function stExpr(src,X,sec){
   X.bases.forEach(b=>fr.push(stBaseIn(b.raw,b.v)));
   for(let guard=0;tree.t!=='lit'&&guard<200;guard++){
     const ready=stReady(tree),first=ready[0];
-    // działanie na macierzach: osobno, klatkami silnika
     const isM=x=>stKids(x).some(c=>isMat(c.v))||(x.t==='call'&&['det','rz','rank','tr','inv','rref'].includes(x.f));
     if(isM(first)){
       const r=calcEval(first,X.env,X.o),m=stMatOp(first,r,X);
@@ -326,7 +306,6 @@ function stExpr(src,X,sec){
       tree=stSwap(tree,new Map([[first,lit]]));
       continue;
     }
-    // liczby: wszystkie gotowe działania tego samego rodzaju naraz (np. oba iloczyny w 2·3 + 4·5)
     const info=new Map();
     const cls0=stOp(first,calcEval(first,X.env,X.o),X).cls;
     for(const n of ready){
@@ -348,7 +327,6 @@ function stExpr(src,X,sec){
   }
   return {frames:fr,v:tree.v,lab:tree.lab};
 }
-// rekord linii z calcLines → klatki odtwarzacza; src: inne wyrażenie z tej linii (zaznaczony fragment)
 function calcSteps(rec,src){
   stM=0;
   const X={env:rec.env||new Map(),o:{deg:rec.deg!==false},dec:!!rec.dec};

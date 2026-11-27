@@ -1,6 +1,3 @@
-/* Kratka. Układ: pasek z przedmiotami u góry, spis treści po lewej (od 980 px), treść do 800 px.
-   Papier w kratkę tylko tam, gdzie się liczy: pod treścią zadania i w odtwarzaczu kroków.
-   Kolory jak na kartce: długopis (--pen), czerwony pisak (--red), zakreślacze (--hl-*). */
 :root{
   --paper:#ffffff;--side:#f4f6f9;--grid:#e5eaf1;--rule:#d7dde7;--ink:#152033;--ink-2:#535f77;--ink-3:#858fa4;
   --pen:#2343b5;--pen-2:#1a3591;--on-pen:#ffffff;--pen-soft:#e8edfc;
@@ -36,7 +33,6 @@ a{color:var(--pen)}
 html[data-lang="en"] [data-ln="pl"],html:not([data-lang="en"]) [data-ln="en"]{display:none!important}
 .vh-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-/* ---------- pasek u góry ---------- */
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--paper);border-bottom:1px solid var(--rule)}
 .top-in{display:flex;align-items:stretch;gap:20px;height:var(--top-h);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .brand{display:inline-flex;align-items:center;gap:9px;color:var(--ink);text-decoration:none;font-weight:700;font-size:19px;letter-spacing:-.01em;flex:none}
@@ -58,7 +54,6 @@ html[data-lang="en"] [data-ln="pl"],html:not([data-lang="en"]) [data-ln="en"]{di
 .views a{flex:none;padding:10px 10px 9px;color:var(--ink-2);text-decoration:none;font-weight:500;font-size:14.5px;border-bottom:2px solid transparent;white-space:nowrap}
 .views a.on{color:var(--pen);border-bottom-color:var(--pen)}
 
-/* ---------- układ: spis treści + treść ---------- */
 .layout{display:grid;grid-template-columns:272px minmax(0,1fr)}
 .side{position:sticky;top:calc(var(--top-h) + env(safe-area-inset-top,0px));height:calc(100vh - var(--top-h) - env(safe-area-inset-top,0px));overflow-y:auto;background:var(--side);border-right:1px solid var(--rule);padding:18px 12px 48px max(12px,env(safe-area-inset-left,0px))}
 .side-nav{display:flex;flex-direction:column;gap:1px}
@@ -80,7 +75,6 @@ html[data-lang="en"] [data-ln="pl"],html:not([data-lang="en"]) [data-ln="en"]{di
 .main{min-width:0;padding:28px max(16px,env(safe-area-inset-right,0px)) 96px 40px}
 .main>section{max-width:800px}
 
-/* ---------- nagłówek widoku ---------- */
 .vh{margin-bottom:18px}
 .eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
 h1{font-size:28px;line-height:1.2;font-weight:600;letter-spacing:-.012em;margin:0;text-wrap:balance}
@@ -100,7 +94,6 @@ h3{font-size:13px;margin:18px 0 6px;color:var(--ink-2);text-transform:uppercase;
 .tn-prev::before{transform:translateX(2px) rotate(45deg)}
 .tn-next::before{transform:translateX(-2px) rotate(-135deg)}
 .tn-arrow:disabled{opacity:.35;cursor:default}
-/* panel od dołu (telefon) */
 .bs{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;justify-content:flex-end}
 .bs-scrim{position:absolute;inset:0;background:var(--scrim)}
 .bs-panel{position:relative;display:flex;flex-direction:column;max-height:86vh;background:var(--paper);color:var(--ink);border-top:1px solid var(--rule);border-radius:10px 10px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.25);padding-bottom:env(safe-area-inset-bottom,0px);animation:bsUp .2s ease-out}
@@ -126,7 +119,6 @@ p{margin:6px 0}
 .center{text-align:center}
 code{font-family:var(--f-code);font-size:.88em;background:var(--side);border:1px solid var(--grid);padding:0 4px;border-radius:2px}
 
-/* ---------- zadanie ---------- */
 .task-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .task-q{font-size:17px;font-weight:600;line-height:1.4}
 .task-q i{font-family:var(--f-math)}
@@ -145,7 +137,6 @@ code{font-family:var(--f-code);font-size:.88em;background:var(--side);border:1px
 .block{margin-top:30px;padding-top:18px;border-top:1px solid var(--rule)}
 .block.flat{margin-top:14px;padding-top:0;border-top:0}
 
-/* ---------- przyciski i przełączniki ---------- */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:9px 16px;border:1px solid var(--pen);border-radius:3px;background:var(--pen);color:var(--on-pen);font:600 14px/1.2 var(--f-ui);cursor:pointer;text-decoration:none}
 .btn:hover{background:var(--pen-2);border-color:var(--pen-2)}
 .btn.ghost{background:var(--paper);color:var(--ink);border-color:var(--rule)}
@@ -171,7 +162,6 @@ code{font-family:var(--f-code);font-size:.88em;background:var(--side);border:1px
 .chk input{flex:none;width:17px;height:17px;margin:2px 0 0;accent-color:var(--pen);cursor:pointer}
 .chk i{font-family:var(--f-math)}
 
-/* ---------- pola ---------- */
 .code{width:100%;font:16px/1.45 var(--f-code);padding:9px 11px;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink)}
 select.code{font:15px var(--f-ui)}
 textarea.code{min-height:104px;resize:vertical}
@@ -198,7 +188,6 @@ input.bad,select.bad{border-color:var(--red)!important;background:var(--red-soft
 .mx{display:flex;align-items:center;gap:6px;font:18px var(--f-math)}
 .mx textarea{width:128px;min-height:78px;resize:vertical;padding:6px 8px;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);font:15px/1.45 var(--f-code)}
 
-/* ---------- komunikaty i rozwiązania ---------- */
 .msg{display:none;margin-top:12px;padding:10px 14px;font-size:14.5px;border-radius:2px}
 .msg.ok{display:block;background:var(--green-soft)}
 .msg.ok>b:first-child{color:var(--green)}
@@ -230,7 +219,6 @@ ul.rules li{margin:5px 0}
 ol{padding-left:20px;margin:6px 0}
 ol li{margin:6px 0}
 
-/* ---------- matematyka ---------- */
 .m,.eq,.mat,.f,.gv,.line,.sys{font-family:var(--f-math)}
 i{font-style:italic}
 sup{font-size:.68em;line-height:0}
@@ -266,7 +254,6 @@ sup{font-size:.68em;line-height:0}
 .sys>.rh{text-align:left}
 .line .sys{font-size:17px}
 
-/* ---------- ściąga ---------- */
 .sheet-cols{columns:2 340px;column-gap:40px}
 .thm{break-inside:avoid;margin:0 0 28px;padding-top:10px;border-top:2px solid var(--ink)}
 .thm.warn-b{border-top-color:var(--red)}
@@ -274,7 +261,6 @@ sup{font-size:.68em;line-height:0}
 .thm p,.thm li{font-size:15px}
 .thm .eq.left{font-size:17px;white-space:normal}
 
-/* ---------- postęp ---------- */
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin:18px 0 4px}
 .stat{padding:14px 12px 14px 0}
 .stat+.stat{border-left:1px solid var(--rule);padding-left:16px}
@@ -290,7 +276,6 @@ sup{font-size:.68em;line-height:0}
 .st{font-size:13px;font-weight:600}
 .st.new{color:var(--ink-3)}.st.bad{color:var(--red)}.st.mid{color:var(--amber)}.st.good{color:var(--green)}
 
-/* ---------- sprawdzian ---------- */
 .fs{border:0;padding:0;margin:18px 0}
 .fs legend{font-size:13.5px;font-weight:500;color:var(--ink-2);margin-bottom:8px;padding:0}
 .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px 16px}
@@ -310,7 +295,6 @@ sup{font-size:.68em;line-height:0}
 .rev-head{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;margin-bottom:6px}
 .ansline{margin:8px 0;font-size:15px;overflow-x:auto}
 
-/* ---------- odtwarzacz kroków ---------- */
 .pl{position:fixed;inset:0;z-index:50;background:var(--scrim);display:flex;align-items:center;justify-content:center;padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
 .pl-box{background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:4px;width:100%;max-width:880px;height:min(100%,900px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.3)}
 .pl-top{display:flex;align-items:center;gap:12px;padding:10px 12px 8px 18px}
@@ -363,7 +347,6 @@ sup{font-size:.68em;line-height:0}
 .pl-opt .chk{font-size:13px;align-items:center}
 .pl-opt .chk input{margin:0}
 
-/* ---------- terminal (systemy operacyjne) ---------- */
 .term{background:var(--term-bg);color:var(--term-fg);font:14px/1.55 var(--f-code);padding:12px 14px;border-radius:3px;overflow-x:auto;white-space:pre;margin:8px 0}
 .term .p{color:var(--term-p)}
 .term .err{color:var(--term-err)}
@@ -381,7 +364,6 @@ sup{font-size:.68em;line-height:0}
 .choice.ok{border-color:var(--green)!important;background:var(--green-soft)!important}
 .choice.bad{border-color:var(--red)!important;background:var(--red-soft)!important}
 
-/* ---------- fizyka: rysunki ---------- */
 .fig{display:block;margin:6px auto;max-width:100%;height:auto;font-family:var(--f-math)}
 .fig text{fill:var(--ink);font-size:15px}
 .fig .ax{stroke:var(--ink-3);fill:none}
@@ -401,7 +383,6 @@ sup{font-size:.68em;line-height:0}
 .fig text.t3{fill:var(--green)}
 .fig text.small{font-size:13px;fill:var(--ink-2)}
 
-/* ---------- szerokości ---------- */
 @media (max-width:979px){
   .layout{display:block}
   .side{display:none}
@@ -459,9 +440,6 @@ ol.steps>li{margin:10px 0}
 .res-sum{flex:1 1 280px;min-width:0}
 .res-sum p{margin-top:6px}
 
-/* ---------- zeszyt i brudnopis ----------
-   Kartka: kratka 24 px, czerwony margines, tekst w linii co 24 px. <pre> z wynikami leży pod <textarea>
-   z przezroczystymi literami, więc obie warstwy muszą mieć identyczny krój, rozmiar i odstępy. */
 :root{--nb-grid:#dce3ed;--nb-margin:#eba3a8;--nb-hl:rgba(255,212,0,.4);--nb-hl-ic:#f2c200;--nb-sel:rgba(35,67,181,.2)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--nb-grid:#212935;--nb-margin:rgba(255,127,135,.42);--nb-hl:rgba(255,214,10,.3);--nb-hl-ic:#d6b11a;--nb-sel:rgba(143,166,255,.32)}}
 :root[data-theme="dark"]{--nb-grid:#212935;--nb-margin:rgba(255,127,135,.42);--nb-hl:rgba(255,214,10,.3);--nb-hl-ic:#d6b11a;--nb-sel:rgba(143,166,255,.32)}
@@ -489,13 +467,11 @@ ol.steps>li{margin:10px 0}
 .nb-hint{flex:none;margin-left:6px;font-size:13px;color:var(--ink-3);white-space:nowrap}
 @media (pointer:fine),(max-width:560px){.nb-hint{display:none}}
 .nb:not(.nb-pen) .nb-tools,.nb.nb-pen .nb-keys{display:none}
-/* z myszą i zwykłą klawiaturą zostają tylko symbole, których na niej nie ma */
 @media (pointer:fine){.nb-keys>.kb{display:none}}
 .nb-bar,.nb-sub,.nb-foot,.nbd-head{-webkit-user-select:none;user-select:none}
 .nb-pen .nb-page{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .nb-scroll{position:relative;flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}
 .nb-page{position:relative;background-color:var(--paper);background-image:linear-gradient(90deg,transparent 48px,var(--nb-margin) 48px,var(--nb-margin) 49.5px,transparent 49.5px),linear-gradient(var(--nb-grid) 1px,transparent 1px),linear-gradient(90deg,var(--nb-grid) 1px,transparent 1px);background-size:100% 100%,24px 24px,24px 24px}
-/* padding-left 58 px = NB_PAD w notebook.js */
 .nb-mirror,.nb-text{position:absolute;left:0;top:0;margin:0;padding:24px 24px 24px 58px;border:0;border-radius:0;font:16px/24px var(--f-code);letter-spacing:0;word-spacing:0;tab-size:4;white-space:pre;overflow-wrap:normal;word-break:normal;font-variant-ligatures:none;font-kerning:none;text-transform:none;text-indent:0;text-align:left}
 .nb-mirror{color:var(--ink);pointer-events:none;width:max-content;background:none}
 .nb-text{display:block;color:transparent;-webkit-text-fill-color:transparent;caret-color:var(--ink);background:transparent;resize:none;overflow:hidden;outline:0;box-shadow:none;-webkit-appearance:none;appearance:none}
@@ -506,7 +482,6 @@ ol.steps>li{margin:10px 0}
 .nb-pen[data-tool="erase"] .nb-ink{cursor:cell}
 .nb-c{color:var(--ink-3)}
 .nb-r{display:inline-block;height:24px;vertical-align:top;margin-left:18px;color:var(--pen);font:17px/24px var(--f-math);white-space:pre}
-/* w lustrze kartki wynik nigdy nie zmienia wysokości linii (klasy z reszty strony, np. .note, mają marginesy) */
 .nb-mirror .nb-r{margin:0 0 0 18px}
 .nb-r.err,.nb-r.bad{color:var(--red)}
 .nb-r.ok{color:var(--green)}
@@ -525,7 +500,6 @@ ol.steps>li{margin:10px 0}
 .nb-dl dt{margin:0;white-space:nowrap}
 .nb-dl dd{margin:0;font-size:14.5px;color:var(--ink-2)}
 .nb-dl code{white-space:pre}
-/* brudnopis: panel z prawej (komputer) albo cały ekran (telefon) */
 .btn.pad.on{border-color:var(--pen);color:var(--pen);background:var(--pen-soft)}
 .nbd{position:fixed;z-index:45;top:calc(var(--top-h) + env(safe-area-inset-top,0px));right:0;bottom:0;width:min(560px,46vw);display:flex;flex-direction:column;background:var(--paper);border-left:1px solid var(--rule);box-shadow:-18px 0 40px rgba(14,21,35,.12)}
 .nbd-head{display:flex;align-items:center;gap:10px;padding:8px max(10px,env(safe-area-inset-right,0px)) 8px 16px;border-bottom:1px solid var(--rule);color:var(--ink)}
@@ -555,7 +529,6 @@ html.nbd-open .main{padding-right:calc(min(560px,46vw) + 32px)}
 }
 @supports (height:100dvh){@media (max-width:639px){.nb-view .nb{height:calc(100dvh - var(--top-h) - 150px)}}}
 
-/* ---------- zeszyt jako osobna część: zakładka na początku, pełna szerokość ---------- */
 .subjects a.nb-tab{gap:7px}
 .subjects a.nb-tab svg{width:16px;height:16px;flex:none}
 .subj-sep{align-self:center;width:1px;height:22px;background:var(--rule);margin:0 6px;flex:none}
@@ -566,17 +539,14 @@ html[data-subj="zeszyt"] .side,html[data-subj="zeszyt"] .views{display:none!impo
 html[data-subj="zeszyt"] .main{padding-left:max(16px,env(safe-area-inset-left,0px))}
 @media (min-width:980px){html[data-subj="zeszyt"] .main{padding-left:40px}}
 html[data-subj="zeszyt"] .main>section.nb-view{max-width:1120px;margin:0 auto}
-/* oko: wyniki od razu (otwarte) albo na żądanie (przekreślone) */
 .ic-eye .ic-slash{display:none}
 #nbShow.on .ic-eye .ic-slash{display:inline}
 .nb-keys>button.act{font:600 14px/1 var(--f-ui);color:var(--pen);border-color:var(--pen);background:var(--pen-soft)}
 .nb-r.hid{color:var(--ink-3);font-weight:600}
-.nb-r.note{color:var(--ink-3);font-size:15px;margin:0 0 0 18px}   /* .note z reszty strony ma margines 8 px, który przesuwał linie zeszytu */
-/* pismo: odczyt z wynikiem obok linii i okienko poprawiania */
+.nb-r.note{color:var(--ink-3);font-size:15px;margin:0 0 0 18px}
 .nb-hwl{position:absolute;left:0;top:0;width:0;height:0}
 .nb-hwc{position:absolute;display:inline-flex;align-items:center;gap:10px;max-width:min(420px,80vw);min-height:30px;padding:2px 10px;border:1px solid var(--rule);border-radius:15px;background:var(--paper);color:var(--ink);box-shadow:0 2px 8px rgba(14,21,35,.08);cursor:pointer;white-space:nowrap;overflow:hidden;font:15px var(--f-code)}
 .nb-hwc:hover{border-color:var(--ink-3)}
-/* w trybie pióra odczyt nie łapie dotyku (pisze się po nim), a otwiera go krótkie stuknięcie (notebook.js) */
 .nb-pen .nb-hwc{pointer-events:none}
 .nb-hwl .nb-hwc{transition:opacity .15s}
 .nb-hwl.dim .nb-hwc{opacity:.25}
@@ -594,7 +564,6 @@ html[data-subj="zeszyt"] .main>section.nb-view{max-width:1120px;margin:0 auto}
 .nb-pn{cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.2}
 .nb-pname{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--ink-3)}
 
-/* ---------- strona startowa: kartka notatnika ---------- */
 html[data-subj="start"] .layout{grid-template-columns:minmax(0,1fr)}
 html[data-subj="start"] .side,html[data-subj="start"] .views{display:none!important}
 .main>section.home{max-width:1000px;margin:0 auto}
@@ -614,7 +583,6 @@ html[data-subj="start"] .side,html[data-subj="start"] .views{display:none!import
 .home mark{background:var(--hl-y);color:inherit;padding:0 1px}
 @media (max-width:639px){.home-paper{padding:20px 12px 28px 40px;background-image:linear-gradient(90deg,transparent 24px,var(--nb-margin) 24px,var(--nb-margin) 25.5px,transparent 25.5px),linear-gradient(var(--nb-grid) 1px,transparent 1px),linear-gradient(90deg,var(--nb-grid) 1px,transparent 1px)}}
 
-/* kartka na cały ekran: zeszyt przykrywa stronę, zostaje jego pasek i stopka */
 .nb.nb-full{position:fixed;inset:0;z-index:46;height:100vh!important;height:100dvh!important;min-height:0!important;border:0;border-radius:0;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
 html.nb-full-on .top{visibility:hidden}
 #nbFull .ic-out,#nbFull.on .ic-in{display:none}

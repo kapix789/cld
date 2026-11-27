@@ -1,6 +1,3 @@
-// =====================================================================
-//  SYSTEMY OPERACYJNE: terminal do swobodnych ćwiczeń
-// =====================================================================
 let TM=null,tmHist=[],tmPos=0;
 function tmStart(){
   TM={S:soBase(),log:[]};

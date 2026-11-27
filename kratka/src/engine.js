@@ -1,7 +1,3 @@
-// Silnik matematyczny: ułamki, macierze, eliminacja Gaussa, równania, układy i klatki animacji. Bez DOM.
-// Język ($t), ustawienia (OPT) i rejestry są w core.js.
-
-// ---------- Ułamki ----------
 const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a};
 class Fr{
   constructor(n,d=1){if(d===0)throw new Error('div0');if(d<0){n=-n;d=-d}const g=gcd(n,d)||1;this.n=n/g;this.d=d/g}
@@ -29,7 +25,6 @@ function parseFr(s){
 }
 const fmt=x=>(x.n<0||x.d!==1)?`(${x.str()})`:x.str();
 
-// ---------- Macierze ----------
 class DimErr extends Error{}
 const dimS=A=>`${A.length}×${A[0].length}`;
 function sameDim(A,B,w){if(A.length!==B.length||A[0].length!==B[0].length)throw new DimErr($t(`Nie da się ${w} macierzy ${dimS(A)} i ${dimS(B)}: muszą mieć ten sam wymiar.`,`Cannot ${w} a ${dimS(A)} matrix and a ${dimS(B)} matrix: they must be the same size.`))}
@@ -50,9 +45,9 @@ const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 function rich(lo,hi,pz=.12){for(;;){const v=rnd(lo,hi);if(v!==0||Math.random()<pz)return v}}
 const randR=(r,c,lo=-5,hi=7)=>M.make(r,c,()=>F(rich(lo,hi)));
-const det2=A=>A[0][0].mul(A[1][1]).sub(A[0][1].mul(A[1][0])); // tylko wewnętrznie, do losowania
+const det2=A=>A[0][0].mul(A[1][1]).sub(A[0][1].mul(A[1][0]));
 function unimod2(){for(;;){const a=rnd(-2,2),b=rnd(-2,2),c=rnd(-2,2),d=rnd(-2,2);if(Math.abs(a*d-b*c)===1&&(b||c)&&[a,b,c,d].filter(x=>!x).length<=1)return M.ints([[a,b],[c,d]])}}
-// macierz odwracalna z całkowitą odwrotną, ale "ładnymi", różnymi liczbami
+// odwracalna, z całkowitą odwrotną
 function richUni(n,dets=[1]){
   if(n===2){for(;;){const e=[rich(-6,7,0),rich(-6,7,0),rich(-6,7,0),rich(-6,7,0)];const d=Math.abs(e[0]*e[3]-e[1]*e[2]);
     if(!dets.includes(d))continue;if(e.filter(x=>Math.abs(x)<=1).length<=1&&Math.max(...e.map(Math.abs))>=3)return M.ints([[e[0],e[1]],[e[2],e[3]]])}}
@@ -64,7 +59,6 @@ function richUni(n,dets=[1]){
   }
 }
 
-// ---------- Eliminacja Gaussa [A|I] ----------
 const W=i=>`${$t('w','R')}<sub>${i+1}</sub>`;
 function gaussInv(A0){
   const n=A0.length;let L=A0.map(r=>r.slice()),R=M.I(n);const cp=X=>X.map(r=>r.slice());
@@ -87,12 +81,7 @@ function gaussInv(A0){
   return {inv:R,steps};
 }
 function augHtml(A,B){let c='';for(let i=0;i<A.length;i++)c+=A[i].map(x=>`<span>${x.html()}</span>`).join('')+B[i].map((x,j)=>`<span${j?'':' class="bl"'}>${x.html()}</span>`).join('');return `<span class="mat aug" style="grid-template-columns:repeat(${A[0].length+B[0].length},auto)">${c}</span>`}
-// ---------- Eliminacja bez ułamków (tak jak na kartce) ----------
-// Plan pokazywanych kroków. Ułamków unika: robi ±1 kombinacją dwóch wierszy, zamiast dzielić mnoży wiersz
-// zerowany (np. 3w₂ − 2w₁), skraca wiersze przez wspólny dzielnik, a przez element główny dzieli dopiero na końcu.
-// Zdarzenia ev: {k:'scale'|'comb'|'pivot'|'none'|'swap'|'elim'|'norm', j (kolumna), i (wiersz), …, B: przed, A: po}
-// Opcje: down — zera tylko pod schodkami (rząd), norm:false — bez końcowego dzielenia, stop — przerwij przy braku schodka
-// (odwrotność), sys — układ: przy sprzeczności nie dziel na końcu.
+// bez ułamków: ±1 z kombinacji wierszy, dzielenie dopiero na końcu
 const lcmN=(a,b)=>a/gcd(a,b)*b;
 function elimPlan(Ab0,nv,o={}){
   if(!OPT.noFrac)return elimPlanClassic(Ab0,nv,o);
@@ -138,7 +127,6 @@ function elimPlan(Ab0,nv,o={}){
   if(o.norm!==false&&!contra)piv.forEach((j,i)=>{const p=A[i][j];if(!p.one)doit({k:'norm',j,i,c:F(1).div(p),p},()=>{A[i]=A[i].map(x=>x.div(p))})});
   return {ev,A,piv,ok:true,contra};
 }
-// klasycznie: element główny (najlepiej ±1), dzielimy jego wiersz, zerujemy resztę; ułamki mogą wyjść po drodze
 function elimPlanClassic(Ab0,nv,o={}){
   const m=Ab0.length,A=Ab0.map(r=>r.slice()),ev=[],cp=X=>X.map(r=>r.slice());
   const doit=(e,f)=>{e.B=cp(A);f();e.A=cp(A);ev.push(e)};
@@ -167,7 +155,6 @@ function opLabel(e){
   if(e.k==='elim'){const b=e.b.abs();return `${e.a.one?'':num(e.a)}${W(e.i)} ${e.b.n>0?'−':'+'} ${b.one?'':num(b)}${W(e.r)}`}
   return '';
 }
-// kroki zgrupowane po kolumnach (do rozwiązań tekstowych); końcowe dzielenie osobno
 function planGroups(plan){
   const g=[];let cur=null;
   for(const e of plan.ev){if(e.k==='pivot'||e.k==='none')continue;const key=e.k==='norm'?'norm':e.j;if(!cur||cur.key!==key){cur={key,ops:[],A:null};g.push(cur)}cur.ops.push(opLabel(e));cur.A=e.A}
@@ -186,7 +173,6 @@ function gaussHtml(name,resName,A){
   return s+`<div class="line">${resName} = ${M.html(sp(plan.A)[1])}</div>`;
 }
 
-// ---------- Parser ----------
 function tokenize(s){
   s=s.replace(/ᵀ/g,'^T').replace(/⁻¹/g,'^-1').replace(/²/g,'^2').replace(/[−–]/g,'-').replace(/[\s*·]/g,'').toUpperCase();
   const t=[];let i=0;
@@ -242,7 +228,6 @@ function parseEq(src){
 }
 function parseExpr(src){const P=parser(tokenize(src));const e=P.expr();if(!P.done())throw new Error($t('Coś nie pasuje w odpowiedzi (sprawdź nawiasy / znak „=”).','Something is wrong in the answer (check the brackets / the “=” sign).'));return e}
 
-// ---------- Rachunek symboliczny ----------
 const ST='<sup>T</sup>',SI='<sup>−1</sup>';
 const cH=c=>c.one?'':c.html();
 function rAtom(a){let b=a.type==='var'?`<i>${a.n}</i>`:`(${rExpr(a.expr)})`,s=false;for(const op of a.post){if(s)b=`(${b})`;b+=op.k==='T'?ST:op.k==='INV'?SI:`<sup>${op.v}</sup>`;s=true}return b}
@@ -339,7 +324,6 @@ function solve(src){
   return {orig,steps,P,L0,R0,letters:lettersOf(ast.L,lettersOf(ast.R))};
 }
 
-// ---------- Wartości: macierz albo k·I (wymiar I dopasowuje się sam) ----------
 const isS=v=>!Array.isArray(v);
 const S=k=>({sc:k});
 function sqI(A,k){if(A.length!==A[0].length)throw new DimErr($t(`Do macierzy ${dimS(A)} nie da się dodać wielokrotności I, bo nie jest kwadratowa.`,`A multiple of I cannot be added to the ${dimS(A)} matrix because it is not square.`));return M.scale(k,M.I(A.length))}
@@ -356,7 +340,6 @@ function vInv(a,what){
 }
 const toMat=(v,n)=>isS(v)?M.scale(v.sc,M.I(n)):v;
 
-// ---------- Obliczenia ----------
 function evalF(f,env){let V=f.sum?evalSum(f.sum,env):env[f.n];if(!V)throw new Error('brak '+f.n);if(f.t)V=vT(V);if(f.i)V=vInv(V,rFac({...f,i:false}));return V}
 const evalProd=(fs,env)=>fs.length?fs.map(f=>evalF(f,env)).reduce(vMul):S(F(1));
 const evalSum=(ts,env)=>ts.map(t=>vScale(t.c,evalProd(t.fs,env))).reduce(vAdd);
@@ -383,7 +366,6 @@ function checkAnswer(sol,text){
   return tested>0;
 }
 
-// ---------- Generator równań literowych ----------
 function genEq(lvl){
   const Ls=['A','B','C','D'];
   const f=(pT=.25,pI=.35)=>{const r=Math.random();return pick(Ls)+(r<pT?'^T':r<pT+pI?'^-1':'')};
@@ -400,8 +382,6 @@ function genEq(lvl){
   return `${f()}X-${f()}=${rnd(2,3)}X+${grp()}`;
 }
 
-// ---------- Zadania liczbowe z X ----------
-// r: wymiary liter w wersji prostokątnej (n — rozmiar, m — drugi wymiar); lin: równania liczone przez niewiadome
 const NT=[
   {eq:'AX=B',inv:{A:0},r:{B:'nm'}},
   {eq:'XA=B',inv:{A:0},r:{B:'mn'}},
@@ -481,7 +461,6 @@ function numSolHtml(T){
   return h;
 }
 
-// ---------- Działania ----------
 const eqL=(lab,A)=>`<div class="line">${lab} = ${M.html(A)}</div>`;
 const coef=a=>a===1?'':a===-1?'−':String(a).replace('-','−');
 const EXPR=[
@@ -517,7 +496,6 @@ function genTask(type){
   const n=type==='inv2'?2:3,A=n===2?richUni(2,[1,1,2]):richUni(3),ans=M.inv(A);
   return {fr:()=>invFrames(A,'<i>A</i>','<i>A</i><sup>−1</sup>',$t('Macierz odwrotna','Inverse matrix')).frames,q:$t(`Oblicz <i>A</i><sup>−1</sup> (${n}×${n})`,`Compute <i>A</i><sup>−1</sup> (${n}×${n})`),given:[['A',A]],ans,lab:'<i>A</i><sup>−1</sup>',get sol(){return gaussHtml('<i>A</i>','<i>A</i><sup>−1</sup>',A)+$t(`<p class="mute">Kontrola: <i>A</i>·<i>A</i><sup>−1</sup> = <i>I</i>.</p>`,`<p class="mute">Check: <i>A</i>·<i>A</i><sup>−1</sup> = <i>I</i>.</p>`)}};
 }
-// ---------- Układy równań: wspólne ----------
 const ORD='xyztuvwabcdefghijklmnopqrs';
 const nmHtml=s=>{const m=s.match(/^([a-z])(\d*)$/);return `<i>${m[1]}</i>${m[2]?`<sub>${m[2]}</sub>`:''}`};
 const stdNames=n=>n<=4?['x','y','z','t'].slice(0,n):Array.from({length:n},(_,i)=>'x'+(i+1));
@@ -525,7 +503,6 @@ const matNames=(r,c)=>r*c<=4?['x','y','z','t'].slice(0,r*c):M.make(r,c,(i,j)=>'x
 const pl=(n,a,b,c)=>n===1?a:(n%10>=2&&n%10<=4&&(n%100<12||n%100>14))?b:c;
 function matH(A,o={}){const c=A[0].length;return `<span class="mat${o.det?' det':''}" style="grid-template-columns:repeat(${c},auto)">${A.flat().map((x,k)=>`<span${o.hl===k%c?' class="hl"':''}>${typeof x==='string'?x:x.html()}</span>`).join('')}</span>`}
 const colH=names=>matH(names.map(v=>[nmHtml(v)]));
-// forma liniowa {c:[współczynniki], k:wyraz wolny}
 function lfHtml(f,names,constFirst){
   const p=[];
   if(constFirst&&!f.k.z)p.push([f.k.n<0,f.k.abs().html()]);
@@ -533,7 +510,6 @@ function lfHtml(f,names,constFirst){
   if(!constFirst&&!f.k.z)p.push([f.k.n<0,f.k.abs().html()]);
   return p.length?p.map(([ng,b],i)=>(i?(ng?' − ':' + '):(ng?'−':''))+b).join(''):'0';
 }
-// układ z klamrą, wyrazy w kolumnach
 function sysHtml(rows,names){
   const nv=names.length;let h='';
   for(const r of rows){
@@ -551,7 +527,6 @@ function sysHtml(rows,names){
 }
 const abRows=(Ab,nv)=>Ab.map(r=>({c:r.slice(0,nv),k:r[nv]}));
 
-// ---------- Eliminacja Gaussa–Jordana dla [A|B] ----------
 const pivScore=x=>x.z?1e9:(x.d===1&&Math.abs(x.n)===1)?0:Math.abs(x.n/x.d)+(x.d!==1?100:0);
 function rref(Ab,nv){
   const m=Ab.length,A=Ab.map(r=>r.slice()),cp=X=>X.map(r=>r.slice()),steps=[{ops:[],A:cp(A)}],piv=[];let row=0;
@@ -608,7 +583,6 @@ function checkSysHtml(Ab,names,vals){
   return $t(`<h3>Sprawdzenie</h3><p class="mute">Podstawiamy do każdego równania:</p>`,`<h3>Check</h3><p class="mute">Substitute into every equation:</p>`)+Ab.map(r=>{let s=F(0);const p=[];r.slice(0,nv).forEach((a,j)=>{if(!a.z){p.push(`${fmt(a)}·${fmt(vals[j])}`);s=s.add(a.mul(vals[j]))}});return `<div class="line">${p.join(' + ')||'0'} = ${s.html()}${s.eq(r[nv])?'':' ≠ '+r[nv].html()}</div>`}).join('');
 }
 
-// ---------- Wyznaczniki i Cramer ----------
 function detF(A){
   const n=A.length,B=A.map(r=>r.slice());let d=F(1);
   for(let j=0;j<n;j++){
@@ -629,7 +603,6 @@ function detLines(A){
   return `<div class="line">= ${P.map(tx).join(' + ')} − ${N.map(tx).join(' − ')}</div><div class="line">= ${P.map(t=>fmt(tv(t))).join(' + ')} − ${N.map(t=>fmt(tv(t))).join(' − ')} = <b>${v.html()}</b></div>`;
 }
 
-// ---------- Układ: wybrana metoda ----------
 function sysMethodHtml(Ab,names,method){
   const nv=names.length,m=Ab.length,A=Ab.map(r=>r.slice(0,nv)),b=Ab.map(r=>r[nv]),bc=b.map(x=>[x]);
   const truth=rref(Ab,nv),tsol=sysSolution(truth,nv);
@@ -670,13 +643,11 @@ function sysMethodHtml(Ab,names,method){
   return {html:h,type:truth.type,vals,res:truth};
 }
 
-// ---------- Generator układów ----------
 const randRow=nv=>Array.from({length:nv},()=>F(rich(-4,5)));
 function genSysOnce(m,nv,want){
   const r=want==='one'?nv:want==='inf'?Math.min(m,nv-1):Math.min(m-1,nv);
   if(r<1||r>m)return null;
-  // układ kwadratowy z jednym rozwiązaniem: zwykle macierz o wyznaczniku ±1 z małymi liczbami (L·U) —
-  // w każdej kolumnie da się wziąć 1 albo −1, więc rachunki są krótkie i bez ułamków
+  // L·U z ±1 na przekątnej, więc det = ±1
   if(want==='one'&&m===nv&&nv>=3&&Math.random()<.75){
     const n=nv,small=()=>Math.random()<.35?0:rnd(-2,2);
     const Lm=M.make(n,n,(i,j)=>F(i===j?1:i>j?small():0)),Um=M.make(n,n,(i,j)=>F(i===j?pick([1,1,-1]):i<j?small():0));
@@ -714,7 +685,6 @@ function genSys(sz,mode){
   for(let at=0;at<900&&ok<50;at++){
     const Ab=genSysOnce(m,nv,want);if(!Ab)continue;
     const res=rref(Ab,nv);if(res.type!==want)continue;ok++;
-    // krótko i na małych liczbach: mało operacji, małe liczby, bez mnożenia całych wierszy i ułamków
     const plan=elimPlan(Ab,nv,{sys:true}),ev=plan.ev.filter(e=>e.k!=='pivot'&&e.k!=='none'&&e.k!=='swap'&&!(e.k==='scale'&&e.why==='reduce'));
     const target={2:2,3:5,4:9}[nv]||5,zeros=Ab.flat().filter((x,q)=>q%(nv+1)<nv&&x.z).length,okZeros={2:0,3:1,4:3}[nv]||2;
     const sc=planFrac(plan)*3+Math.max(0,planMax(plan)-12)*1.5+ev.filter(e=>e.k==='elim'&&!e.a.one).length*3+Math.abs(ev.length-target)*1.2+Math.max(0,zeros-okZeros)*2;
@@ -723,7 +693,6 @@ function genSys(sz,mode){
   return {Ab:best.Ab,names:stdNames(nv)};
 }
 
-// ---------- Parser układu wpisanego tekstem ----------
 function parseLinSide(s,k){
   s=s.replace(/[\s*·]/g,'').toLowerCase();
   if(!s)throw new Error($t(`Równanie ${k+1}: jedna strona „=” jest pusta.`,`Equation ${k+1}: one side of “=” is empty.`));
@@ -758,7 +727,6 @@ function parseSystem(text){
   return {Ab:eqs.map(e=>[...names.map(n=>e.v[n]||F(0)),e.k]),names};
 }
 
-// ---------- Równanie macierzowe na liczbach ----------
 function evalAst(e,env){let acc=null;for(const t of e.terms){let v=S(F(t.sign).mul(t.c));for(const a of t.atoms)v=vMul(v,evalAtom(a,env));acc=acc?vAdd(acc,v):v}return acc}
 function evalAtom(a,env){
   let v;
@@ -819,9 +787,6 @@ function linSolve(src,env){
   }else{d.gen=`<i>X</i> = ${matH(M.make(r,c,(i,j)=>lfHtml(G.sol.forms[i*c+j],names,true)))}, &nbsp; ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} ∈ ℝ`;h+=$t(`<div class="line res">${d.gen}</div><p class="mute">Nieskończenie wiele macierzy: każdy wybór ${G.sol.free.length===1?'liczby':'liczb'} ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} daje inne <i>X</i>.</p>`,`<div class="line res">${d.gen}</div><p class="mute">Infinitely many matrices: every choice of ${G.sol.free.map(j=>nmHtml(names[j])).join(', ')} gives a different <i>X</i>.</p>`);}
   return {html:h,type:G.res.type,X,fr:planFrac(G.plan),orig,d};
 }
-// ---------- Klatki do odtwarzacza „krok po kroku” ----------
-// klatka: {sec, t (tytuł), x (opis), S (html nad macierzami), B:[plansze], J:[łączniki], C:[linie rachunku], Cb, U:[zdarzenia w czasie]}
-// plansza: {M: html[][], bar, lab, hl:{rows,cols,cells}, det, dimCols}; zdarzenie: {t, b,i,j, v | add | clear | swap | line}
 const PH='<span class="ph">?</span>';
 const hM=X=>X.map(r=>r.map(x=>typeof x==='string'?x:x.html()));
 const bd=(X,o={})=>({M:hM(X),bar:o.bar===undefined?-1:o.bar,lab:o.lab||'',hl:o.hl||{},det:!!o.det,dimCols:o.dimCols||[]});
@@ -997,23 +962,24 @@ function macFrames(Ab,names){
   fr.push(sysCheckFrame(Ab,names,mf.R.map(r=>r[0])));
   return fr;
 }
-function cramerFrames(Ab,names){
+function cramerFrames(Ab,names,only){
   const nv=names.length,m=Ab.length,A=Ab.map(r=>r.slice(0,nv)),b=Ab.map(r=>r[nv]),bc=b.map(x=>[x]),sec=$t('Wzory Cramera','Cramer’s rule'),fr=[];
   if(m!==nv||nv>3){fr.push({sec,t:$t('Tu Cramer się nie przyda','Cramer’s rule won’t help here'),x:m!==nv?$t(`Wzory Cramera działają tylko, gdy równań jest tyle, ile niewiadomych. Tu równań jest ${m}, a niewiadomych ${nv}. Liczymy metodą Gaussa.`,`Cramer’s rule only works when there are as many equations as unknowns. Here there are ${m} equations and ${nv} unknowns. We use Gaussian elimination.`):$t(`Dla układu ${nv}×${nv} trzeba by liczyć wyznaczniki ${nv}×${nv} (rozwinięcie Laplace’a), a to bardzo długie liczenie. Wygodniej metodą Gaussa.`,`A ${nv}×${nv} system would need ${nv}×${nv} determinants (Laplace expansion), which takes very long. Gaussian elimination is easier.`),S:sysHtml(abRows(Ab,nv),names)});return fr.concat(sysGaussFrames(Ab,names))}
   fr.push({sec,t:$t('Macierz współczynników i wyrazy wolne','Coefficient matrix and constants'),x:$t('Z układu wypisujemy macierz współczynników <i>A</i> i kolumnę wyrazów wolnych <i>B</i>. Najpierw liczymy wyznacznik główny <i>W</i> = det <i>A</i>.','From the system we write the coefficient matrix <i>A</i> and the column of constants <i>B</i>. First we compute the main determinant <i>D</i> = det <i>A</i>.'),S:sysHtml(abRows(Ab,nv),names),B:[bd(A,{lab:'<i>A</i>'}),bd(bc,{lab:'<i>B</i>'})]});
   fr.push(...detFrames(A,$t('<i>W</i>','<i>D</i>'),sec,true));
   const W=detF(A);
   if(W.z){fr.push({sec,t:$t('<i>W</i> = 0, wzory Cramera nie rozstrzygają','<i>D</i> = 0: Cramer’s rule cannot decide'),x:$t('Wyznacznik główny jest zerem: układ jest sprzeczny albo ma nieskończenie wiele rozwiązań. Rozstrzyga metoda Gaussa.','The main determinant is zero: the system is inconsistent or has infinitely many solutions. Gaussian elimination decides.')});return fr.concat(sysGaussFrames(Ab,names))}
-  const Ws=names.map((v,j)=>{
-    const lab=`<i>${$t('W','D')}</i><sub>${nmHtml(v)}</sub>`,Aj=A.map((r,i)=>r.map((x,q)=>q===j?b[i]:x)),U=[];
+  const js=only===undefined?names.map((_,j)=>j):[only];
+  const Ws=js.map(j=>{
+    const v=names[j],lab=`<i>${$t('W','D')}</i><sub>${nmHtml(v)}</sub>`,Aj=A.map((r,i)=>r.map((x,q)=>q===j?b[i]:x)),U=[];
     for(let i=0;i<nv;i++)U.push({t:.8+i*.5,b:0,i,j,v:b[i].html()},{t:.8+i*.5,b:1,i,j:0,add:'pair'});
     fr.push({sec,t:$t(`${lab}: kolumna przy ${nmHtml(v)} zastąpiona wyrazami wolnymi`,`${lab}: replacing the column of ${nmHtml(v)} with the constants`),x:$t(`W macierzy <i>A</i> kolumnę ${j+1} (współczynniki przy ${nmHtml(v)}) zastępujemy kolumną <i>B</i>. Reszta zostaje bez zmian.`,`In <i>A</i>, column ${j+1} (the coefficients of ${nmHtml(v)}) is replaced with the column <i>B</i>. The rest stays the same.`),B:[bd(A,{det:true,lab,hl:{cols:{[j]:'dst'}}}),bd(bc,{lab:'<i>B</i>'})],J:['←'],U});
     fr.push(...detFrames(Aj,lab,sec,false));
     return detF(Aj);
   });
-  const C=names.map((v,j)=>({h:$t(`${nmHtml(v)} = <span class="fr"><span><i>W</i><sub>${nmHtml(v)}</sub></span><span><i>W</i></span></span> = <span class="fr"><span>${Ws[j].str()}</span><span>${W.str()}</span></span> = <b>${Ws[j].div(W).html()}</b>`,`${nmHtml(v)} = <span class="fr"><span><i>D</i><sub>${nmHtml(v)}</sub></span><span><i>D</i></span></span> = <span class="fr"><span>${Ws[j].str()}</span><span>${W.str()}</span></span> = <b>${Ws[j].div(W).html()}</b>`),full:true}));
+  const C=js.map((j,q)=>{const v=names[j];return {h:$t(`${nmHtml(v)} = <span class="fr"><span><i>W</i><sub>${nmHtml(v)}</sub></span><span><i>W</i></span></span> = <span class="fr"><span>${Ws[q].str()}</span><span>${W.str()}</span></span> = <b>${Ws[q].div(W).html()}</b>`,`${nmHtml(v)} = <span class="fr"><span><i>D</i><sub>${nmHtml(v)}</sub></span><span><i>D</i></span></span> = <span class="fr"><span>${Ws[q].str()}</span><span>${W.str()}</span></span> = <b>${Ws[q].div(W).html()}</b>`),full:true}});
   fr.push({sec,t:$t('Wzory Cramera','Cramer’s rule'),x:$t(`<i>W</i> = ${W.html()} ≠ 0, więc jest dokładnie jedno rozwiązanie. Każdą niewiadomą dostajemy, dzieląc jej wyznacznik przez wyznacznik główny.`,`<i>D</i> = ${W.html()} ≠ 0, so there is exactly one solution. Each unknown is its determinant divided by the main determinant.`),C,U:C.map((_,k)=>({t:.5+k*.9,line:k}))});
-  fr.push(sysCheckFrame(Ab,names,Ws.map(x=>x.div(W))));
+  if(only===undefined)fr.push(sysCheckFrame(Ab,names,Ws.map(x=>x.div(W))));
   return fr;
 }
 const sysFrames=(Ab,names,method)=>method==='mac'?macFrames(Ab,names):method==='cra'?cramerFrames(Ab,names):sysGaussFrames(Ab,names);
@@ -1065,7 +1031,6 @@ function linFrames(L){
   else fr.push({sec:$t('Wynik','Result'),t:$t('Brak rozwiązań','No solutions'),x:$t('Układ jest sprzeczny, więc żadna macierz <i>X</i> nie spełnia tego równania.','The system is inconsistent, so no matrix <i>X</i> satisfies this equation.')});
   return fr;
 }
-// najpierw wzorem na literach; gdy się nie da — przez niewiadome
 function numbersSolve(src,env){
   let sol=null,why='';
   try{sol=solve(src)}catch(e){if(!e.lin)throw e;why=e.message+$t(' Wzorem na literach się nie da.',' A symbolic formula will not work.')}

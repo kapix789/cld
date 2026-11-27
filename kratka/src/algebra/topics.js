@@ -1,42 +1,12 @@
-// =====================================================================
-//  ALGEBRA LINIOWA: tematy, rodzaje odpowiedzi i wpis do rejestru przedmiotów
-// =====================================================================
-//  Nowy temat to jeden obiekt w tablicy TOPICS (na dole pliku):
-//
-//    { id:'moj-temat', sec:'Dział', name:'Krótka nazwa', en:'Short name', gen: () => zadanie }
-//
-//  `id` musi być unikalne i stałe (pod nim zapisuje się postęp).
-//  `gen()` losuje nowe zadanie i zwraca obiekt:
-//
-//    q     polecenie (HTML), np. 'Oblicz det <i>A</i>'
-//    body  treść zadania: macierze, równanie, układ (HTML)
-//    ans   oczekiwana odpowiedź, jedna z postaci (rodzaje są w KINDS niżej):
-//            {kind:'mat', M:[[Fr]], lab:'<i>X</i>'}                 siatka pól na macierz
-//            {kind:'num', v:Fr, lab:'det <i>A</i>'}                 jedna liczba
-//            {kind:'formula', sol}                                  wzór na X (wynik solve())
-//            {kind:'sys', type:'one'|'inf'|'none', names, vals}     układ równań
-//            {kind:'param', roots:[{a:Fr, type:'inf'|'none'}]}     dyskusja układu z parametrem
-//    sol   pełne rozwiązanie (HTML)
-//    fr    () => klatki animacji „krok po kroku” (opcjonalnie; format opisany w app.js)
-//    hint  podpowiedź (HTML, opcjonalnie)
-//
-//  Ćwiczenia, Sprawdzian, Postęp i Powtórka biorą tematy stąd automatycznie.
-//  Liczby to ułamki Fr: F(3), F(-1,2). Macierze: M.ints([[1,2],[3,4]]).
-//  Teksty dla ucznia pisz w obu językach: $t('po polsku','in English'); `en` to angielska nazwa tematu,
-//  nowy dział dopisz też do secEn przy addSubject.
-// =====================================================================
-
 const givenH=g=>`<div class="given">${g.map(([n,A])=>`<span class="gv"><i>${n}</i> = ${M.html(A)}</span>`).join('')}</div>`;
 const eqH=s=>`<div class="eq">${s}</div>`;
 
-// statyczny podgląd klatki (stan końcowy jej plansz) — przydaje się do rozwiązań tekstowych
 function frameStatic(f){
   const V=(f.B||[]).map(b=>b.M.map(r=>r.slice()));
   (f.U||[]).forEach(u=>{if(u.v!==undefined)V[u.b][u.i][u.j]=u.v});
   return (f.B||[]).map((b,bi)=>(bi?` ${(f.J&&f.J[bi-1])||''} `:'')+`<span class="mat${b.det?' det':''}" style="grid-template-columns:repeat(${V[bi][0].length},auto)">${V[bi].flat().map((x,k)=>`<span${k%V[bi][0].length===b.bar?' class="bl"':''}>${x}</span>`).join('')}</span>`).join('');
 }
 
-// ---------- Wyznaczniki ----------
 function genDet(n){
   for(;;){
     const A=M.make(n,n,()=>F(rich(n===2?-6:-4,n===2?7:5)));const d=detF(A);
@@ -110,7 +80,6 @@ function genDetProp(){
     fr:()=>[{sec:$t('Własności wyznacznika','Properties of the determinant'),t:$t(`Oblicz ${T.e}`,`Compute ${T.e}`),x:$t('Niczego nie trzeba wymnażać, wystarczą własności wyznacznika.','Nothing needs multiplying out; the properties of the determinant are enough.'),S:data,C:[...T.w.map(h=>({h,full:true})),{h:`<b>${T.e} = ${T.v.html()}</b>`,full:true}],U:[...T.w.map((_,k)=>({t:.6+k*1.3,line:k})),{t:.6+T.w.length*1.3,line:T.w.length}]}]};
 }
 
-// ---------- Rząd macierzy ----------
 const rankOf=A=>rref(A.map(r=>[...r,F(0)]),A[0].length).rank;
 function genRank(){
   let best=null;
@@ -143,7 +112,6 @@ function rankHtml(A){
     $t(`<div class="line res">rz <i>A</i> = ${rankOf(A)}</div><p class="mute">Rząd to liczba niezerowych wierszy w postaci schodkowej.</p>`,`<div class="line res">rank <i>A</i> = ${rankOf(A)}</div><p class="mute">The rank is the number of nonzero rows in row echelon form.</p>`);
 }
 
-// ---------- Układy z parametrem a ----------
 const LA=(p,q=0)=>({p:F(p),q:F(q)});
 const laAt=(e,t)=>e.p.add(e.q.mul(t));
 const laHtml=e=>e.q.z?e.p.html():lfHtml({c:[e.q],k:e.p},['a'],false);
@@ -234,14 +202,12 @@ function paramFrames(P){
   return fr;
 }
 
-// ---------- Znajdź mój błąd: kolejne macierze z eliminacji Gaussa ----------
 const rrefKey=A=>JSON.stringify(rref(A.map(r=>[...r,F(0)]),A[0].length).A.map(r=>r.slice(0,A[0].length).map(x=>x.str())));
 function opText(d){
   if(d.t==='copy')return $t(`przepisany ${rw(d.i)}`,`${rw(d.i)} copied`);
   if(d.t==='scale'){const c=d.c;return c.n===1&&c.d!==1?`${rw(d.i)} : ${c.d}`:c.n===-1&&c.d!==1?`${rw(d.i)} : (−${c.d})`:`${rw(d.i)} · ${fmt(c)}`}
   const a=d.c.abs();return `${rw(d.i)} ${d.c.n<0?'−':'+'} ${a.one?'':a.d===1?a.str():'('+a.str()+')'}${rw(d.j)}`;
 }
-// zgaduje, jaką operację uczeń chciał zrobić, żeby dostać wiersz R z macierzy old
 function guessRow(old,R){
   const m=old.length,w=R.length;let best=null;
   const consider=(exp,d,cost)=>{const ok=exp.map((x,q)=>x.eq(R[q])),n=ok.filter(Boolean).length;if(!best||n>best.n||(n===best.n&&cost<best.cost))best={n,exp,ok,d,cost}};
@@ -294,7 +260,7 @@ const EX_CHAIN=`2 1 -1 | 3
 1 -1 2 | 5
 0 3 -5 | -7
 0 5 -7 | -5`;
-function matMark(A,bar,marks){ // marks: {'i,j':'bad'|'ok'}
+function matMark(A,bar,marks){
   const c=A[0].length;
   return `<span class="mat" style="grid-template-columns:repeat(${c},auto)">${A.flat().map((x,k)=>{const i=Math.floor(k/c),j=k%c,cl=[j===bar&&j>0?'bl':'',marks&&marks[i+','+j]?'mk-'+marks[i+','+j]:''].filter(Boolean).join(' ');return `<span${cl?` class="${cl}"`:''}>${x.html()}</span>`}).join('')}</span>`;
 }
@@ -325,7 +291,6 @@ function chainReport(text){
   if(firstBad<0&&red&&w===2*n&&isI(first,n)&&isI(last,0)){const inv=M.inv(first.map(r=>r.slice(0,n))),R=last.map(r=>r.slice(n));fin+=inv&&M.eq(inv,R)?$t(' Za kreską jest poprawna odwrotność.',' After the bar there is the correct inverse.'):$t(' Za kreską powinna być odwrotność, ale coś się nie zgadza.',' The inverse should be after the bar, but something does not match.')}
   return $t(`<div class="msg ${firstBad<0?'ok':'bad'}" style="display:block">${firstBad<0?'<b>Wszystkie kroki są poprawne.</b>':`<b>Pierwszy błąd jest w kroku ${firstBad}.</b> Kolejne kroki są sprawdzane względem tego, co zostało napisane.`} ${fin}</div>`,`<div class="msg ${firstBad<0?'ok':'bad'}" style="display:block">${firstBad<0?'<b>All steps are correct.</b>':`<b>The first mistake is in step ${firstBad}.</b> The following steps are checked against what you wrote.`} ${fin}</div>`)+h;
 }
-// ---------- Znajdź mój błąd: iloczyn ----------
 function mulReport(A,B,C){
   if(A[0].length!==B.length)throw new Error($t(`Nie da się pomnożyć ${dimS(A)} przez ${dimS(B)} : liczba kolumn A musi być równa liczbie wierszy B.`,`Cannot multiply ${dimS(A)} by ${dimS(B)} : the number of columns of A must equal the number of rows of B.`));
   const R=M.mul(A,B);
@@ -336,7 +301,6 @@ function mulReport(A,B,C){
     $t(`<div class="line">Twój wynik: ${matMark(C,-1,marks)}</div>`,`<div class="line">Your result: ${matMark(C,-1,marks)}</div>`)+(lines.length?$t(`<h3>Jak powinno być</h3>${lines.join('')}`,`<h3>What it should be</h3>${lines.join('')}`):'');
 }
 
-// ---------- Odpowiedzi: pola, sprawdzanie, podgląd ----------
 const INPA='autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text"';
 const FRAC_NOTE=()=>$t('Ułamki wpisuj jako <code>1/2</code> albo <code>-3/4</code>.','Type fractions as <code>1/2</code> or <code>-3/4</code>.');
 KINDS.mat={
@@ -395,7 +359,6 @@ KINDS.sys={
   show:a=>a.type==='one'?a.names.map((v,j)=>`${nmHtml(v)} = ${a.vals[j].html()}`).join(', '):a.type==='inf'?`${TYPE_PL.inf}: ${a.gen}`:TYPE_PL[a.type],
   inp:(a,inp)=>inp.type==='one'?a.names.map((v,j)=>`${nmHtml(v)} = ${inpT(inp.vals[j])}`).join(', '):inp.type==='inf'?`${TYPE_PL.inf}: `+a.names.map((v,j)=>`${nmHtml(v)} = ${String(inp.vals[j]).trim()?inpT(inp.vals[j]):v}`).join(', '):TYPE_PL[inp.type]
 };
-// pola wartości: przy „jedno” liczby, przy „nieskończenie wiele” rozwiązanie ogólne, przy „żadnego” nic
 function sysMode(id,type){
   const vals=document.getElementById(id+'-vals'),hint=document.getElementById(id+'-genhint');
   if(vals){vals.hidden=type==='none';vals.classList.toggle('gen',type==='inf')}
@@ -421,7 +384,6 @@ KINDS.param={
   show:a=>a.roots.map(o=>`<i>a</i> = ${o.a.html()}: ${TYPE_PL[o.type]}`).join('; ')+$t('; dla pozostałych jedno rozwiązanie','; for all other values one solution'),
   inp:(a,inp)=>inp.filter(r=>String(r.a).trim()).map(r=>`<i>a</i> = ${inpT(r.a)}: ${r.type?TYPE_PL[r.type]:'…'}`).join('; ')||'…'
 };
-// rozwiązanie ogólne ucznia: dowolny wybór zmiennych swobodnych; każde równanie musi być spełnione tożsamościowo
 function checkGeneral(ans,vals){
   const nv=ans.names.length,idx=Object.fromEntries(ans.names.map((v,j)=>[v,j])),forms=[],marks={};
   if(vals.every(x=>!String(x).trim()))return {score:.5,empty:false,marks,msg:$t('Liczba rozwiązań się zgadza; brakuje jeszcze rozwiązania ogólnego.','The number of solutions is right; the general solution is still missing.')};
@@ -441,7 +403,6 @@ function checkGeneral(ans,vals){
   if(bad.length)return {score:.5,empty:false,marks,msg:$t(`Liczba rozwiązań się zgadza, ale Twoje rozwiązanie ogólne nie spełnia ${bad.length===1?'równania':'równań'} ${bad.join(', ')}.`,`The number of solutions is right, but your general solution does not satisfy equation${bad.length===1?'':'s'} ${bad.join(', ')}.`)};
   return {score:1,empty:false,marks,msg:''};
 }
-// ---------- Opakowania istniejących generatorów w format zadania ----------
 const opTopic=type=>()=>{const t=genTask(type);return {q:t.q,body:givenH(t.given),ans:{kind:'mat',M:t.ans,lab:t.lab},get sol(){return t.sol},fr:t.fr}};
 function xnumTopic(n,rect){return ()=>{
   const T=genNum(n,-1,rect);
@@ -459,24 +420,16 @@ function xsymTopic(){
       hint:$t('Rozpisz nawiasy (kolejność się odwraca), przenieś wyrazy z <i>X</i> na lewo, potem mnóż przez odwrotności z właściwej strony.','Expand the brackets (the order reverses), move the <i>X</i> terms to the left, then multiply by inverses from the correct side.')}}
 }
 const METH_PL={gauss:'',get mac(){return $t(' metodą macierzową',' by the matrix method')},get cra(){return $t(' wzorami Cramera',' by Cramer’s rule')}};
-// oczekiwana odpowiedź dla układu: liczba rozwiązań, wartości albo rozwiązanie ogólne
 function sysAns(Ab,names){
   const nv=names.length,res=rref(Ab,nv),sol=sysSolution(res,nv);
   return {kind:'sys',type:res.type,names,Ab,rank:res.rank,vals:res.type==='one'?sol.forms.map(f=>f.k):null,gen:res.type==='inf'?genSolHtml(sol,names):''};
 }
-// układ 4×4 jak na kolokwium: 2–3 równania bazowe, reszta to ich kombinacje (większe liczby, znikające wyrazy),
-// zwykle sprzeczny albo nieoznaczony — stąd „jeśli to możliwe”
-// Ile pracy zajmuje zadanie na kartce: rozwiązanie takie jak w Kratce, a w nim liczba
-// operacje na wierszach, największą liczbę po drodze, mnożenia całego wiersza i ułamki.
 function handCost(Ab,nv){
   const pl=elimPlan(Ab,nv,{sys:true}),ev=pl.ev.filter(e=>e.k!=='pivot'&&e.k!=='none');
   const vals=[...Ab.flat(),...ev.flatMap(e=>e.A.flat())];
   return {ops:ev.filter(e=>!(e.k==='scale'&&e.why==='reduce')&&e.k!=='swap').length,
     max:Math.max(0,...vals.map(x=>Math.abs(x.n))),mult:ev.filter(e=>e.k==='elim'&&!e.a.one).length,fr:vals.filter(x=>x.d!==1).length};
 }
-// Układ 4×4 jak na kolokwium (wzór: zadanie ucznia, ok. 10 minut): jedno równanie ma na początku 1 albo daje się
-// do niej skrócić (np. 4x₁ − 4x₂ − 4x₃ − 16x₄ = −8), reszta to proste kombinacje równań bazowych.
-// Wynik: układ sprzeczny albo nieoznaczony — stąd „jeśli to możliwe”. Zadania za długie do policzenia są odrzucane.
 function genExamSys(){
   const nv=4,m=4,names=['x1','x2','x3','x4'],want=pick(['none','none','none','inf','inf']),r=pick([2,2,2,3]);
   const row=()=>Array.from({length:nv},()=>F(rnd(1,5)*(Math.random()<.2?-1:1)));
@@ -484,7 +437,6 @@ function genExamSys(){
   for(const lim of [{ops:r===2?6:8,max:16,mult:1},{ops:r===2?7:9,max:18,mult:1},{ops:10,max:24,mult:2}]){
     let best=null,found=0;
     for(let at=0;at<1200&&found<30;at++){
-      // równania bazowe: pierwsze zaczyna się od 1
       const base=[[F(1),...Array.from({length:nv-1},()=>F(rich(-3,4)))]];
       for(let t=0;t<30&&base.length<r;t++){const x=row();if(rankOf([...base,x])===base.length+1)base.push(x)}
       if(base.length<r)continue;
@@ -502,7 +454,6 @@ function genExamSys(){
       if(fail)continue;
       const x0=Array.from({length:nv},()=>F(rnd(-2,2))),Ab=rows.map(x=>[...x,x.reduce((s,a,q)=>s.add(a.mul(x0[q])),F(0))]);
       if(want==='none'){const i=pick(dep);Ab[i][nv]=Ab[i][nv].add(F(pick([-2,-1,1,2])))}
-      // czasem jedynka jest „schowana”: równanie z 1 mnożymy przez 2–4 (uczeń sam skraca, jak w₃ : 4 na kartce)
       let hid=false;
       if(Math.random()<.5){const g=pick([2,3,4]);if(Ab[0].every(x=>Math.abs(x.n*g)<=16)){Ab[0]=Ab[0].map(x=>x.mul(F(g)));hid=true}}
       if(Ab.some(x=>Math.abs(x[nv].n)>16))continue;
@@ -517,7 +468,7 @@ function genExamSys(){
     }
     if(best){
       const Ab=best.Ab;
-      if(Math.random()<.6){const t=Ab.shift();Ab.splice(rnd(1,3),0,t)}   // równanie z jedynką nie zawsze na górze
+      if(Math.random()<.6){const t=Ab.shift();Ab.splice(rnd(1,3),0,t)}
       return {Ab,names};
     }
   }
@@ -542,6 +493,90 @@ function detTopic(n){return ()=>{
     fr:()=>n===4?laplaceFrames(A):detFrames(A,'det <i>A</i>',$t('Wyznacznik','Determinant'),true),
     hint:n===2?'<i>ad</i> − <i>bc</i>.':n===3?$t('Sarrus: dopisz dwie pierwsze kolumny; trzy przekątne z plusem, trzy z minusem.','Sarrus: copy the first two columns; three diagonals with a plus, three with a minus.'):$t("Rozwinięcie Laplace'a względem wiersza lub kolumny z największą liczbą zer.","Laplace expansion along the row or column with the most zeros.")};
 }}
+function craOneHtml(Ab,names,j){
+  const nv=names.length,A=Ab.map(r=>r.slice(0,nv)),b=Ab.map(r=>r[nv]),Aj=A.map((r,i)=>r.map((x,q)=>q===j?b[i]:x));
+  const W=detF(A),Wj=detF(Aj),v=nmHtml(names[j]),w=$t('W','D'),sub=`<i>${w}</i><sub>${v}</sub>`;
+  return $t(`<p>Potrzebne jest tylko ${v}, więc liczymy dwa wyznaczniki: główny <i>W</i> i ${sub}. Pozostałych nie trzeba.</p><h3>1. Wyznacznik główny</h3>`,`<p>Only ${v} is needed, so we compute two determinants: the main one <i>D</i> and ${sub}. The others are not needed.</p><h3>1. The main determinant</h3>`)
+    +`<div class="line"><i>${w}</i> = ${matH(A,{det:true})}</div>${detLines(A)}`
+    +$t(`<h3>2. Wyznacznik ${sub}</h3><p class="mute">Kolumnę przy ${v} zastępujemy kolumną wyrazów wolnych.</p>`,`<h3>2. The determinant ${sub}</h3><p class="mute">The column of ${v} is replaced with the column of constants.</p>`)
+    +`<div class="line">${sub} = ${matH(Aj,{det:true,hl:j})}</div>${detLines(Aj)}`
+    +$t('<h3>3. Wzór Cramera</h3>','<h3>3. Cramer’s rule</h3>')
+    +`<div class="line res">${v} = <span class="fr"><span>${sub}</span><span><i>${w}</i></span></span> = <span class="fr"><span>${Wj.str()}</span><span>${W.str()}</span></span> = <b>${Wj.div(W).html()}</b></div>`;
+}
+function craOneTopic(){
+  const g=genSys(3,'one'),j=rnd(0,g.names.length-1),nv=g.names.length,A=g.Ab.map(r=>r.slice(0,nv));
+  const Aj=A.map((r,i)=>r.map((x,q)=>q===j?g.Ab[i][nv]:x)),v=nmHtml(g.names[j]);
+  return {q:$t(`Korzystając ze wzorów Cramera, wyznacz tylko ${v}`,`Using Cramer’s rule, find only ${v}`),body:`<div class="sysbox">${sysHtml(abRows(g.Ab,nv),g.names)}</div>`,
+    ans:{kind:'num',v:detF(Aj).div(detF(A)),lab:v},get sol(){return craOneHtml(g.Ab,g.names,j)},fr:()=>cramerFrames(g.Ab,g.names,j),
+    hint:$t(`Policz <i>W</i> i tylko <i>W</i><sub>${v}</sub>. Wtedy ${v} = <i>W</i><sub>${v}</sub> / <i>W</i>.`,`Compute <i>D</i> and only <i>D</i><sub>${v}</sub>. Then ${v} = <i>D</i><sub>${v}</sub> / <i>D</i>.`)};
+}
+
+const linH=(a,b)=>lfHtml({c:[a],k:b},['x']);
+function genDetEq(){
+  const zero=Math.random()<.45;
+  for(let t=0;;t++){
+    const row=Math.random()<.6,k=rnd(0,2),on=(i,j)=>(row?i:j)===k;
+    const B=M.make(3,3,()=>F(rnd(-3,4))),a=[0,1,2].map(()=>F(pick([0,1,1,1,-1,2])));
+    if(a.every(x=>x.z)||a.filter(x=>!x.z).length>2)continue;
+    const Ba=B.map((r,i)=>r.map((x,j)=>on(i,j)?a[row?j:i]:x)),al=detF(Ba),be=detF(B);
+    if(al.z)continue;
+    const x0=rnd(-4,4),c=al.mul(F(x0)).add(be);
+    if(Math.abs(c.n)>24||(zero&&!c.z&&t<4000))continue;
+    const S=B.map((r,i)=>r.map((x,j)=>on(i,j)?linH(a[row?j:i],x):x.html()));
+    return {B,a,row,k,S,al,be,c,x0:F(x0)};
+  }
+}
+// minory bez x, więc wynik liniowy
+function detEqTerms(P){
+  const out=[];
+  for(let q=0;q<3;q++){
+    const i=P.row?P.k:q,j=P.row?q:P.k,a=P.a[q],b=P.B[i][j];
+    if(a.z&&b.z)continue;
+    const s=(i+j)%2?-1:1,Mi=minorOf(P.B,i,j),m=detF(Mi),f=F(s).mul(m);
+    out.push({i,j,s,Mi,m,e:linH(a,b),ta:a.mul(f),tb:b.mul(f)});
+  }
+  return out;
+}
+function detEqSolve(P){
+  const r=P.c.sub(P.be);
+  return [`${linH(P.al,P.be)} = ${P.c.html()}`,`${P.al.one?'':P.al.eq(F(-1))?'−':P.al.html()}<i>x</i> = ${r.html()}`,`<i>x</i> = <b>${P.x0.html()}</b>`];
+}
+function detEqHtml(P){
+  const T=detEqTerms(P),line=P.row?$t('wierszu','row'):$t('kolumnie','column'),k=P.k+1;
+  let h=$t(`<p><i>x</i> jest tylko w ${line} ${k}, więc rozwijamy wyznacznik względem ${P.row?'tego wiersza':'tej kolumny'}. Minory nie mają <i>x</i>, więc wyjdzie wyrażenie liniowe.</p>`,`<p><i>x</i> appears only in ${line} ${k}, so we expand the determinant along it. The minors contain no <i>x</i>, so the result is linear.</p>`);
+  T.forEach(o=>{
+    h+=`<div class="line">(−1)<sup>${o.i+1}+${o.j+1}</sup> · (${o.e}) · ${matH(o.Mi,{det:true})}</div>`;
+    h+=`<details><summary>Minor <i>M</i><sub>${o.i+1}${o.j+1}</sub></summary>${detLines(o.Mi)}</details>`;
+    h+=`<div class="line">= ${fmt(F(o.s).mul(o.m))} · (${o.e}) = ${linH(o.ta,o.tb)}</div>`;
+  });
+  h+=`<div class="line">det = ${T.map(o=>`(${linH(o.ta,o.tb)})`).join(' + ')} = ${linH(P.al,P.be)}</div>`;
+  h+=$t('<h3>Równanie</h3>','<h3>The equation</h3>')+detEqSolve(P).map((l,q)=>`<div class="line${q===2?' res':''}">${l}</div>`).join('');
+  return h+$t('<p class="mute">Można też liczyć Sarrusem, wynik jest ten sam.</p>','<p class="mute">Sarrus’ rule works too and gives the same result.</p>');
+}
+function detEqFrames(P){
+  const T=detEqTerms(P),sec=$t('Równanie z wyznacznikiem','Determinant equation'),fr=[],lab='det';
+  const hl=P.row?{rows:{[P.k]:'src'}}:{cols:{[P.k]:'src'}};
+  fr.push({sec,t:$t(`Rozwijamy względem ${P.row?'wiersza':'kolumny'} ${P.k+1}`,`Expanding along ${P.row?'row':'column'} ${P.k+1}`),x:$t(`Tylko ${P.row?'ten wiersz':'ta kolumna'} ma <i>x</i>. Po skreśleniu jej zostają same liczby, więc każdy minor jest liczbą i wyznacznik wyjdzie liniowy: <i>ax</i> + <i>b</i>.`,`Only this ${P.row?'row':'column'} contains <i>x</i>. Crossing it out leaves plain numbers, so every minor is a number and the determinant comes out linear: <i>ax</i> + <i>b</i>.`),
+    S:`<div class="eq">${matH(P.S,{det:true})} = ${P.c.html()}</div>`,B:[bd(P.S,{det:true,lab,hl})]});
+  T.forEach((o,q)=>{
+    const ml=`<i>M</i><sub>${o.i+1}${o.j+1}</sub>`;
+    fr.push({sec,t:$t(`Składnik ${q+1}: ${o.e}`,`Term ${q+1}: ${o.e}`),x:$t(`Skreślamy wiersz ${o.i+1} i kolumnę ${o.j+1}; zostaje minor ${ml}. Znak: (−1)<sup>${o.i+1}+${o.j+1}</sup> = ${o.s>0?'+1':'−1'}.`,`Cross out row ${o.i+1} and column ${o.j+1}; the minor ${ml} remains. Sign: (−1)<sup>${o.i+1}+${o.j+1}</sup> = ${o.s>0?'+1':'−1'}.`),
+      B:[bd(P.S,{det:true,lab,hl:{rows:{[o.i]:'dim'},cols:{[o.j]:'dim'},cells:{[o.i+','+o.j]:'piv'}}}),bd(o.Mi,{det:true,lab:ml})],J:['→']});
+    fr.push(...detFrames(o.Mi,'det '+ml,sec,false));
+  });
+  const C=T.map(o=>({h:`(−1)<sup>${o.i+1}+${o.j+1}</sup> · ${fmt(o.m)} · (${o.e}) = ${linH(o.ta,o.tb)}`,full:true}));
+  C.push({h:`det = ${linH(P.al,P.be)}`,full:true});
+  fr.push({sec,t:$t('Składamy wyznacznik','Putting the determinant together'),x:$t('Każdy element mnożymy przez znak i swój minor, potem wszystko dodajemy.','Each entry is multiplied by its sign and its minor, then everything is added.'),C,U:C.map((_,q)=>({t:.5+q*.8,line:q}))});
+  const E=detEqSolve(P).map(h=>({h,full:true}));
+  fr.push({sec,t:$t('Rozwiązujemy równanie','Solving the equation'),x:$t('Zwykłe równanie liniowe: przenosimy liczbę na prawo i dzielimy przez współczynnik przy <i>x</i>.','An ordinary linear equation: move the number to the right and divide by the coefficient of <i>x</i>.'),C:E,U:E.map((_,q)=>({t:.5+q*.9,line:q}))});
+  return fr;
+}
+function detEqTopic(){
+  const P=genDetEq();
+  return {q:$t('Rozwiąż równanie','Solve the equation'),body:`<div class="eq">${matH(P.S,{det:true})} = ${P.c.html()}</div>`,
+    ans:{kind:'num',v:P.x0,lab:'<i>x</i>'},get sol(){return detEqHtml(P)},fr:()=>detEqFrames(P),
+    hint:$t('Rozwiń wyznacznik względem wiersza albo kolumny z <i>x</i> (albo policz Sarrusem). Wyjdzie równanie liniowe.','Expand the determinant along the row or column with <i>x</i> (or use Sarrus’ rule). You get a linear equation.')};
+}
 function rankTopic(){
   const A=genRank(),r=rankOf(A);
   return {q:$t('Wyznacz rząd macierzy','Find the rank of the matrix'),body:givenH([['A',A]]),ans:{kind:'num',v:F(r),lab:$t('rz <i>A</i>','rank <i>A</i>')},get sol(){return rankHtml(A)},fr:()=>rankFrames(A),
@@ -554,7 +589,6 @@ function paramTopic(){
     hint:$t('Policz wyznacznik główny <i>W</i>(<i>a</i>). Gdzie <i>W</i> ≠ 0, jest jedno rozwiązanie. Wartości z <i>W</i> = 0 podstaw i sprawdź Gaussem.','Compute the main determinant <i>D</i>(<i>a</i>). Where <i>D</i> ≠ 0, there is one solution. Substitute the values with <i>D</i> = 0 and check them with Gaussian elimination.')};
 }
 
-// ---------- REJESTR ----------
 const TOPICS=[
   {id:'mul',en:'Multiplication <i>A</i>·<i>B</i>',sec:'Działania',name:'Mnożenie <i>A</i>·<i>B</i>',gen:opTopic('mul')},
   {id:'add',en:'α<i>A</i> + β<i>B</i>',sec:'Działania',name:'α<i>A</i> + β<i>B</i>',gen:opTopic('add')},
@@ -573,16 +607,18 @@ const TOPICS=[
   {id:'sysany',en:'How many solutions?',sec:'Układy równań',name:'Ile rozwiązań?',gen:sysTopic(3,'any','gauss')},
   {id:'sysrect',en:'Non-square (m ≠ n)',sec:'Układy równań',name:'Nietypowe (m ≠ n)',gen:sysTopic('r','any','gauss')},
   {id:'sysmac',en:'Matrix method',sec:'Układy równań',name:'Metoda macierzowa',gen:sysTopic(3,'one','mac')},
-  {id:'syscra',en:'Cramer’s rule',sec:'Układy równań',name:'Wzory Cramera',gen:sysTopic(3,'one','cra')},
   {id:'sysexam',en:'Exam style 4×4',sec:'Układy równań',name:'Jak na sprawdzianie 4×4',gen:examTopic},
   {id:'param',en:'With parameter <i>a</i>',sec:'Układy równań',name:'Z parametrem <i>a</i>',gen:paramTopic},
   {id:'det2',en:'det 2×2',sec:'Wyznaczniki',name:'det 2×2',gen:detTopic(2)},
   {id:'det3',en:'det 3×3 (Sarrus)',sec:'Wyznaczniki',name:'det 3×3 (Sarrus)',gen:detTopic(3)},
   {id:'det4',en:'det 4×4 (Laplace)',sec:'Wyznaczniki',name:"det 4×4 (Laplace)",gen:detTopic(4)},
   {id:'detprop',en:'Properties',sec:'Wyznaczniki',name:'Własności',gen:genDetProp},
+  {id:'deteq',en:'Equation with a determinant',sec:'Wyznaczniki',name:'Równanie z wyznacznikiem',gen:detEqTopic},
+  {id:'cra2',en:'Cramer’s rule 2×2',sec:'Wyznaczniki',name:'Wzory Cramera 2×2',gen:sysTopic(2,'one','cra')},
+  {id:'syscra',en:'Cramer’s rule 3×3',sec:'Wyznaczniki',name:'Wzory Cramera 3×3',gen:sysTopic(3,'one','cra')},
+  {id:'cra1',en:'Cramer: one unknown',sec:'Wyznaczniki',name:'Cramer: jedna niewiadoma',gen:craOneTopic},
   {id:'rank',en:'Rank of a matrix',sec:'Rząd macierzy',name:'Rząd macierzy',gen:rankTopic},
 ];
-// tematy, których rozwiązania zależą od ustawienia „bez ułamków” (w odtwarzaczu pokazuje się wtedy to pole)
 TOPICS.forEach(t=>{if(['Macierz odwrotna','Równania macierzowe','Układy równań','Rząd macierzy'].includes(t.sec))t.noFrac=true});
 const SECTIONS=[...new Set(TOPICS.map(t=>t.sec))];
 addSubject({

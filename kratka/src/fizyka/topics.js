@@ -1,15 +1,3 @@
-// =====================================================================
-//  FIZYKA: zadania liczbowe (wynik sprawdzany z tolerancją), rozwiązania krok po kroku, rysunki
-// =====================================================================
-//  Zadanie fizyczne buduje funkcja fzTask({q, data, ask, steps, fig, hint}):
-//    data   dane: [['<i>m</i>', 2, 'kg'], …]
-//    ask    szukane: [{lab:'<i>v</i>', unit:'m/s', v: wartość, tol?: 0.015}]
-//    steps  kroki: [{t:'tytuł', x:'wyjaśnienie', f:['wzór', …]}]
-//    fig    rysunek SVG (opcjonalnie)
-//  Przyspieszenie ziemskie: OPT.g (9,81 albo 10 m/s², przełącznik nad zadaniem).
-// =====================================================================
-
-// ---------- liczby ----------
 const decS=s=>(LANG.cur==='en'?s:s.replace('.',',')).replace(/^-/,'−');
 function nf(x,sig=3){
   if(!isFinite(x))return '?';if(Math.abs(x)<1e-12)return '0';
@@ -17,7 +5,7 @@ function nf(x,sig=3){
   if(ax>=1e5||ax<1e-3){let e=Math.floor(Math.log10(ax)),m=+(x/10**e).toPrecision(sig);if(Math.abs(m)>=10){m/=10;e++}return `${decS(String(m))}·10<sup>${e<0?'−'+(-e):e}</sup>`}
   return decS(String(+x.toPrecision(sig)));
 }
-const nfi=x=>decS(String(x));   // liczba z treści zadania (dokładna)
+const nfi=x=>decS(String(x));
 function parseNum(s){
   s=String(s??'').trim().replace(/\s+/g,'').replace(/[−–]/g,'-').replace(/,/g,'.');
   if(!s)return null;
@@ -50,14 +38,12 @@ KINDS.qty={
   inp:(a,inp)=>a.items.map((it,k)=>`${it.lab} = ${inpT(inp[k])} ${it.unit||''}`).join(', ')
 };
 
-// ---------- zapis wzorów ----------
 const V=(s,sub,sup)=>`${s.endsWith('⃗')?`<i class="vec">${s.slice(0,-1)}</i>`:`<i>${s}</i>`}${sub!==undefined&&sub!==''?`<sub>${sub}</sub>`:''}${sup?`<sup>${sup}</sup>`:''}`;
 const FR=(a,b)=>`<span class="fr"><span>${a}</span><span>${b}</span></span>`;
 const SQ=x=>`√<span class="ov">${x}</span>`;
 const DEG='°';
 const rad=d=>d*Math.PI/180;
 const gH=()=>nfi(OPT.g);
-// zadanie fizyczne
 function fzTask(o){
   const sec=o.sec||$t('Rozwiązanie','Solution');
   const data=`<ul class="data">${o.data.map(([s,v,u])=>`<li><span class="f">${s} = ${typeof v==='number'?nfi(v):v}</span> ${u||''}</li>`).join('')}</ul>`;
@@ -66,13 +52,11 @@ function fzTask(o){
   return {q:o.q,body:(o.fig?`<div class="fig-wrap">${o.fig(-1)}</div>`:'')+data+(o.gNote?`<p class="note">${$t(`Przyjmij <i>g</i> = ${gH()} m/s².`,`Take <i>g</i> = ${gH()} m/s².`)}</p>`:''),ans:{kind:'qty',items:o.ask},sol,fr,hint:o.hint};
 }
 
-// ---------- rysunki ----------
 function svgArrow(x1,y1,x2,y2,cls,w=2){
   const a=Math.atan2(y2-y1,x2-x1),h=9,s=4.5;
   return `<line x1="${x1}" y1="${y1}" x2="${x2-Math.cos(a)*h*.8}" y2="${y2-Math.sin(a)*h*.8}" class="${cls}" stroke-width="${w}"/><path d="M${x2},${y2} L${x2-Math.cos(a)*h+Math.sin(a)*s},${y2-Math.sin(a)*h-Math.cos(a)*s} L${x2-Math.cos(a)*h-Math.sin(a)*s},${y2-Math.sin(a)*h+Math.cos(a)*s}Z" class="${cls}" stroke="none"/>`;
 }
 const svg=(w,h,body,lab)=>`<svg class="fig" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${escH(lab||'')}">${body}</svg>`;
-// tor rzutu ukośnego
 function figRzut(al,step){
   const W=380,H=170,x0=30,y0=145,L=320,Hm=L/4*Math.tan(rad(al));
   const sc=Math.min(1,110/Hm),pts=[];for(let k=0;k<=40;k++){const u=k/40;pts.push(`${(x0+u*L).toFixed(1)},${(y0-4*Hm*sc*u*(1-u)).toFixed(1)}`)}
@@ -83,7 +67,6 @@ function figRzut(al,step){
     b+=`<text x="${x0+L/2-4}" y="${y0+18}" class="small">ℓ</text><line x1="${x0}" y1="${y0+6}" x2="${x0+L}" y2="${y0+6}" class="ax"/>`}
   return svg(W,H+12,b,$t('Tor rzutu ukośnego','Projectile path'));
 }
-// ruch po okręgu: promień, prędkość, przyspieszenie styczne i normalne
 function figOkrag(step){
   const cx=120,cy=110,R=80,ph=rad(35),px=cx+R*Math.cos(ph),py=cy-R*Math.sin(ph);
   let b=`<circle cx="${cx}" cy="${cy}" r="${R}" class="ln" stroke-width="1.2"/><circle cx="${cx}" cy="${cy}" r="2.5" class="dot"/>`;
@@ -95,7 +78,6 @@ function figOkrag(step){
   b+=`<circle cx="${px}" cy="${py}" r="5" class="cm"/>`;
   return svg(250,210,b,$t('Punkt na okręgu','A point on a circle'));
 }
-// środek masy: masy w rogach prostokąta
 function figCm(ms,a,b,cm,step){
   const W=300,H=230,ox=60,oy=190,s=Math.min(200/a,150/b),P=[[0,b],[a,b],[a,0],[0,0]];
   let g=`<rect x="${ox}" y="${oy-b*s}" width="${a*s}" height="${b*s}" class="soft"/><rect x="${ox}" y="${oy-b*s}" width="${a*s}" height="${b*s}" class="ln" stroke-width="1.2" fill="none"/>`;
@@ -106,7 +88,6 @@ function figCm(ms,a,b,cm,step){
   return svg(W,H+20,g,$t('Masy w rogach płyty','Masses at the corners of a plate'));
 }
 
-// ---------- 1. kinematyka ----------
 function fzHam(){
   if(Math.random()<.5){
     const v1=pick([30,40,50,60]),v2=v1+pick([10,20,30]),v=Math.sqrt(v2*v2-v1*v1);
@@ -134,7 +115,6 @@ function fzHam(){
     hint:$t('Najpierw km/h na m/s, potem v₀² = 2as i t = v₀ / a.','First km/h to m/s, then v₀² = 2as and t = v₀ / a.')
   });
 }
-// wielomian w t: c[k] przy t^k
 function polyT(c,vr='t'){
   const p=[];for(let k=c.length-1;k>=0;k--){const x=c[k];if(!x)continue;const a=Math.abs(x),body=k===0?String(a):(a===1?'':a)+`<i>${vr}</i>`+(k>1?`<sup>${k}</sup>`:'');p.push([x<0,body])}
   return p.length?p.map(([n,b],i)=>(i?(n?' − ':' + '):(n?'−':''))+b).join(''):'0';
@@ -179,7 +159,6 @@ function fzRzut(){
   });
 }
 
-// ---------- 2. ruch po okręgu ----------
 function fzOkr(){
   const cube=Math.random()<.35,half=!cube&&Math.random()<.3,b=half?.5:pick([1,2,3]),c=rnd(0,3),P=cube?[0,c,0,b]:[0,c,b],r=pick([0.5,0.8,1,1.5,2]),t0=pick([1,2]);
   const W=dPoly(P),E=dPoly(W),w=evP(W,t0),e=evP(E,t0),v=r*w,at=r*e,an=w*w*r,a=Math.hypot(at,an);
@@ -252,7 +231,6 @@ function fzDos(){
   });
 }
 
-// ---------- 3. siły, jednostki ----------
 function fzPas(){
   const m=pick([1200,2500,3800,5000,8000]),F=pick([4000,6000,9810,12000,20000]),vk=pick([120,140,160,180,200]),v=vk/3.6,a=F/m,s=v*v/(2*a),t=v/a;
   return fzTask({
@@ -281,7 +259,6 @@ function fzJedn(){
   return fzTask({q:T2(u.q),data:[],ask:[{lab:u.lab,unit:u.unit,v:u.v}],steps:[{t:$t('Przeliczenie','Conversion'),x:'',f:[`${u.f} ≈ <b>${nf(u.v)} ${u.unit}</b>`]}],hint:$t('km/h : 3,6 = m/s; 1 KM ≈ 735,5 W; 1 kWh = 3,6·10⁶ J; 1 obr = 2π rad.','km/h ÷ 3.6 = m/s; 1 hp ≈ 735.5 W; 1 kWh = 3.6·10⁶ J; 1 rev = 2π rad.')});
 }
 
-// ---------- 4. środek masy ----------
 function fzCm(){
   if(Math.random()<.7){
     const a=pick([1,2,3]),b=pick([1,2]),ms=[rnd(1,5),rnd(1,5),rnd(1,5),rnd(1,5)],M=ms.reduce((x,y)=>x+y,0);
@@ -312,7 +289,6 @@ function fzCm(){
   });
 }
 
-// ---------- 5. praca, energia, obrót ----------
 function fzEner(){
   const g=OPT.g;
   if(Math.random()<.5){
@@ -378,7 +354,6 @@ function fzObr(){
   });
 }
 
-// ---------- 6. grawitacja ----------
 function fzOrb(){
   const G=6.67e-11;
   if(Math.random()<.5){
@@ -406,7 +381,6 @@ function fzOrb(){
   });
 }
 
-// ---------- rejestr ----------
 const FZ_TOPICS=[
   {id:'fz-ham',sec:'Kinematyka',name:'Hamowanie',en:'Braking',gen:fzHam},
   {id:'fz-wek',sec:'Kinematyka',name:'Prędkość z wektora położenia',en:'Velocity from the position vector',gen:fzWek},

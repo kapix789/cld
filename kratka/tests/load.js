@@ -1,5 +1,3 @@
-// Wczytuje rdzeń i wszystkie przedmioty w Node (bez przeglądarki), w tej samej kolejności co build.py.
-//   const K = require('./load')(['TOPICS', 'ansCheck', ...]);
 const fs = require('fs'), path = require('path');
 const SRC = path.join(__dirname, '..', 'src');
 const SUBJECTS = ['algebra', 'fizyka', 'so'];
