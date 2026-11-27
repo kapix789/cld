@@ -20,47 +20,6 @@ function genDet4(){
     if(Math.abs(detF(A).n)<=150)return A;
   }
 }
-function laplaceLine(A){
-  const n=A.length;let best=null;
-  for(let i=0;i<n;i++){const z=A[i].filter(x=>x.z).length;if(!best||z>best.z)best={row:true,k:i,z}}
-  for(let j=0;j<n;j++){const z=A.filter(r=>r[j].z).length;if(z>best.z)best={row:false,k:j,z}}
-  return best;
-}
-const minorOf=(A,i,j)=>A.filter((_,r)=>r!==i).map(r=>r.filter((_,c)=>c!==j));
-function laplaceTerms(A){
-  const L=laplaceLine(A),n=A.length,t=[];
-  for(let q=0;q<n;q++){
-    const i=L.row?L.k:q,j=L.row?q:L.k,a=A[i][j];if(a.z)continue;
-    const s=(i+j)%2?-1:1,Mi=minorOf(A,i,j),dm=detF(Mi);
-    t.push({i,j,a,s,Mi,dm,v:F(s).mul(a).mul(dm)});
-  }
-  return {L,t};
-}
-const lapTerm=o=>`(−1)<sup>${o.i+1}+${o.j+1}</sup> · ${fmt(o.a)} · ${fmt(o.dm)}`;
-function laplaceHtml(A,lab='det <i>A</i>'){
-  const {L,t}=laplaceTerms(A),v=detF(A);
-  let h=$t(`<p>Rozwijamy względem ${L.row?'wiersza':'kolumny'} ${L.k+1}, bo ma najwięcej zer (${L.z}), więc liczenia jest najmniej. Każdy niezerowy element mnożymy przez znak (−1)<sup><i>i</i>+<i>j</i></sup> i wyznacznik minora, czyli macierzy bez wiersza i kolumny tego elementu.</p>`,`<p>We expand along ${L.row?'row':'column'} ${L.k+1} because it has the most zeros (${L.z}), so there is the least computing. Each nonzero entry is multiplied by the sign (−1)<sup><i>i</i>+<i>j</i></sup> and the determinant of its minor, the matrix without that entry’s row and column.</p>`);
-  t.forEach(o=>{
-    h+=`<div class="line">(−1)<sup>${o.i+1}+${o.j+1}</sup> · ${fmt(o.a)} · ${matH(o.Mi,{det:true})}</div>`;
-    h+=`<details><summary>Minor <i>M</i><sub>${o.i+1}${o.j+1}</sub> (Sarrus)</summary>${detLines(o.Mi)}</details>`;
-    h+=`<div class="line">= ${lapTerm(o)} = <b>${o.v.html()}</b></div>`;
-  });
-  return h+`<div class="line res">${lab} = ${t.map(o=>fmt(o.v)).join(' + ')||'0'} = ${v.html()}</div>`;
-}
-function laplaceFrames(A,lab='det <i>A</i>',sec=$t("Rozwinięcie Laplace'a","Laplace expansion")){
-  const {L,t}=laplaceTerms(A),v=detF(A),fr=[];
-  fr.push({sec,t:$t(`Wybór: ${L.row?'wiersz':'kolumna'} ${L.k+1}`,`Choosing ${L.row?'row':'column'} ${L.k+1}`),x:$t(`Rozwijamy względem wiersza albo kolumny z największą liczbą zer; tu ${L.row?'wiersz':'kolumna'} ${L.k+1} ma ${L.z} ${pl(L.z,'zero','zera','zer')}. Składnik z zerem jest zerem, więc liczymy tylko ${t.length} ${pl(t.length,'składnik','składniki','składników')}.`,`We expand along the row or column with the most zeros; here ${L.row?'row':'column'} ${L.k+1} has ${L.z} ${L.z===1?'zero':'zeros'}. A term with a zero entry is zero, so we only compute ${t.length} ${t.length===1?'term':'terms'}.`),
-    B:[bd(A,{det:true,lab,hl:L.row?{rows:{[L.k]:'src'}}:{cols:{[L.k]:'src'}}})]});
-  t.forEach((o,k)=>{
-    const ml=`<i>M</i><sub>${o.i+1}${o.j+1}</sub>`;
-    fr.push({sec,t:$t(`Składnik ${k+1}: element ${o.a.html()}`,`Term ${k+1}: the entry ${o.a.html()}`),x:$t(`Element stoi w wierszu ${o.i+1} i kolumnie ${o.j+1}. Skreślamy ten wiersz i tę kolumnę; zostaje minor ${ml}. Znak: (−1)<sup>${o.i+1}+${o.j+1}</sup> = ${o.s>0?'+1':'−1'}.`,`The entry is in row ${o.i+1} and column ${o.j+1}. Cross out this row and this column; the minor ${ml} remains. Sign: (−1)<sup>${o.i+1}+${o.j+1}</sup> = ${o.s>0?'+1':'−1'}.`),
-      B:[bd(A,{det:true,lab,hl:{rows:{[o.i]:'dim'},cols:{[o.j]:'dim'},cells:{[o.i+','+o.j]:'piv'}}}),bd(o.Mi,{det:true,lab:ml})],J:['→']});
-    fr.push(...detFrames(o.Mi,'det '+ml,sec,false));
-    fr.push({sec,t:$t(`Składnik ${k+1} = ${o.v.html()}`,`Term ${k+1} = ${o.v.html()}`),x:$t('Znak · element · wyznacznik minora:','Sign · entry · determinant of the minor:'),C:[{h:`${lapTerm(o)} = <b>${o.v.html()}</b>`,full:true}],U:[{t:.4,line:0}]});
-  });
-  fr.push({sec,t:`${lab} = ${v.html()}`,x:$t('Dodajemy wszystkie składniki.','Add up all the terms.'),B:[bd(A,{det:true,lab})],C:[{h:`${lab} = ${t.map(o=>fmt(o.v)).join(' + ')||'0'} = <b>${v.html()}</b>`,full:true}],U:[{t:.5,line:0}]});
-  return fr;
-}
 function genDetProp(){
   const n=pick([2,3]),a=F(pick([-3,-2,2,3,4,5])),b=F(pick([-2,2,3,4,-4])),k=pick([2,3,-2]),kS=F(k).str(),kn=F(k**n);
   const T=pick([
@@ -489,17 +448,17 @@ function sysTopic(sz,mode,method){return ()=>{
 function detTopic(n){return ()=>{
   const A=n===4?genDet4():genDet(n),v=detF(A);
   return {q:$t(`Oblicz wyznacznik macierzy ${n}×${n}`,`Compute the determinant of the ${n}×${n} matrix`),body:givenH([['A',A]]),ans:{kind:'num',v,lab:'det <i>A</i>'},
-    sol:n===4?laplaceHtml(A):`<div class="line">det <i>A</i> = ${matH(A,{det:true})}</div>${detLines(A)}`,
+    get sol(){return n===4?laplaceHtml(A):`<div class="line">det <i>A</i> = ${matH(A,{det:true})}</div>${detText(A,'det <i>A</i>')}`},
     fr:()=>n===4?laplaceFrames(A):detFrames(A,'det <i>A</i>',$t('Wyznacznik','Determinant'),true),
-    hint:n===2?'<i>ad</i> − <i>bc</i>.':n===3?$t('Sarrus: dopisz dwie pierwsze kolumny; trzy przekątne z plusem, trzy z minusem.','Sarrus: copy the first two columns; three diagonals with a plus, three with a minus.'):$t("Rozwinięcie Laplace'a względem wiersza lub kolumny z największą liczbą zer.","Laplace expansion along the row or column with the most zeros.")};
+    get hint(){return n===2?'<i>ad</i> − <i>bc</i>.':n===3&&OPT.det!=='laplace'?$t('Sarrus: dopisz dwie pierwsze kolumny; trzy przekątne z plusem, trzy z minusem.','Sarrus: copy the first two columns; three diagonals with a plus, three with a minus.'):$t("Rozwinięcie Laplace'a względem wiersza lub kolumny z największą liczbą zer.","Laplace expansion along the row or column with the most zeros.")}};
 }}
 function craOneHtml(Ab,names,j){
   const nv=names.length,A=Ab.map(r=>r.slice(0,nv)),b=Ab.map(r=>r[nv]),Aj=A.map((r,i)=>r.map((x,q)=>q===j?b[i]:x));
   const W=detF(A),Wj=detF(Aj),v=nmHtml(names[j]),w=$t('W','D'),sub=`<i>${w}</i><sub>${v}</sub>`;
   return $t(`<p>Potrzebne jest tylko ${v}, więc liczymy dwa wyznaczniki: główny <i>W</i> i ${sub}. Pozostałych nie trzeba.</p><h3>1. Wyznacznik główny</h3>`,`<p>Only ${v} is needed, so we compute two determinants: the main one <i>D</i> and ${sub}. The others are not needed.</p><h3>1. The main determinant</h3>`)
-    +`<div class="line"><i>${w}</i> = ${matH(A,{det:true})}</div>${detLines(A)}`
+    +`<div class="line"><i>${w}</i> = ${matH(A,{det:true})}</div>${detText(A,`<i>${w}</i>`)}`
     +$t(`<h3>2. Wyznacznik ${sub}</h3><p class="mute">Kolumnę przy ${v} zastępujemy kolumną wyrazów wolnych.</p>`,`<h3>2. The determinant ${sub}</h3><p class="mute">The column of ${v} is replaced with the column of constants.</p>`)
-    +`<div class="line">${sub} = ${matH(Aj,{det:true,hl:j})}</div>${detLines(Aj)}`
+    +`<div class="line">${sub} = ${matH(Aj,{det:true,hl:j})}</div>${detText(Aj,sub)}`
     +$t('<h3>3. Wzór Cramera</h3>','<h3>3. Cramer’s rule</h3>')
     +`<div class="line res">${v} = <span class="fr"><span>${sub}</span><span><i>${w}</i></span></span> = <span class="fr"><span>${Wj.str()}</span><span>${W.str()}</span></span> = <b>${Wj.div(W).html()}</b></div>`;
 }
@@ -610,13 +569,13 @@ const TOPICS=[
   {id:'sysexam',en:'Exam style 4×4',sec:'Układy równań',name:'Jak na sprawdzianie 4×4',gen:examTopic},
   {id:'param',en:'With parameter <i>a</i>',sec:'Układy równań',name:'Z parametrem <i>a</i>',gen:paramTopic},
   {id:'det2',en:'det 2×2',sec:'Wyznaczniki',name:'det 2×2',gen:detTopic(2)},
-  {id:'det3',en:'det 3×3 (Sarrus)',sec:'Wyznaczniki',name:'det 3×3 (Sarrus)',gen:detTopic(3)},
-  {id:'det4',en:'det 4×4 (Laplace)',sec:'Wyznaczniki',name:"det 4×4 (Laplace)",gen:detTopic(4)},
+  {id:'det3',en:'det 3×3',sec:'Wyznaczniki',name:'det 3×3',gen:detTopic(3),det:true},
+  {id:'det4',en:'det 4×4 (Laplace)',sec:'Wyznaczniki',name:"det 4×4 (Laplace)",gen:detTopic(4),det:true},
   {id:'detprop',en:'Properties',sec:'Wyznaczniki',name:'Własności',gen:genDetProp},
   {id:'deteq',en:'Equation with a determinant',sec:'Wyznaczniki',name:'Równanie z wyznacznikiem',gen:detEqTopic},
   {id:'cra2',en:'Cramer’s rule 2×2',sec:'Wyznaczniki',name:'Wzory Cramera 2×2',gen:sysTopic(2,'one','cra')},
-  {id:'syscra',en:'Cramer’s rule 3×3',sec:'Wyznaczniki',name:'Wzory Cramera 3×3',gen:sysTopic(3,'one','cra')},
-  {id:'cra1',en:'Cramer: one unknown',sec:'Wyznaczniki',name:'Cramer: jedna niewiadoma',gen:craOneTopic},
+  {id:'syscra',en:'Cramer’s rule 3×3',sec:'Wyznaczniki',name:'Wzory Cramera 3×3',gen:sysTopic(3,'one','cra'),det:true},
+  {id:'cra1',en:'Cramer: one unknown',sec:'Wyznaczniki',name:'Cramer: jedna niewiadoma',gen:craOneTopic,det:true},
   {id:'rank',en:'Rank of a matrix',sec:'Rząd macierzy',name:'Rząd macierzy',gen:rankTopic},
 ];
 TOPICS.forEach(t=>{if(['Macierz odwrotna','Równania macierzowe','Układy równań','Rząd macierzy'].includes(t.sec))t.noFrac=true});
@@ -626,5 +585,5 @@ addSubject({
   secEn:{'Działania':'Operations','Macierz odwrotna':'Inverse matrix','Równania macierzowe':'Matrix equations','Układy równań':'Systems of equations','Wyznaczniki':'Determinants','Rząd macierzy':'Rank'},
   sheet:{name:'Ściąga',en:'Cheat sheet'},
   tools:[{id:'liczby',name:'<i>X</i> na liczbach',en:'<i>X</i> with numbers'},{id:'rownania',name:'<i>X</i> na literach',en:'<i>X</i> symbolically'},{id:'uklady',name:'Układy równań',en:'Systems of equations'},{id:'blad',name:'Znajdź błąd',en:'Find my mistake'}],
-  opts:()=>`<label class="chk" for="nfCw"><input type="checkbox" id="nfCw" data-nofrac${OPT.noFrac?' checked':''}> <span>${$t('Rozwiązania bez ułamków, jeśli się da','Solutions without fractions where possible')}</span></label>`
+  opts:t=>(t&&t.sec==='Wyznaczniki'?'':`<label class="chk" for="nfCw"><input type="checkbox" id="nfCw" data-nofrac${OPT.noFrac?' checked':''}> <span>${$t('Rozwiązania bez ułamków, jeśli się da','Solutions without fractions where possible')}</span></label>`)+(t&&t.det?`<span class="lbl" id="detL">${$t('Wyznacznik 3×3','3×3 determinant')}</span><div class="seg small" role="group" aria-labelledby="detL">${[['sarrus','Sarrus'],['laplace','Laplace']].map(([k,n])=>`<button type="button" data-det="${k}"${OPT.det===k?' class="on" aria-pressed="true"':' aria-pressed="false"'}>${n}</button>`).join('')}</div>`:'')
 });

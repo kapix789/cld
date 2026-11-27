@@ -628,12 +628,13 @@ function sysMethodHtml(Ab,names,method){
     else if(nv>3)h+=$t(`<div class="tip">Wzory Cramera dla układu ${nv}×${nv} wymagają wyznaczników ${nv}×${nv} (rozwinięcie Laplace’a), a to bardzo długie liczenie. Tu wygodniej metodą Gaussa.</div>`,`<div class="tip">Cramer’s rule for a ${nv}×${nv} system needs ${nv}×${nv} determinants (Laplace expansion), a very long computation. Gaussian elimination is easier here.</div>`)+gaussPart();
     else{
       const Wd=detF(A);
-      h+=$t(`<h3>1. Wyznacznik główny</h3>${nv===3?'<p class="mute">Sarrus: trzy iloczyny po przekątnych „w prawo w dół” z plusem, trzy „w lewo w dół” z minusem.</p>':''}<div class="line"><i>W</i> = ${matH(A,{det:true})}</div>${detLines(A)}`,`<h3>1. The main determinant</h3>${nv===3?'<p class="mute">Sarrus: three diagonal products going “down to the right” with a plus, three going “down to the left” with a minus.</p>':''}<div class="line"><i>D</i> = ${matH(A,{det:true})}</div>${detLines(A)}`);
+      const sar=nv===3&&OPT.det!=='laplace';
+      h+=$t(`<h3>1. Wyznacznik główny</h3>${sar?'<p class="mute">Sarrus: trzy iloczyny po przekątnych „w prawo w dół” z plusem, trzy „w lewo w dół” z minusem.</p>':''}<div class="line"><i>W</i> = ${matH(A,{det:true})}</div>${detText(A,'<i>W</i>')}`,`<h3>1. The main determinant</h3>${sar?'<p class="mute">Sarrus: three diagonal products going “down to the right” with a plus, three going “down to the left” with a minus.</p>':''}<div class="line"><i>D</i> = ${matH(A,{det:true})}</div>${detText(A,'<i>D</i>')}`);
       if(Wd.z)h+=$t(`<div class="warn"><i>W</i> = 0, więc wzory Cramera nie działają. Układ jest sprzeczny albo ma nieskończenie wiele rozwiązań; rozstrzyga metoda Gaussa.</div>`,`<div class="warn"><i>D</i> = 0, so Cramer’s rule does not work. The system is inconsistent or has infinitely many solutions; Gaussian elimination decides.</div>`)+gaussPart();
       else{
         const sub=v=>`<i>${$t('W','D')}</i><sub>${nmHtml(v)}</sub>`;
         h+=$t(`<p><i>W</i> ≠ 0, więc układ ma dokładnie jedno rozwiązanie (układ Cramera).</p><h3>2. Wyznaczniki niewiadomych</h3><p class="mute">Kolumnę przy danej niewiadomej zastępujemy kolumną wyrazów wolnych.</p>`,`<p><i>D</i> ≠ 0, so the system has exactly one solution (a Cramer system).</p><h3>2. Determinants of the unknowns</h3><p class="mute">The column of the given unknown is replaced with the column of constants.</p>`);
-        const Ws=names.map((v,j)=>{const Aj=A.map((r,i)=>r.map((x,q)=>q===j?b[i]:x));h+=`<div class="line">${sub(v)} = ${matH(Aj,{det:true,hl:j})}</div>${detLines(Aj)}`;return detF(Aj)});
+        const Ws=names.map((v,j)=>{const Aj=A.map((r,i)=>r.map((x,q)=>q===j?b[i]:x));h+=`<div class="line">${sub(v)} = ${matH(Aj,{det:true,hl:j})}</div>${detText(Aj,sub(v))}`;return detF(Aj)});
         h+=$t(`<h3>3. Wzory Cramera</h3>`,`<h3>3. Cramer’s rule</h3>`)+names.map((v,j)=>$t(`<div class="line">${nmHtml(v)} = <span class="fr"><span>${sub(v)}</span><span><i>W</i></span></span> = <span class="fr"><span>${Ws[j].str()}</span><span>${Wd.str()}</span></span> = <b>${Ws[j].div(Wd).html()}</b></div>`,`<div class="line">${nmHtml(v)} = <span class="fr"><span>${sub(v)}</span><span><i>D</i></span></span> = <span class="fr"><span>${Ws[j].str()}</span><span>${Wd.str()}</span></span> = <b>${Ws[j].div(Wd).html()}</b></div>`)).join('');
       }
     }
@@ -906,8 +907,59 @@ const EXPR_FR=[
   (A,B,C)=>{const x=M.mul(A,B),t=M.T(x),y=M.scale(F(2),C),l='('+iAB+')'+sT;return [...mulFrames(A,B,{a:iA,b:iB,c:iAB}).frames,...transFrames(x,iAB,l),...scaleFrames(F(2),C,iC,'2'+iC),...sumFrames(t,y,-1,l,'2'+iC,l+' − 2'+iC)]},
   (A,B,C)=>{const at=M.T(A),x=M.mul(at,B),ct=M.T(C);return [...transFrames(A,iA,iA+sT),...mulFrames(at,B,{a:iA+sT,b:iB,c:iA+sT+iB}).frames,...transFrames(C,iC,iC+sT),...sumFrames(x,ct,-1,iA+sT+iB,iC+sT,iA+sT+iB+' − '+iC+sT)]},
 ];
+const detText=(A,lab)=>A.length===3&&OPT.det==='laplace'?laplaceHtml(A,lab):detLines(A);
+function laplaceLine(A){
+  const n=A.length;let best=null;
+  for(let i=0;i<n;i++){const z=A[i].filter(x=>x.z).length;if(!best||z>best.z)best={row:true,k:i,z}}
+  for(let j=0;j<n;j++){const z=A.filter(r=>r[j].z).length;if(z>best.z)best={row:false,k:j,z}}
+  return best;
+}
+const minorOf=(A,i,j)=>A.filter((_,r)=>r!==i).map(r=>r.filter((_,c)=>c!==j));
+function laplaceTerms(A){
+  const L=laplaceLine(A),n=A.length,t=[];
+  for(let q=0;q<n;q++){
+    const i=L.row?L.k:q,j=L.row?q:L.k,a=A[i][j];if(a.z)continue;
+    const s=(i+j)%2?-1:1,Mi=minorOf(A,i,j),dm=detF(Mi);
+    t.push({i,j,a,s,Mi,dm,v:F(s).mul(a).mul(dm)});
+  }
+  return {L,t};
+}
+const lapTerm=o=>`(−1)<sup>${o.i+1}+${o.j+1}</sup> · ${fmt(o.a)} · ${fmt(o.dm)}`;
+function laplaceHtml(A,lab='det <i>A</i>'){
+  const {L,t}=laplaceTerms(A),v=detF(A);
+  let h=L.z?'':$t('<p>Nie ma zer, więc bierzemy dowolny wiersz, np. pierwszy.</p>','<p>There are no zeros, so any row will do, e.g. the first one.</p>');
+  h+=L.z===0?'':$t(`<p>Rozwijamy względem ${L.row?'wiersza':'kolumny'} ${L.k+1}, bo ma najwięcej zer (${L.z}), więc liczenia jest najmniej. Każdy niezerowy element mnożymy przez znak (−1)<sup><i>i</i>+<i>j</i></sup> i wyznacznik minora, czyli macierzy bez wiersza i kolumny tego elementu.</p>`,`<p>We expand along ${L.row?'row':'column'} ${L.k+1} because it has the most zeros (${L.z}), so there is the least computing. Each nonzero entry is multiplied by the sign (−1)<sup><i>i</i>+<i>j</i></sup> and the determinant of its minor, the matrix without that entry’s row and column.</p>`);
+  if(!L.z)h+=$t('<p class="mute">Każdy element mnożymy przez znak (−1)<sup><i>i</i>+<i>j</i></sup> i wyznacznik minora (macierz bez wiersza i kolumny tego elementu).</p>','<p class="mute">Each entry is multiplied by the sign (−1)<sup><i>i</i>+<i>j</i></sup> and the determinant of its minor (the matrix without that entry’s row and column).</p>');
+  t.forEach(o=>{
+    h+=`<div class="line">(−1)<sup>${o.i+1}+${o.j+1}</sup> · ${fmt(o.a)} · ${matH(o.Mi,{det:true})}</div>`;
+    h+=`<details><summary>Minor <i>M</i><sub>${o.i+1}${o.j+1}</sub>${o.Mi.length===3&&OPT.det!=='laplace'?' (Sarrus)':''}</summary>${detText(o.Mi,`det <i>M</i><sub>${o.i+1}${o.j+1}</sub>`)}</details>`;
+    h+=`<div class="line">= ${lapTerm(o)} = <b>${o.v.html()}</b></div>`;
+  });
+  return h+`<div class="line res">${lab} = ${t.map(o=>fmt(o.v)).join(' + ')||'0'} = ${v.html()}</div>`;
+}
+function laplaceFrames(A,lab='det <i>A</i>',sec=$t("Rozwinięcie Laplace'a","Laplace expansion")){
+  const {L,t}=laplaceTerms(A),v=detF(A),fr=[];
+  fr.push({sec,t:$t(`Wybór: ${L.row?'wiersz':'kolumna'} ${L.k+1}`,`Choosing ${L.row?'row':'column'} ${L.k+1}`),x:!L.z?$t('Rozwinięcie Laplace’a: nie ma zer, więc bierzemy dowolny wiersz, np. pierwszy. Każdy element mnożymy przez znak i wyznacznik minora, potem dodajemy.','Laplace expansion: there are no zeros, so any row will do, e.g. the first one. Each entry is multiplied by its sign and the determinant of its minor, then everything is added.'):$t(`Rozwijamy względem wiersza albo kolumny z największą liczbą zer; tu ${L.row?'wiersz':'kolumna'} ${L.k+1} ma ${L.z} ${pl(L.z,'zero','zera','zer')}. Składnik z zerem jest zerem, więc liczymy tylko ${t.length} ${pl(t.length,'składnik','składniki','składników')}.`,`We expand along the row or column with the most zeros; here ${L.row?'row':'column'} ${L.k+1} has ${L.z} ${L.z===1?'zero':'zeros'}. A term with a zero entry is zero, so we only compute ${t.length} ${t.length===1?'term':'terms'}.`),
+    B:[bd(A,{det:true,lab,hl:L.row?{rows:{[L.k]:'src'}}:{cols:{[L.k]:'src'}}})]});
+  t.forEach((o,k)=>{
+    const ml=`<i>M</i><sub>${o.i+1}${o.j+1}</sub>`;
+    fr.push({sec,t:$t(`Składnik ${k+1}: element ${o.a.html()}`,`Term ${k+1}: the entry ${o.a.html()}`),x:$t(`Element stoi w wierszu ${o.i+1} i kolumnie ${o.j+1}. Skreślamy ten wiersz i tę kolumnę; zostaje minor ${ml}. Znak: (−1)<sup>${o.i+1}+${o.j+1}</sup> = ${o.s>0?'+1':'−1'}.`,`The entry is in row ${o.i+1} and column ${o.j+1}. Cross out this row and this column; the minor ${ml} remains. Sign: (−1)<sup>${o.i+1}+${o.j+1}</sup> = ${o.s>0?'+1':'−1'}.`),
+      B:[bd(A,{det:true,lab,hl:{rows:{[o.i]:'dim'},cols:{[o.j]:'dim'},cells:{[o.i+','+o.j]:'piv'}}}),bd(o.Mi,{det:true,lab:ml})],J:['→']});
+    if(o.Mi.length===2){
+      const m=o.Mi,f=fr[fr.length-1];
+      f.C=[{h:`det ${ml} = ${fmt(m[0][0])}·${fmt(m[1][1])} − ${fmt(m[0][1])}·${fmt(m[1][0])} = ${o.dm.html()}`,full:true},{h:`${lapTerm(o)} = <b>${o.v.html()}</b>`,full:true}];
+      f.U=[{t:1,line:0},{t:2.2,line:1}];
+      return;
+    }
+    fr.push(...detFrames(o.Mi,'det '+ml,sec,false));
+    fr.push({sec,t:$t(`Składnik ${k+1} = ${o.v.html()}`,`Term ${k+1} = ${o.v.html()}`),x:$t('Znak · element · wyznacznik minora:','Sign · entry · determinant of the minor:'),C:[{h:`${lapTerm(o)} = <b>${o.v.html()}</b>`,full:true}],U:[{t:.4,line:0}]});
+  });
+  fr.push({sec,t:`${lab} = ${v.html()}`,x:$t('Dodajemy wszystkie składniki.','Add up all the terms.'),B:[bd(A,{det:true,lab})],C:[{h:`${lab} = ${t.map(o=>fmt(o.v)).join(' + ')||'0'} = <b>${v.html()}</b>`,full:true}],U:[{t:.5,line:0}]});
+  return fr;
+}
 function detFrames(A,lab,sec,detailed){
   const n=A.length,v=detF(A);
+  if(n===3&&OPT.det==='laplace')return laplaceFrames(A,lab,sec);
   if(n===1)return [{sec,t:`${lab} = ${v.html()}`,x:$t('Wyznacznik macierzy 1×1 to jej jedyny element.','The determinant of a 1×1 matrix is its only entry.'),B:[bd(A,{det:true,lab})]}];
   if(n===2){
     const p=A[0][0].mul(A[1][1]),q=A[0][1].mul(A[1][0]);

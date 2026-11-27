@@ -12,7 +12,7 @@ Działa w przeglądarce, na komputerze i na telefonie. Nie trzeba się logować,
 
 ### Algebra liniowa
 
-28 typów zadań: działania na macierzach, macierz odwrotna, równania macierzowe (wzór na *X* i liczby), układy równań (Gauss, metoda macierzowa, z parametrem, 4×4 „jeśli to możliwe” jak na kolokwium), wyznaczniki (2×2, Sarrus, Laplace, własności, równanie z wyznacznikiem), wzory Cramera (2×2, 3×3, tylko jedna niewiadoma) i rząd.
+28 typów zadań: działania na macierzach, macierz odwrotna, równania macierzowe (wzór na *X* i liczby), układy równań (Gauss, metoda macierzowa, z parametrem, 4×4 „jeśli to możliwe” jak na kolokwium), wyznaczniki (2×2, Sarrus, Laplace, własności, równanie z wyznacznikiem), wzory Cramera (2×2, 3×3, tylko jedna niewiadoma) i rząd. Wyznaczniki 3×3 w rozwiązaniach liczą się metodą Sarrusa albo rozwinięciem Laplace’a, do wyboru przy zadaniu i w odtwarzaczu.
 
 - Wszystko liczy się na ułamkach zwykłych, bez zaokrągleń.
 - Eliminacja idzie bez ułamków, tak jak na kartce: jedynka powstaje z kombinacji wierszy, a dzieli się dopiero na końcu. Można to wyłączyć.

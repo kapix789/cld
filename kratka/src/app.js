@@ -7,6 +7,7 @@ const store={
 {const v=store.get('kratka-lang',store.get('algebra-lang'));if(v==='pl'||v==='en')LANG.cur=v}
 if(store.get('kratka-bez-ulamkow',store.get('algebra-bez-ulamkow'))==='0')OPT.noFrac=false;
 if(store.get('kratka-g')==='10')OPT.g=10;
+if(store.get('kratka-wyznacznik')==='laplace')OPT.det='laplace';
 document.documentElement.dataset.lang=LANG.cur;document.documentElement.lang=LANG.cur;
 
 const HOOKS={start:[],lang:[],noFrac:[],g:[],view:[]};
@@ -196,7 +197,7 @@ function plPrev(){plSetPlay(false);if(PL.k>0){PL.k--;plRender(false)}}
 function plSteps(){$('#plSteps').innerHTML=PL.fr.map((f,k)=>`<button type="button" data-k="${k}" aria-label="${$t('Krok','Step')} ${k+1}" title="${escH(plain(f.t||''))}"></button>`).join('')}
 function plOpen(frames,name,o={}){
   PL.fr=frames;PL.k=0;PL.opener=document.activeElement;plSetPlay(false);
-  $('#plName').innerHTML=name||'';$('#nfPlWrap').hidden=!o.noFrac;plSteps();
+  $('#plName').innerHTML=name||'';$('#nfPlWrap').hidden=!o.noFrac;$('#detPlWrap').hidden=!o.det;plSteps();
   $('#pl').hidden=false;document.body.style.overflow='hidden';
   plRender(true);$('#plNext').focus();
 }
@@ -262,7 +263,7 @@ function makePractice(root,o){
     else show($i('Msg'),r.score>0?'part':'bad',`<b>${r.score>0?$t('Częściowo.','Partly right.'):$t('Nie zgadza się.','Not quite.')}</b> ${r.msg||''} ${$t('Można poprawić odpowiedź, zajrzeć do podpowiedzi albo obejrzeć rozwiązanie krok po kroku.','You can correct the answer, look at the hint or watch the step-by-step solution.')}${extra}`);
   };
   $i('Hint').onclick=()=>show($i('Msg'),'info',`<b>${$t('Podpowiedź.','Hint.')}</b> ${task.hint}`);
-  $i('Play').onclick=()=>play(task.fr,txt(tName(topic)),$i('Msg'),{noFrac:!!topic.noFrac});
+  $i('Play').onclick=()=>play(task.fr,txt(tName(topic)),$i('Msg'),{noFrac:!!topic.noFrac,det:!!topic.det});
   $i('Sol').onclick=()=>solToggle(!$i('SolBox').classList.contains('on'));
   $i('New').onclick=()=>{next();if(o.onNew)o.onNew()};
   return {next,refresh(){if(task)$i('SolBox').innerHTML=task.sol;scoreText()},get topic(){return topic}};
@@ -288,8 +289,8 @@ function practiceHead(S){
   const k=S.topics.indexOf(t),n=S.topics.length;
   $('#topicCount').textContent=`${k+1} / ${n}`;
   $('#topicPrev').disabled=k===0;$('#topicNext').disabled=k===n-1;
-  $('#cwOpts').innerHTML=S.opts?S.opts():'';$('#cwOpts').hidden=!S.opts;
-  syncNoFrac();
+  $('#cwOpts').innerHTML=S.opts?S.opts(t):'';$('#cwOpts').hidden=!$('#cwOpts').innerHTML;
+  syncNoFrac();syncDet();
 }
 function tocRefresh(){if(R.subj)navRender()}
 
@@ -442,7 +443,7 @@ function exResults(){
   if(weak.length)$('#exRedo').onclick=()=>prStart(weak.slice());
 }
 $('#exRes').addEventListener('click',e=>{
-  const p=e.target.closest('[data-exp]');if(p){const it=EX.items[+p.dataset.exp];play(it.task.fr,txt(tName(it.tp)),null,{noFrac:!!it.tp.noFrac});return}
+  const p=e.target.closest('[data-exp]');if(p){const it=EX.items[+p.dataset.exp];play(it.task.fr,txt(tName(it.tp)),null,{noFrac:!!it.tp.noFrac,det:!!it.tp.det});return}
   const s=e.target.closest('[data-exs2]');if(s)$('#exSol'+s.dataset.exs2).classList.toggle('on');
 });
 
@@ -466,13 +467,19 @@ function setLang(l,rerender){
 document.querySelector('.lang').addEventListener('click',e=>{const b=e.target.closest('[data-lang]');if(b&&b.dataset.lang!==LANG.cur)setLang(b.dataset.lang,true)});
 
 function syncNoFrac(){$$('[data-nofrac]').forEach(c=>{c.checked=OPT.noFrac})}
-function setNoFrac(v){
-  OPT.noFrac=!!v;store.set('kratka-bez-ulamkow',OPT.noFrac?'1':'0');syncNoFrac();
+function syncDet(){$$('[data-det]').forEach(b=>{const on=b.dataset.det===OPT.det;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)})}
+function solRefresh(){
   Object.values(PRACT).forEach(P=>P.inst.refresh());if(PRP)PRP.refresh();
   HOOKS.noFrac.forEach(f=>f());
   if(!$('#pl').hidden&&PL.make){try{PL.fr=PL.make();PL.k=0;plSetPlay(false);plSteps();plRender(true)}catch(e){}}
 }
+function setNoFrac(v){OPT.noFrac=!!v;store.set('kratka-bez-ulamkow',OPT.noFrac?'1':'0');syncNoFrac();solRefresh()}
+function setDet(v){
+  if(v===OPT.det)return;
+  OPT.det=v==='laplace'?'laplace':'sarrus';store.set('kratka-wyznacznik',OPT.det);syncDet();solRefresh();
+}
 document.addEventListener('change',e=>{if(e.target.matches&&e.target.matches('[data-nofrac]'))setNoFrac(e.target.checked)});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-det]');if(b)setDet(b.dataset.det)});
 function setG(v){
   OPT.g=v===10?10:9.81;store.set('kratka-g',OPT.g===10?'10':'9.81');
   $$('[data-g]').forEach(b=>b.classList.toggle('on',+b.dataset.g===OPT.g));
@@ -482,6 +489,6 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
 
 function kratkaStart(){
   HOOKS.start.forEach(f=>f());
-  setLang(LANG.cur,false);syncNoFrac();
+  setLang(LANG.cur,false);syncNoFrac();syncDet();
   route();
 }
